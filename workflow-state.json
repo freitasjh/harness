@@ -1,54 +1,57 @@
 {
-  "current_feature": "harness-v7-hardening",
+  "current_feature": "harness-installer",
   "current_phase": "Completed",
   "previous_phase": "Testing",
   "next_phase": null,
-  "type": "refactor",
+  "type": "feature",
   "layer": "governanca-de-agentes",
   "repo": "harness",
   "artifacts": {
-    "proposal": ".spec/archive/20260929-harness-v7-hardening/PROPOSAL.md",
-    "spec": ".spec/archive/20260929-harness-v7-hardening/SPEC.md",
-    "plan": ".spec/archive/20260929-harness-v7-hardening/PLAN.md",
-    "tasks": ".spec/archive/20260929-harness-v7-hardening/TASKS.md",
-    "contract": ".spec/archive/20260929-harness-v7-hardening/RUNTIME-CONTRACT.md",
-    "verify": ".spec/archive/20260929-harness-v7-hardening/VERIFY.md"
+    "proposal": ".spec/archive/20260929-harness-installer/PROPOSAL.md",
+    "spec": ".spec/archive/20260929-harness-installer/SPEC.md",
+    "plan": ".spec/archive/20260929-harness-installer/PLAN.md",
+    "tasks": ".spec/archive/20260929-harness-installer/TASKS.md",
+    "verify": ".spec/archive/20260929-harness-installer/VERIFY.md"
   },
   "scope": {
-    "interpretation": "A-hardening",
-    "escolhido_pelo_usuario_em": "2026-09-28",
+    "interpretation": "A-simples-evoluir",
     "entra": [
-      "plugin bloqueante (tool.execute.before + permission.ask)",
-      "evidencia machine-checkable (harness/REPORT.json)",
-      "harness.config.json por projeto (paths/comandos desacoplados)",
-      "gate PICCO duro na delegacao task",
-      "chrome-devtools no AGENT.md de quem roda H3",
-      "dieta de rules (fundir workflow-rules + harness-continuous)"
+      "copiador .opencode/.agents/templates",
+      "Q&A gera harness.config.json",
+      "backup+merge por camada",
+      "manifesto .harness-install.json",
+      "checks pos-instalacao + anti-Hive",
+      "dogfood em atlas-ecm"
     ],
     "nao_entra": [
-      "Laya AI / MCP server de decisao",
-      "git worktree por tarefa",
-      "adaptacao dos repos consumidores (atlas-ecm, hive)"
+      "deteccao automatica de stack",
+      "adaptacao de atlas-ecm/hive nesta fase",
+      "upgrade/desinstalacao (futuro, via manifesto)"
     ],
-    "rigor": "E1/E2 bloqueiam; E3-E6 ausentes = aviso",
-    "aceite": "caso ACL do ECM de 2026-09-27 e pego pelo gate antes de declarar pronto"
+    "aceite": [
+      "roda limpo no atlas-ecm",
+      "suite verde no destino",
+      "restart+smoke (deny/allow)",
+      "zero literais estranhos"
+    ],
+    "rigor": "E1/E2 bloqueiam"
   },
   "gates": {
-    "P0_P1": "approved",
-    "P1_P2": "approved_user_2026_09_28",
-    "P2_P3": "approved_user_2026_09_28",
-    "P3_P4": "approved_user_2026_09_28_restart_pending",
+    "P0_P1": "approved_user_2026_09_29",
+    "P1_P2": "pending_user_approval",
+    "P2_P3": "approved_user_2026_09_29",
+    "P3_P4": "approved_auto_evidence",
     "P4_P5": "pending_user_approval",
     "P5_P6": "approved_user_2026_09_29",
-    "P6_fim": "approved_done_commit_a4c44c2"
+    "P6_fim": "pending_user_approval_commit"
   },
   "code_review": {
     "last_invoked_at": "2026-09-29T00:00:00Z",
     "last_status": "passed",
     "critical_issues": 0,
     "attention_issues": 0,
-    "suggestions": 0,
-    "reviewer_notes": "Fix FU-19: APROVADO. Shape provado no .d.ts, compat single-arg, sem crash, marcadores 0, 104/104 re-executados."
+    "suggestions": 2,
+    "reviewer_notes": "Installer Batch 2: APROVADO. 51/51 re-executados. Dogfood com vinculo real. Segredo sem hits."
   },
   "overrides": [],
   "overrides_history": [
@@ -61,70 +64,10 @@
   ],
   "features": [],
   "last_update": "2026-09-29T00:00:00Z",
-  "spec_score": null,
+  "spec_score": 0.92,
   "spec_status": "corrected_v4_pending_revalidation",
   "validation": {
-    "architect": {
-      "date": "2026-09-28",
-      "verdict": "reprovar",
-      "criticos": 5,
-      "atencao": 9,
-      "metodo": "inspecao estatica do binario opencode 1.18.31"
-    },
-    "security_fase1": {
-      "verdict": "partial",
-      "criticos_encontrados": 2,
-      "criticos_corrigidos": 1
-    },
-    "architect_v2": {
-      "date": "2026-09-28",
-      "verdict": "reprovar",
-      "metodo": "inspecao estatica do binario opencode 1.18.31",
-      "fechados": [
-        "G2",
-        "G4",
-        "G5",
-        "G6",
-        "G8"
-      ],
-      "parcial": [
-        "G1",
-        "G3",
-        "G10"
-      ],
-      "abertos": [
-        "G11"
-      ],
-      "novos_bloqueantes": [
-        "N1",
-        "N2",
-        "N4",
-        "N9",
-        "N3"
-      ],
-      "achado_ambiental": "repo nao e git - ADR-007 (CI/pre-commit) inoperante"
-    },
-    "architect_v3": {
-      "date": "2026-09-28",
-      "verdict": "reprovar",
-      "itens_fechados": "0/5",
-      "metodo": "inspecao do binario + DB real de sessoes",
-      "runtime_real_observado": "OpenCode Desktop 1.18.33",
-      "novos": {
-        "N12": "allowlist do orquestrador (.agents/**) sobrepoe protectedPaths -> pode reescrever regras e schema de evidencia",
-        "N13": "versao-base errada (runtime real 1.18.33) e args de write instaveis entre versoes",
-        "N14": "ancora B le campos inexistentes (harness_status/code_review_status) -> mecanismo morto",
-        "N15": "escape de fim de turno: declarar pronto em prosa e parar nao e coberto por nenhum hook",
-        "N16": "regressao de N6: protectedPaths ainda diverge; workflow-state.json na protecao CI gera churn"
-      },
-      "todos_parciais": [
-        "N1",
-        "N2",
-        "N4",
-        "N9",
-        "N3"
-      ]
-    }
+    "architect": "aprovar_com_ajustes (R1-R4+Y1 aplicados)"
   },
   "pending_user_decisions": [],
   "spec_version": 4,
@@ -135,45 +78,38 @@
   },
   "harness_status": "passed (smoke 7/7 pos-restart-4 + suite 104/104)",
   "code_review_status": "pending",
-  "sdd_stage": "CLOSED 21/21: INF-01 fechado (remote+CI+evidencia)",
+  "sdd_stage": "Fase 6 - Arquivado; P6_fim (commit?) pendente",
   "backlog": {
-    "total": 21,
+    "total": 7,
     "todo": 0,
     "doing": 0,
-    "done": 21,
+    "done": 7,
     "ids": [
-      "INF-01",
-      "INF-02",
-      "CFG-01",
-      "CFG-02",
-      "GATE-01",
-      "GATE-02",
-      "GATE-03",
-      "GATE-04",
-      "GATE-05",
-      "FIX-01",
-      "EV-01",
-      "DOC-01",
-      "DOC-02",
-      "DOC-03",
-      "TST-01",
-      "TST-02",
-      "DOG-01",
-      "SDD-01",
-      "SDD-02",
-      "SDD-03",
-      "RENAME"
+      "IN-01",
+      "IN-02",
+      "IN-03",
+      "IN-04",
+      "IN-05",
+      "IN-06",
+      "IN-07"
     ]
   },
-  "next_task": "INF-01",
-  "plan_score": 0.94,
-  "tasks_score": 0.96,
+  "next_task": "IN-01",
+  "plan_score": 0.93,
+  "tasks_score": 0.95,
   "active_batch": {
-    "id": 8,
-    "of": 8,
+    "id": 2,
+    "of": 2,
+    "tasks": [
+      "IN-05",
+      "IN-06",
+      "IN-07"
+    ],
+    "agent": "developer-engineer",
+    "code_review": "APROVADO (0 criticos, 2 notas nao-bloqueantes)",
     "status": "done"
   },
-  "active_task": "DOG-01",
+  "active_task": "IN-05",
   "pending_remote_url": false,
   "follow_ups": [
     {
@@ -291,6 +227,39 @@
       "bloqueia": true,
       "status": "closed_fixed_reviewed (causa A, shape provado no .d.ts, suite 104/104)",
       "transiente_descartado": "2 denies apos 2 turnos humanos distintos"
+    },
+    {
+      "id": "FU-20",
+      "origem": "reviewer installer Batch 1",
+      "texto": "IN-05: main() deve exigir backup.verified antes de applyMerge (I1 enforcement)",
+      "bloqueia": false,
+      "dono": "Batch 2"
+    },
+    {
+      "id": "FU-21",
+      "origem": "reviewer installer Batch 1",
+      "texto": "Corrigir merge-manifest S1 vacuous (incomingFiles + assert conteúdo)",
+      "bloqueia": false,
+      "dono": "Batch 2"
+    },
+    {
+      "id": "FU-22",
+      "origem": "reviewer installer Batch 1",
+      "texto": "Clarificar backup-outside-target (excecao em SPEC §3 ou guard explicito)",
+      "bloqueia": false,
+      "dono": "Batch 2"
+    },
+    {
+      "id": "FU-23",
+      "origem": "reviewer installer Batch 2",
+      "texto": "Assert dedicado FU-22 (backupDir fora do target) em suite.spec.mjs",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-24",
+      "origem": "reviewer installer Batch 2",
+      "texto": "Drift CLI x SKILL (--dry-run nao imprime plano no CLI) - debito P3",
+      "bloqueia": false
     }
   ],
   "batches": {
@@ -418,11 +387,12 @@
   },
   "verify": {
     "dimensoes": {
-      "completude": "pass_19_21_2_declaradas",
+      "completude": "pass_7_7",
       "corretude": "pass",
       "coerencia": "pass"
     },
-    "veredito": "APPROVED"
+    "veredito": "APPROVED",
+    "aceite": "4/4 com cli-smoke"
   },
   "commit": "a4c44c2",
   "remote": "git@github.com:freitasjh/harness.git (SSH; push + CI pendentes)",
@@ -430,5 +400,15 @@
     "main": "GREEN confirmado na UI",
     "probe": "RED confirmado na UI + branch deletada",
     "local_hook": "bloqueou 2x"
+  },
+  "previous_program": {
+    "feature": "harness-v7-hardening",
+    "status": "CLOSED 21/21",
+    "commit": "eadb8ae"
+  },
+  "security_fase1": {
+    "verdict": "partial",
+    "criticos": 0,
+    "medio": 1
   }
 }

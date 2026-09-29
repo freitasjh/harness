@@ -25,3 +25,13 @@ Registro cronológico de funcionalidades e refactors entregues.
 - [x] Fase 4 — Quality (smoke 7/7 vivo pós 4 restarts, LOADER-01 + FU-19 diagnosticados e corrigidos)
 - [x] Fase 5 — Verify (3 dimensões ✅, aceite §14 4/4)
 - [x] Fase 6 — Archive (deltas aplicados durante os batches; sem `.doc` neste repo)
+| 2026-09-29 | `harness-installer` | Feature | Instalador repo→repo (Node ESM, zero deps): Q&A que gera config (anti-Hive), backup-first + merge por camada, manifesto `.harness-install.json`, checks + canário, dogfood em cópia atlas-ecm + CLI-smoke em processo fresco. 7/7 tasks, 51 testes, smoke S1-S4 observado. | `.spec/archive/20260929-harness-installer/` | Completed |
+
+## Etapas concluídas — harness-installer
+- [x] Fase 0 — Triagem (Feature, escopo A, atlas-ecm, backup+merge)
+- [x] Fase 1 — Análise (PROPOSAL + SPEC 92%, architect aprovar-com-ajustes, security partial)
+- [x] Fase 2 — Planejamento (PLAN + TASKS, 7 tickets)
+- [x] Fase 3 — Execução (2 batches, reviews APPROVED, 0 🔴)
+- [x] Fase 4 — Quality (fixtures + dogfood + secret-scan em-batch)
+- [x] Fase 5 — Verify (3 dimensões ✅ + CLI-smoke suplementar, aceite 4/4)
+- [x] Fase 6 — Archive
