@@ -43,7 +43,7 @@
     "P3_P4": "approved_auto_evidence",
     "P4_P5": "pending_user_approval",
     "P5_P6": "approved_user_2026_09_29",
-    "P6_fim": "pending_user_approval_commit"
+    "P6_fim": "approved_done_commit_push_2812cd8"
   },
   "code_review": {
     "last_invoked_at": "2026-09-29T00:00:00Z",
@@ -78,7 +78,7 @@
   },
   "harness_status": "passed (smoke 7/7 pos-restart-4 + suite 104/104)",
   "code_review_status": "pending",
-  "sdd_stage": "Fase 6 - Arquivado; P6_fim (commit?) pendente",
+  "sdd_stage": "CLOSED: harness-installer entregue, commitado e pushado",
   "backlog": {
     "total": 7,
     "todo": 0,
@@ -394,7 +394,7 @@
     "veredito": "APPROVED",
     "aceite": "4/4 com cli-smoke"
   },
-  "commit": "a4c44c2",
+  "commit": "2812cd8 (pushado)",
   "remote": "git@github.com:freitasjh/harness.git (SSH; push + CI pendentes)",
   "ci_evidence": {
     "main": "GREEN confirmado na UI",
