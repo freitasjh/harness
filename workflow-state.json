@@ -135,16 +135,12 @@
   },
   "harness_status": "passed (smoke 7/7 pos-restart-4 + suite 104/104)",
   "code_review_status": "pending",
-  "sdd_stage": "CLOSED: harness-v7-hardening entregue e commitado (local; push pendente de remote)",
+  "sdd_stage": "CLOSED 21/21: INF-01 fechado (remote+CI+evidencia)",
   "backlog": {
     "total": 21,
     "todo": 0,
     "doing": 0,
-    "done": 19,
-    "pending_remote": [
-      "INF-01",
-      "INF-02"
-    ],
+    "done": 21,
     "ids": [
       "INF-01",
       "INF-02",
@@ -175,19 +171,10 @@
   "active_batch": {
     "id": 8,
     "of": 8,
-    "tasks": [
-      "DOG-01",
-      "FU-06",
-      "FU-07",
-      "FU-11"
-    ],
-    "agent": "developer-engineer",
-    "code_review": "APROVADO (0 criticos, 1 atencao nao-bloqueante)",
-    "acceptance": "DONE pre-restart (103/103 + dogfood como teste)",
-    "status": "done_pre_restart"
+    "status": "done"
   },
   "active_task": "DOG-01",
-  "pending_remote_url": true,
+  "pending_remote_url": false,
   "follow_ups": [
     {
       "id": "FU-01",
@@ -437,5 +424,11 @@
     },
     "veredito": "APPROVED"
   },
-  "commit": "a4c44c2"
+  "commit": "a4c44c2",
+  "remote": "git@github.com:freitasjh/harness.git (SSH; push + CI pendentes)",
+  "ci_evidence": {
+    "main": "GREEN confirmado na UI",
+    "probe": "RED confirmado na UI + branch deletada",
+    "local_hook": "bloqueou 2x"
+  }
 }
