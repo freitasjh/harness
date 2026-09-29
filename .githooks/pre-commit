@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# INF-02 pre-commit: espelho local do CI harness-integrity (ADR-007).
+# Bloqueia commit staged que toque path protegido sem autorizacao declarada.
+# Autorizacao local = env HARNESS_GATE_APPROVER=<nome> (equivale ao <aprovador>
+# do trailer exigido pelo CI). Sem ela, o commit e negado com mensagem acionavel.
+# workflow-state.json esta FORA da protecao e sempre passa.
+set -euo pipefail
+
+PROTECTED_RE='^(\.opencode/plugins/.*|\.agents/rules/.*|\.agents/schemas/.*|\.agents/agents/.*|\.github/workflows/.*|\.githooks/.*|opencode\.json|harness\.config\.json)$'
+
+# --diff-filter=ACMRD: delecao (D) tambem e checada — apagar gate.js sem
+# autorizacao e mudanca protegida. --name-status -M: rename expoe old+new;
+# ambos os lados sao checados (mover gate.js para fora E para dentro contam).
+staged="$(git diff --cached --name-status -M --diff-filter=ACMRD | awk '{if ($1 ~ /^R/) {print $2; print $3} else {print $2}}' || true)"
+[ -z "$staged" ] && exit 0
+
+protected_hit="$(printf '%s\n' "$staged" | grep -E "$PROTECTED_RE" || true)"
+[ -z "$protected_hit" ] && exit 0
+
+if [ -n "${HARNESS_GATE_APPROVER:-}" ]; then
+  echo "harness-integrity: protected path(s) approved by HARNESS_GATE_APPROVER=$HARNESS_GATE_APPROVER"
+  echo "harness-integrity: CI still requires trailer: git commit --trailer 'Harness-Gate-Change: $HARNESS_GATE_APPROVER'"
+  exit 0
+fi
+
+cat >&2 <<'EOF'
+harness-integrity: BLOCKED — staged change touches protected path(s) without authorization.
+  Protected: .opencode/plugins/**  .agents/rules/**  .agents/schemas/**
+             .agents/agents/**  .github/workflows/**  .githooks/**
+             opencode.json  harness.config.json
+  (workflow-state.json is NOT protected.)
+  To proceed, declare an approver and re-commit:
+    HARNESS_GATE_APPROVER=<nome> git commit ...
+    git commit --trailer 'Harness-Gate-Change: <nome>' ...
+  The CI (harness-integrity.yml) enforces the trailer as the final net.
+EOF
+printf '%s\n' "$protected_hit" | sed 's/^/  hit: /' >&2
+exit 1

@@ -1,0 +1,441 @@
+{
+  "current_feature": "harness-v7-hardening",
+  "current_phase": "Completed",
+  "previous_phase": "Testing",
+  "next_phase": null,
+  "type": "refactor",
+  "layer": "governanca-de-agentes",
+  "repo": "harness",
+  "artifacts": {
+    "proposal": ".spec/archive/20260929-harness-v7-hardening/PROPOSAL.md",
+    "spec": ".spec/archive/20260929-harness-v7-hardening/SPEC.md",
+    "plan": ".spec/archive/20260929-harness-v7-hardening/PLAN.md",
+    "tasks": ".spec/archive/20260929-harness-v7-hardening/TASKS.md",
+    "contract": ".spec/archive/20260929-harness-v7-hardening/RUNTIME-CONTRACT.md",
+    "verify": ".spec/archive/20260929-harness-v7-hardening/VERIFY.md"
+  },
+  "scope": {
+    "interpretation": "A-hardening",
+    "escolhido_pelo_usuario_em": "2026-09-28",
+    "entra": [
+      "plugin bloqueante (tool.execute.before + permission.ask)",
+      "evidencia machine-checkable (harness/REPORT.json)",
+      "harness.config.json por projeto (paths/comandos desacoplados)",
+      "gate PICCO duro na delegacao task",
+      "chrome-devtools no AGENT.md de quem roda H3",
+      "dieta de rules (fundir workflow-rules + harness-continuous)"
+    ],
+    "nao_entra": [
+      "Laya AI / MCP server de decisao",
+      "git worktree por tarefa",
+      "adaptacao dos repos consumidores (atlas-ecm, hive)"
+    ],
+    "rigor": "E1/E2 bloqueiam; E3-E6 ausentes = aviso",
+    "aceite": "caso ACL do ECM de 2026-09-27 e pego pelo gate antes de declarar pronto"
+  },
+  "gates": {
+    "P0_P1": "approved",
+    "P1_P2": "approved_user_2026_09_28",
+    "P2_P3": "approved_user_2026_09_28",
+    "P3_P4": "approved_user_2026_09_28_restart_pending",
+    "P4_P5": "pending_user_approval",
+    "P5_P6": "approved_user_2026_09_29",
+    "P6_fim": "approved_done_commit_a4c44c2"
+  },
+  "code_review": {
+    "last_invoked_at": "2026-09-29T00:00:00Z",
+    "last_status": "passed",
+    "critical_issues": 0,
+    "attention_issues": 0,
+    "suggestions": 0,
+    "reviewer_notes": "Fix FU-19: APROVADO. Shape provado no .d.ts, compat single-arg, sem crash, marcadores 0, 104/104 re-executados."
+  },
+  "overrides": [],
+  "overrides_history": [
+    {
+      "portao": "code_review",
+      "feature": "refactor-prompt-optimizer",
+      "motivo": "Limite de 3 iteracoes do loop de correcao atingido. Re-review da iteracao 2 retornou truncado (so rodape). Os 2 gaps remanescentes eram verificaveis por grep e foram confirmados com saida literal pelo orquestrador. Usuario aprovou opcao A.",
+      "data": "2026-09-27T00:00:00Z"
+    }
+  ],
+  "features": [],
+  "last_update": "2026-09-29T00:00:00Z",
+  "spec_score": null,
+  "spec_status": "corrected_v4_pending_revalidation",
+  "validation": {
+    "architect": {
+      "date": "2026-09-28",
+      "verdict": "reprovar",
+      "criticos": 5,
+      "atencao": 9,
+      "metodo": "inspecao estatica do binario opencode 1.18.31"
+    },
+    "security_fase1": {
+      "verdict": "partial",
+      "criticos_encontrados": 2,
+      "criticos_corrigidos": 1
+    },
+    "architect_v2": {
+      "date": "2026-09-28",
+      "verdict": "reprovar",
+      "metodo": "inspecao estatica do binario opencode 1.18.31",
+      "fechados": [
+        "G2",
+        "G4",
+        "G5",
+        "G6",
+        "G8"
+      ],
+      "parcial": [
+        "G1",
+        "G3",
+        "G10"
+      ],
+      "abertos": [
+        "G11"
+      ],
+      "novos_bloqueantes": [
+        "N1",
+        "N2",
+        "N4",
+        "N9",
+        "N3"
+      ],
+      "achado_ambiental": "repo nao e git - ADR-007 (CI/pre-commit) inoperante"
+    },
+    "architect_v3": {
+      "date": "2026-09-28",
+      "verdict": "reprovar",
+      "itens_fechados": "0/5",
+      "metodo": "inspecao do binario + DB real de sessoes",
+      "runtime_real_observado": "OpenCode Desktop 1.18.33",
+      "novos": {
+        "N12": "allowlist do orquestrador (.agents/**) sobrepoe protectedPaths -> pode reescrever regras e schema de evidencia",
+        "N13": "versao-base errada (runtime real 1.18.33) e args de write instaveis entre versoes",
+        "N14": "ancora B le campos inexistentes (harness_status/code_review_status) -> mecanismo morto",
+        "N15": "escape de fim de turno: declarar pronto em prosa e parar nao e coberto por nenhum hook",
+        "N16": "regressao de N6: protectedPaths ainda diverge; workflow-state.json na protecao CI gera churn"
+      },
+      "todos_parciais": [
+        "N1",
+        "N2",
+        "N4",
+        "N9",
+        "N3"
+      ]
+    }
+  },
+  "pending_user_decisions": [],
+  "spec_version": 4,
+  "decisions_applied_v3": {
+    "U4": "a - git init + remote + CI",
+    "U5": "c - dois ancoras",
+    "U6": "b - selo de hash"
+  },
+  "harness_status": "passed (smoke 7/7 pos-restart-4 + suite 104/104)",
+  "code_review_status": "pending",
+  "sdd_stage": "CLOSED: harness-v7-hardening entregue e commitado (local; push pendente de remote)",
+  "backlog": {
+    "total": 21,
+    "todo": 0,
+    "doing": 0,
+    "done": 19,
+    "pending_remote": [
+      "INF-01",
+      "INF-02"
+    ],
+    "ids": [
+      "INF-01",
+      "INF-02",
+      "CFG-01",
+      "CFG-02",
+      "GATE-01",
+      "GATE-02",
+      "GATE-03",
+      "GATE-04",
+      "GATE-05",
+      "FIX-01",
+      "EV-01",
+      "DOC-01",
+      "DOC-02",
+      "DOC-03",
+      "TST-01",
+      "TST-02",
+      "DOG-01",
+      "SDD-01",
+      "SDD-02",
+      "SDD-03",
+      "RENAME"
+    ]
+  },
+  "next_task": "INF-01",
+  "plan_score": 0.94,
+  "tasks_score": 0.96,
+  "active_batch": {
+    "id": 8,
+    "of": 8,
+    "tasks": [
+      "DOG-01",
+      "FU-06",
+      "FU-07",
+      "FU-11"
+    ],
+    "agent": "developer-engineer",
+    "code_review": "APROVADO (0 criticos, 1 atencao nao-bloqueante)",
+    "acceptance": "DONE pre-restart (103/103 + dogfood como teste)",
+    "status": "done_pre_restart"
+  },
+  "active_task": "DOG-01",
+  "pending_remote_url": true,
+  "follow_ups": [
+    {
+      "id": "FU-01",
+      "origem": "reviewer sugestao",
+      "texto": "diff-tree sem --root (root-commit bypass) + filename com espaco no pre-commit awk",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-02",
+      "origem": "reviewer Batch 2",
+      "texto": "V6c: validar opencode.json + workflow-state.json em checkV6",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-03",
+      "origem": "reviewer Batch 2",
+      "texto": "Batch 4: gate.js rejeitar seal/commands vazio; gitSha opaco + cache (demand,reportHash,treeHash)",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-04",
+      "origem": "reviewer Batch 3",
+      "texto": "Remover DEAD_BUS_EVENT de CONTRACT_HOOKS (gate.spec.mjs:176) — dono Batch 4",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-05",
+      "origem": "reviewer Batch 3",
+      "texto": "Mapear catch do loader para DenyError config-unavailable na borda do gate (GATE-03) — senao fail-closed vira allow",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-06",
+      "origem": "reviewer Batch 4",
+      "texto": "Rotear resolveMode por gate antes do flip (DOG-01)",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-07",
+      "origem": "reviewer Batch 4",
+      "texto": "treeHash real ou desabilitar cache quando unknown (DOG-01)",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-08",
+      "origem": "reviewer Batch 4",
+      "texto": "State corrompido => deny (só ausente => allow) + fixture (Batch 5)",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-09",
+      "origem": "reviewer Batch 4",
+      "texto": "Fixture counts-unverifiable (Batch 5, TST-01)",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-10",
+      "origem": "reviewer Batch 4",
+      "texto": "SPEC §3: alinhar allowlist com N12 (DOC-01, Batch 6)",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-11",
+      "origem": "reviewer Batch 5",
+      "texto": "HarnessGate: loadWorkflowState eager fora do decide() — tornar lazy ou rotear DenyError pelo dispatcher (dono DOG-01, Batch 8)",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-12",
+      "origem": "reviewer Batch 5",
+      "texto": "harness-config.md:57 trocar owner FIX-01 por DOC-02 (dono DOC-02, Batch 7)",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-13",
+      "origem": "reviewer Batch 6",
+      "texto": "PROMPT.md:8 suavizar hiperbole 'garantir que nenhum codigo...' (pega carona no RENAME, Batch 7)",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-14",
+      "origem": "developer Batch 7 nota 4",
+      "texto": "orchestrator/AGENT.md:435 fato superado ('harness-validator.js injeta...') — só a ref foi re-apontada; reescrever a sentença (dono DOC-03 follow-up)",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-15",
+      "origem": "orquestrador (rename nao efetivo em runtime)",
+      "texto": "Registro de agentes e do startup: opencode.json novo (chave code-reviewer, futuro gate.js) so vale apos restart. DOG-01 deve incluir restart + smoke. Review do Batch 7 via nome antigo ainda registrado.",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-16",
+      "origem": "reviewer Batch 7",
+      "texto": "Ampliar lista de excecoes do RENAME em back-refs-DOC-02.md (PROPOSAL/SPEC pre-rename) + sentencas normativas stale (Batch 8 se couber)",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-17",
+      "origem": "reviewer Batch 8",
+      "texto": "FLIP-RUNBOOK rollback definitivo: trocar 'git diff -> revert' por 'git status + git add -N + git diff' ou backup (repo sem commits)",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-18",
+      "origem": "developer LOADER-01 watch-out",
+      "texto": "Possivel registro duplo de hooks (opencode.json lista arquivos E diretorio auto-carrega): verificar se HITL conta 2x por call; se sim, listar OU arquivos OU diretorio",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-19",
+      "origem": "smoke S6",
+      "texto": "Reset do HITL via chat.message nao ocorreu: (a) role em path nao coberto, (b) sessionID divergente entre hooks, ou (c) Map em memoria nao compartilhado entre workers. Discriminar e corrigir.",
+      "bloqueia": true,
+      "status": "closed_fixed_reviewed (causa A, shape provado no .d.ts, suite 104/104)",
+      "transiente_descartado": "2 denies apos 2 turnos humanos distintos"
+    }
+  ],
+  "batches": {
+    "1": "code_done_pending_remote",
+    "2": "done",
+    "3": "done",
+    "4": "done",
+    "5": "todo",
+    "6": "todo",
+    "7": "todo",
+    "8": "todo"
+  },
+  "scope_additions": [
+    "U10 - SDD sob o harness (SDD-01/02/03, Batch 7)",
+    "U11 - rename reviewer para code-reviewer (Batch 7)"
+  ],
+  "reviewer_agent": "code-reviewer (arquivos renomeados; runtime ainda registra fullstack-code-reviewer ate o restart — usar nome antigo nas delegacoes)",
+  "restart_required": {
+    "motivo": "plugins + opencode.json so carregam no boot",
+    "efeito": "ativa gate.js enforce + code-reviewer + CI wiring",
+    "rollback": "HARNESS_GATES=off"
+  },
+  "handoff": {
+    "proxima_sessao_comando": "smoke harness-v7",
+    "retomar_de": [
+      ".spec/governance/harness-v7/FLIP-RUNBOOK.md",
+      "workflow-state.json"
+    ],
+    "portoes_pendentes": [
+      "P4_P5 (pos-smoke)",
+      "P5_P6 (pos-VERIFY)",
+      "P6_fim (commit)"
+    ]
+  },
+  "post_restart": {
+    "host": "Desktop 1.18.33 PID 1641597 (PID antigo 41003 morto)",
+    "smoke": "GREEN_no_CLI_pendente_Desktop",
+    "suite_pre": "103/103 + checks (V14 pendente declarado)"
+  },
+  "smoke_result": {
+    "date": "2026-09-29",
+    "files": "103/103 + checks verdes (V14 pendente declarado)",
+    "config_reloaded": true,
+    "probes": [
+      {
+        "id": 1,
+        "via": "ponte default.task sem PICCO",
+        "esperado": "deny picco-tag-absent",
+        "observado": "EXECUTOU"
+      },
+      {
+        "id": 2,
+        "via": "ponte default.task tag nao-vazia",
+        "esperado": "deny picco-tag-nonempty",
+        "observado": "EXECUTOU"
+      },
+      {
+        "id": 3,
+        "via": "ponte default.task PICCO valido",
+        "esperado": "allow + warnings no log",
+        "observado": "EXECUTOU, zero warnings"
+      },
+      {
+        "id": 4,
+        "via": "ponte default.bash echo pkill",
+        "esperado": "deny pkill-f",
+        "observado": "IMPRIMIU"
+      },
+      {
+        "id": 5,
+        "via": "opencode run real, permission allow, task sem PICCO",
+        "esperado": "deny picco-tag-absent",
+        "observado": "EXECUTOU (PONG retornado)"
+      }
+    ],
+    "load_trace_gate_js": "AUSENTE em todos os logs, todas as datas (siblings tem)",
+    "kill_switch": "off (ausente)",
+    "mode": "enforce em arquivo",
+    "veredito": "flip NAO verificado: unidade verde, runtime nao aplica"
+  },
+  "diagnostics": [
+    {
+      "id": "LOADER-01",
+      "motivo": "smoke RED: gate.js sem rastro em runtime",
+      "agent": "developer-engineer",
+      "status": "closed_fixed",
+      "escopo": "reproduzir + causa + fix minimo + re-verificar via CLI (sem restart do Desktop)",
+      "causa": "exports nao-funcao + default nu => loader descarta plugin (TypeError silencioso sem --print-logs)",
+      "fix": "gate.js:918 export default { id, server } (1 linha)",
+      "reverificado": "deny picco-tag-absent observado em processo fresco opencode run; suite 103/103"
+    },
+    {
+      "id": "FU-19",
+      "motivo": "reset HITL sistematicamente ausente",
+      "agent": "developer-engineer",
+      "status": "closed"
+    }
+  ],
+  "runtime_facts": {
+    "agents": "hot-reload por chamada (registry le arquivo)",
+    "plugins": "load no boot (exige restart)",
+    "host_atual": "Desktop 1.18.33 PID 1641597 boot 10:08 (SEM o fix)",
+    "deny_provado_em": "CLI fresco pos-fix"
+  },
+  "post_restart2": {
+    "smoke": "7_de_7_VERDE",
+    "passo": 6,
+    "resultado": {
+      "S1": "deny picco-tag-absent",
+      "S2": "deny picco-tag-nonempty",
+      "S3": "allow (com citacao; sem citacao a ancora B nega corretamente + runbook emendado)",
+      "S4": "deny pkill-f",
+      "S5": "deny hitl-pause-required",
+      "S7": "103/103 (V14 pendente declarado)",
+      "S6": "allow pos-fix FU-19 (reset funciona)"
+    }
+  },
+  "lockout": {
+    "ativo": true,
+    "desde": "2026-09-29",
+    "contador_estimado": 5,
+    "mecanismo": "HITL negou 3 tasks seguidas (S5b, S6, S6b, FU-19#2); reset via chat.message quebrado (FU-19); sem reset nao ha como zerar",
+    "saida": "restart #3 (limpa Map em memoria); kill-switch desnecessario",
+    "pos_restart3": "orcamento ESGOTADO (2/2: fix + review); proxima delegacao nega; restart #4 necessario"
+  },
+  "verify": {
+    "dimensoes": {
+      "completude": "pass_19_21_2_declaradas",
+      "corretude": "pass",
+      "coerencia": "pass"
+    },
+    "veredito": "APPROVED"
+  },
+  "commit": "a4c44c2"
+}

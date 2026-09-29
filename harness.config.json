@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "project": "harness",
+  "stack": {
+    "backend": "N/A — this repo has no Java/Maven backend; runtime is Node ESM (opencode plugins)",
+    "frontend": "N/A — this repo has no Vue/Vite frontend; UI validation runs via chrome-devtools MCP against consumers"
+  },
+  "moduleMap": {
+    "plugins": ".opencode/plugins",
+    "rules": ".agents/rules",
+    "schemas": ".agents/schemas"
+  },
+  "commands": {
+    "suiteFull": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs",
+    "unit": "node --test \".opencode/plugins/__tests__/*.spec.mjs\""
+  },
+  "infra": {
+    "composeFile": null,
+    "ports": {
+      "backend": null,
+      "frontend": null
+    }
+  },
+  "mcp": {
+    "required": ["chrome-devtools"]
+  },
+  "protectedPaths": [
+    ".opencode/plugins/**",
+    ".opencode/plugins/__tests__/**",
+    ".agents/rules/**",
+    ".agents/schemas/**",
+    ".agents/agents/**",
+    ".github/workflows/**",
+    ".githooks/**",
+    "opencode.json",
+    "harness.config.json"
+  ],
+  "gates": {
+    "picco": "enforce",
+    "evidence": "enforce",
+    "hitlBatch": "enforce",
+    "e2eGreenfield": "warn"
+  },
+  "riskPaths": [
+    "**/security/**",
+    "**/acl/**",
+    "**/*Permission*",
+    "**/auth/**",
+    "**/i18n/**"
+  ],
+  "escalateOnRisk": {
+    "e2eGreenfield": "enforce",
+    "evidenceScenario": "required"
+  },
+  "contraproveTimeoutMs": 900000,
+  "evidence": {
+    "path": "harness/",
+    "schema": ".agents/schemas/harness-report.schema.json"
+  }
+}

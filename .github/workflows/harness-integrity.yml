@@ -1,0 +1,82 @@
+name: harness-integrity
+
+# ADR-007 (defense-in-depth, passo 0 do rollout §16): qualquer commit que
+# altere path protegido SEM o trailer `Harness-Gate-Change: <aprovador>`
+# falha. `workflow-state.json` esta FORA da protecao (churn por fase).
+# Paths protegidos (canonico = SPEC ADR-007 §5.1 protectedPaths):
+#   .opencode/plugins/**  .agents/rules/**  .agents/schemas/**
+#   .agents/agents/**  .github/workflows/**  .githooks/**
+#   opencode.json  harness.config.json
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Plugin unit tests (TST-02)
+        run: node --test ".opencode/plugins/__tests__/*.spec.mjs"
+      - name: Static checks V2/V3/V6/V7/V12/V14 (TST-02)
+        run: node scripts/static-checks.mjs
+      - name: SDD checks V4/V17/SDD-01-03/RENAME (SDD-02, Batch 7)
+        run: node scripts/sdd-checks.mjs
+
+  integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fail commit touching protected paths without Harness-Gate-Change trailer
+        run: |
+          set -euo pipefail
+          PROTECTED_RE='^(\.opencode/plugins/.*|\.agents/rules/.*|\.agents/schemas/.*|\.agents/agents/.*|\.github/workflows/.*|\.githooks/.*|opencode\.json|harness\.config\.json)$'
+          TRAILER_RE='^Harness-Gate-Change: .+'
+
+          # Push usa `..` (two-dot = commits alcancaveis de $sha mas nao de $before).
+          # `...` (symmetric difference) aqui incluiria commits da base ja auditados
+          # (over-scan) e poderia re-falhar push por commit antigo sem trailer.
+          # PR mantem `...` (base...head = diff da branch, correto para PR).
+          # Branch novo (before=all-zeros): RANGE=sha varre todo o historico
+          # (over-scan documentado — conservador: nenhum commit protegido sem
+          # trailer passa; aceito porque branch novo com historico protegido
+          # sem trailer deve falhar ate regularizar).
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            RANGE="${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}"
+          elif [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            RANGE="${{ github.sha }}"
+          else
+            RANGE="${{ github.event.before }}..${{ github.sha }}"
+          fi
+
+          echo "range: $RANGE"
+          fail=0
+          for sha in $(git rev-list "$RANGE" 2>/dev/null || echo "${{ github.sha }}"); do
+            msg="$(git log -1 --format=%B "$sha")"
+            # -m --first-parent: merge commits sem -m retornam diff vazio
+            # (bypass: esconder mudanca protegida num merge). --first-parent
+            # compara contra o 1o pai (branch principal).
+            files="$(git diff-tree --no-commit-id --name-only -m --first-parent -r "$sha")"
+            hit="$(printf '%s\n' "$files" | grep -E "$PROTECTED_RE" || true)"
+            if [ -n "$hit" ]; then
+              if printf '%s\n' "$msg" | grep -Eq "$TRAILER_RE"; then
+                echo "OK $sha: protected change with trailer."
+              else
+                echo "::error::commit $sha touches protected path(s) without 'Harness-Gate-Change: <aprovador>' trailer:"
+                printf '%s\n' "$hit" | sed 's/^/  /'
+                fail=1
+              fi
+            fi
+          done
+          if [ "$fail" -ne 0 ]; then
+            echo "::error::harness-integrity RED. Re-commit with trailer: git commit --trailer 'Harness-Gate-Change: <aprovador>'"
+            exit 1
+          fi
+          echo "harness-integrity GREEN."
