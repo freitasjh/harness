@@ -30,7 +30,25 @@ node installer/install.mjs --target /caminho/do/destino --dry-run
 
 # 2. Execução real (interativa, confirma por camada):
 node installer/install.mjs --target /caminho/do/destino
+
+# 3. Não-interativo (CI/agente sem tty):
+node installer/install.mjs --target /caminho/do/destino --answers-file respostas.json --yes
 ```
+
+Flags reais: `--target <dir>` (obrigatório), `--dry-run` (zero writes —
+nem backup cria; só imprime plano + relatório), `--answers-file <json>`
+(pula o Q&A; chaves = `project`, `stack`, `suiteCommand`, `pluginsDir`,
+`deployToken` opcional), `--yes`/`-y` (aprova todas as camadas sem
+perguntar), `--backup-dir <dir>`, `--allow-root`, `--help`.
+
+Sem `--answers-file`, o Q&A pergunta no stdin (interativo ou pipado:
+`printf ... | node installer/install.mjs --target X`). Com stdin fechado
+(`< /dev/null`, sem tty e sem pipe) o CLI **aborta com instrução e sem
+escrever nada** — nunca trava esperando tecla.
+
+Antes de aplicar, o CLI imprime o plano (`create`/`merge`/`flag` por path)
+e pede confirmação **por camada** (RF-10); `--yes` aprova tudo de uma vez.
+`--dry-run` dispensa a confirmação (nada será aplicado).
 
 Via API (para agentes):
 
@@ -102,8 +120,7 @@ para manifesto, config ou log (são filtrados na serialização).
 
 `out.checks.passed === true` (ou veredito PASS) significa: JSONs parseiam,
 `harness.config.json` existe, nenhum flag pendente, zero literais de stack
-alheia nos arquivos instalados (`taskflow`, `vuetify`, `primevue`, `lombok`,
-`mapstruct`, `restassured`). FAIL lista o motivo acionável em `failed[]`.
+alheia nos arquivos instalados (lista publicada como `DENYLIST` em `installer/install.mjs`). FAIL lista o motivo acionável em `failed[]`.
 
 ## 8. Dogfood / teste em cópia (nunca no repo real)
 

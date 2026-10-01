@@ -7,6 +7,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import crypto from 'node:crypto';
+import readline from 'node:readline';
+import { Writable } from 'node:stream';
 
 export const VERSION = '1.0.0';
 export const MIN_NODE_VERSION = [20, 0, 0];
@@ -565,15 +567,19 @@ export function requireVerifiedBackup(bk) {
 }
 
 export function main({ target, scriptedAnswers = {}, incomingFiles = {}, options = {} } = {}) {
+  const dryRun = options.dryRun === true;
   const pf = preflight({ target, allowRoot: options.allowRoot === true, nodeVersion: options.nodeVersion });
   const inv = inventory(pf.target);
-  const bk = backup(pf.target, { backupRoot: options.backupRoot, injectFailure: options.injectFailure === true });
+  // I4: dry-run = ZERO writes — nem backup cria. Inventario + respostas +
+  // geracao + plano + relatorio, tudo em memoria.
+  const bk = dryRun
+    ? { backupDir: null, copied: [], verified: true, skipped: true }
+    : backup(pf.target, { backupRoot: options.backupRoot, injectFailure: options.injectFailure === true });
   requireVerifiedBackup(bk);
   const answers = collectAnswers(pf.target, scriptedAnswers);
   const generated = JSON.stringify(generateConfig(answers), null, 2);
   const withGenerated = { ...incomingFiles, 'harness.config.json': generated };
   const plan = planMerge(pf.target, withGenerated);
-  const dryRun = options.dryRun === true;
   const result = applyMerge(pf.target, plan, { incomingFiles: withGenerated, dryRun });
   const written = result.written || [];
   const installed = written
@@ -610,25 +616,269 @@ export function main({ target, scriptedAnswers = {}, incomingFiles = {}, options
   return { target: pf.target, inventory: inv, backup: bk, answers: serializeAnswers(answers), plan, result, manifest, manifestRef, checks, dryRun };
 }
 
-// ---------- CLI minimo ----------
+// ---------- CLI: incoming canonico + Q&A + plano + main ----------
+// Lista canonica dos incoming: o instalador GERA o harness.config.json a
+// partir do Q&A (ADR-002, nunca copia config alheio) e usa como incoming o
+// conteudo versionado destas raizes do repo harness:
+//   - dirs que entram: .agents/agents, .agents/rules, .agents/skills,
+//     .opencode/plugins (+ o arquivo opencode.json, merge aditivo)
+//   - o que exclui: segmentos node_modules e .git em qualquer nivel,
+//     e o manifesto .harness-install.json (estado, nunca conteudo).
+export const INCOMING_ROOTS = [
+  '.agents/agents',
+  '.agents/rules',
+  '.agents/skills',
+  '.opencode/plugins',
+  'opencode.json',
+];
+export const INCOMING_EXCLUDE = new Set(['node_modules', '.git']);
+
+export function collectIncoming(sourceDir) {
+  const src = path.resolve(sourceDir);
+  const incoming = {};
+  const excluded = (rel) =>
+    rel.split(path.sep).some((seg) => INCOMING_EXCLUDE.has(seg))
+    || path.basename(rel) === MANIFEST_NAME;
+  const walk = (abs, rel) => {
+    const st = fs.statSync(abs);
+    if (st.isDirectory()) {
+      for (const e of fs.readdirSync(abs)) walk(path.join(abs, e), rel ? `${rel}/${e}` : e);
+    } else if (st.isFile()) {
+      if (!excluded(rel)) incoming[rel] = fs.readFileSync(abs, 'utf8');
+    }
+  };
+  for (const root of INCOMING_ROOTS) {
+    const abs = path.join(src, root);
+    if (!fs.existsSync(abs)) continue;
+    const st = fs.statSync(abs);
+    if (st.isDirectory()) walk(abs, root);
+    else if (!excluded(root)) incoming[root] = fs.readFileSync(abs, 'utf8');
+  }
+  return incoming;
+}
 
 export function parseArgs(argv) {
-  const out = { target: null, allowRoot: false, dryRun: false };
+  const out = { target: null, allowRoot: false, dryRun: false, answersFile: null, yes: false, backupDir: null, help: false };
   for (let i = 0; i < argv.length; i++) {
-    if (argv[i] === '--target') out.target = argv[++i];
-    else if (argv[i] === '--allow-root') out.allowRoot = true;
-    else if (argv[i] === '--dry-run') out.dryRun = true;
+    const a = argv[i];
+    if (a === '--target') out.target = argv[++i];
+    else if (a === '--allow-root') out.allowRoot = true;
+    else if (a === '--dry-run') out.dryRun = true;
+    else if (a === '--answers-file') out.answersFile = argv[++i];
+    else if (a === '--yes' || a === '-y') out.yes = true;
+    else if (a === '--backup-dir') out.backupDir = argv[++i];
+    else if (a === '--help' || a === '-h') out.help = true;
+  }
+  return out;
+}
+
+export function loadAnswersFile(p) {
+  let raw;
+  try {
+    raw = fs.readFileSync(path.resolve(p), 'utf8');
+  } catch {
+    throw new InstallError(`answers-file ilegivel: ${p}`, 'BAD_ANSWER');
+  }
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('not-object');
+    return parsed;
+  } catch {
+    throw new InstallError(`answers-file invalido (JSON objeto esperado): ${p}`, 'BAD_ANSWER');
+  }
+}
+
+function stdinKindOf(stdin) {
+  if (stdin && stdin.isTTY) return 'tty';
+  try {
+    const st = fs.fstatSync(stdin && typeof stdin.fd === 'number' ? stdin.fd : 0);
+    if (st.isFIFO()) return 'fifo';
+    if (st.isFile()) return 'file';
+    if (st.isCharacterDevice()) return 'char';
+  } catch { /* sem fd acessivel: trata como desconhecido */ }
+  return 'unknown';
+}
+
+// Decide a fonte das respostas sem nunca travar: sem --answers-file e sem
+// stdin utilizavel (tty, pipe ou redirect) => aborta com instrucao.
+export function resolveAnswerSource({ stdinIsTTY = false, stdinKind = 'unknown', answersFile = null } = {}) {
+  if (answersFile) return { mode: 'file' };
+  if (stdinIsTTY) return { mode: 'prompt', piped: false };
+  if (stdinKind === 'fifo' || stdinKind === 'file') return { mode: 'prompt', piped: true };
+  throw new InstallError(
+    'stdin fechado e sem --answers-file: nada a perguntar. Rode interativo ou passe --answers-file <json>. Abortando sem escrever nada.',
+    'NO_STDIN',
+  );
+}
+
+const EOF_ABORT = 'stdin fechado (EOF) antes de concluir o Q&A: passe --answers-file <json>. Abortando sem escrever nada.';
+
+// Leitor de linhas sem corrida com EOF: enfileira 'line' e resolve
+// pendencias no 'close' (undefined = EOF). Serve tty, pipe e redirect.
+function createLineReader({ input, output }) {
+  const nullOut = new Writable({ write(_c, _e, cb) { cb(); } });
+  const rl = readline.createInterface({ input, output: output || nullOut, terminal: false });
+  const queue = [];
+  const waiters = [];
+  rl.on('line', (l) => {
+    if (waiters.length > 0) waiters.shift()(l);
+    else queue.push(l);
+  });
+  rl.on('close', () => {
+    while (waiters.length > 0) waiters.shift()(undefined);
+  });
+  return {
+    next() {
+      if (queue.length > 0) return Promise.resolve(queue.shift());
+      if (!input || input.readableEnded || input.destroyed) return Promise.resolve(undefined);
+      return new Promise((res) => waiters.push(res));
+    },
+    say(s) {
+      try {
+        if (output && typeof output.write === 'function') output.write(`${s}\n`);
+      } catch { /* output opcional: nunca quebra o prompt */ }
+    },
+    close() { try { rl.close(); } catch { /* ja fechado */ } },
+  };
+}
+
+export function promptAnswers(target, { input, output } = {}) {
+  const r = createLineReader({ input, output });
+  const askOne = async (q) => {
+    r.say(`${q.prompt} `);
+    const line = await r.next();
+    if (line === undefined) throw new InstallError(EOF_ABORT, 'NO_STDIN');
+    return line;
+  };
+  return (async () => {
+    const answers = {};
+    for (const q of QUESTIONS) {
+      for (;;) {
+        const raw = await askOne(q);
+        const value = raw === '' && q.secret ? '' : raw;
+        try {
+          if (q.secret && value === '') { answers[q.key] = ''; break; }
+          answers[q.key] = validateAnswer(target, q.key, value);
+          break;
+        } catch (e) {
+          r.say(`resposta invalida para '${q.key}': ${sanitizeLog(e.message, { [q.key]: raw })} — tente de novo.`);
+        }
+      }
+    }
+    r.close();
+    return answers;
+  })().catch((e) => {
+    r.close();
+    throw e;
+  });
+}
+
+export function printPlan(plan, { output = process.stdout } = {}) {
+  const write = (s) => output.write(`${s}\n`);
+  const counts = {};
+  for (const p of plan) counts[p.action] = (counts[p.action] || 0) + 1;
+  write('plano de instalacao:');
+  for (const p of plan) {
+    const extra = p.reason ? ` — ${p.reason}` : '';
+    write(`  ${p.action}  ${p.path}${extra}`);
+  }
+  const summary = Object.entries(counts).map(([a, n]) => `${a}=${n}`).join(' ');
+  write(`resumo: ${plan.length} itens (${summary || 'vazio'})`);
+  write('classes: create (novo), merge (aditivo), flag (humano resolve)');
+  return { counts, total: plan.length };
+}
+
+export function confirmByLayer(plan, { input, output, yes = false } = {}) {
+  const layers = [...new Set(plan.filter((p) => p.action !== 'noop').map((p) => p.layer))];
+  if (layers.length === 0) return { approved: [], denied: [] };
+  if (yes) return { approved: layers, denied: [] };
+  const r = createLineReader({ input, output });
+  const denyMsg = (layer) => `stdin fechado na confirmacao da camada '${layer}': passe --yes ou rode interativo. Abortando sem escrever nada.`;
+  return (async () => {
+    const approved = [];
+    const denied = [];
+    for (const layer of layers) {
+      const n = plan.filter((p) => p.layer === layer && p.action !== 'noop').length;
+      r.say(`Aplicar camada '${layer}' (${n} acoes)? [s/N] `);
+      const raw = await r.next();
+      if (raw === undefined) throw new InstallError(denyMsg(layer), 'NO_STDIN');
+      if (/^(s|sim|y|yes)$/i.test(String(raw).trim())) approved.push(layer);
+      else denied.push(layer);
+    }
+    r.close();
+    if (denied.length > 0) {
+      throw new InstallError(`camadas recusadas (${denied.join(', ')}): abortando sem escrever nada.`, 'USER_ABORT');
+    }
+    return { approved, denied };
+  })().catch((e) => {
+    r.close();
+    throw e;
+  });
+}
+
+export function printUsage({ output = process.stdout } = {}) {
+  output.write(`uso: node installer/install.mjs --target <dir> [--dry-run] [--answers-file <json>] [--yes] [--backup-dir <dir>] [--allow-root]\n`);
+  output.write(`  sem --answers-file exige stdin interativo ou pipado; stdin fechado aborta sem escrever.\n`);
+  output.write(`  --dry-run: zero writes (nem backup cria); imprime plano + relatorio.\n`);
+}
+
+const INSTALLER_ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+
+export async function runCli({ argv = [], stdin = process.stdin, stdout = process.stdout, stderr = process.stderr, sourceDir = INSTALLER_ROOT } = {}) {
+  const args = parseArgs(argv);
+  if (args.help || !args.target) {
+    printUsage({ output: stdout });
+    if (!args.target) throw new InstallError('missing --target', 'BAD_TARGET');
+    return { help: true };
+  }
+  const err = (s) => stderr.write(`${s}\n`);
+  const log = (s) => stdout.write(`${sanitizeLog(s)}\n`);
+  const pf = preflight({ target: args.target, allowRoot: args.allowRoot });
+  let scripted;
+  if (args.answersFile) {
+    scripted = collectAnswers(pf.target, loadAnswersFile(args.answersFile));
+  } else {
+    const kind = stdinKindOf(stdin);
+    const src = resolveAnswerSource({ stdinIsTTY: Boolean(stdin && stdin.isTTY), stdinKind: kind, answersFile: null });
+    if (src.mode !== 'prompt') throw new InstallError('fonte de respostas indisponivel', 'NO_STDIN');
+    scripted = await promptAnswers(pf.target, { input: stdin, output: stdout });
+  }
+  const incomingFiles = collectIncoming(sourceDir);
+  const generated = JSON.stringify(generateConfig(scripted), null, 2);
+  const preview = planMerge(pf.target, { ...incomingFiles, 'harness.config.json': generated });
+  printPlan(preview, { output: stdout });
+  if (!args.dryRun) {
+    await confirmByLayer(preview, { input: stdin, output: stdout, yes: args.yes });
+  } else {
+    log('dry-run: confirmacao por camada dispensada (nada sera aplicado).');
+  }
+  const out = main({
+    target: pf.target,
+    scriptedAnswers: scripted,
+    incomingFiles,
+    options: { allowRoot: args.allowRoot, dryRun: args.dryRun, backupRoot: args.backupDir || undefined },
+  });
+  if (args.dryRun) {
+    log(`dry-run ok: ${out.plan.length} itens no plano, zero writes.`);
+  } else {
+    log(`instalado em ${out.target}: ${out.manifestRef.path || 'sem manifesto?'}`);
+    log(`checks: ${out.checks.passed ? 'PASS' : `FAIL ${JSON.stringify(out.checks.failed)}`}`);
   }
   return out;
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const args = parseArgs(process.argv.slice(2));
-  try {
-    const pf = preflight({ target: args.target || process.cwd(), allowRoot: args.allowRoot });
-    console.log(JSON.stringify({ ok: true, target: pf.target, dryRun: args.dryRun }));
-  } catch (e) {
-    console.error(`abort: ${e.message}`);
-    process.exit(1);
+  const a = parseArgs(process.argv.slice(2));
+  if (!a.target && (a.help || process.argv.length <= 2)) {
+    printUsage({});
+    process.exit(a.help ? 0 : 1);
   }
+  runCli({ argv: process.argv.slice(2) }).then(
+    () => process.exit(0),
+    (e) => {
+      const safe = e && e.code === 'NO_STDIN' ? String(e.message) : `abort: ${e && e.message ? e.message : e}`;
+      process.stderr.write(`${safe}\n`);
+      process.exit(1);
+    },
+  );
 }

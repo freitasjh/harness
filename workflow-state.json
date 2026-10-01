@@ -1,17 +1,13 @@
 {
-  "current_feature": "harness-installer",
-  "current_phase": "Completed",
-  "previous_phase": "Testing",
+  "current_feature": "bugfix-installer-cli",
+  "current_phase": "BugCompleted",
+  "previous_phase": "BugFix",
   "next_phase": null,
-  "type": "feature",
+  "type": "bugfix",
   "layer": "governanca-de-agentes",
   "repo": "harness",
   "artifacts": {
-    "proposal": ".spec/archive/20260929-harness-installer/PROPOSAL.md",
-    "spec": ".spec/archive/20260929-harness-installer/SPEC.md",
-    "plan": ".spec/archive/20260929-harness-installer/PLAN.md",
-    "tasks": ".spec/archive/20260929-harness-installer/TASKS.md",
-    "verify": ".spec/archive/20260929-harness-installer/VERIFY.md"
+    "tasks": ".spec/bugs/installer-cli-nao-executa/TASKS.md"
   },
   "scope": {
     "interpretation": "A-simples-evoluir",
@@ -43,7 +39,8 @@
     "P3_P4": "approved_auto_evidence",
     "P4_P5": "pending_user_approval",
     "P5_P6": "approved_user_2026_09_29",
-    "P6_fim": "approved_done_commit_push_2812cd8"
+    "P6_fim": "approved_done_commit_push_2812cd8",
+    "B1_B2": "approved_user_2026_09_29"
   },
   "code_review": {
     "last_invoked_at": "2026-09-29T00:00:00Z",
@@ -51,7 +48,7 @@
     "critical_issues": 0,
     "attention_issues": 0,
     "suggestions": 2,
-    "reviewer_notes": "Installer Batch 2: APROVADO. 51/51 re-executados. Dogfood com vinculo real. Segredo sem hits."
+    "reviewer_notes": "Bugfix CLI: APROVADO. Entry-point revisado por diff semantico; stdin/dry-run/segredo/escopo verificados."
   },
   "overrides": [],
   "overrides_history": [
@@ -78,7 +75,7 @@
   },
   "harness_status": "passed (smoke 7/7 pos-restart-4 + suite 104/104)",
   "code_review_status": "pending",
-  "sdd_stage": "CLOSED: harness-installer entregue, commitado e pushado",
+  "sdd_stage": "Bugfix CLOSED + commitado (push pendente)",
   "backlog": {
     "total": 7,
     "todo": 0,
@@ -260,6 +257,30 @@
       "origem": "reviewer installer Batch 2",
       "texto": "Drift CLI x SKILL (--dry-run nao imprime plano no CLI) - debito P3",
       "bloqueia": false
+    },
+    {
+      "id": "FU-25",
+      "origem": "instalacao ECM",
+      "texto": "QUESTIONS sem composeFile/ports (completado a mao; estender instalador)",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-26",
+      "origem": "instalacao ECM",
+      "texto": "Denylist substring gera falso-positivo em proibicao/mencao (usar match contextual)",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-27",
+      "origem": "reviewer bugfix CLI",
+      "texto": "Secret sem mask no tty (ler sem eco ou recomendar --answers-file)",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-28",
+      "origem": "reviewer bugfix CLI",
+      "texto": "main() dry-run retorna checks vazio; nao interpretar como PASS",
+      "bloqueia": false
     }
   ],
   "batches": {
@@ -394,7 +415,7 @@
     "veredito": "APPROVED",
     "aceite": "4/4 com cli-smoke"
   },
-  "commit": "2812cd8 (pushado)",
+  "commit": "ad0eadb (local; push pendente)",
   "remote": "git@github.com:freitasjh/harness.git (SSH; push + CI pendentes)",
   "ci_evidence": {
     "main": "GREEN confirmado na UI",
@@ -410,5 +431,14 @@
     "verdict": "partial",
     "criticos": 0,
     "medio": 1
+  },
+  "ecm_install": {
+    "fase": "aplicado_completo",
+    "backup": "verificado",
+    "replaces": 10,
+    "opencode_merge_rename": true,
+    "d1_adaptacoes": 12,
+    "scan_final": "so proibicoes compativeis (evidencia stack real)",
+    "proximo": "suite + restart com projeto ECM + smoke (acao do usuario)"
   }
 }
