@@ -10,7 +10,7 @@
 // pre-existing plugins are reported as INFO for history, never as green.
 // V12 is INFO until the rules diet lands (owner DOC-02, Batch 5/6).
 // V14 FAILs honestly while no git remote exists (REMOTE_URL_PENDING).
-import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync, statSync, lstatSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
@@ -73,6 +73,50 @@ function countMatches(files, pattern) {
   return hits;
 }
 
+// --- V15: rede proibida em installer/ (I8) ---------------------------------
+// install.mjs e o caminho de instalacao: rede-zero. fetch/node:http(s)
+// so podem existir source-side (scripts/vendor-skills.mjs), nunca aqui.
+const NETWORK_PATTERNS = [
+  { pattern: "fetch", re: /\bfetch\s*\(/ },
+  { pattern: "node:http", re: /node:http\b/ },
+  { pattern: "node:https", re: /node:https\b/ },
+];
+
+function networkFiles(root) {
+  const files = [];
+  if (!existsSync(root)) return files;
+  const walk = (dir) => {
+    if (dir.includes("__tests__") || dir.includes("node_modules")) return;
+    for (const entry of readdirSync(dir)) {
+      const p = join(dir, entry);
+      const st = lstatSync(p);
+      if (st.isSymbolicLink()) continue;
+      if (st.isDirectory()) walk(p);
+      else if (/\.(mjs|js|cjs)$/.test(entry)) files.push(p);
+    }
+  };
+  walk(root);
+  return files;
+}
+
+export function scanNetworkRefs(root) {
+  const hits = [];
+  for (const f of networkFiles(root)) {
+    const lines = readFileSync(f, "utf8").split("\n");
+    lines.forEach((line, i) => {
+      for (const { pattern, re } of NETWORK_PATTERNS) {
+        if (re.test(line)) hits.push({ file: f, line: i + 1, pattern });
+      }
+    });
+  }
+  return hits;
+}
+
+export function networkCheck(root) {
+  const hits = scanNetworkRefs(root);
+  return { ok: hits.length === 0, hits };
+}
+
 // --- Checks ----------------------------------------------------------------
 const results = [];
 function record(id, status, detail) {
@@ -104,6 +148,14 @@ function checkV2V3V7() {
   record("V3", hard.length === 0 ? "PASS" : "FAIL", `hardcoded-project-literals=${hard.length}` + (hard.length ? ` at ${hard.join(", ")}` : ""));
   const scalar = countMatches(files, /output\.system\s*=\s*[^=]/);
   record("V7", scalar.length === 0 ? "PASS" : "FAIL", `scalar-output-system=${scalar.length}` + (scalar.length ? ` at ${scalar.join(", ")}` : ""));
+}
+
+function checkV15() {
+  const root = join(REPO_ROOT, "installer");
+  const { ok, hits } = networkCheck(root);
+  const detail = `rede em installer/=${hits.length}`
+    + (hits.length ? ` at ${hits.map((h) => `${h.file.replace(REPO_ROOT + "/", "")}:${h.line}(${h.pattern})`).join(", ")}` : "");
+  record("V15", ok ? "PASS" : "FAIL", detail);
 }
 
 function checkV12() {
@@ -175,6 +227,7 @@ function reportLegacyBaseline() {
 export function runStaticChecks() {
   checkV6();
   checkV2V3V7();
+  checkV15();
   checkV12();
   checkV14();
   reportLegacyBaseline();
