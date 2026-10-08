@@ -867,6 +867,12 @@ export const HarnessGate = async (input = {}) => {
       // from INSIDE decide() (FU-05), never as a raw throw here.
       statePath: toolInput?.statePath,
       configPath: toolInput?.configPath,
+      // Kill-switch boundary (ADR-009). The ambient HARNESS_GATES=off belongs
+      // to the host process and is honored when the plugin loads its own file
+      // config. An explicitly injected config marks a hermetic evaluation
+      // (test/consumer seam): the caller owns the environment, so the ambient
+      // kill-switch must not silently short-circuit a gate before it runs.
+      env: toolInput?.env ?? (toolInput?.config ? {} : process.env),
     };
     let config = toolInput?.config ?? null;
     if (!config) {
@@ -895,7 +901,7 @@ export const HarnessGate = async (input = {}) => {
     for (const gateFn of CORE_GATES) {
       // FU-06: mode per gate, not one global constant. A gate without a
       // gates.* key (hygiene) or without config resolves to DEFAULT_MODE.
-      await decide({ gateFn, mode: config ? modeForGate(gateFn, config) : DEFAULT_MODE, ctx, logger });
+      await decide({ gateFn, mode: config ? modeForGate(gateFn, config) : DEFAULT_MODE, ctx, env: base.env, logger });
     }
   };
   return {

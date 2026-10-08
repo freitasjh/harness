@@ -1,6 +1,20 @@
 {
   "version": "1",
   "generatedBy": "scripts/vendor-skills.mjs",
+  "licenses": [
+    {
+      "source": "dart-lang/skills",
+      "spdx": "BSD-3-Clause",
+      "file": "LICENSE-dart-lang-skills",
+      "sha256": "835b0ffef5681b070c8d9c6c7d67cdd018441a7ae65b1ebd772dbdd2bd40f097"
+    },
+    {
+      "source": "flutter/skills",
+      "spdx": "BSD-3-Clause",
+      "file": "LICENSE-flutter-skills",
+      "sha256": "5b95696b504e162bcf775060ec416005df9969a95cda6f7d4ddb57327dd74d35"
+    }
+  ],
   "skills": {
     "dart-add-unit-test": {
       "source": "dart-lang/skills",
@@ -13,7 +27,7 @@
         "dart"
       ],
       "license": "BSD-3-Clause",
-      "licenseFile": "LICENSE"
+      "licenseFile": "LICENSE-dart-lang-skills"
     },
     "dart-build-cli-app": {
       "source": "dart-lang/skills",
@@ -26,7 +40,7 @@
         "dart"
       ],
       "license": "BSD-3-Clause",
-      "licenseFile": "LICENSE"
+      "licenseFile": "LICENSE-dart-lang-skills"
     },
     "dart-collect-coverage": {
       "source": "dart-lang/skills",
@@ -39,7 +53,7 @@
         "dart"
       ],
       "license": "BSD-3-Clause",
-      "licenseFile": "LICENSE"
+      "licenseFile": "LICENSE-dart-lang-skills"
     },
     "dart-fix-runtime-errors": {
       "source": "dart-lang/skills",
@@ -52,7 +66,7 @@
         "dart"
       ],
       "license": "BSD-3-Clause",
-      "licenseFile": "LICENSE"
+      "licenseFile": "LICENSE-dart-lang-skills"
     },
     "dart-generate-test-mocks": {
       "source": "dart-lang/skills",
@@ -65,7 +79,7 @@
         "dart"
       ],
       "license": "BSD-3-Clause",
-      "licenseFile": "LICENSE"
+      "licenseFile": "LICENSE-dart-lang-skills"
     },
     "dart-migrate-to-checks-package": {
       "source": "dart-lang/skills",
@@ -78,7 +92,7 @@
         "dart"
       ],
       "license": "BSD-3-Clause",
-      "licenseFile": "LICENSE"
+      "licenseFile": "LICENSE-dart-lang-skills"
     },
     "dart-resolve-package-conflicts": {
       "source": "dart-lang/skills",
@@ -91,7 +105,7 @@
         "dart"
       ],
       "license": "BSD-3-Clause",
-      "licenseFile": "LICENSE"
+      "licenseFile": "LICENSE-dart-lang-skills"
     },
     "dart-run-static-analysis": {
       "source": "dart-lang/skills",
@@ -104,7 +118,7 @@
         "dart"
       ],
       "license": "BSD-3-Clause",
-      "licenseFile": "LICENSE"
+      "licenseFile": "LICENSE-dart-lang-skills"
     },
     "dart-setup-ffi-assets": {
       "source": "dart-lang/skills",
@@ -117,7 +131,7 @@
         "dart"
       ],
       "license": "BSD-3-Clause",
-      "licenseFile": "LICENSE"
+      "licenseFile": "LICENSE-dart-lang-skills"
     },
     "dart-use-ffigen": {
       "source": "dart-lang/skills",
@@ -130,7 +144,7 @@
         "dart"
       ],
       "license": "BSD-3-Clause",
-      "licenseFile": "LICENSE"
+      "licenseFile": "LICENSE-dart-lang-skills"
     },
     "dart-use-pattern-matching": {
       "source": "dart-lang/skills",
@@ -143,7 +157,7 @@
         "dart"
       ],
       "license": "BSD-3-Clause",
-      "licenseFile": "LICENSE"
+      "licenseFile": "LICENSE-dart-lang-skills"
     },
     "dart-use-primary-constructors": {
       "source": "dart-lang/skills",
@@ -156,7 +170,7 @@
         "dart"
       ],
       "license": "BSD-3-Clause",
-      "licenseFile": "LICENSE"
+      "licenseFile": "LICENSE-dart-lang-skills"
     },
     "flutter-add-integration-test": {
       "source": "flutter/skills",
@@ -169,7 +183,7 @@
         "flutter"
       ],
       "license": "BSD-3-Clause",
-      "licenseFile": "LICENSE"
+      "licenseFile": "LICENSE-flutter-skills"
     },
     "flutter-add-widget-preview": {
       "source": "flutter/skills",
@@ -182,7 +196,7 @@
         "flutter"
       ],
       "license": "BSD-3-Clause",
-      "licenseFile": "LICENSE"
+      "licenseFile": "LICENSE-flutter-skills"
     },
     "flutter-add-widget-test": {
       "source": "flutter/skills",
@@ -195,7 +209,7 @@
         "flutter"
       ],
       "license": "BSD-3-Clause",
-      "licenseFile": "LICENSE"
+      "licenseFile": "LICENSE-flutter-skills"
     },
     "flutter-apply-architecture-best-practices": {
       "source": "flutter/skills",
@@ -208,7 +222,7 @@
         "flutter"
       ],
       "license": "BSD-3-Clause",
-      "licenseFile": "LICENSE"
+      "licenseFile": "LICENSE-flutter-skills"
     },
     "flutter-build-responsive-layout": {
       "source": "flutter/skills",
@@ -221,7 +235,7 @@
         "flutter"
       ],
       "license": "BSD-3-Clause",
-      "licenseFile": "LICENSE"
+      "licenseFile": "LICENSE-flutter-skills"
     },
     "flutter-fix-layout-issues": {
       "source": "flutter/skills",
@@ -234,7 +248,7 @@
         "flutter"
       ],
       "license": "BSD-3-Clause",
-      "licenseFile": "LICENSE"
+      "licenseFile": "LICENSE-flutter-skills"
     },
     "flutter-implement-json-serialization": {
       "source": "flutter/skills",
@@ -247,7 +261,7 @@
         "flutter"
       ],
       "license": "BSD-3-Clause",
-      "licenseFile": "LICENSE"
+      "licenseFile": "LICENSE-flutter-skills"
     },
     "flutter-setup-declarative-routing": {
       "source": "flutter/skills",
@@ -260,7 +274,7 @@
         "flutter"
       ],
       "license": "BSD-3-Clause",
-      "licenseFile": "LICENSE"
+      "licenseFile": "LICENSE-flutter-skills"
     },
     "flutter-setup-localization": {
       "source": "flutter/skills",
@@ -273,7 +287,7 @@
         "flutter"
       ],
       "license": "BSD-3-Clause",
-      "licenseFile": "LICENSE"
+      "licenseFile": "LICENSE-flutter-skills"
     },
     "flutter-use-http-package": {
       "source": "flutter/skills",
@@ -286,7 +300,7 @@
         "flutter"
       ],
       "license": "BSD-3-Clause",
-      "licenseFile": "LICENSE"
+      "licenseFile": "LICENSE-flutter-skills"
     }
   }
 }

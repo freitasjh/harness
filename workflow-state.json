@@ -1,54 +1,53 @@
 {
-  "current_feature": "bugfix-installer-cli",
-  "current_phase": "BugCompleted",
-  "previous_phase": "BugFix",
+  "current_feature": "harness-installer-mobile",
+  "current_phase": "Completed",
+  "previous_phase": "Testing",
   "next_phase": null,
-  "type": "bugfix",
+  "type": "feature",
   "layer": "governanca-de-agentes",
   "repo": "harness",
   "artifacts": {
-    "tasks": ".spec/bugs/installer-cli-nao-executa/TASKS.md"
+    "archive": ".spec/archive/20261008-harness-installer-mobile/"
   },
   "scope": {
-    "interpretation": "A-simples-evoluir",
+    "interpretation": "feature-mobile-profile + wizard-interativo",
     "entra": [
-      "copiador .opencode/.agents/templates",
-      "Q&A gera harness.config.json",
-      "backup+merge por camada",
-      "manifesto .harness-install.json",
-      "checks pos-instalacao + anti-Hive",
-      "dogfood em atlas-ecm"
+      "perfil flutter/dart no Q&A + generateConfig (marionette+dart mcp, flutter test, moduleMap)",
+      "A1: vendorizar 22 skills dart-*/flutter-* em .agents/skills do harness",
+      "B2: wizard TUI zero-dep (menus, auto-detect pubspec.yaml, revisao por passo, resumo)",
+      "C: instalar harness em projetos de apps mobile (Flutter)"
     ],
     "nao_entra": [
-      "deteccao automatica de stack",
-      "adaptacao de atlas-ecm/hive nesta fase",
-      "upgrade/desinstalacao (futuro, via manifesto)"
+      "rodar o instalador de dentro do celular (Termux)",
+      "deteccao automatica de stack fora de flutter/dart",
+      "upgrade/desinstalacao (porta via manifesto)"
     ],
     "aceite": [
-      "roda limpo no atlas-ecm",
-      "suite verde no destino",
-      "restart+smoke (deny/allow)",
-      "zero literais estranhos"
+      "wizard instala em projeto Flutter real e imprime resumo",
+      "generateConfig mobile correto (mcp marionette+dart, suite flutter test)",
+      "suite do repo harness verde",
+      "dogfood em copia de projeto Flutter em /tmp"
     ],
     "rigor": "E1/E2 bloqueiam"
   },
   "gates": {
-    "P0_P1": "approved_user_2026_09_29",
+    "P0_P1": "approved_user_2026_10_07 (A1/B2/C)",
     "P1_P2": "pending_user_approval",
-    "P2_P3": "approved_user_2026_09_29",
-    "P3_P4": "approved_auto_evidence",
+    "P2_P3": "approved_user_2026_10_07",
+    "P3_P4": "approved_auto_evidence_batches1-4",
     "P4_P5": "pending_user_approval",
-    "P5_P6": "approved_user_2026_09_29",
-    "P6_fim": "approved_done_commit_push_2812cd8",
-    "B1_B2": "approved_user_2026_09_29"
+    "P5_P6": "approved_user_2026_10_08",
+    "P6_fim": "pending_user_approval",
+    "B1_B2": "approved_user_2026_09_29",
+    "FU32": "closed_approved_decision_B"
   },
   "code_review": {
-    "last_invoked_at": "2026-09-29T00:00:00Z",
+    "last_invoked_at": "2026-10-08T11:16:39.461Z",
     "last_status": "passed",
     "critical_issues": 0,
-    "attention_issues": 0,
-    "suggestions": 2,
-    "reviewer_notes": "Bugfix CLI: APROVADO. Entry-point revisado por diff semantico; stdin/dry-run/segredo/escopo verificados."
+    "attention_issues": 3,
+    "suggestions": 4,
+    "reviewer_notes": "Batch4 APPROVED. Doc fiel ao codigo; dogfood isola (sem write na origem, alvo /tmp); evidencia H3 valida. 🟡 hardening dogfood -> FU-34..37."
   },
   "overrides": [],
   "overrides_history": [
@@ -59,51 +58,85 @@
       "data": "2026-09-27T00:00:00Z"
     }
   ],
-  "features": [],
-  "last_update": "2026-09-29T00:00:00Z",
-  "spec_score": 0.92,
-  "spec_status": "corrected_v4_pending_revalidation",
+  "features": [
+    {
+      "name": "harness-installer-mobile",
+      "stage": "Completed",
+      "progress": 100,
+      "type": "feature",
+      "forks": {
+        "skills_source": "A1-vendor",
+        "interactivity": "B2-wizard",
+        "target": "C-flutter-project"
+      },
+      "artifacts": {
+        "proposal": ".spec/governance/harness-installer-mobile/PROPOSAL.md",
+        "spec": ".spec/governance/harness-installer-mobile/SPEC.md",
+        "review": ".spec/governance/harness-installer-mobile/REVIEW.md",
+        "security": ".spec/governance/harness-installer-mobile/SECURITY.md",
+        "plan": ".spec/governance/harness-installer-mobile/PLAN.md",
+        "tasks": ".spec/governance/harness-installer-mobile/TASKS.md",
+        "board": ".spec/governance/harness-installer-mobile/JIRA_BOARD.md"
+      },
+      "depends_on": [
+        "harness-installer"
+      ],
+      "created": "2026-10-07T19:57:29.951Z"
+    }
+  ],
+  "last_update": "2026-10-08T11:27:07.471Z",
+  "spec_score": 0.94,
+  "spec_status": "v1_reviewed_aprovado_com_ajustes",
   "validation": {
-    "architect": "aprovar_com_ajustes (R1-R4+Y1 aplicados)"
+    "architect": "aprovar_com_ajustes (A1-A5 incorporados)",
+    "ux-designer": "spec wizard entregue (vinculante)"
   },
-  "pending_user_decisions": [],
+  "pending_user_decisions": [
+    "P-02 politica de licenca do vendor (bloquear|so-com-licenca|atribuir)"
+  ],
   "spec_version": 4,
   "decisions_applied_v3": {
     "U4": "a - git init + remote + CI",
     "U5": "c - dois ancoras",
     "U6": "b - selo de hash"
   },
-  "harness_status": "passed (smoke 7/7 pos-restart-4 + suite 104/104)",
-  "code_review_status": "pending",
-  "sdd_stage": "Bugfix CLOSED + commitado (push pendente)",
+  "harness_status": "passed (dogfood mobile /tmp + suite 104/104 + installer 162/162)",
+  "code_review_status": "passed",
+  "sdd_stage": "Fase 6 — ARCHIVED. Deltas mesclados (harness-config.md). Aguardando commit (P6_fim).",
   "backlog": {
-    "total": 7,
+    "total": 14,
     "todo": 0,
     "doing": 0,
-    "done": 7,
+    "done": 14,
     "ids": [
-      "IN-01",
-      "IN-02",
-      "IN-03",
-      "IN-04",
-      "IN-05",
-      "IN-06",
-      "IN-07"
+      "IM-BE-01",
+      "IM-BE-02",
+      "IM-BE-03",
+      "IM-BE-04",
+      "IM-VAL-01",
+      "IM-BE-05",
+      "IM-BE-06",
+      "IM-VAL-02",
+      "IM-VAL-03",
+      "IM-VAL-04",
+      "IM-BE-07",
+      "IM-VAL-05",
+      "IM-DOC-01",
+      "IM-VAL-06"
     ]
   },
-  "next_task": "IN-01",
+  "next_task": "IM-DOC-01",
   "plan_score": 0.93,
-  "tasks_score": 0.95,
+  "tasks_score": 0.94,
   "active_batch": {
-    "id": 2,
-    "of": 2,
-    "tasks": [
-      "IN-05",
-      "IN-06",
-      "IN-07"
-    ],
+    "id": 4,
+    "of": 4,
     "agent": "developer-engineer",
-    "code_review": "APROVADO (0 criticos, 2 notas nao-bloqueantes)",
+    "tasks": [
+      "IM-DOC-01",
+      "IM-VAL-06"
+    ],
+    "code_review": "APPROVED (0 criticos)",
     "status": "done"
   },
   "active_task": "IN-05",
@@ -281,6 +314,69 @@
       "origem": "reviewer bugfix CLI",
       "texto": "main() dry-run retorna checks vazio; nao interpretar como PASS",
       "bloqueia": false
+    },
+    {
+      "id": "FU-29",
+      "origem": "reviewer Batch2",
+      "texto": "Wire vendor --check + installer tests no CI/suiteFull (paths protegidos)",
+      "bloqueia": false,
+      "dono": "tech-debt ci-wiring-vendor-check"
+    },
+    {
+      "id": "FU-30",
+      "origem": "reviewer Batch2",
+      "texto": "De-dup log lock-vs-source mismatch (cosmetico)",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-31",
+      "origem": "reviewer Batch2",
+      "texto": "Ampliar V15 (https/http sem node:, child_process, WebSocket, axios/undici) ou reclassificar I8 parcial",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-32",
+      "origem": "developer Batch3",
+      "texto": "Checks pos-install do harness dao FAIL literal-denied: rules/skills citam taskflow/vuetify/primevue/lombok/mapstruct/restassured como baseline. Instalar harness em destino limpo => checks FAIL. Escalar FU-26 (denylist substring => match contextual).",
+      "bloqueia": true,
+      "status": "open",
+      "dono": "pre-Batch4-dogfood"
+    },
+    {
+      "id": "FU-33",
+      "origem": "reviewer FU-32 redesign",
+      "texto": "cleanups nao-bloqueantes: (1) remover SCAN_BASENAMES redundante; (2) justificar/estreitar exclusao scripts//__tests__; (3) documentar/fechar buracos allowlist (html/css/sh/Dockerfile); (4) alinhar doc (.csv/noext fora do scan).",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-34",
+      "origem": "reviewer Batch4",
+      "texto": "dogfood-mobile: sourceUntouched fraco (porcelain); usar digest de conteudo (git diff HEAD | sha256)",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-35",
+      "origem": "reviewer Batch4",
+      "texto": "dogfood-mobile: try/finally para limpar /tmp copy em falha",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-36",
+      "origem": "reviewer Batch4",
+      "texto": "dogfood-mobile: assertir reinstall abort code === REINSTALL",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-37",
+      "origem": "reviewer Batch4",
+      "texto": "docs.spec: cobrir ramo dart (dart test, mcp [dart])",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-38",
+      "origem": "dev Batch4",
+      "texto": "SDD-02 FAIL pre-existente em scripts/sdd-checks.mjs (fora do suiteFull; procura .spec/governance/harness-v7). Owner Batch 7/DOC-02.",
+      "bloqueia": false
     }
   ],
   "batches": {
@@ -299,8 +395,8 @@
   ],
   "reviewer_agent": "code-reviewer (arquivos renomeados; runtime ainda registra fullstack-code-reviewer ate o restart — usar nome antigo nas delegacoes)",
   "restart_required": {
-    "motivo": "plugins + opencode.json so carregam no boot",
-    "efeito": "ativa gate.js enforce + code-reviewer + CI wiring",
+    "motivo": "plugins+config mudam apenas no boot",
+    "efeito": "n/a",
     "rollback": "HARNESS_GATES=off"
   },
   "handoff": {
@@ -377,6 +473,24 @@
       "motivo": "reset HITL sistematicamente ausente",
       "agent": "developer-engineer",
       "status": "closed"
+    },
+    {
+      "id": "P1-state-corrupt",
+      "motivo": "Suite 104/103/1 pre-existente; masker=HARNESS_GATES=off no host",
+      "agent": "developer-engineer",
+      "status": "fixed_reviewed",
+      "causa": "env hermenêutico do teste herdava kill-switch",
+      "fix": "gate.js base.env hermetico p/ config injetada",
+      "evidencia": "104/104 host off e limpo"
+    },
+    {
+      "id": "FU-32",
+      "motivo": "canario R3 falso-positivo (prosa do proprio harness) e regressao contextual",
+      "agent": "developer-engineer",
+      "status": "closed_reviewed",
+      "causa": "denylist por substring reprovava proibicoes em .md",
+      "fix": "redesenho por escopo: substring amplo so em code/config; skip .md/.txt/.csv",
+      "evidencia": "incoming real 132->16 scannable->0 hits PASS; plugins 104/104; installer 150/150"
     }
   ],
   "runtime_facts": {
@@ -408,12 +522,12 @@
   },
   "verify": {
     "dimensoes": {
-      "completude": "pass_7_7",
+      "completude": "pass",
       "corretude": "pass",
       "coerencia": "pass"
     },
     "veredito": "APPROVED",
-    "aceite": "4/4 com cli-smoke"
+    "traceability": "100%"
   },
   "commit": "ad0eadb (local; push pendente)",
   "remote": "git@github.com:freitasjh/harness.git (SSH; push + CI pendentes)",
@@ -430,7 +544,12 @@
   "security_fase1": {
     "verdict": "partial",
     "criticos": 0,
-    "medio": 1
+    "altos": 2,
+    "medios": 1,
+    "gaps": [
+      "S1 supply-chain revisao de conteudo vendor",
+      "S2 licenca ausente skills-lock"
+    ]
   },
   "ecm_install": {
     "fase": "aplicado_completo",
@@ -440,5 +559,64 @@
     "d1_adaptacoes": 12,
     "scan_final": "so proibicoes compativeis (evidencia stack real)",
     "proximo": "suite + restart com projeto ECM + smoke (acao do usuario)"
+  },
+  "spec_review": {
+    "score": 0.9,
+    "critical": 0,
+    "high": [
+      "G1 baseline suite nao verificado",
+      "G2 licenca skills upstream"
+    ],
+    "medium": [
+      "G3 parse pubspec",
+      "G4 default mcp",
+      "G5 default pluginsDir"
+    ],
+    "low": [
+      "G6 terminal:true",
+      "G7 path governance"
+    ]
+  },
+  "baseline": {
+    "suite": "104/104",
+    "checks": "PASS",
+    "frozen_at": "2026-10-07T22:44:16.401Z",
+    "env": "HARNESS_GATES=off (host)"
+  },
+  "escalations": [
+    {
+      "id": "FU-32",
+      "iteracoes": 3,
+      "status": "escalado_user",
+      "resumo": "denylist contextual: cada fix revela novo bypass; 4o review: F-1 (negacao antes sem nomear o literal) + F-2 (Maven/Gradle nao cobertos)",
+      "opcoes": [
+        "mais 1 iteracao dirigida (F-1 same-line + F-2 maven/gradle)",
+        "redesenho por escopo (scan so code/config; excluir .md prosa)",
+        "override + debito"
+      ],
+      "data": "2026-10-08T00:02:42.399Z"
+    },
+    {
+      "id": "FU-32",
+      "iteracoes": 4,
+      "status": "hardstop_user_B_ou_C",
+      "resumo": "4a iteracao nao fechou: bypass material CJS/global (require subpath, new <lit>, .use(<lit>)); contextual regrediu vs substring original",
+      "data": "2026-10-08T00:18:44.210Z"
+    },
+    {
+      "id": "FU-32",
+      "iteracoes": 4,
+      "status": "closed_por_decisao_B",
+      "resumo": "redesenho por escopo aprovado (0 criticos); R3 efetivo; 4 🟡 -> FU-33",
+      "data": "2026-10-08T00:29:36.893Z"
+    }
+  ],
+  "security_fase45": {
+    "verdict": "pass",
+    "aplicaveis": "5/5",
+    "na": 9,
+    "criticos": 0,
+    "medio": 1,
+    "ressalva": "I9 CI wiring -> FU-29"
   }
 }

@@ -2,14 +2,84 @@
 
 Vendor de skills de terceiros do harness. Gerado por `scripts/vendor-skills.mjs`.
 Politica de licenca P-02=(i): skill sem licenca identificavel NAO e vendorizada (fail-closed).
-A copia e byte-identica a fonte; o drift e barrado por `node scripts/vendor-skills.mjs --check`.
+A copia e byte-identica a fonte; o drift (skill ou `LICENSE-<slug>` agregado) e barrado por `node scripts/vendor-skills.mjs --check`.
 
 ## Fontes (proveniencia)
 
 | source | sourceType | sourceCommit | SPDX | licenseFile |
 |---|---|---|---|---|
-| dart-lang/skills | github | 0d9f1c4a0ae29d6f5180bf6143d7997ec3bacf49 | BSD-3-Clause | LICENSE |
-| flutter/skills | github | 0ef3972f93e2baa4156ba1cbb1e515cd53079c68 | BSD-3-Clause | LICENSE |
+| dart-lang/skills | github | 0d9f1c4a0ae29d6f5180bf6143d7997ec3bacf49 | BSD-3-Clause | LICENSE-dart-lang-skills |
+| flutter/skills | github | 0ef3972f93e2baa4156ba1cbb1e515cd53079c68 | BSD-3-Clause | LICENSE-flutter-skills |
+
+## Licencas (texto completo + copyright)
+
+As licencas abaixo vivem no repositorio upstream, nao no dir da skill
+(por isso o `licenseFile` da skill aponta para o arquivo agregado).
+O vendor grava cada uma na raiz deste diretorio, byte-a-byte (sem
+newline final, como no upstream); o `--check` recomputa o sha256 e
+falha se o arquivo divergir ou faltar.
+
+### dart-lang/skills — BSD-3-Clause (`LICENSE-dart-lang-skills`)
+
+```text
+Copyright 2012, the Dart project authors.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its contributors
+   may be used to endorse or promote products derived from this software without
+   specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+```
+
+### flutter/skills — BSD-3-Clause (`LICENSE-flutter-skills`)
+
+```text
+Copyright 2026 The Flutter Authors. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its contributors
+   may be used to endorse or promote products derived from this software without
+   specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+```
 
 ## Skills vendorizadas (22)
 

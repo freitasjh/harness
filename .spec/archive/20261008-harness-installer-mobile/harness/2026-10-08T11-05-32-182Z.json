@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "demand": "harness-installer-mobile-dogfood",
+  "agent": "developer-engineer",
+  "phase": "Execution",
+  "gitSha": "d8b1a140b0f4f1aef16d0a8b5e3b56069c580919",
+  "commands": [
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 358,
+      "stdoutHash": "sha256:5268401340c983d1dc641bd4424ed12c637d2977be211a5547efe943688b87e6"
+    },
+    {
+      "cmd": "node --test \"installer/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 2624,
+      "stdoutHash": "sha256:457d9faa12416e1bb51ba5a1acf726958f6ad586973f2d1d28cd691e2bf72be6"
+    },
+    {
+      "cmd": "node installer/dogfood-mobile.mjs --source /home/joao/progat/wsProjetos/mobile",
+      "exitCode": 0,
+      "durationMs": 8346,
+      "stdoutHash": "sha256:2b045588544014b963381cf18e56e777d12a80b38f8370a4a23602b0c80c2b08"
+    }
+  ],
+  "counts": {
+    "unit": {
+      "passed": 104,
+      "failed": 0,
+      "skipped": 0
+    },
+    "it": {
+      "passed": 162,
+      "failed": 0,
+      "skipped": 0
+    },
+    "frontend": {
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "evaluation": {
+    "telas": "n/a-CLI-sem-UI (wizard TUI validado por streams injetados)",
+    "negocio": "ok-perfil-mobile-config-analyze-mcp (flags=0)",
+    "logica": "ok-wizard-W0..W7-abort-reinstall-origem-intocada",
+    "perf": "n/a-instalacao-local-copia"
+  },
+  "brainStore": [
+    "regras/projetos/harness/harness-installer-mobile-batch4"
+  ],
+  "cleanup": {
+    "ports": [],
+    "note": "copia e backup removidos ao final"
+  },
+  "selfReported": true,
+  "source": "/home/joao/progat/wsProjetos/mobile",
+  "copy": "/tmp/harness-dogfood-mobile-2026-10-08T11-05-32-182Z",
+  "sanitized": [
+    ".agents",
+    "opencode.json"
+  ],
+  "install": {
+    "checksPassed": true,
+    "checksFailed": [],
+    "planCounts": {
+      "create": 155
+    },
+    "flags": [],
+    "config": {
+      "project": "mobile_erp",
+      "stack": {
+        "backend": "flutter/dart mobile (Q&A)",
+        "frontend": "flutter/dart mobile (Q&A)"
+      },
+      "commands": {
+        "suiteFull": "flutter test",
+        "unit": "flutter test",
+        "analyze": "dart analyze"
+      },
+      "mcp": {
+        "required": [
+          "marionette_mcp",
+          "dart"
+        ]
+      },
+      "moduleMap": {
+        "plugins": ".opencode/plugins",
+        "rules": ".agents/rules",
+        "schemas": ".agents/schemas",
+        "lib": "lib",
+        "test": "test"
+      }
+    }
+  },
+  "reinstallAbort": "re-install detected (.harness-install.json exists). See manifest backupDir; remove or run upgrade path. Aborting.",
+  "sourceUntouched": {
+    "before": {
+      "kind": "git",
+      "status": "M lib/l10n/app_en.arb\n M lib/l10n/app_es.arb\n M lib/l10n/app_localizations.dart\n M lib/l10n/app_localizations_en.dart\n M lib/l10n/app_localizations_es.dart\n M lib/l10n/app_localizations_pt.dart\n M lib/l10n/app_pt.arb\n M lib/l10n/app_pt_BR.arb\n M lib/src/config/app_router.dart\n M lib/src/core/database/app_database.dart\n M lib/src/core/network/dio_client.dart\n M lib/src/core/sync/widgets/back_online_banner.dart\n D lib/src/core/testing/marionette_binding.dart\n M lib/src/core/testing/marionette_bootstrap.dart\n M lib/src/core/testing/marionette_config.dart\n M lib/src/core/testing/marionette_sanitizer.dart\n M lib/src/core/testing/semantics_ids.dart\n M lib/src/features/authentication/presentation/bloc/auth_cubit.dart\n M lib/src/features/authentication/presentation/page/login_page.dart\n M lib/src/features/home/page/home_page.dart\n M lib/src/features/home/widget/store_selection_widget.dart\n M lib/src/features/order/domain/entities/operation_sale.dart\n M lib/src/features/order/domain/model/info/product_order_info_model.dart\n M lib/src/features/order/presentation/bloc/operation_sale_cubit.dart\n M lib/src/features/order/presentation/bloc/order_form_cubit.dart\n M lib/src/features/order/presentation/page/operation_saler_page.dart\n M lib/src/features/order/presentation/page/order_details_page.dart\n M lib/src/features/order/presentation/page/order_form_page.dart\n M lib/src/features/order/presentation/widget/order_info_card.dart\n M lib/src/features/order/presentation/widget/order_item_dialog.dart\n M lib/src/features/order/presentation/widget/step_3_payment_widget.dart\n M lib/src/features/product/datasource/product_local_datasource.dart\n M lib/src/features/product/domain/entities/product_entity.dart\n M lib/src/features/product/domain/models/product_model.dart\n M lib/src/features/product/presentation/widget/product_info_card.dart\n M lib/src/features/store/domain/usecases/validate_store_param.dart\n M lib/src/features/store/presentation/bloc/store_param_cubit.dart\n M lib/src/features/store/presentation/widgets/store_param_banner.dart\n M opencode.json\n M pubspec.lock\n M pubspec.yaml\n M test/src/core/network/dio_client_x_loja_test.dart\n M test/src/core/testing/marionette_config_test.dart\n M test/src/core/testing/marionette_sanitizer_test.dart\n M test/src/feature/authentication/presentation/bloc/auth_cubit_test.dart\n M test/src/feature/order/presentation/bloc/operation_sale_guard_test.dart\n M test/src/feature/order/presentation/bloc/order_form_store_guard_test.dart\n M test/src/feature/store/domain/usecases/validate_store_param_test.dart\n M test/src/feature/store/presentation/widgets/store_param_banner_test.dart\n?? lib/src/core/testing/marionette_log_collector.dart\n?? lib/src/core/utils/log_sanitizer.dart\n?? lib/src/features/order/presentation/widget/guarded_operation_sale_card.dart\n?? lib/src/features/order/presentation/widget/order_store_guard_banner.dart\n?? lib/src/features/store/presentation/widgets/home_store_chip.dart\n?? lib/src/features/store/presentation/widgets/home_store_param_banner.dart\n?? lib/src/features/store/presentation/widgets/store_chip.dart\n?? lib/src/features/store/presentation/widgets/store_param_auto_loader.dart\n?? test/src/core/network/dio_client_bootstrap_test.dart\n?? test/src/core/sync/widgets/\n?? test/src/core/testing/marionette_log_collector_test.dart\n?? test/src/core/utils/log_sanitizer_test.dart\n?? test/src/feature/order/domain/entities/operation_sale_floor_test.dart\n?? test/src/feature/order/presentation/bloc/order_form_store_param_bootstrap_test.dart\n?? test/src/feature/order/presentation/page/operation_sale_selection_test.dart\n?? test/src/feature/order/presentation/widget/order_item_dialog_floor_test.dart\n?? test/src/feature/product/datasources/product_local_datasource_mins_test.dart\n?? test/src/feature/product/models/\n?? test/src/feature/product/presentation/\n?? test/src/features/home/\n?? test/src/features/order/domain/model/\n?? test/src/features/store/"
+    },
+    "after": {
+      "kind": "git",
+      "status": "M lib/l10n/app_en.arb\n M lib/l10n/app_es.arb\n M lib/l10n/app_localizations.dart\n M lib/l10n/app_localizations_en.dart\n M lib/l10n/app_localizations_es.dart\n M lib/l10n/app_localizations_pt.dart\n M lib/l10n/app_pt.arb\n M lib/l10n/app_pt_BR.arb\n M lib/src/config/app_router.dart\n M lib/src/core/database/app_database.dart\n M lib/src/core/network/dio_client.dart\n M lib/src/core/sync/widgets/back_online_banner.dart\n D lib/src/core/testing/marionette_binding.dart\n M lib/src/core/testing/marionette_bootstrap.dart\n M lib/src/core/testing/marionette_config.dart\n M lib/src/core/testing/marionette_sanitizer.dart\n M lib/src/core/testing/semantics_ids.dart\n M lib/src/features/authentication/presentation/bloc/auth_cubit.dart\n M lib/src/features/authentication/presentation/page/login_page.dart\n M lib/src/features/home/page/home_page.dart\n M lib/src/features/home/widget/store_selection_widget.dart\n M lib/src/features/order/domain/entities/operation_sale.dart\n M lib/src/features/order/domain/model/info/product_order_info_model.dart\n M lib/src/features/order/presentation/bloc/operation_sale_cubit.dart\n M lib/src/features/order/presentation/bloc/order_form_cubit.dart\n M lib/src/features/order/presentation/page/operation_saler_page.dart\n M lib/src/features/order/presentation/page/order_details_page.dart\n M lib/src/features/order/presentation/page/order_form_page.dart\n M lib/src/features/order/presentation/widget/order_info_card.dart\n M lib/src/features/order/presentation/widget/order_item_dialog.dart\n M lib/src/features/order/presentation/widget/step_3_payment_widget.dart\n M lib/src/features/product/datasource/product_local_datasource.dart\n M lib/src/features/product/domain/entities/product_entity.dart\n M lib/src/features/product/domain/models/product_model.dart\n M lib/src/features/product/presentation/widget/product_info_card.dart\n M lib/src/features/store/domain/usecases/validate_store_param.dart\n M lib/src/features/store/presentation/bloc/store_param_cubit.dart\n M lib/src/features/store/presentation/widgets/store_param_banner.dart\n M opencode.json\n M pubspec.lock\n M pubspec.yaml\n M test/src/core/network/dio_client_x_loja_test.dart\n M test/src/core/testing/marionette_config_test.dart\n M test/src/core/testing/marionette_sanitizer_test.dart\n M test/src/feature/authentication/presentation/bloc/auth_cubit_test.dart\n M test/src/feature/order/presentation/bloc/operation_sale_guard_test.dart\n M test/src/feature/order/presentation/bloc/order_form_store_guard_test.dart\n M test/src/feature/store/domain/usecases/validate_store_param_test.dart\n M test/src/feature/store/presentation/widgets/store_param_banner_test.dart\n?? lib/src/core/testing/marionette_log_collector.dart\n?? lib/src/core/utils/log_sanitizer.dart\n?? lib/src/features/order/presentation/widget/guarded_operation_sale_card.dart\n?? lib/src/features/order/presentation/widget/order_store_guard_banner.dart\n?? lib/src/features/store/presentation/widgets/home_store_chip.dart\n?? lib/src/features/store/presentation/widgets/home_store_param_banner.dart\n?? lib/src/features/store/presentation/widgets/store_chip.dart\n?? lib/src/features/store/presentation/widgets/store_param_auto_loader.dart\n?? test/src/core/network/dio_client_bootstrap_test.dart\n?? test/src/core/sync/widgets/\n?? test/src/core/testing/marionette_log_collector_test.dart\n?? test/src/core/utils/log_sanitizer_test.dart\n?? test/src/feature/order/domain/entities/operation_sale_floor_test.dart\n?? test/src/feature/order/presentation/bloc/order_form_store_param_bootstrap_test.dart\n?? test/src/feature/order/presentation/page/operation_sale_selection_test.dart\n?? test/src/feature/order/presentation/widget/order_item_dialog_floor_test.dart\n?? test/src/feature/product/datasources/product_local_datasource_mins_test.dart\n?? test/src/feature/product/models/\n?? test/src/feature/product/presentation/\n?? test/src/features/home/\n?? test/src/features/order/domain/model/\n?? test/src/features/store/"
+    },
+    "untouched": true
+  },
+  "copyRemoved": true,
+  "durationMs": 8347
+}

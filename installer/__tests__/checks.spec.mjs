@@ -6,13 +6,14 @@ import fs from 'node:fs';
 import {
   DENYLIST,
   scanLiterals,
+  isScannablePath,
   runChecks,
   requireVerifiedBackup,
   main,
   buildManifest,
   serializeAnswers,
+  collectIncoming,
   QUESTIONS,
-  InstallError,
 } from '../install.mjs';
 
 let dirs = [];
@@ -80,25 +81,26 @@ describe('IN-05 S2: flagged pendente / literal-canario => FAIL com motivo', () =
     for (const lit of DENYLIST) assert.ok(typeof lit === 'string' && lit.length >= 3, `literal valido: ${lit}`);
   });
 
-  it('canario: literal plantado numa rule copiada => check falha (R3)', () => {
-    const canary = DENYLIST[0];
+  it('canario R3: adocao real de stack alheia num arquivo de codigo => check falha', () => {
+    const canary = 'vuetify';
+    const planted = "import { createVuetify } from 'vuetify'\n";
     const target = mkTarget({
       'opencode.json': JSON.stringify({ plugin: ['harness'] }),
       'harness.config.json': JSON.stringify({ version: 1, project: 'demo' }),
-      '.agents/rules/plantada.md': `# regra copiada\ncontem ${canary} plantado\n`,
+      '.opencode/plugins/plantada.js': planted,
     });
     const bk = fs.mkdtempSync(path.join(os.tmpdir(), 'harness-in05-bk-'));
     dirs.push(bk);
     const manifest = cleanManifest(target, bk, {
-      installed: [{ path: '.agents/rules/plantada.md', kind: 'file' }],
+      installed: [{ path: '.opencode/plugins/plantada.js', kind: 'file' }],
       fileContents: {
         'opencode.json': fs.readFileSync(path.join(target, 'opencode.json'), 'utf8'),
-        '.agents/rules/plantada.md': fs.readFileSync(path.join(target, '.agents/rules/plantada.md'), 'utf8'),
+        '.opencode/plugins/plantada.js': planted,
       },
     });
     fs.writeFileSync(path.join(target, '.harness-install.json'), JSON.stringify(manifest));
     const verdict = runChecks(target, { manifest });
-    assert.equal(verdict.passed, false, 'canario deve falhar o check');
+    assert.equal(verdict.passed, false, 'canario positivo deve falhar o check (R3)');
     assert.ok(verdict.failed.some((f) => f.includes(canary)), 'motivo cita o literal');
   });
 
@@ -117,6 +119,117 @@ describe('IN-05 S2: flagged pendente / literal-canario => FAIL com motivo', () =
     const verdict = runChecks(target, { manifest: cleanManifest(target, bk) });
     assert.equal(verdict.passed, false);
     assert.ok(verdict.failed.some((f) => /json|corromp/i.test(f)));
+  });
+});
+
+describe('FU-32: canario por ESCOPO (substring amplo so em codigo/config)', () => {
+  it('scanLiterals: substring amplo casa adocao real que o contextual deixava passar', () => {
+    assert.deepEqual(scanLiterals("const Vuetify = require('vuetify/lib')"), ['vuetify'], 'CJS subpath');
+    assert.deepEqual(scanLiterals('const app = new Vuetify()'), ['vuetify'], 'new X');
+    assert.deepEqual(scanLiterals('Vue.use(Vuetify)'), ['vuetify'], '.use(X)');
+    assert.deepEqual(scanLiterals("import { createVuetify } from 'vuetify'"), ['vuetify'], 'import');
+    assert.deepEqual(scanLiterals('"primevue": "^3.5.0"'), ['primevue'], 'package.json dep');
+    assert.deepEqual(scanLiterals("implementation 'org.projectlombok:lombok:1.18.30'"), ['lombok'], 'gradle');
+    assert.deepEqual(scanLiterals('<artifactId>lombok</artifactId>'), ['lombok'], 'pom artifactId');
+    assert.deepEqual(scanLiterals('using Vuetify;'), ['vuetify'], 'C# using');
+  });
+
+  it('scanLiterals: case-insensitive, ordem da DENYLIST', () => {
+    assert.deepEqual(scanLiterals('NEW VUETIFY()'), ['vuetify']);
+    assert.deepEqual(scanLiterals('require("Lombok")'), ['lombok']);
+    assert.deepEqual(scanLiterals('TaskFlow e PrimeVue'), ['taskflow', 'primevue']);
+  });
+
+  it('scanLiterals: proibicao em prosa tambem casa (mencao crua) — o escopo e quem decide', () => {
+    assert.deepEqual(scanLiterals('# Vuetify e proibido'), ['vuetify']);
+  });
+
+  it('isScannablePath: codigo/config sim, prosa/binario nao', () => {
+    for (const p of ['a.js', 'b.mjs', 'c.cjs', 'd.ts', 'e.tsx', 'f.vue', 'g.svelte',
+      'A.java', 'B.kt', 'C.kts', 'D.gradle', 'E.groovy', 'F.dart', 'G.cs', 'H.py',
+      'I.rb', 'J.go', 'K.rs', 'L.php', 'M.xml', 'N.json', 'O.yaml', 'P.yml', 'Q.toml',
+      'R.properties', 's.lock', 'pubspec.yaml', 'package.json', 'pom.xml', 'build.gradle',
+      'build.gradle.kts']) {
+      assert.equal(isScannablePath(p), true, `escaneavel: ${p}`);
+    }
+    for (const p of ['a.md', 'b.txt', 'c.png', 'd.pdf', 'sem-extensao']) {
+      assert.equal(isScannablePath(p), false, `fora do scan: ${p}`);
+    }
+  });
+
+  function targetWith(rel, content) {
+    return mkTarget({
+      'opencode.json': JSON.stringify({ plugin: ['harness'] }),
+      'harness.config.json': JSON.stringify({ version: 1, project: 'demo' }),
+      [rel]: content,
+    });
+  }
+
+  function manifestWith(target, rel) {
+    const bk = fs.mkdtempSync(path.join(os.tmpdir(), 'harness-fu32-bk-'));
+    dirs.push(bk);
+    const manifest = cleanManifest(target, bk, {
+      installed: [{ path: rel, kind: 'file' }],
+      fileContents: { [rel]: fs.readFileSync(path.join(target, rel), 'utf8') },
+    });
+    fs.writeFileSync(path.join(target, '.harness-install.json'), JSON.stringify(manifest));
+    return manifest;
+  }
+
+  it('runChecks: prosa .md com proibicao/mencao => PASS (nao escaneada)', () => {
+    const rel = '.agents/rules/guia.md';
+    const target = targetWith(rel, '# Proibido Vuetify\nNunca use Lombok nem MapStruct. TaskFlow foi substituido.\n');
+    const verdict = runChecks(target, { manifest: manifestWith(target, rel) });
+    assert.equal(verdict.passed, true, `prosa nao reprova: ${JSON.stringify(verdict.failed)}`);
+    assert.deepEqual(verdict.failed, []);
+  });
+
+  it('runChecks: .txt com mencao => PASS (nao escaneado)', () => {
+    const rel = '.agents/rules/notas.txt';
+    const target = targetWith(rel, 'vuetify lombok mapstruct restassured\n');
+    assert.equal(runChecks(target, { manifest: manifestWith(target, rel) }).passed, true);
+  });
+
+  for (const [rel, content, lit] of [
+    ['.opencode/plugins/plantada.js', "const V = require('vuetify/lib')\n", 'vuetify'],
+    ['.agents/agents/adotado.ts', "import Vue from 'primevue'\n", 'primevue'],
+    ['harness-deps.json', JSON.stringify({ dependencies: { vuetify: '^3' } }), 'vuetify'],
+    ['pom.xml', '<dependency><groupId>org.projectlombok</groupId></dependency>\n', 'lombok'],
+    ['build.gradle', "implementation 'org.mapstruct:mapstruct:1.5.5.Final'\n", 'mapstruct'],
+    ['package.json', JSON.stringify({ name: 'x', packageManager: 'restassured' }), 'restassured'],
+  ]) {
+    it(`runChecks: adocao em ${rel} => FAIL`, () => {
+      const target = targetWith(rel, content);
+      const verdict = runChecks(target, { manifest: manifestWith(target, rel) });
+      assert.equal(verdict.passed, false, `${rel} adota stack alheia`);
+      assert.ok(verdict.failed.some((f) => f.includes(lit)), `motivo cita ${lit}`);
+      assert.ok(verdict.failed.some((f) => f.includes('literal-denied') && f.includes('(R3/canario)')), 'mensagem canonica');
+    });
+  }
+
+  it('runChecks: tooling/testes do harness excluidos do SCAN', () => {
+    const rel = 'scripts/gerador.mjs';
+    const target = targetWith(rel, '// fixture com vuetify\n');
+    assert.equal(runChecks(target, { manifest: manifestWith(target, rel) }).passed, true, 'scripts/ fora do scan');
+    const rel2 = '.opencode/plugins/__tests__/x.spec.mjs';
+    const target2 = targetWith(rel2, "const x = 'lombok';\n");
+    assert.equal(runChecks(target2, { manifest: manifestWith(target2, rel2) }).passed, true, '__tests__/ fora do scan');
+  });
+
+  it('conteudo REAL do harness (incoming) instala sem literal-denied falso', () => {
+    const sourceDir = new URL('../../', import.meta.url).pathname;
+    const target = mkTarget({});
+    const incoming = collectIncoming(sourceDir, { stacks: [] });
+    assert.ok(Object.keys(incoming).length > 50, 'incoming real coletado');
+    const out = main({
+      target,
+      scriptedAnswers: { project: 'harness', stack: 'node', suiteCommand: 'node', pluginsDir: target },
+      incomingFiles: incoming,
+      options: { allowRoot: true, nodeVersion: 'v26.7.0', backupRoot: fs.mkdtempSync(path.join(os.tmpdir(), 'harness-fu32-main-')) },
+    });
+    dirs.push(out.backup.backupDir);
+    assert.equal(out.checks.passed, true, `harness limpo => checks PASS, falhou: ${JSON.stringify(out.checks.failed)}`);
+    assert.deepEqual(out.checks.failed, []);
   });
 });
 

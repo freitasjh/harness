@@ -115,3 +115,38 @@ describe('IN-04 S3: detectores normalizados R4 + whitespace G2', () => {
     assert.ok(!fs.existsSync(path.join(target, 'opencode.json')));
   });
 });
+
+describe('IM-BE-04 merge aditivo do bloco mcp (A3/RF-16)', () => {
+  it('host sem mcp + incoming com mcp => adiciona (sem flag)', () => {
+    const { merged, conflict } = mergeOpencodeJson({ plugin: [] }, { mcp: { required: ['marionette_mcp', 'dart'] } });
+    assert.deepEqual(merged.mcp.required, ['marionette_mcp', 'dart']);
+    assert.equal(conflict, false, 'only-add sem divergencia nao gera flag');
+  });
+
+  it('host com mcp divergente => uniao only-add + conflict (flag)', () => {
+    const { merged, conflict } = mergeOpencodeJson(
+      { mcp: { required: ['chrome-devtools'] } },
+      { mcp: { required: ['dart'] } },
+    );
+    assert.deepEqual(merged.mcp.required, ['chrome-devtools', 'dart'], 'host preservado + aditivo');
+    assert.equal(conflict, true, 'divergencia sinalizada para humano');
+  });
+
+  it('host com mcp identico => sem conflict', () => {
+    const { conflict } = mergeOpencodeJson(
+      { mcp: { required: ['dart'] } },
+      { mcp: { required: ['dart'] } },
+    );
+    assert.equal(conflict, false);
+  });
+
+  it('planMerge: mcp ausente => merge; mcp divergente => flag', () => {
+    const t1 = mkTarget({ 'opencode.json': JSON.stringify({ plugin: ['dest'] }) });
+    const p1 = planMerge(t1, { 'opencode.json': JSON.stringify({ plugin: ['dest'], mcp: { required: ['dart'] } }) }, null);
+    assert.equal(p1[0].action, 'merge', 'mcp ausente no host => merge aditivo');
+
+    const t2 = mkTarget({ 'opencode.json': JSON.stringify({ mcp: { required: ['host'] } }) });
+    const p2 = planMerge(t2, { 'opencode.json': JSON.stringify({ mcp: { required: ['dart'] } }) }, null);
+    assert.equal(p2[0].action, 'flag', 'mcp divergente => flag para humano');
+  });
+});

@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "demand": "fu-32",
+  "agent": "developer-engineer",
+  "phase": "Execution",
+  "gitSha": "d8b1a140b0f4f1aef16d0a8b5e3b56069c580919",
+  "commands": [
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 336,
+      "stdoutHash": "sha256:d8318072438f59293a9143f9a51399930828c984f120f2ce3c4bc4905ca14540"
+    },
+    {
+      "cmd": "node --test \"installer/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 458,
+      "stdoutHash": "sha256:b8bcc004a9000c59b4184516d13eb7bbb998a9014dbd79a4fb56ce23a85c3ad0"
+    },
+    {
+      "cmd": "node --input-type=module -e \"import { collectIncoming, main } from './installer/install.mjs'; import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path'; const target = fs.mkdtempSync(path.join(os.tmpdir(),'harness-fu32-report-')); const incoming = collectIncoming('.', { stacks: [] }); const out = main({ target, scriptedAnswers: { project: 'harness', stack: 'node', suiteCommand: 'node', pluginsDir: target }, incomingFiles: incoming, options: { allowRoot: true, nodeVersion: 'v26.7.0', backupRoot: fs.mkdtempSync(path.join(os.tmpdir(),'harness-fu32-bk-')) } }); console.log(JSON.stringify({ passed: out.checks.passed, failed: out.checks.failed, incoming: Object.keys(incoming).length }));\"",
+      "exitCode": 0,
+      "durationMs": 162,
+      "stdoutHash": "sha256:5eae0f6b04732f3b5cec2fc3dba9ffc6ed4982e719ea918ba45a0a468d7bc1e1"
+    }
+  ],
+  "counts": {
+    "unit": {
+      "passed": 104,
+      "failed": 0,
+      "skipped": 0
+    },
+    "it": {
+      "passed": 159,
+      "failed": 0,
+      "skipped": 0
+    },
+    "frontend": {
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "evaluation": {
+    "telas": "n/a-installer-sem-ui",
+    "negocio": "ok-F1-negacao-co-ocorrente-F2-maven-gradle-R3-preservado",
+    "logica": "ok-unicode-alinhado-flag-i-heading-co-ocorrente-nfc",
+    "perf": "n/a-scan-linear-por-arquivo"
+  },
+  "brainStore": [
+    "regras/projetos/harness-installer/scanliterals-coocorrencia-f1-f2"
+  ],
+  "cleanup": {
+    "ports": [],
+    "note": "nenhum servidor subido; tempdirs removidos pelos testes"
+  },
+  "selfReported": true
+}

@@ -35,3 +35,14 @@ Registro cronológico de funcionalidades e refactors entregues.
 - [x] Fase 4 — Quality (fixtures + dogfood + secret-scan em-batch)
 - [x] Fase 5 — Verify (3 dimensões ✅ + CLI-smoke suplementar, aceite 4/4)
 - [x] Fase 6 — Archive
+| 2026-10-08 | `harness-installer-mobile` | Feature | Instalação do harness em projetos mobile (Flutter/Dart): perfil de stack flutter/dart (config gerado, mcp marionette+dart, flutter test), vendor de 22 skills dart-*/flutter-* (BSD-3, --check), wizard TUI W0..W7 com auto-detecção de pubspec.yaml, canário R3 por escopo. 14/14 tasks, 4 batches, dogfood mobile PASS. | `.spec/archive/20261008-harness-installer-mobile/` | Completed |
+
+## Etapas concluídas — harness-installer-mobile
+- [x] Fase 0 — Triagem (Feature; forks A1 vendor + B2 wizard + C mobile)
+- [x] Fase 1 — Análise (PROPOSAL + SPEC 94%, ux-designer wizard + architect A1-A5, security partial)
+- [x] Fase 2 — Planejamento (PLAN + TASKS, 14 tickets, 4 batches)
+- [x] Fase 3 — Execução (B1 contrato, B2 vendor, B3 wizard, B4 docs+dogfood; reviews APPROVED 0 🔴)
+- [x] Fase 3.x — Side-quest FU-32 (canário denylist) fechado por redesenho por escopo
+- [x] Fase 4/4.5 — Quality (104/104 + 162/162 + dogfood) + Security Verify pass
+- [x] Fase 5 — Verify (3 dimensões ✅, traceability 100%)
+- [x] Fase 6 — Archive

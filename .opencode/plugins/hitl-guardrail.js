@@ -1,4 +1,4 @@
-// HITL Guardrail — TaskFlow Orchestrator (FIX-01, Batch 3/7).
+// HITL Guardrail — no-op plugin (FIX-01, Batch 3/7).
 //
 // FIX-01 removed two dead mechanisms from this module (SPEC §21.1, PLAN GATE-01):
 //   1. Prose re-injection via the system-transform hook (G14/N5/H2): assigning

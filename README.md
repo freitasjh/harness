@@ -36,6 +36,7 @@ workflow-state.json  → estado do ciclo (única fonte de verdade do progresso)
 ## Como instalar em projetos
 
 **Pré-requisitos**: Node 20+, git, opencode ≥ 1.18.31, MCP `chrome-devtools` (p/ H3).
+Projetos **mobile (Flutter/Dart)** declaram `marionette_mcp` + `dart` (perfil gerado).
 
 ```sh
 # 1. Aponte para o destino (novo ou existente)
@@ -47,6 +48,20 @@ node installer/install.mjs --target /caminho/do/projeto --dry-run
 
 # 4. Confira o manifesto e os checks
 cat /caminho/do/projeto/.harness-install.json
+```
+
+Para **Flutter/Dart**: `stack=flutter|dart` exige `pubspec.yaml` no destino; o
+perfil gera `commands { suiteFull: 'flutter test', unit, analyze: 'dart analyze' }`
+e `mcp.required ['marionette_mcp','dart']` (flutter) / `['dart']` (dart). Sem TTY
+o CLI aborta com instrução; com TTY entra no **wizard W0..W7** (detecção de
+`pubspec.yaml` + confirmação por camada). Detalhes em
+`.agents/skills/harness-installer/SKILL.md` §9.
+
+Teste em cópia (nunca no repo real):
+
+```sh
+node installer/dogfood.mjs --source /caminho/do/repo            # stack genérica
+node installer/dogfood-mobile.mjs --source /caminho/projeto-flutter  # Flutter/Dart
 ```
 
 O que o instalador faz: **backup** de tudo → gera `harness.config.json` a partir das
@@ -66,7 +81,7 @@ instrução. Detalhes em `.agents/skills/harness-installer/SKILL.md`.
 node --test ".opencode/plugins/__tests__/*.spec.mjs"  # 104 gates + dogfood
 node scripts/static-checks.mjs                        # V2/V3/V6/V7 (V14 exige remote+CI)
 node scripts/sdd-checks.mjs                           # V4/R-V12/V17/SDD/R-NODENY/RENAME
-node --test "installer/__tests__/*.spec.mjs"          # 51 installer
+node --test "installer/__tests__/*.spec.mjs"          # 162 installer (golden/mobile/wizard/vendor/dogfood)
 ```
 
 ## Histórico

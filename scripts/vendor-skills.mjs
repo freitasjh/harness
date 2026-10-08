@@ -25,13 +25,116 @@ export const VENDOR_NOTICE_NAME = "VENDOR-NOTICE.md";
 export const VENDOR_LOCK_VERSION = "1";
 export const POLICY = "P-02=(i)";
 
-// Licenca declarada pela fonte upstream quando o dir da skill nao retem
-// arquivo LICENSE/NOTICE proprio. Verificado source-side contra o LICENSE
-// do repositorio (dart-lang/skills e flutter/skills: BSD-3-Clause).
+// Allowlist SPDX (P-02=(i), fail-closed): so licencas identificaveis e
+// permissivas passam. `UNLICENSED`/`PROPRIETARY`/desconhecido NAO passam —
+// a skill e excluida. Fonte: SPDX License List.
+export const SPDX_ALLOWLIST = new Set([
+  "0BSD",
+  "MIT",
+  "ISC",
+  "Apache-2.0",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "MPL-2.0",
+  "Unlicense",
+  "CC0-1.0",
+]);
+
+export function isAllowedSpdx(spdx) {
+  return typeof spdx === "string" && SPDX_ALLOWLIST.has(spdx.trim());
+}
+
+// Texto COMPLETO + copyright da licenca da fonte upstream, transcrito do
+// LICENSE do repositorio no commit pinado (source+commit no lock). Estes
+// textos sao DERIVADOS (nunca retidos no dir da skill) e gravados pelo vendor
+// como arquivo agregado `LICENSE-<source-slug>` na raiz do dest (P-02, RF-13).
+// dart-lang/skills @ 0d9f1c4a / flutter/skills @ 0ef3972f: BSD-3-Clause.
+const BSD3_DART = `Copyright 2012, the Dart project authors.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its contributors
+   may be used to endorse or promote products derived from this software without
+   specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.`;
+
+const BSD3_FLUTTER = `Copyright 2026 The Flutter Authors. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its contributors
+   may be used to endorse or promote products derived from this software without
+   specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.`;
+
+// `licenseText` e transcrito byte-a-byte do LICENSE upstream (o `sha256`
+// congela os bytes e permite ao `--check` validar o arquivo agregado escrito
+// na raiz do dest contra a fonte). Sem newline final: o upstream nao o tem.
 export const SOURCE_LICENSES = {
-  "dart-lang/skills": { spdx: "BSD-3-Clause", licenseFile: "LICENSE" },
-  "flutter/skills": { spdx: "BSD-3-Clause", licenseFile: "LICENSE" },
+  "dart-lang/skills": {
+    spdx: "BSD-3-Clause",
+    licenseText: BSD3_DART,
+    sha256: "835b0ffef5681b070c8d9c6c7d67cdd018441a7ae65b1ebd772dbdd2bd40f097",
+  },
+  "flutter/skills": {
+    spdx: "BSD-3-Clause",
+    licenseText: BSD3_FLUTTER,
+    sha256: "5b95696b504e162bcf775060ec416005df9969a95cda6f7d4ddb57327dd74d35",
+  },
 };
+
+// Nome do arquivo agregado escrito pelo vendor para a licenca de uma fonte
+// (o LICENSE vive no repo upstream, nao no dir da skill). Nunca e escrito
+// dentro de `.agents/skills/<name>/` — logo nao afeta o treeHash (I9).
+export function aggregatedLicenseName(source) {
+  return `LICENSE-${String(source).replace(/[^a-z0-9]+/gi, "-").replace(/^-+|-+$/g, "").toLowerCase()}`;
+}
+
+// Hash esperado dos bytes do LICENSE de uma fonte: o `sha256` congelado
+// quando declarado; senao derivado do `licenseText`. `null` = nao ha como
+// verificar a licenca agregada (o `--check` trata como FAIL, fail-closed).
+export function expectedLicenseSha(entry) {
+  if (!entry) return null;
+  if (typeof entry.sha256 === "string" && entry.sha256) return entry.sha256;
+  if (typeof entry.licenseText === "string" && entry.licenseText) return sha256(entry.licenseText);
+  return null;
+}
 
 export class VendorError extends Error {
   constructor(message, code = "VENDOR") {
@@ -47,9 +150,19 @@ export function sha256(data) {
 }
 
 // Recursivo, lstat (nao segue symlink). Symlinks sao reportados, nunca lidos.
+// A RAIZ tambem e classificada: um diretorio simlinkado (readdir segue) e
+// reportado como symlink "." e nunca percorrido (fail-closed).
 export function listTree(dir) {
   const files = [];
   const symlinks = [];
+  let root;
+  try {
+    root = fs.lstatSync(dir);
+  } catch {
+    return { files, symlinks };
+  }
+  if (root.isSymbolicLink()) return { files, symlinks: ["."] };
+  if (!root.isDirectory()) return { files, symlinks };
   const walk = (abs, rel) => {
     for (const entry of fs.readdirSync(abs)) {
       const p = path.join(abs, entry);
@@ -112,12 +225,20 @@ export function detectSpdx(text) {
 const LICENSE_FILE_RE = /^(LICENSE|LICENCE|COPYING|NOTICE)(\.(md|txt))?$/i;
 
 // 1) arquivo de licenca no dir da skill; 2) `license:` no frontmatter do SKILL.md.
+// lstat: um LICENSE simlinkado nunca e lido (fail-closed, S4).
 export function readDeclaredLicense(skillDir) {
-  if (!fs.existsSync(skillDir)) return null;
+  let root;
+  try {
+    root = fs.lstatSync(skillDir);
+  } catch {
+    return null;
+  }
+  if (root.isSymbolicLink() || !root.isDirectory()) return null;
   for (const entry of fs.readdirSync(skillDir)) {
     if (!LICENSE_FILE_RE.test(entry)) continue;
     const p = path.join(skillDir, entry);
-    if (!fs.statSync(p).isFile()) continue;
+    const st = fs.lstatSync(p);
+    if (st.isSymbolicLink() || !st.isFile()) continue;
     const spdx = detectSpdx(fs.readFileSync(p, "utf8"));
     if (spdx) return { spdx, licenseFile: entry };
   }
@@ -130,12 +251,33 @@ export function readDeclaredLicense(skillDir) {
   return null;
 }
 
+// Resolve a licenca e aplica a allowlist SPDX (P-02=(i)). Retorna
+// `{ spdx, licenseFile, allowed, fromSource, reason? }` ou null. Uma licenca
+// declarada no frontmatter fora da allowlist (`UNLICENSED`/`PROPRIETARY`/…)
+// retorna `allowed:false` — o chamador exclui a skill (fail-closed).
 export function resolveLicense({ skillDir, source, sourceLicenses }) {
   const declared = readDeclaredLicense(skillDir);
-  if (declared) return declared;
+  if (declared) {
+    return {
+      ...declared,
+      allowed: isAllowedSpdx(declared.spdx),
+      fromSource: false,
+      ...(isAllowedSpdx(declared.spdx) ? {} : { reason: "license-not-allowed" }),
+    };
+  }
   const table = sourceLicenses ?? SOURCE_LICENSES;
   const src = table[source];
-  if (src && src.spdx) return { spdx: src.spdx, licenseFile: src.licenseFile ?? "LICENSE" };
+  if (src && src.spdx) {
+    const allowed = isAllowedSpdx(src.spdx);
+    return {
+      spdx: src.spdx,
+      licenseFile: aggregatedLicenseName(source),
+      licenseText: src.licenseText,
+      allowed,
+      fromSource: true,
+      ...(allowed ? {} : { reason: "license-not-allowed" }),
+    };
+  }
   return null;
 }
 
@@ -155,13 +297,30 @@ export function buildVendor({ sourceDir, sourceLock, sourceLicenses, sourceCommi
   for (const name of Object.keys(entries)) {
     const entry = entries[name];
     const skillDir = path.join(src, name);
-    if (!fs.existsSync(skillDir) || !fs.statSync(skillDir).isDirectory()) {
+    let st;
+    try {
+      st = fs.lstatSync(skillDir);
+    } catch {
+      excluded.push({ name, reason: "source-missing" });
+      continue;
+    }
+    // lstat (nao segue): dir de skill simlinkado nunca e percorrido nem
+    // vendorizado (fail-closed, P-02/S4).
+    if (st.isSymbolicLink()) {
+      excluded.push({ name, reason: "symlink" });
+      continue;
+    }
+    if (!st.isDirectory()) {
       excluded.push({ name, reason: "source-missing" });
       continue;
     }
     const license = resolveLicense({ skillDir, source: entry.source, sourceLicenses });
     if (!license) {
       excluded.push({ name, reason: "no-license" });
+      continue;
+    }
+    if (!license.allowed) {
+      excluded.push({ name, reason: license.reason ?? "license-not-allowed", license: license.spdx });
       continue;
     }
     const computed = folderComputedHash(skillDir);
@@ -185,12 +344,32 @@ export function buildVendor({ sourceDir, sourceLock, sourceLicenses, sourceCommi
     };
     vendored.push({ name, source: entry.source, files });
   }
+  // Arquivos de licenca agregados (texto completo + copyright) escritos pelo
+  // vendor na raiz do dest quando a licenca vem da fonte (nao do dir da skill).
+  const aggregateBySource = new Map();
+  for (const name of Object.keys(skills)) {
+    const e = skills[name];
+    const src2 = (sourceLicenses ?? SOURCE_LICENSES)[e.source];
+    if (src2 && e.licenseFile === aggregatedLicenseName(e.source) && src2.licenseText) {
+      aggregateBySource.set(e.source, {
+        source: e.source,
+        spdx: e.license,
+        file: e.licenseFile,
+        text: src2.licenseText,
+        sha256: expectedLicenseSha(src2),
+      });
+    }
+  }
+  const licenses = [...aggregateBySource.values()];
   const lock = {
     version: VENDOR_LOCK_VERSION,
     generatedBy: "scripts/vendor-skills.mjs",
+    // Hashes das licencas agregadas (sem o texto — ele vive no arquivo na
+    // raiz do dest e no NOTICE). Permite ao `--check` validar `LICENSE-<slug>`.
+    licenses: licenses.map(({ source, spdx, file, sha256 }) => ({ source, spdx, file, sha256 })),
     skills,
   };
-  return { lock, vendored, excluded, destDir };
+  return { lock, vendored, excluded, destDir, licenses };
 }
 
 const SCRIPT_EXT_RE = /\.(sh|bash|zsh|fish|js|mjs|cjs|ts|tsx|py|rb|pl|ps1|bat|cmd|exe|bin|so|dylib|dll|jar)$/i;
@@ -216,7 +395,7 @@ function renderNotice(built) {
   lines.push("");
   lines.push("Vendor de skills de terceiros do harness. Gerado por `scripts/vendor-skills.mjs`.");
   lines.push(`Politica de licenca ${POLICY}: skill sem licenca identificavel NAO e vendorizada (fail-closed).`);
-  lines.push("A copia e byte-identica a fonte; o drift e barrado por `node scripts/vendor-skills.mjs --check`.");
+  lines.push("A copia e byte-identica a fonte; o drift (skill ou `LICENSE-<slug>` agregado) e barrado por `node scripts/vendor-skills.mjs --check`.");
   lines.push("");
   lines.push("## Fontes (proveniencia)");
   lines.push("");
@@ -226,6 +405,27 @@ function renderNotice(built) {
     lines.push(`| ${s.source} | ${s.sourceType} | ${s.sourceCommit ?? "(unknown)"} | ${s.spdx} | ${s.licenseFile} |`);
   }
   lines.push("");
+  lines.push("## Licencas (texto completo + copyright)");
+  lines.push("");
+  const licenses = built.licenses ?? [];
+  if (licenses.length === 0) {
+    lines.push("Nenhuma licenca agregada: toda skill retem LICENSE/NOTICE proprio.");
+  } else {
+    lines.push("As licencas abaixo vivem no repositorio upstream, nao no dir da skill");
+    lines.push("(por isso o `licenseFile` da skill aponta para o arquivo agregado).");
+    lines.push("O vendor grava cada uma na raiz deste diretorio, byte-a-byte (sem");
+    lines.push("newline final, como no upstream); o `--check` recomputa o sha256 e");
+    lines.push("falha se o arquivo divergir ou faltar.");
+    lines.push("");
+    for (const lic of licenses) {
+      lines.push(`### ${lic.source} — ${lic.spdx} (\`${lic.file}\`)`);
+      lines.push("");
+      lines.push("```text");
+      lines.push(lic.text.replace(/\n$/, ""));
+      lines.push("```");
+      lines.push("");
+    }
+  }
   lines.push(`## Skills vendorizadas (${names.length})`);
   lines.push("");
   lines.push("| skill | source | stacks | computedHash | treeHash |");
@@ -271,31 +471,62 @@ export function writeVendor(built, { destDir = built.destDir } = {}) {
       fs.writeFileSync(p, f.bytes);
     }
   }
+  // Licencas agregadas na raiz do dest (fora dos dirs das skills — I9).
+  for (const lic of built.licenses ?? []) {
+    if (!lic.file || lic.file.includes("/") || lic.file.includes("\\")) continue;
+    fs.writeFileSync(path.join(dest, lic.file), lic.text);
+  }
   fs.writeFileSync(path.join(dest, VENDOR_LOCK_NAME), JSON.stringify(built.lock, null, 2) + "\n");
   fs.writeFileSync(path.join(dest, VENDOR_NOTICE_NAME), renderNotice(built));
   return built;
 }
 
-export function checkVendor({ destDir }) {
+export function checkVendor({ destDir, sourceLicenses } = {}) {
   const dest = path.resolve(destDir);
   const lockPath = path.join(dest, VENDOR_LOCK_NAME);
+  const base = {
+    errors: [],
+    missing: [],
+    divergences: [],
+    symlinks: [],
+    licenseMissing: [],
+    licenseDivergences: [],
+    licenseSymlinks: [],
+  };
   if (!fs.existsSync(lockPath)) {
-    return { ok: false, errors: [`lock ausente: ${VENDOR_LOCK_NAME}`], missing: [], divergences: [], symlinks: [] };
+    return { ok: false, ...base, errors: [`lock ausente: ${VENDOR_LOCK_NAME}`] };
   }
   let lock;
   try {
     lock = JSON.parse(fs.readFileSync(lockPath, "utf8"));
   } catch (e) {
-    return { ok: false, errors: [`lock invalido: ${e.message}`], missing: [], divergences: [], symlinks: [] };
+    return { ok: false, ...base, errors: [`lock invalido: ${e.message}`] };
   }
   const skills = (lock && lock.skills) || {};
   const missing = [];
   const divergences = [];
   const symlinks = [];
   const errors = [];
+  const licenseMissing = [];
+  const licenseDivergences = [];
+  const licenseSymlinks = [];
   for (const name of Object.keys(skills)) {
     const dir = path.join(dest, name);
-    if (!fs.existsSync(dir)) {
+    // lstat na RAIZ: um dir de skill simlinkado (mesmo que aponte para dir
+    // valido) e symlink => FAIL. Tambem cobre symlink quebrado (existsSync
+    // seguiria e diria "missing").
+    let st;
+    try {
+      st = fs.lstatSync(dir);
+    } catch {
+      missing.push(name);
+      continue;
+    }
+    if (st.isSymbolicLink()) {
+      symlinks.push(name);
+      continue;
+    }
+    if (!st.isDirectory()) {
       missing.push(name);
       continue;
     }
@@ -312,8 +543,83 @@ export function checkVendor({ destDir }) {
     }
     if (treeHash(dir) !== skills[name].treeHash) divergences.push(name);
   }
-  const ok = missing.length === 0 && divergences.length === 0 && symlinks.length === 0 && errors.length === 0;
-  return { ok, errors, missing, divergences, symlinks };
+
+  // Licencas agregadas (`LICENSE-<slug>`). O lock registra o sha256 esperado;
+  // quando a fonte esta na tabela, o hash congelado (`expectedLicenseSha`)
+  // prevalece — divergencia entre lock e fonte e erro (desalinhados). Sem
+  // hash esperado => FAIL (fail-closed): apagar/adulterar o arquivo nunca
+  // passa silencioso.
+  const table = sourceLicenses ?? SOURCE_LICENSES;
+  const recorded = new Map();
+  for (const lic of Array.isArray(lock.licenses) ? lock.licenses : []) {
+    if (lic && typeof lic.file === "string" && lic.file) recorded.set(lic.file, lic.sha256 ?? null);
+  }
+  const expected = new Map();
+  for (const name of Object.keys(skills)) {
+    const e = skills[name] || {};
+    const file = e.licenseFile;
+    if (typeof file !== "string" || !file || file.includes("/") || file.includes("\\")) continue;
+    if (file !== aggregatedLicenseName(e.source)) continue;
+    const src = table[e.source];
+    const fromTable = src ? expectedLicenseSha(src) : null;
+    const fromLock = recorded.has(file) ? recorded.get(file) : null;
+    if (fromTable && fromLock && fromTable !== fromLock) {
+      errors.push(`${file}: hash da licenca divergente (lock=${fromLock} fonte=${fromTable})`);
+    }
+    const want = fromTable ?? fromLock;
+    if (!want) {
+      errors.push(`${file}: sem hash esperado para a licenca agregada (nao verificavel)`);
+      continue;
+    }
+    if (expected.has(file) && expected.get(file) !== want) {
+      errors.push(`${file}: hash esperado ambiguo`);
+      continue;
+    }
+    expected.set(file, want);
+  }
+  // Entradas registradas no lock mas nao referenciadas por nenhuma skill
+  // ainda sao validadas (nao ha arquivo agregado orfao passando em branco).
+  for (const [file, h] of recorded) {
+    if (h && !expected.has(file)) expected.set(file, h);
+  }
+  for (const [file, want] of expected) {
+    const p = path.join(dest, file);
+    let st;
+    try {
+      st = fs.lstatSync(p);
+    } catch {
+      licenseMissing.push(file);
+      continue;
+    }
+    if (st.isSymbolicLink()) {
+      licenseSymlinks.push(file);
+      continue;
+    }
+    if (!st.isFile()) {
+      licenseMissing.push(file);
+      continue;
+    }
+    if (sha256(fs.readFileSync(p)) !== want) licenseDivergences.push(file);
+  }
+
+  const ok =
+    missing.length === 0 &&
+    divergences.length === 0 &&
+    symlinks.length === 0 &&
+    errors.length === 0 &&
+    licenseMissing.length === 0 &&
+    licenseDivergences.length === 0 &&
+    licenseSymlinks.length === 0;
+  return {
+    ok,
+    errors,
+    missing,
+    divergences,
+    symlinks,
+    licenseMissing,
+    licenseDivergences,
+    licenseSymlinks,
+  };
 }
 
 function parseArgs(argv) {
@@ -366,6 +672,9 @@ export function main(argv = process.argv.slice(2), { root = REPO_ROOT, log = con
     for (const n of res.missing) log(`  missing: ${n}`);
     for (const n of res.divergences) log(`  divergent: ${n}`);
     for (const n of res.symlinks) log(`  symlink: ${n}`);
+    for (const n of res.licenseMissing ?? []) log(`  missing-license: ${n}`);
+    for (const n of res.licenseDivergences ?? []) log(`  divergent-license: ${n}`);
+    for (const n of res.licenseSymlinks ?? []) log(`  symlink-license: ${n}`);
     log("vendor-check FAIL");
     return 1;
   }
