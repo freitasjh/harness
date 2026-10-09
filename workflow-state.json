@@ -78,7 +78,7 @@
       "created": "2026-10-07T19:57:29.951Z"
     }
   ],
-  "last_update": "2026-10-09T18:14:27.274Z",
+  "last_update": "2026-10-09T20:33:06.031Z",
   "spec_score": 0.94,
   "spec_status": "v1_reviewed_aprovado_com_ajustes",
   "validation": {
@@ -94,9 +94,9 @@
     "U5": "c - dois ancoras",
     "U6": "b - selo de hash"
   },
-  "harness_status": "passed (suiteFull exit 0: plugins 128/128 + installer 185/185 + static + vendor)",
+  "harness_status": "passed (suiteFull: plugins 128 + installer 232)",
   "code_review_status": "passed",
-  "sdd_stage": "FU-31 CLOSED — V15 por classe + bounds anti-ReDoS (string {0,4}, array {0,200}); gate-contract §1 linha V15 🟠 parcial com E1..E9 publicadas.",
+  "sdd_stage": "FU-34/FU-35 CLOSED — digest de isolamento + limpeza fail-safe (symlink bloqueado). Tech-debt FU-42/43.",
   "backlog": {
     "total": 14,
     "todo": 0,
@@ -344,13 +344,15 @@
       "id": "FU-34",
       "origem": "reviewer Batch4",
       "texto": "dogfood-mobile: sourceUntouched fraco (porcelain); usar digest de conteudo (git diff HEAD | sha256)",
-      "bloqueia": false
+      "bloqueia": false,
+      "status": "closed_reviewed_symlink_safe"
     },
     {
       "id": "FU-35",
       "origem": "reviewer Batch4",
       "texto": "dogfood-mobile: try/finally para limpar /tmp copy em falha",
-      "bloqueia": false
+      "bloqueia": false,
+      "status": "closed_reviewed_symlink_safe"
     },
     {
       "id": "FU-36",
@@ -381,6 +383,18 @@
       "id": "FU-40",
       "origem": "reviewer FU-38",
       "texto": "Tier-1 ignora SPEC_NON_CYCLE (bucket tech-debts/bugs/roadmap com 4 artefatos viraria ciclo)",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-42",
+      "origem": "reviewer FU-34/35",
+      "texto": "P2: dogfood escreve fora do /tmp via pai-symlink (assertDogfoodTarget lexical) — tech-debt dogfood-write-zone-symlink",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-43",
+      "origem": "reviewer FU-34/35",
+      "texto": "P2: specs poluem /tmp (config-loader/gate/network/preflight) — saneamento H2",
       "bloqueia": false
     }
   ],
