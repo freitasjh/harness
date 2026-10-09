@@ -9,6 +9,7 @@ import os from 'node:os';
 import crypto from 'node:crypto';
 import readline from 'node:readline';
 import { Writable } from 'node:stream';
+import { danglingSymlinkInPath, insideDir, realOrResolved, tmpRealRoot } from './zone.mjs';
 
 export const VERSION = '1.0.0';
 export const MIN_NODE_VERSION = [20, 0, 0];
@@ -695,15 +696,45 @@ export function sanitizeLog(line, answers = {}) {
 
 // ---------- trava dogfood (IN-07/Y4/R5) ----------
 
+// Tres camadas, e a ESCRITA so passa pelas tres:
+//   1. lexica: o path ESCRITO estah sob /tmp — ou vem com --target explicito +
+//      confirmacao (escape documentado, a UNICA saida para fora do /tmp);
+//   2. real: o alvo, como o SO ve, estah sob o realpath de os.tmpdir()
+//      (macOS inclui: /private/var). So a lexica deixava
+//      `/tmp/<atalho>/sub` com `<atalho>` -> fora do /tmp passar, e o
+//      instalador ESCREVIA fora da zona autorizada — a limpeza bloqueava a
+//      remocao, mas a escrita jah tinha acontecido (FU-42);
+//   3. atalho pendurado no caminho: destino nao provavel => fail-closed.
+// Duvida em qualquer camada => ABORTA antes de qualquer escrita, com o caminho
+// resolvido na mensagem (politica conservadora, provavel por teste).
 export function assertDogfoodTarget(target, { explicit = false, confirmed = false } = {}) {
   const r = path.resolve(target);
   const tmp = path.resolve(os.tmpdir());
-  if (r === tmp || r.startsWith(tmp + path.sep)) return r;
-  if (explicit && confirmed) return r;
-  throw new InstallError(
-    `refusing target outside /tmp without explicit --target + confirmation: ${r} (R5/Y4)`,
-    'DOGFOOD_GUARD',
-  );
+  if (!(r === tmp || r.startsWith(tmp + path.sep))) {
+    if (explicit && confirmed) return r;
+    throw new InstallError(
+      `refusing target outside /tmp without explicit --target + confirmation: ${r} (R5/Y4)`,
+      'DOGFOOD_GUARD',
+    );
+  }
+  const real = realOrResolved(r);
+  const tmpReal = tmpRealRoot();
+  if (!tmpReal || !insideDir(real, tmpReal)) {
+    throw new InstallError(
+      `alvo ${r} resolve para fora da zona autorizada: ${real} (tmp real: ${tmpReal || 'desconhecido'})`
+      + ' — recusado antes de qualquer escrita: um atalho no caminho atravessa o /tmp (R5/Y4/FU-42)',
+      'OUTSIDE_TARGET',
+    );
+  }
+  const dangling = danglingSymlinkInPath(r);
+  if (dangling) {
+    throw new InstallError(
+      `alvo ${r} tem atalho pendurado no caminho: ${dangling} — destino nao resolve,`
+      + ' recusado antes de qualquer escrita (R5/Y4/FU-42)',
+      'OUTSIDE_TARGET',
+    );
+  }
+  return r;
 }
 
 // ---------- main: orquestracao com I1 enforcement (FU-20) ----------

@@ -28,6 +28,31 @@ afterEach(() => {
   dirs = [];
 });
 
+// FU-42: calibração do bound de ASSERÇÃO dos testes de tempo. O contrato
+// publicado do gate (<50ms, ver comentários abaixo) é da REGEX contra a
+// linha patológica — com bound a regex fecha em microssegundos. Aqui se
+// mede o scan INTEIRO (leitura dos arquivos + 12 patterns × linhas), que
+// custa dezenas de ms e oscila com carga: single-shot <50ms mostrou-se
+// flaky (50.8ms em 1 de 3 rodadas sob carga, review FU-42). Por isso a
+// asserção é a MEDIANA de SCAN_REPS (pico isolado de GC/scheduler não
+// derruba mediana) contra SCAN_BOUND_MS, com folga realista (150–250ms
+// pedidas pelo review). Negative control no describe ao final prova que a
+// regex ANTIGA (sem bound) estoura o MESMO bound — folga não pode chegar
+// ao ponto de a regressão passar.
+const SCAN_BOUND_MS = 250;
+const SCAN_REPS = 5;
+
+function medianScanMs(dir, reps = SCAN_REPS) {
+  const samples = [];
+  for (let i = 0; i < reps; i++) {
+    const t0 = performance.now();
+    scanNetworkRefs(dir);
+    samples.push(performance.now() - t0);
+  }
+  samples.sort((a, b) => a - b);
+  return samples[Math.floor(samples.length / 2)];
+}
+
 describe('IM-VAL-03 V15 rede em installer/ (V15/rede-installer)', () => {
   it('detecta fetch( / node:http / node:https', () => {
     const d = tmp();
@@ -220,7 +245,10 @@ describe('FU-31 review it-3 RE-1 — ReDoS bound nos comandos git/pkg', () => {
   // static-check e o CI. Com bound {0,4} o scan fecha em microssegundos.
   // Nota honesta: timeout de teste NÃO preempta regex síncrona catastrófica
   // (a thread fica bloqueada; o timer só corre com o loop livre) — por isso
-  // o bound é obrigatório e o assert <50ms é o contrato, não o timeout.
+  // o bound é obrigatório. FU-42: o CONTRATO publicado (<50ms) é da regex
+  // contra a linha patológica; a asserção abaixo mede o scan inteiro com
+  // mediana + SCAN_BOUND_MS (ver helpers no topo) — teste de tempo não pode
+  // falhar por carga de máquina (flaky 50.8ms em 1/3 rodadas).
   const patho = [
     'git ' + '--x '.repeat(200) + 'yy',
     'npm ' + '--x '.repeat(200) + 'yy',
@@ -229,14 +257,13 @@ describe('FU-31 review it-3 RE-1 — ReDoS bound nos comandos git/pkg', () => {
     'yarn ' + '--flag '.repeat(120) + 'run build',
   ];
 
-  it('linha patologica de 200+ chars com muitas flags: scan < 50ms (bound)', () => {
+  it(`linha patologica de 200+ chars com muitas flags: scan < ${SCAN_BOUND_MS}ms (mediana de ${SCAN_REPS}, bound)`, () => {
     const d = tmp();
     patho.forEach((line, i) => write(d, `p${i}.mjs`, `const c = "${line}";\n`));
-    const t0 = performance.now();
     const hits = scanNetworkRefs(d);
-    const dt = performance.now() - t0;
+    const dt = medianScanMs(d);
     assert.deepEqual(hits, [], JSON.stringify(hits));
-    assert.ok(dt < 50, `scan levou ${dt.toFixed(1)}ms — bound violado (ReDoS)`);
+    assert.ok(dt < SCAN_BOUND_MS, `scan (mediana de ${SCAN_REPS}) levou ${dt.toFixed(1)}ms — bound ${SCAN_BOUND_MS}ms violado (ReDoS)`);
   });
 
   it('bound preserva cobertura: flags antes do subcomando seguem HIT', () => {
@@ -308,12 +335,13 @@ describe('FU-31 rodada final RE-1 — bound {0,200} no caminho ARRAY (metade arr
   //     prefixo git", [ reinicia o scan até o fim do array (64k chars =
   //     305ms, >50ms). Esta é a linha que dá dente ao contrato.
   // Fix: [^\]]{0,200} — cada tentativa fecha em <=200 passos.
-  // assert <50ms é o contrato — timeout de teste NÃO preempta regex
-  // síncrona (thread trava), por isso o bound é obrigatório.
+  // FU-42: contrato publicado (<50ms) é da REGEX; a asserção mede o scan
+  // inteiro com mediana + SCAN_BOUND_MS (helpers no topo) — teste de tempo
+  // não pode falhar por carga de máquina.
   const N_LINEAR = 200000;
   const N_QUAD = 8000;
 
-  it('caminho array: linha patologica com muitos elementos: scan < 50ms (bound {0,200})', () => {
+  it(`caminho array: linha patologica com muitos elementos: scan < ${SCAN_BOUND_MS}ms (mediana de ${SCAN_REPS}, bound {0,200})`, () => {
     const d = tmp();
     // forma prescrita (linear): array enorme, 1 ocorrência do prefixo.
     write(d, 'big-git.mjs', 'const c = spawn("git", ' + '["x", '.repeat(N_LINEAR) + '"y"]);\n');
@@ -321,11 +349,10 @@ describe('FU-31 rodada final RE-1 — bound {0,200} no caminho ARRAY (metade arr
     // forma multi-ocorrência (O(n²) sem bound): N prefixos git", [ / npm", [.
     write(d, 'quad-git.mjs', 'const a = ' + '["git", '.repeat(N_QUAD) + '"y"];\n');
     write(d, 'quad-pkg.mjs', 'const b = ' + '["npm", '.repeat(N_QUAD) + '"y"];\n');
-    const t0 = performance.now();
     const hits = scanNetworkRefs(d);
-    const dt = performance.now() - t0;
+    const dt = medianScanMs(d);
     assert.deepEqual(hits, [], JSON.stringify(hits));
-    assert.ok(dt < 50, `scan levou ${dt.toFixed(1)}ms — bound violado (ReDoS)`);
+    assert.ok(dt < SCAN_BOUND_MS, `scan (mediana de ${SCAN_REPS}) levou ${dt.toFixed(1)}ms — bound ${SCAN_BOUND_MS}ms violado (ReDoS)`);
   });
 
   it('bound preserva semantica array: 4 HIT (subcomando em qualquer posicao) + 2 MISS (status/rev-parse)', () => {
@@ -353,6 +380,36 @@ describe('FU-31 rodada final RE-1 — bound {0,200} no caminho ARRAY (metade arr
     write(d, 'a.mjs', `execFileSync("git", ["${long}", "clone", url]);\n`);
     write(d, 'b.mjs', `execFileSync("npm", ["${long}", "install"]);\n`);
     assert.deepEqual(scanNetworkRefs(d), []);
+  });
+});
+
+// FU-42 review — NEGATIVE CONTROL: a folga do bound de asserção NÃO pode
+// chegar ao ponto de a regex ANTIGA (sem bound) passar. Medidas 2026-10-09
+// (node v26.7.0, curva exponencial confirmada ~1.6x por token na string e
+// quadrática no array): string "git "+"--x "*34+"yy" = 2160ms; array
+// '["git", '*20000 = 2201ms — ambas >8x SCAN_BOUND_MS (250ms) e ambas
+// fecham em <5s mesmo sob carga (custo fixo desta contraprova). Se alguém
+// subir SCAN_BOUND_MS além disso, estes testes falham: bound perdeu o dente.
+describe('FU-42 negative control — regex antiga (sem bound) estoura o bound novo', () => {
+  // Regex PRÉ-bound (grupo * e [^\]]* sem limite) — dados de teste em
+  // __tests__/ são justamente o que nomeia o padrão proibido como amostra.
+  const OLD_STRING_GIT = /\bgit\s+(?:-\S+(?:\s+[^\s|;&]+)?\s+)*(?:clone|fetch|pull|push|ls-remote)\b/;
+  const OLD_ARRAY_GIT = /\bgit['"]\s*,\s*\[[^\]]*['"](?:clone|fetch|pull|push|ls-remote)['"]/;
+
+  it('string sem bound: 34 tokens de flag estouram SCAN_BOUND_MS', () => {
+    const line = 'git ' + '--x '.repeat(34) + 'yy';
+    const t0 = performance.now();
+    OLD_STRING_GIT.test(line);
+    const dt = performance.now() - t0;
+    assert.ok(dt > SCAN_BOUND_MS, `regex antiga fechou em ${dt.toFixed(1)}ms — bound de ${SCAN_BOUND_MS}ms perdeu o dente`);
+  });
+
+  it('array sem bound: 20000 prefixos ["git", estouram SCAN_BOUND_MS', () => {
+    const line = 'const a = ' + '["git", '.repeat(20000) + '"y"];\n';
+    const t0 = performance.now();
+    OLD_ARRAY_GIT.test(line);
+    const dt = performance.now() - t0;
+    assert.ok(dt > SCAN_BOUND_MS, `regex antiga fechou em ${dt.toFixed(1)}ms — bound de ${SCAN_BOUND_MS}ms perdeu o dente`);
   });
 });
 

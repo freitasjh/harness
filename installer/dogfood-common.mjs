@@ -36,9 +36,19 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import os from 'node:os';
 import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
+import { insideDir, isInsideTmp, realOrResolved, tmpRealRoot } from './zone.mjs';
+
+// Zona do /tmp medida por REALPATH: um corpo so (./zone.mjs) para a trava de
+// REMOCAO daqui e a de ESCRITA de install.mjs (`assertDogfoodTarget`). Medidas
+// divergentes escreveriam onde nao removem (FU-42).
+export { isInsideTmp, realOrResolved, tmpRealRoot };
+
+function insideRealTmp(real) {
+  const tmp = tmpRealRoot();
+  return Boolean(tmp) && insideDir(real, tmp);
+}
 
 // A5: teto de tamanho por arquivo no digest de conteudo.
 export const CONTENT_HASH_LIMIT = 8 * 1024 * 1024;
@@ -150,26 +160,9 @@ export function sameSourceState(a, b) {
 
 // ---- trava destrutiva C2 (antes de qualquer copy ou remocao) ---------------
 
-// Path como o sistema de arquivos ve: symlinks resolvidos. Fallback lexical
-// (`resolve`) so quando o path ainda nao existe. NUNCA decidir remocao pelo
-// path ESCRITO — o lexical passa onde o real apaga (FU-34 rodada final).
-export function realOrResolved(p) {
-  const abs = path.resolve(p);
-  try {
-    return fs.realpathSync(abs);
-  } catch {
-    return abs;
-  }
-}
-
 // Sobreposicao: igual, ancestral ou descendente (nas duas direcoes).
 function overlapping(a, b) {
   return a === b || a.startsWith(b + path.sep) || b.startsWith(a + path.sep);
-}
-
-function insideRealTmp(real) {
-  const tmp = tmpRealRoot();
-  return Boolean(tmp) && (real === tmp || real.startsWith(tmp + path.sep));
 }
 
 // Duas camadas: lexica (paths como escritos) E real (symlinks resolvidos).
@@ -210,32 +203,10 @@ export function assertNoShortcutTarget(target, { label = 'dogfood' } = {}) {
 
 // ---- limpeza segura (A2/A3/A4) ---------------------------------------------
 
-let _TMP_REAL = undefined;
-
-// `/tmp` como o SO ve (no macOS `/tmp` eh atalho para `/private/tmp`).
-// `null` = zona desconhecida => fail-closed: nada remove.
-export function tmpRealRoot() {
-  if (_TMP_REAL === undefined) {
-    try {
-      _TMP_REAL = fs.realpathSync(os.tmpdir());
-    } catch {
-      _TMP_REAL = null;
-    }
-  }
-  return _TMP_REAL;
-}
-
-// Zona autorizada medida por REALPATH, nao pelo path escrito (FU-35): um
-// atalho com nome dentro do /tmp pode apontar para fora dele.
-export function isInsideTmp(p) {
-  return insideRealTmp(realOrResolved(p));
-}
-
 // Varre a arvore (lstat, sem seguir atalho) procurando symlink cujo destino
 // nao seja provavel: fora do /tmp real, alcancando a origem, ou destino que
 // nao resolve (atalho pendurado). Achou um => a REMOCAO nao acontece.
 function findUnsafeSymlink(root, protectedReals) {
-  const tmp = tmpRealRoot();
   const stack = [path.resolve(root)];
   const seen = new Set();
   while (stack.length > 0) {
@@ -257,7 +228,10 @@ function findUnsafeSymlink(root, protectedReals) {
         } catch {
           return `${p}: destino do atalho nao resolve`;
         }
-        const inTmp = Boolean(tmp) && (real === tmp || real.startsWith(tmp + path.sep));
+        // FU-42: medida da zona pelo corpo unico (`insideRealTmp`), nunca
+        // inline — a duplicacao aqui media a mesma zona uma 3a vez e foi
+        // exatamente o que zone.mjs nasceu para matar (escreve onde nao remove).
+        const inTmp = insideRealTmp(real);
         const hitsSource = protectedReals.some((pr) => overlapping(pr, real));
         if (!inTmp || hitsSource) return `${p} -> ${real}`;
         continue;
