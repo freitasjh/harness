@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "demand": "dogfood-c1-c2-a1-a4-fix",
+  "agent": "developer-engineer",
+  "phase": "Execution",
+  "gitSha": "090496e246d12a9b85478a280e5833f8ceb1f693",
+  "commands": [
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node --test \"installer/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs && node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 1414,
+      "stdoutHash": "sha256:5540d04dde12622ffa07e7e5c8f9f2cc4f65b47ebb23fbc61e9e953c3d2b8c75"
+    }
+  ],
+  "counts": {
+    "unit": {
+      "passed": 128,
+      "failed": 0,
+      "skipped": 0
+    },
+    "it": {
+      "passed": 217,
+      "failed": 0,
+      "skipped": 0
+    },
+    "frontend": {
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "evaluation": {
+    "telas": "n/a-CLI-sem-UI (dogfoods sao scripts Node; nenhuma tela alterada)",
+    "negocio": "prova de isolamento da origem deixa de ser cega (C1) e limpeza nao pode mais apagar arquivo do usuario (C2)",
+    "logica": "ok-parser-porcelain-z-uall + trava origem-vs-alvo antes do try + limpeza que nunca lanca + varredura de backup orfao",
+    "perf": "n/a-custo-local-copia (digest cobre conteudo com teto de 8MB por arquivo — A5 documentado)"
+  },
+  "brainStore": [
+    "regras/global/git-porcelain-z-parse-digest-cego",
+    "regras/global/cleanup-guard-target-vs-source"
+  ],
+  "cleanup": {
+    "ports": [],
+    "note": "nenhum servidor/porta subiu (infra.ports nulos neste repo); orfaos dogfood pre-existentes em /tmp removidos e suite nao deixa orfao novo",
+    "tmpOrphansBefore": 14,
+    "tmpOrphansAfter": 0
+  },
+  "selfReported": true,
+  "fixed": {
+    "C1": "porcelainPaths passa a usar `git status --porcelain -z -uall` (NUL, sem C-quoting, untracked um a um); rename = 2 campos; antes slice/lastIndexOf/unquote deixava feedFile gravar \"absent\" constante",
+    "C2": "assertDisjointSourceTarget roda ANTES do try: --target == origem, ancestral ou descendente => aborta sem copiar nem remover",
+    "A1": "spec nao deixa orfao em /tmp (varredura no afterEach + assert final; prefixos por arquivo de spec para nao colidir em execucao paralela)",
+    "A2": "cleanupNote tem caso explicito de falha/bloqueio — nao afirma \"removidos\" quando nao removeu",
+    "A3": "rmSync nao lanca mais: erro vai para cleanupError e a evidencia eh gravada em qualquer caminho",
+    "A4": "varredura fallback .harness-backup-<basename(copy)>-* criados durante a execucao",
+    "A6": "installer/dogfood.mjs (stack generica) ganha digest de conteudo, trava C2 e limpeza em try/finally; novo dogfood.spec.mjs (10 testes)",
+    "A5": "documentado em SKILL.md §9.4.1: teto de 8MB por arquivo e cobertura do digest (porcelain-entries vs full-tree; ignorados pelo .gitignore nao entram)"
+  },
+  "files": [
+    "installer/dogfood-common.mjs",
+    "installer/dogfood-mobile.mjs",
+    "installer/dogfood.mjs",
+    "installer/__tests__/dogfood-mobile.spec.mjs",
+    "installer/__tests__/dogfood.spec.mjs",
+    ".agents/skills/harness-installer/SKILL.md"
+  ]
+}

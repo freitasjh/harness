@@ -150,7 +150,11 @@ node installer/dogfood.mjs --source /caminho/do/repo-real
 
 - Copia a origem para `/tmp/harness-dogfood-<data>` (origem só leitura).
 - Alvo fora de `/tmp` sem `--target` explícito + confirmação = **aborta**.
-- Ao final, a cópia é removida; a evidência fica em
+- **Trava destrutiva (C2):** `--target` igual à origem, ancestral ou
+  descendente dela **aborta** antes de qualquer cópia/remoção.
+- Ao final, a cópia é removida — também no caminho de falha (`try/finally`);
+  falha de remoção vira `cleanup.error` e **não** some silenciosamente. A
+  evidência fica em
   `.spec/governance/harness-installer/harness/<data>.json`.
 
 Para um projeto **mobile (Flutter/Dart)**, use `installer/dogfood-mobile.mjs` —
@@ -226,6 +230,10 @@ node installer/dogfood-mobile.mjs --source /caminho/do/projeto-flutter
 
 - Copia a origem para `/tmp/harness-dogfood-mobile-<data>` (origem **só
   leitura**; a trava `assertDogfoodTarget` **aborta** alvo fora de `/tmp`).
+- **Trava destrutiva (C2):** `--target` igual à origem, **ancestral** ou
+  **descendente** dela **aborta antes de qualquer `cp`/remoção**. Sem ela a
+  limpeza final apagaria a origem inteira (ou o diretório pai, com os arquivos
+  irmãos do usuário) — silenciosamente.
 - Sanitiza as camadas que o harness possui na cópia (`.agents`, `.opencode`,
   `opencode.json`, `harness.config.json`, `.harness-install.json`) para simular
   um projeto Flutter **limpo** — a lista removida fica em `sanitized` na
@@ -235,8 +243,35 @@ node installer/dogfood-mobile.mjs --source /caminho/do/projeto-flutter
   prova que re-instalação **aborta** e que a origem ficou intocada.
 - Grava evidência no schema `harness-report` em
   `.spec/governance/harness-installer-mobile/harness/<data>.json` e remove a
-  cópia + backup ao final (salvo `--keep`).
+  cópia + backup ao final (salvo `--keep`). A limpeza **nunca lança**: falha de
+  remoção (EACCES/EBUSY) vira `cleanup.error`/`cleanupError`, e a nota
+  (`cleanup.note`) diz a verdade sobre o que aconteceu. Remoção fora do `/tmp`
+  autorizado é **bloqueada**, não executada. Backups órfãos
+  (`.harness-backup-<basename da cópia>-*` criados durante a execução, ex.:
+  falha entre `backup()` e `applyMerge`) são varridos e removidos.
 
-Flags: `--source <dir>` (obrigatório), `--keep`, `--evidence-dir <dir>`,
-`--suite-command <cmd>` (default: detectado), `--brain-store <path,...>`.
+Flags: `--source <dir>` (obrigatório), `--keep`, `--target <dir>`,
+`--evidence-dir <dir>`, `--suite-command <cmd>` (default: detectado),
+`--brain-store <path,...>`.
+
+#### 9.4.1 Como o isolamento da origem é provado (FU-34/C1)
+
+O estado da origem (`sourceState`, compartilhado com `dogfood.mjs` via
+`installer/dogfood-common.mjs`) é uma **assinatura**, não um status:
+
+| Peça | Papel |
+|---|---|
+| `git status --porcelain -z -uall` | `-z` = separador NUL, **sem C-quoting**: `café.dart`, `we"ird.dart`, `back\slash.dart`, `a -> b.dart` chegam **literais**. `-uall` = arquivos untracked dentro de diretório untracked entram um a um (sem ele o porcelain resumiria `?? lib/` e o digest ficaria cego). Rename/copy = 2 campos (`to\0from`), ambos hasheados. |
+| digest de **conteudo** | mutação de conteúdo em arquivo *já modificado* (mesmo status, mesmo tamanho) muda a assinatura — `git status --short` sozinho nunca provaria isso. |
+| `coverage` / `hashLimit` | documentos na evidência: cobertura (`porcelain-entries` no caminho git, `full-tree` sem git) e o teto por arquivo. |
+
+**Limites declarados (A5):**
+
+1. **Teto de 8 MB por arquivo** (`CONTENT_HASH_LIMIT`): acima dele o hash
+   carrega `size:mtime`, não o conteúdo — mutação de conteúdo em arquivo
+   > 8 MB com mesmo tamanho e mesmo mtime não é detectada.
+2. **Cobertura do digest:** no caminho git, somente as entradas do porcelain
+   (com `-uall`: modificados, staged, untracked e renames — **arquivos
+   ignorados pelo `.gitignore` não entram**); sem git, a árvore inteira
+   (excluindo `.git` e `node_modules`).
 

@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "demand": "fu-34-35-rodada-final-symlink-removal-zone",
+  "agent": "developer-engineer",
+  "phase": "Execution",
+  "gitSha": "090496e246d12a9b85478a180e5833f8ceb1f693",
+  "commands": [
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node --test \"installer/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs && node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 1120,
+      "stdoutHash": "sha256-not-hashed-tail-captured-in-report-body"
+    },
+    {
+      "cmd": "node --test \"installer/__tests__/dogfood-symlink-safety.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 140,
+      "stdoutHash": "sha256:15-pass-0-fail-spec-nova"
+    }
+  ],
+  "counts": {
+    "unit": { "passed": 360, "failed": 0, "skipped": 0 },
+    "it": { "passed": 0, "failed": 0, "skipped": 0 },
+    "frontend": { "passed": 0, "failed": 0, "skipped": 0 }
+  },
+  "evaluation": {
+    "telas": "n/a-CLI-sem-UI",
+    "negocio": "dogfood-do-instalador-deve-apagar-so-o-que-criou-nunca-a-origem",
+    "logica": "C2-realpath+lexico-guard-inicial-e-revalidacao-no-finally; zona-de-remocao-por-realpath+lstat+allowlist-de-backup",
+    "perf": "varredura-lstat-da-arvore-5.3ms-para-2000-arquivos-antes-de-remover"
+  },
+  "brainStore": [],
+  "brainStatus": "INDISPONIVEL — brain MCP respondeu HTTP 410 (Gone) em 3 tentativas (brain_ping, brain_status, brain_search). Nenhuma nota foi gravada nem inventada; brain_store fica como pendencia para o orquestrador.",
+  "cleanup": {
+    "ports": [],
+    "note": "nenhum servidor subido; suites rodadas e encerradas. Restos proprios deste batch removidos (/tmp/repro-a2-*, /tmp/repro-nest-*, /tmp/harness-target-shortcut, $HOME/harness-repro-outside-*). Prefixos deste batch (harness-dfs-*, harness-dogfood-*, harness-dfm-*, harness-dfd-*) com zero orfaos ao final. PRE-EXISTENTE (nao criado por este diff, ver findings): /tmp ainda guarda orfaos das specs config-loader.spec.mjs (harness-cfg-*), gate.spec.mjs (harness-fu08-*, harness-fu11-*), network.spec.mjs (harness-v15-*) e preflight.spec.mjs (.harness-backup-harness-in01-*) — nenhuma remove o que cria.",
+    "removed": [
+      "/tmp/repro-a2-qFhXuZ",
+      "/tmp/repro-nest-DHDhT2",
+      "/tmp/harness-target-shortcut",
+      "$HOME/harness-repro-outside-nQ7UA7"
+    ],
+    "blocked": [],
+    "errors": []
+  },
+  "selfReported": true,
+  "revisao": {
+    "origem": "review CHANGES_REQUIRED com 2 criticos destrutivos reproduzidos",
+    "defeito_1": {
+      "id": "C2-symlink-origem",
+      "status": "fechado",
+      "repro_antes": "assertDisjointSourceTarget('/tmp/.../link' -> real-src, real-src) nao abortava; rmSync(real-src) no finally apagava pubspec.yaml (reproduzido: pubspec.yaml exists after? false)",
+      "correcao": [
+        "assertDisjointSourceTarget compara disjointness lexical E por realpathSync (fallback resolve)",
+        "cleanupDogfoot recebe sourceReal e re-valida disjointness antes de qualquer rmSync (2a linha de defesa no finally)",
+        "assertNoShortcutTarget aborta alvo-symlink antes do cp (cp seguiria o atalho)"
+      ],
+      "prova": "installer/__tests__/dogfood-symlink-safety.spec.mjs: 'C2 realpath — origem alcancada por symlink' (3 casos) + '(a) runDogfood ... origem INTACTA' + '2a linha de defesa' (3 casos)"
+    },
+    "defeito_2": {
+      "id": "zona-remocao-atravessa-atalho",
+      "status": "fechado",
+      "repro_antes": "isInsideTmp/removeWithinTmp/backupOrphans decidiam por path.resolve (lexico); statSync seguia symlink",
+      "correcao": [
+        "tmpRealRoot(): zona = realpathSync(os.tmpdir()) (cobre /tmp -> /private/tmp no macOS)",
+        "classifyRemoval(): 4 camadas — lstat nao-symlink, realpath dentro do /tmp real, disjoint da origem, varredura lstat da arvore sem atalho para fora da zona",
+        "backupOrphans(): lstat ignora symlink + realpath dentro da zona + disjoint da origem",
+        "duvida em qualquer camada => blocked (orfao inofensivo), nunca delecao errada"
+      ],
+      "prova": "installer/__tests__/dogfood-symlink-safety.spec.mjs: 'Zona de remocao — atalho no topo' (2), 'atalho DENTRO da arvore' (3), '(b) ponta-a-ponta' (1), 'backupOrphans — lstat ignora atalho' (1)"
+    },
+    "politica": {
+      "nome": "proof-or-block (conservadora)",
+      "auto_remocao_mantida": true,
+      "justificativa": "cada camada da decisao de remocao tem teste que falha sem ela; a prova exigida pelo review (realpath + lstat + prefixo literal proprio do instalador) existe e passa. Sem teste para provar seguro => blocked, nao remove."
+    }
+  },
+  "criterios": {
+    "a_symlink_de_origem_aborta_com_origem_intacta": "PASS — digest antes==depois, pubspec.yaml presente",
+    "b_remocao_via_atalho_bloqueada": "PASS — removed:[] blocked:[path], referente fora do /tmp intacto",
+    "c_specs_sem_orfaos": "PASS — varredura final dos prefixos deste batch = []",
+    "d_falha_de_limpeza_com_evidencia": "PASS — dogfood.spec.mjs 'A3: limpeza que lanca' (pre-existente, continua verde)"
+  },
+  "ponta_a_ponta": {
+    "fonte_real": "node installer/dogfood.mjs --source /tmp/opencode/e2e/src-real --no-suites => ok:true copyRemoved:true origem intacta",
+    "fonte_via_symlink": "node installer/dogfood.mjs --source /tmp/opencode/e2e/src-link --no-suites => ok:true copyRemoved:true origem real intacta (sem falso positivo)",
+    "destrutivo_1": "node installer/dogfood.mjs --source <link> --target <real> => abort: --target nao pode ser a origem nem ancestral/descendente dela; origem real intacta apos",
+    "destrutivo_2": "node installer/dogfood.mjs --source <real> --target <symlink para /tmp/opencode/e2e/referente> => abort: --target nao pode ser um symlink (atalho); referente intacto"
+  },
+  "findings": {
+    "p2_orfaos_pre_existentes_em_tmp": [
+      "opencode/plugins/__tests__/config-loader.spec.mjs:30 — prefixo harness-cfg-",
+      "opencode/plugins/__tests__/gate.spec.mjs:856 — prefixo harness-fu08-",
+      "opencode/plugins/__tests__/gate.spec.mjs:1008 — prefixo harness-fu11-",
+      "installer/__tests__/network.spec.mjs:17 — prefixo harness-v15-",
+      "installer/__tests__/preflight.spec.mjs:18 — prefixo harness-in01- (deixa .harness-backup-harness-in01-* irmao)"
+    ],
+    "observacao": "nenum desses paths foi criado por este diff; nada foi removido fora da zona deste batch. Saneamento (H2/P2) fica para o orquestrador decidir."
+  },
+  "diff": {
+    "alterados": [
+      "installer/dogfood-common.mjs",
+      "installer/dogfood.mjs",
+      "installer/dogfood-mobile.mjs"
+    ],
+    "novos": [
+      "installer/__tests__/dogfood-symlink-safety.spec.mjs"
+    ]
+  }
+}
