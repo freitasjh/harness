@@ -1,8 +1,8 @@
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import os from 'node:os';
-import path from 'node:path';
 import fs from 'node:fs';
+import path from 'node:path';
+import { tempScope } from '../../scripts/test-temp.mjs';
 import {
   preflight,
   inventory,
@@ -12,22 +12,24 @@ import {
   assertInside,
 } from '../install.mjs';
 
-let tmp = null;
+// FU-43: o target é rastreado (remoção exata). O backup, não: resolveBackupDir
+// sem --backup-dir o cria AO LADO do target em /tmp com nome próprio
+// (`.harness-backup-<basename>-<stamp>`), que a spec nunca vê. A varredura é
+// OPT-IN explícita e só casa o padrão DESTA spec, com guarda de mtime deste
+// run — nunca apaga backup alheio nem sobra de rodada anterior.
+const TMP = tempScope({
+  label: 'harness-in01',
+  patterns: [/^\.harness-backup-harness-in01-[0-9A-Za-z]{6}-\d{4}-/],
+});
 
 function mkTarget(files = {}) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'harness-in01-'));
-  for (const [rel, content] of Object.entries(files)) {
-    const p = path.join(dir, rel);
-    fs.mkdirSync(path.dirname(p), { recursive: true });
-    fs.writeFileSync(p, content);
-  }
-  return dir;
+  return TMP.tmp(files);
 }
 
 describe('IN-01 S1 sucesso: pre-flight + inventario + backup', () => {
   let target;
-  beforeEach(() => { target = mkTarget({ 'opencode.json': '{"a":1}' }); tmp = target; });
-  afterEach(() => { fs.rmSync(target, { recursive: true, force: true }); });
+  beforeEach(() => { target = mkTarget({ 'opencode.json': '{"a":1}' }); });
+  afterEach(() => TMP.cleanup());
 
   it('backup existe e verificado antes de qualquer escrita', () => {
     const pf = preflight({ target, allowRoot: true, nodeVersion: 'v26.7.0' });
@@ -47,8 +49,8 @@ describe('IN-01 S1 sucesso: pre-flight + inventario + backup', () => {
 
 describe('IN-01 S2 falha: aborta antes de qualquer escrita', () => {
   let target;
-  beforeEach(() => { target = mkTarget({}); tmp = target; });
-  afterEach(() => { fs.rmSync(target, { recursive: true, force: true }); });
+  beforeEach(() => { target = mkTarget({}); });
+  afterEach(() => TMP.cleanup());
 
   it('.. no target aborta', () => {
     assert.throws(() => preflight({ target: target + '/../escape', allowRoot: true, nodeVersion: 'v26.7.0' }), /outside|traversal|\.\./i);
@@ -73,7 +75,7 @@ describe('IN-01 S2 falha: aborta antes de qualquer escrita', () => {
 
 describe('IN-01 S3 borda: manifesto pre-existente aborta', () => {
   let target;
-  afterEach(() => { if (target) fs.rmSync(target, { recursive: true, force: true }); });
+  afterEach(() => TMP.cleanup());
 
   it('re-instalacao (manifesto harness) aborta com instrucao', () => {
     target = mkTarget({

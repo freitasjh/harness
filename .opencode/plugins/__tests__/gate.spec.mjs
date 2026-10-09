@@ -1,9 +1,9 @@
-import { describe, it } from "node:test";
+import { describe, it, after, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, writeFileSync, mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { tempScope } from "../../../scripts/test-temp.mjs";
 import {
   DenyError,
   DEFAULT_MODE,
@@ -51,6 +51,19 @@ import { sealCommands } from "../lib/seal.mjs";
 
 const PLUGIN_DIR = join(dirname(fileURLToPath(import.meta.url)), "..");
 const readSource = (file) => readFileSync(join(PLUGIN_DIR, file), "utf8");
+
+// FU-43: um escopo de temp por prefixo de fixture, limpo em afterEach (cobre
+// o caminho de falha) e no after do arquivo (vara final).
+const FIXTURES = {
+  fu08: tempScope({ label: "harness-fu08" }),
+  fu11: tempScope({ label: "harness-fu11" }),
+};
+afterEach(() => {
+  for (const scope of Object.values(FIXTURES)) scope.cleanup();
+});
+after(() => {
+  for (const scope of Object.values(FIXTURES)) scope.cleanup();
+});
 
 // Contract literals are built by concatenation so the static greps
 // (SPEC §12 V2/V7/V16) never self-match on this test file.
@@ -853,10 +866,8 @@ describe("GATE-05 hygiene: pkill, protected bash, qa scope (I7/I9)", () => {
 
 describe("FU-08 state file: only absent => allow, corrupt => deny", () => {
   function corruptStatePath() {
-    const dir = mkdtempSync(join(tmpdir(), "harness-fu08-"));
-    const file = join(dir, "workflow-state.json");
-    writeFileSync(file, "{ not valid json !!!", "utf8");
-    return file;
+    const dir = FIXTURES.fu08.tmp({ "workflow-state.json": "{ not valid json !!!" });
+    return join(dir, "workflow-state.json");
   }
 
   it("absent state file => null + next task allows (bootstrap, both modes)", async () => {
@@ -1005,10 +1016,8 @@ describe("FU-07 cache disabled when treeHash unknown (N11)", () => {
 
 describe("FU-11 lazy state: corrupt workflow-state routes via decide (warn-allows preserved)", () => {
   function corruptStatePath() {
-    const dir = mkdtempSync(join(tmpdir(), "harness-fu11-"));
-    const file = join(dir, "workflow-state.json");
-    writeFileSync(file, "{ corrupt !!!", "utf8");
-    return file;
+    const dir = FIXTURES.fu11.tmp({ "workflow-state.json": "{ corrupt !!!" });
+    return join(dir, "workflow-state.json");
   }
 
   it("HarnessGate in warn allows on corrupt state (warn-allows preserved)", async () => {

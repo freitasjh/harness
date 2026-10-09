@@ -78,7 +78,7 @@
       "created": "2026-10-07T19:57:29.951Z"
     }
   ],
-  "last_update": "2026-10-09T21:47:49.644Z",
+  "last_update": "2026-10-09T23:49:13.540Z",
   "spec_score": 0.94,
   "spec_status": "v1_reviewed_aprovado_com_ajustes",
   "validation": {
@@ -94,9 +94,9 @@
     "U5": "c - dois ancoras",
     "U6": "b - selo de hash"
   },
-  "harness_status": "passed (plugins 128 + installer 244 + static + vendor)",
+  "harness_status": "passed (plugins 128 + installer 259 + static + vendor)",
   "code_review_status": "passed",
-  "sdd_stage": "FU-42 CLOSED — escrita do dogfood por realpath + zona unica (zone.mjs). FU-43 (P2 /tmp polluters) DEBT. Brain MCP down (410).",
+  "sdd_stage": "FU-43 CLOSED — 0 órfãos novos (35 execuções). Restam: P3 package, Brain MCP down, HARNESS_SEAL_JSON, push.",
   "backlog": {
     "total": 14,
     "todo": 0,
@@ -397,7 +397,7 @@
       "origem": "reviewer FU-34/35",
       "texto": "P2: specs poluem /tmp (config-loader/gate/network/preflight) — saneamento H2",
       "bloqueia": false,
-      "status": "open_p2_tech_debt"
+      "status": "closed_reviewed_zero_orphans"
     }
   ],
   "batches": {

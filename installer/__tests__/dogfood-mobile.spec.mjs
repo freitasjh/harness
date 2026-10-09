@@ -28,6 +28,7 @@ import {
   MOBILE_HARNESS_LAYERS,
 } from '../dogfood-mobile.mjs';
 import { backupOrphans, cleanupDogfood, cleanupErrorOf, cleanupNote } from '../dogfood-common.mjs';
+import { sweepOrphans } from '../../scripts/test-temp.mjs';
 
 // Prefixos que ESTA spec cria sob /tmp — a varredura so mexe neles. O sufixo
 // "-mobile-" e explicito: o dogfood da stack generica usa
@@ -59,19 +60,9 @@ afterEach(() => {
 
 // A1: copia de `--keep` + backups orfaos deste run — sem isso cada execucao da
 // suite sujava /tmp com 1 par orfao (o maior poluidor era o teste `--keep`).
+// A regra vive no utilitário comum (scripts/test-temp.mjs, FU-43).
 function sweepOwnOrphans() {
-  const removed = [];
-  let entries = [];
-  try { entries = fs.readdirSync(os.tmpdir(), { withFileTypes: true }); } catch { return removed; }
-  for (const e of entries) {
-    if (!OWN_PATTERNS.some((re) => re.test(e.name))) continue;
-    const p = path.join(os.tmpdir(), e.name);
-    let st;
-    try { st = fs.statSync(p); } catch { continue; }
-    if (st.mtimeMs < RUN_T0 - 1000) continue; // nao eh deste run
-    try { fs.rmSync(p, { recursive: true, force: true }); removed.push(e.name); } catch { /* melhor esforco */ }
-  }
-  return removed;
+  return sweepOrphans(OWN_PATTERNS, { since: RUN_T0 });
 }
 
 const PUBSPEC_FLUTTER = `name: demo_app

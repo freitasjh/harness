@@ -1,14 +1,19 @@
-import { describe, it } from "node:test";
+import { describe, it, after, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { writeFileSync, mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { tempScope } from "../../../scripts/test-temp.mjs";
 import {
   loadHarnessConfig,
   resolveCommand,
   configGatesDisableEnforcement,
   DEFAULT_CONFIG_PATH,
 } from "../../../scripts/static-checks.mjs";
+
+// FU-43: um escopo por arquivo de spec, com prefixo exclusivo; afterEach
+// cobre o caminho de falha e o after faz a vara final.
+const TMP = tempScope({ label: "harness-cfg" });
+afterEach(() => TMP.cleanup());
+after(() => TMP.cleanup());
 
 describe("static-checks.mjs loader — CFG-01 (RF-01/RF-02, ADR-009)", () => {
   it("valid config loads and resolves the canonical command", () => {
@@ -27,10 +32,8 @@ describe("static-checks.mjs loader — CFG-01 (RF-01/RF-02, ADR-009)", () => {
   });
 
   it("invalid JSON => fail-closed with clear message", () => {
-    const dir = mkdtempSync(join(tmpdir(), "harness-cfg-"));
-    const bad = join(dir, "harness.config.json");
-    writeFileSync(bad, "{not json", "utf8");
-    assert.throws(() => loadHarnessConfig(bad), /fail-closed/i);
+    const dir = TMP.tmp({ "harness.config.json": "{not json" });
+    assert.throws(() => loadHarnessConfig(join(dir, "harness.config.json")), /fail-closed/i);
   });
 
   it("unknown command key => fail-closed", () => {

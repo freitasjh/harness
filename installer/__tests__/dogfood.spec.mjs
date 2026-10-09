@@ -15,6 +15,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { runDogfood, DEFAULT_SOURCE, sourceState } from '../dogfood.mjs';
 import { cleanupDogfood, cleanupNote, cleanupErrorOf } from '../dogfood-common.mjs';
+import { sweepOrphans } from '../../scripts/test-temp.mjs';
 
 const RUN_T0 = Date.now();
 // Prefixos que ESTA spec cria sob /tmp — a varredura so mexe neles.
@@ -41,25 +42,12 @@ function mkTemp(files = {}) {
 }
 
 // A1: varredura de orfaos deste run (copia --keep, backup orfao, etc.).
-function sweepOwnOrphans() {
-  const removed = [];
-  let entries = [];
-  try { entries = fs.readdirSync(os.tmpdir(), { withFileTypes: true }); } catch { return removed; }
-  for (const e of entries) {
-    if (!OWN_PATTERNS.some((re) => re.test(e.name))) continue;
-    const p = path.join(os.tmpdir(), e.name);
-    let st;
-    try { st = fs.statSync(p); } catch { continue; }
-    if (st.mtimeMs < RUN_T0 - 1000) continue; // nao eh deste run
-    try { fs.rmSync(p, { recursive: true, force: true }); removed.push(e.name); } catch { /* melhor esforco */ }
-  }
-  return removed;
-}
-
+// A regra vive no utilitário comum (scripts/test-temp.mjs, FU-43) — era
+// copiada em 4 arquivos de spec.
 afterEach(() => {
   for (const d of dirs) { try { fs.rmSync(d, { recursive: true, force: true }); } catch { /* jah removido */ } }
   dirs = [];
-  sweepOwnOrphans();
+  sweepOrphans(OWN_PATTERNS, { since: RUN_T0 });
 });
 
 function mkSource(files = {}) {
@@ -193,7 +181,7 @@ describe('runDogfood — stack generica em copia /tmp', () => {
   });
 
   it('A1: nenhum orfao deste run sob /tmp ao final', () => {
-    const leftovers = sweepOwnOrphans();
+    const leftovers = sweepOrphans(OWN_PATTERNS, { since: RUN_T0 });
     assert.deepEqual(leftovers, [], `spec nao deixou orfao: ${leftovers.join(', ')}`);
   });
 });

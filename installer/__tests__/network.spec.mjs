@@ -6,27 +6,24 @@
 // child_process), não só os literais fetch(/node:http/node:https.
 import { describe, it, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import os from 'node:os';
 import path from 'node:path';
 import fs from 'node:fs';
 import { scanNetworkRefs, networkCheck } from '../../scripts/static-checks.mjs';
+import { tempScope } from '../../scripts/test-temp.mjs';
 import { REPO_ROOT } from '../../.opencode/plugins/lib/config.mjs';
 
-let dirs = [];
+// FU-43: fixtures em temp rastreadas pelo utilitário comum — um lugar só
+// para a regra "toda spec limpa o que criou".
+const TMP = tempScope({ label: 'harness-v15' });
 function tmp() {
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'harness-v15-'));
-  dirs.push(d);
-  return d;
+  return TMP.tmp();
 }
 function write(root, rel, content) {
   const p = path.join(root, rel);
   fs.mkdirSync(path.dirname(p), { recursive: true });
   fs.writeFileSync(p, content);
 }
-afterEach(() => {
-  for (const d of dirs) fs.rmSync(d, { recursive: true, force: true });
-  dirs = [];
-});
+afterEach(() => TMP.cleanup());
 
 // FU-42: calibração do bound de ASSERÇÃO dos testes de tempo. O contrato
 // publicado do gate (<50ms, ver comentários abaixo) é da REGEX contra a

@@ -25,6 +25,7 @@ import fs from 'node:fs';
 import { assertDogfoodTarget } from '../install.mjs';
 import { isInsideTmp, realOrResolved, tmpRealRoot } from '../zone.mjs';
 import { runDogfood } from '../dogfood.mjs';
+import { sweepOrphans } from '../../scripts/test-temp.mjs';
 
 const RUN_T0 = Date.now();
 
@@ -52,18 +53,8 @@ function mkReferent(name, files = {}) {
 }
 
 function sweepOwn() {
-  const removed = [];
-  let entries = [];
-  try { entries = fs.readdirSync(os.tmpdir(), { withFileTypes: true }); } catch { return removed; }
-  for (const e of entries) {
-    if (!/^harness-fu42-/.test(e.name)) continue;
-    const p = path.join(os.tmpdir(), e.name);
-    let st;
-    try { st = fs.lstatSync(p); } catch { continue; }
-    if (st.mtimeMs < RUN_T0 - 1000) continue;
-    try { fs.rmSync(p, { recursive: true, force: true }); removed.push(e.name); } catch { /* melhor esforço */ }
-  }
-  return removed;
+  // Regra comum em scripts/test-temp.mjs (FU-43).
+  return sweepOrphans([/^harness-fu42-/], { since: RUN_T0 });
 }
 
 afterEach(() => {

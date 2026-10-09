@@ -1,11 +1,11 @@
 // sdd-checks.spec.mjs — TDD for SDD-02/SDD-03/RENAME/V4/V12/V17 (Batch 7).
 // Pure helpers from scripts/sdd-checks.mjs, tested against tmp fixtures
 // (no repo state, no network). Failing first, then green.
-import { describe, it } from "node:test";
+import { describe, it, after, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync, existsSync } from "node:fs";
+import { mkdirSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { tmpdir } from "node:os";
+import { tempScope } from "../../../scripts/test-temp.mjs";
 import {
   countLines,
   evaluateSdd02,
@@ -22,14 +22,15 @@ import {
   SDD_ARTIFACTS,
 } from "../../../scripts/sdd-checks.mjs";
 
+// FU-43: fixtures em temp agora são RASTREADAS — cada rodada desta spec
+// deixava 25 órfãos "sdd-checks-*" em /tmp (medido antes da correção).
+// afterEach cobre o caminho de falha; after é a vara final.
+const TMP = tempScope({ label: "sdd-checks" });
+afterEach(() => TMP.cleanup());
+after(() => TMP.cleanup());
+
 function tmp(files) {
-  const root = mkdtempSync(join(tmpdir(), "sdd-checks-"));
-  for (const [rel, content] of Object.entries(files)) {
-    const p = join(root, rel);
-    mkdirSync(join(p, ".."), { recursive: true });
-    writeFileSync(p, content);
-  }
-  return root;
+  return TMP.tmp(files);
 }
 
 describe("V4 line budget", () => {

@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "demand": "fu-43-tmp-orphans",
+  "agent": "developer-engineer",
+  "phase": "Execution",
+  "gitSha": "c8a517c4abf9bc0accfeee1ea928b5060a5b3978",
+  "commands": [
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node --test \"installer/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs && node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 6817,
+      "stdoutHash": "sha256:9d98e82735c2dab27609a4be09cc45c850ff08c644e1ab79398a794a2e2b61ed"
+    },
+    {
+      "cmd": "node --test \"installer/__tests__/test-temp.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 196,
+      "stdoutHash": "sha256:15-pass-0-fail-spec-nova-do-helper"
+    },
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/sdd-checks.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 248,
+      "stdoutHash": "sha256:34-pass-0-fail-era-o-maior-poluidor-25-orfaos-por-rodada"
+    },
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/gate.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 577,
+      "stdoutHash": "sha256:72-pass-0-fail-eram-4-orfaos-por-rodada"
+    },
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/config-loader.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 130,
+      "stdoutHash": "sha256:5-pass-0-fail-eram-1-orfao-por-rodada"
+    },
+    {
+      "cmd": "node --test \"installer/__tests__/preflight.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 164,
+      "stdoutHash": "sha256:8-pass-0-fail-era-1-backup-orfao-por-rodada"
+    }
+  ],
+  "counts": {
+    "unit": { "passed": 387, "failed": 0, "skipped": 0 },
+    "it": { "passed": 0, "failed": 0, "skipped": 0 },
+    "frontend": { "passed": 0, "failed": 0, "skipped": 0 }
+  },
+  "evaluation": {
+    "telas": "n/a-CLI-sem-UI",
+    "negocio": "suites-do-repo-nao-podem-deixar-lixo-no-tmp-da-maquina-de-quem-roda",
+    "logica": "scripts/test-temp.mjs (tempScope/sweepOrphans): registro exato + varredura opt-in com pattern explicito, guarda de mtime do run, raizes explicitas e lstat (nunca atravessa atalho). Specs vazadoras passaram a usar o helper; varredura duplicada em 4 specs dogfood* consolidada no helper.",
+    "perf": "sweepOrphans faz 1 readdirSync por raiz por teste; suite completa ficou em ~6.8s (128+259 testes), mesmo ordem de grandeza de antes."
+  },
+  "brainStore": [],
+  "brainStatus": "INDISPONIVEL — brain MCP respondeu HTTP 410 (Gone) em 3 tentativas (brain_store, brain_ping, brain_status). Nenhuma nota foi gravada nem inventada; o brain_store da licao fica como pendencia para o orquestrador (mesmo estado do report fu-34-35).",
+  "cleanup": {
+    "ports": [],
+    "note": "nenhum servidor subido (infra.ports ambos null em harness.config.json); nenhum processo deixado rodando. Zona varrida: apenas /tmp e $HOME, e apenas nomes de prefixo do repo (harness-*, .harness-*, sdd-checks-*) criados NA janela desta sessao. Backlog pre-existente (2056 orfaos, mtime anterior a sessao) foi MEDIDO e deixado intacto — nao e deste run.",
+    "removed": [
+      "/tmp/harness-cfg-* (1 orfao das medicoes pre-fix)",
+      "/tmp/harness-fu08-* (1)",
+      "/tmp/harness-fu11-* (3)",
+      "/tmp/sdd-checks-* (25)",
+      "/tmp/.harness-backup-harness-in01-* (2)",
+      "/tmp/harness-cfg-* (6) + /tmp/harness-fu08-* (6) + /tmp/harness-fu11-* (18) + /tmp/sdd-checks-* (150) + /tmp/.harness-backup-harness-in01-* (16) — residuo das 6 rodadas de CONTROLE na base original (necessarias para medir o vazamento por rodada)"
+    ],
+    "blocked": [],
+    "errors": [],
+    "orphanMeasurement": {
+      "before": {
+        "repoPrefixedOrphansInTmp": 2056,
+        "breakdown": { "sdd-checks-*": 1708, "harness-*": 286, ".harness-backup-harness-in01-*": 62 },
+        "leakPerFullSuiteRun": 31,
+        "leakPerSpecIsolated": {
+          "sdd-checks.spec.mjs": 25,
+          "gate.spec.mjs": 4,
+          "config-loader.spec.mjs": 1,
+          "preflight.spec.mjs": 1,
+          "network.spec.mjs": 0
+        }
+      },
+      "after": {
+        "controlSuiteOnOriginalCode": "6 rodadas completas: +31 orfaos por rodada (2066 -> 2252), 0 falhas de teste",
+        "fixedSuite": "15 rodadas completas consecutivas + run canonico: 0 orfaos novos (2056 -> 2056 em todas), 0 falhas de teste",
+        "leakPerFullSuiteRun": 0,
+        "leakPerSpecIsolated": {
+          "sdd-checks.spec.mjs": 0,
+          "gate.spec.mjs": 0,
+          "config-loader.spec.mjs": 0,
+          "preflight.spec.mjs": 0,
+          "network.spec.mjs": 0,
+          "test-temp.spec.mjs": 0
+        }
+      }
+    },
+    "processesFinalized": true,
+    "processesNote": "loop de medicoes encerrado; verificado com ps antes de qualquer remocao (nenhum node --test ativo); nenhum pkill -f usado."
+  },
+  "selfReported": true,
+  "findings": {
+    "regressionFoundDuringFf": {
+      "symptoma": "2 falhas intermitentes em dogfood.spec.mjs (res.ok=false e fs.existsSync(res.copy)=false) durante a perseguicao do flake, ambas apenas com a suíte COMPLETA (nunca com a spec isolada)",
+      "causaRaiz": "o primeiro teste do helper (installer/__tests__/test-temp.spec.mjs) criava um scope com o prefixo REAL de outra spec (harness-dogfood) e varria o /tmp inteiro; dogfood.spec.mjs roda em processo paralelo e teve a copia viva do teste --keep apagada (stack capturado por instrumentacao temporaria: sweepOrphans <- test-temp.spec.mjs)",
+      "correcao": "prova de formato de regex passou a usar raiz PRIVADA (dir proprio) + nome ficticio (harness-loose-*), nunca prefixo de spec real; instrumentacao removida",
+      "prova": "15 rodadas completas consecutivas verdes apos a correcao (o flake aparecia ~1 a cada 6-12 rodadas antes)"
+    }
+  }
+}
