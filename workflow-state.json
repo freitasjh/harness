@@ -78,7 +78,7 @@
       "created": "2026-10-07T19:57:29.951Z"
     }
   ],
-  "last_update": "2026-10-09T20:33:06.031Z",
+  "last_update": "2026-10-09T21:47:49.644Z",
   "spec_score": 0.94,
   "spec_status": "v1_reviewed_aprovado_com_ajustes",
   "validation": {
@@ -94,9 +94,9 @@
     "U5": "c - dois ancoras",
     "U6": "b - selo de hash"
   },
-  "harness_status": "passed (suiteFull: plugins 128 + installer 232)",
+  "harness_status": "passed (plugins 128 + installer 244 + static + vendor)",
   "code_review_status": "passed",
-  "sdd_stage": "FU-34/FU-35 CLOSED — digest de isolamento + limpeza fail-safe (symlink bloqueado). Tech-debt FU-42/43.",
+  "sdd_stage": "FU-42 CLOSED — escrita do dogfood por realpath + zona unica (zone.mjs). FU-43 (P2 /tmp polluters) DEBT. Brain MCP down (410).",
   "backlog": {
     "total": 14,
     "todo": 0,
@@ -389,13 +389,15 @@
       "id": "FU-42",
       "origem": "reviewer FU-34/35",
       "texto": "P2: dogfood escreve fora do /tmp via pai-symlink (assertDogfoodTarget lexical) — tech-debt dogfood-write-zone-symlink",
-      "bloqueia": false
+      "bloqueia": false,
+      "status": "FU-42 closed_reviewed_realpath_write_zone"
     },
     {
       "id": "FU-43",
       "origem": "reviewer FU-34/35",
       "texto": "P2: specs poluem /tmp (config-loader/gate/network/preflight) — saneamento H2",
-      "bloqueia": false
+      "bloqueia": false,
+      "status": "open_p2_tech_debt"
     }
   ],
   "batches": {
@@ -638,5 +640,10 @@
     "medio": 1,
     "ressalva": "I9 CI wiring -> FU-29"
   },
-  "pending_actions": []
+  "pending_actions": [
+    "Brain MCP down (HTTP 410): registrar licoes pendentes (FU-34/35, FU-42, timing)",
+    "FU-43 P2: specs poluem /tmp (saneamento)",
+    "HARNESS_SEAL_JSON republicar (externo)",
+    "push (nada enviado)"
+  ]
 }
