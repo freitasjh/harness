@@ -78,7 +78,7 @@
       "created": "2026-10-07T19:57:29.951Z"
     }
   ],
-  "last_update": "2026-10-09T13:56:04.246Z",
+  "last_update": "2026-10-09T18:13:20.209Z",
   "spec_score": 0.94,
   "spec_status": "v1_reviewed_aprovado_com_ajustes",
   "validation": {
@@ -94,9 +94,9 @@
     "U5": "c - dois ancoras",
     "U6": "b - selo de hash"
   },
-  "harness_status": "passed (suiteFull exit 0: plugins 128/128 + installer 162/162 + static + vendor; sdd-checks 8/8 PASS)",
+  "harness_status": "passed (suiteFull exit 0: plugins 128/128 + installer 185/185 + static + vendor)",
   "code_review_status": "passed",
-  "sdd_stage": "FU-38 CLOSED — CI static-checks verde (SDD-02 resolvido dinamicamente).",
+  "sdd_stage": "FU-31 CLOSED — V15 por classe + bounds anti-ReDoS (string {0,4}, array {0,200}); gate-contract §1 linha V15 🟠 parcial com E1..E9 publicadas.",
   "backlog": {
     "total": 14,
     "todo": 0,
@@ -330,7 +330,8 @@
       "id": "FU-31",
       "origem": "reviewer Batch2",
       "texto": "Ampliar V15 (https/http sem node:, child_process, WebSocket, axios/undici) ou reclassificar I8 parcial",
-      "bloqueia": false
+      "bloqueia": false,
+      "status": "closed_reviewed_v15_classe_bounds"
     },
     {
       "id": "FU-32",

@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "demand": "fu-31-review-it3-redos-declared-escapes",
+  "agent": "developer-engineer",
+  "phase": "Execution",
+  "gitSha": "2876e86",
+  "commands": [
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node --test \"installer/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs && node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 394,
+      "stdoutHash": "sha256:7d6944d0e282f383d70ca19f1849677c120b974a50ff2f8c396cf578a8e1dc3a"
+    }
+  ],
+  "counts": {
+    "unit": { "passed": 308, "failed": 0, "skipped": 0 },
+    "it": { "passed": 0, "failed": 0, "skipped": 0 },
+    "frontend": { "passed": 0, "failed": 0, "skipped": 0 }
+  },
+  "evaluation": {
+    "telas": "n/a-repo-sem-ui (stack backend/frontend = N/A em harness.config.json)",
+    "negocio": "ok-rodada final FU-31: (RE-1) ReDoS nos patterns net-git-cmd/net-pkg-cmd corrigido — grupo (?:flag (arg)?)* sem limite superior media >120s em linha patologica (npm --x x22, 92 chars; node v26, 2026-10-09); fix = bound explicito {0,4} preservando a semantica E6 (flags antes do subcomando); prova por teste de tempo: linha 200+ chars com 200 flags fecha em <50ms (microssegundos na pratica); (ES-1/ES-2) arestas E7 (padrao dividido entre linhas — scan linha-a-linha) e E8 (alias de require: createRequire/const rq=require) DECLARADAS no header de static-checks.mjs e testadas como contraprova de bypass — REGRA DE PARADA respeitada: nenhum escape novo cacado; extra: fronteira do net-npx-cmd alinhada (?<![-\\w]) eliminando FP de substring (my-npx), review 🟡 fechado",
+    "logica": "ok-regexes bounded com semantica identica aos casos legitimos (git -C dir clone, npm --prefix dir install, git -c a=b -c c=d push seguem HIT; npm run/init, git status, my-npx seguem limpos); zero falso-positivo no repo real (checkV15 PASS rede em installer/=0; guardiao networkCheck(installer/) verde nos 21 testes de network.spec.mjs); stdoutHash real do comando canonico selado",
+    "perf": "ok-teste de tempo prova o bound: linha patologica 200+ chars com 200 flags por linha (5 linhas) escaneada em <50ms; antes do fix a mesma classe de linha media >120s (ReDoS catastrofico medido)"
+  },
+  "brainStore": [
+    "regras/projetos/harness/v15-redos-bound-lesson"
+  ],
+  "cleanup": {
+    "ports": [],
+    "note": "nenhum servidor/porta subido neste batch (infra.ports nulos em harness.config.json); nada a encerrar; nenhum pkill -f executado; processo de teste travado pelo ReDoS durante a fase RED foi encerrado pelo proprio kill de grupo da tool (verificado: nenhum node --test orfao)"
+  },
+  "selfReported": true
+}

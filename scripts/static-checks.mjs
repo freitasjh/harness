@@ -73,13 +73,135 @@ function countMatches(files, pattern) {
   return hits;
 }
 
-// --- V15: rede proibida em installer/ (I8) ---------------------------------
-// install.mjs e o caminho de instalacao: rede-zero. fetch/node:http(s)
-// so podem existir source-side (scripts/vendor-skills.mjs), nunca aqui.
+// --- V15: rede proibida em installer/ (V15/rede-installer) ----------------
+// Rótulo canônico V15/rede-installer. NÃO usar "I8": no gate-contract.md
+// (doc global) I8 = "DenyError ⇒ deny"; o I8 do spec da feature
+// (harness-installer-mobile) significava "install.mjs não faz rede" —
+// rótulo ambíguo/órfão (review FU-31 MF-1, higiene DOC-01). A linha de
+// gate publicada vive no gate-contract.md (orchestrator); garantia 🟠.
+//
+// install.mjs e o caminho de instalacao: rede-zero. Rede so pode existir
+// source-side (scripts/vendor-skills.mjs, ADR-009), nunca aqui.
+//
+// FU-31: lista FECHADA e documentada de padrões (a classe, não só o
+// literal fetch(/node:http/node:https). Varredura é linha-inteira, sem
+// exclusão de comentário — semântica herdada do V15 original (menção em
+// comentário/prosa também bate; intencional, não é escape).
+//
+// Cobertura declarada:
+//   builtin-net-import    node:(http|https|net|dns|dgram|http2|tls) e sem
+//                         prefixo node:, via from / import() / require() /
+//                         side-effect import "x" (FU-31 review MF-2, escape
+//                         E5 fechado)
+//   http-lib-import       axios|got|undici|node-fetch|cross-fetch|
+//                         isomorphic-fetch|superagent|ky|request|ws,
+//                         ancorado em specifier de import/require/side-effect
+//                         — NUNCA palavra solta ("got ${ver}" é menção legítima)
+//   fetch                 fetch( em qualquer posição
+//   new-WebSocket         new WebSocket (global), incl. new globalThis.WebSocket
+//   new-XMLHttpRequest    new XMLHttpRequest (global)
+//   net-cmd-download      curl|wget (instalador não baixa nada)
+//   net-git-cmd           string-única: git [flag+arg]{0,4} (clone|fetch|
+//                         pull|push|ls-remote) — flags antes do subcomando
+//                         cobertas (FU-31 review MF-3, escape E6 fechado).
+//                         Grupo BOUNDED {0,4}: sem limite superior havia
+//                         ReDoS catastrófico (linha com muitas flags sem
+//                         subcomando travava o scan >120s — medida em
+//                         2026-10-09, node v26; FU-31 review RE-1). Contrato
+//                         de velocidade: linha patológica de 200+ chars
+//                         fecha em <50ms (teste em network.spec.mjs).
+//                         Limite declarado: >4 pares flag+arg antes do
+//                         subcomando não casa.
+//   net-git-cmd-array     array de child_process: subcomando quotado em
+//                         qualquer posição do array (ex.: ["-C", repo,
+//                         "clone", url]); git status/rev-parse/cp/
+//                         node --test seguem permitidos. Grupo BOUNDED
+//                         {0,200} no trecho antes do subcomando: sem
+//                         limite havia ReDoS — linha com array enorme ou
+//                         muitos prefixos git", [ custa O(n)..O(n²)
+//                         (medido 2026-10-09, node v26: forma multi-
+//                         ocorrência 64k chars = 305ms; contrato <50ms
+//                         violado). Contrato de velocidade: linha
+//                         patológica array fecha em <50ms (teste em
+//                         network.spec.mjs).
+//                         Limite declarado: elemento de array além de 200
+//                         chars antes do subcomando não casa.
+//   net-pkg-cmd           npm|pnpm|yarn|bun [flag+arg]{0,4} (install|ci|i|add)
+//                         na string-única — mesmo bound {0,4} anti-ReDoS
+//   net-pkg-cmd-array     idem via array de child_process — mesmo bound
+//                         {0,200} e mesmo limite declarado do
+//                         net-git-cmd-array
+//   net-npx-cmd           npx (baixa pacote sob demanda — perfil mobile).
+//                         Fronteira (?<![-\w]): my-npx/bin-npx (substring)
+//                         não é falso-positivo (FU-31 review 🟡 alinhado)
+//   net-pub-cmd           flutter|dart pub (get|add|upgrade) (perfil mobile)
+//
+// Escapes DECLARADOS (V15/rede-installer permanece 🟠 parcial enquanto existirem):
+//   E1. child_process com comando em VARIÁVEL — ex.
+//       installer/dogfood-mobile.mjs runCommand(cmd) => execFileSync(cmd,
+//       {shell:'/bin/sh'}); cmd vem do flag --suite-command ou de
+//       commands.suiteFull do harness.config.json do próprio INSTALLER_ROOT
+//       (repo harness), resolvido em runtime. Scan estático não vê o valor.
+//       O instalador em si (install.mjs) não faz rede própria.
+//   E2. global de rede via alias (const W = WebSocket; new W(...)) ou alias
+//       de fetch (const f = fetch; f(url)) — só a forma literal casa.
+//   E3. specifier construído dinamicamente (import(modName)) ou sem espaço
+//       (import"axios").
+//   E4. builtins internos não listados (ex.: node:_http_agent).
+//   E5. array-form: subcomando bate como elemento quotado em qualquer
+//       posição — FP residual quando a palavra é argumento
+//       (ex.: ["run", "install"]).
+//   E6. comandos de rede fora da lista fechada (git remote add,
+//       git submodule update, pip, cargo, deno, go get...).
+//   E7. padrão dividido entre linhas escapa — scanNetworkRefs é
+//       linha-a-linha, então import\n "node:https"; , fetch\n("http://x")
+//       e execSync("git\n clone ...") não batem. DECLARADO (FU-31 review
+//       ES-1): NÃO caçado — expandir regex para multi-linha custaria
+//       backtracking/ReDoS de volta (lição RE-1) por benefício pequeno.
+//   E8. alias de require escapa — createRequire(import.meta.url)("axios")
+//       ou const rq = require; rq("got") não batem (só a forma literal
+//       require("x") casa). DECLARADO (FU-31 review ES-2): NÃO caçado.
+//   E9. npx só na forma string-única — execFileSync("npx", ["pkg"])
+//       (array-form) escapa; só npx <arg> em string casa. DECLARADO
+//       (FU-31 rodada final D-2): NÃO caçado.
+// FP residual anotado (FU-31 rodada final D-3): net-npx-cmd casa
+//       "npx --version" (só imprime versão, não baixa). Fronteira não
+//       distingue flag de pacote — declarado, NÃO caçado: excluir flags
+//       quebraria casos legítimos de download (npx -y pkg baixa).
 const NETWORK_PATTERNS = [
+  {
+    pattern: "builtin-net-import",
+    re: /(?:from\s*|import\s*\(\s*|import\s+|require\s*\(\s*)['"](?:node:)?(?:https?|net|dns|dgram|http2|tls)['"]/,
+  },
+  {
+    pattern: "http-lib-import",
+    re: /(?:from\s*|import\s*\(\s*|import\s+|require\s*\(\s*)['"](?:axios|got|undici|node-fetch|cross-fetch|isomorphic-fetch|superagent|ky|request|ws)['"]/,
+  },
   { pattern: "fetch", re: /\bfetch\s*\(/ },
-  { pattern: "node:http", re: /node:http\b/ },
-  { pattern: "node:https", re: /node:https\b/ },
+  { pattern: "new-WebSocket", re: /\bnew\s+(?:globalThis\.)?WebSocket\b/ },
+  { pattern: "new-XMLHttpRequest", re: /\bnew\s+(?:globalThis\.)?XMLHttpRequest\b/ },
+  { pattern: "net-cmd-download", re: /\b(?:curl|wget)\b/ },
+  {
+    pattern: "net-git-cmd",
+    re: /\bgit\s+(?:-\S+(?:\s+[^\s|;&]+)?\s+){0,4}(?:clone|fetch|pull|push|ls-remote)\b/,
+  },
+  {
+    pattern: "net-git-cmd-array",
+    re: /\bgit['"]\s*,\s*\[[^\]]{0,200}['"](?:clone|fetch|pull|push|ls-remote)['"]/,
+  },
+  {
+    pattern: "net-pkg-cmd",
+    re: /\b(?:npm|pnpm|yarn|bun)\s+(?:--?\S+(?:\s+[^\s|;&]+)?\s+){0,4}(?:install|ci|i|add)\b/,
+  },
+  {
+    pattern: "net-pkg-cmd-array",
+    re: /\b(?:npm|pnpm|yarn|bun)['"]\s*,\s*\[[^\]]{0,200}['"](?:install|ci|i|add)['"]/,
+  },
+  { pattern: "net-npx-cmd", re: /(?<![-\w])npx\s+\S/ },
+  {
+    pattern: "net-pub-cmd",
+    re: /\b(?:flutter|dart)\s+pub\s+(?:get|add|upgrade)\b/,
+  },
 ];
 
 function networkFiles(root) {
