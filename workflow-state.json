@@ -78,7 +78,7 @@
       "created": "2026-10-07T19:57:29.951Z"
     }
   ],
-  "last_update": "2026-10-09T18:13:20.209Z",
+  "last_update": "2026-10-09T18:14:27.274Z",
   "spec_score": 0.94,
   "spec_status": "v1_reviewed_aprovado_com_ajustes",
   "validation": {
@@ -325,13 +325,6 @@
       "origem": "reviewer Batch2",
       "texto": "De-dup log lock-vs-source mismatch (cosmetico)",
       "bloqueia": false
-    },
-    {
-      "id": "FU-31",
-      "origem": "reviewer Batch2",
-      "texto": "Ampliar V15 (https/http sem node:, child_process, WebSocket, axios/undici) ou reclassificar I8 parcial",
-      "bloqueia": false,
-      "status": "closed_reviewed_v15_classe_bounds"
     },
     {
       "id": "FU-32",
