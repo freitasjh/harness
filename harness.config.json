@@ -11,7 +11,7 @@
     "schemas": ".agents/schemas"
   },
   "commands": {
-    "suiteFull": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs",
+    "suiteFull": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node --test \"installer/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs && node scripts/vendor-skills.mjs --check",
     "unit": "node --test \".opencode/plugins/__tests__/*.spec.mjs\""
   },
   "infra": {

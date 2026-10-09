@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "demand": "fu-29-ci-wiring-vendor-check",
+  "agent": "developer-engineer",
+  "phase": "Execution",
+  "gitSha": "779be3f8fdeb54e8bacba8a82e32939055454729",
+  "commands": [
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node --test \"installer/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs && node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 691,
+      "stdoutHash": "sha256:abdff7b5a03c8a249a6642987f974320cb0c3017c2b862056103bcd25f80ac31"
+    }
+  ],
+  "counts": {
+    "unit": { "passed": 266, "failed": 0, "skipped": 0 },
+    "it": { "passed": 0, "failed": 0, "skipped": 0 },
+    "frontend": { "passed": 0, "failed": 0, "skipped": 0 }
+  },
+  "evaluation": {
+    "telas": "n/a-repo-sem-ui (stack backend/frontend = N/A; UI roda via chrome-devtools em consumidores)",
+    "negocio": "ok-suiteFull passa a cobrir installer tests (162) + vendor drift-check; I9/ADR-009 deixa de ser garantia manual",
+    "logica": "ok-4 comandos encadeados com && (short-circuit); static V3/V6 PASS; vendor --check OK",
+    "perf": "n/a-config/CI"
+  },
+  "brainStore": [
+    "sessoes/projetos/fu-29-ci-wiring-vendor-check"
+  ],
+  "cleanup": { "ports": [], "note": "nenhum servidor/porta subido neste batch; nada a encerrar (infra.ports nulos)" },
+  "selfReported": true
+}

@@ -37,17 +37,17 @@
     "P3_P4": "approved_auto_evidence_batches1-4",
     "P4_P5": "pending_user_approval",
     "P5_P6": "approved_user_2026_10_08",
-    "P6_fim": "pending_user_approval",
+    "P6_fim": "done_commit_779be3f",
     "B1_B2": "approved_user_2026_09_29",
     "FU32": "closed_approved_decision_B"
   },
   "code_review": {
-    "last_invoked_at": "2026-10-08T11:16:39.461Z",
+    "last_invoked_at": "2026-10-09T12:30:45.395Z",
     "last_status": "passed",
     "critical_issues": 0,
-    "attention_issues": 3,
-    "suggestions": 4,
-    "reviewer_notes": "Batch4 APPROVED. Doc fiel ao codigo; dogfood isola (sem write na origem, alvo /tmp); evidencia H3 valida. 🟡 hardening dogfood -> FU-34..37."
+    "attention_issues": 2,
+    "suggestions": 3,
+    "reviewer_notes": "FU-29 APPROVED. suiteFull+CI com installer tests + vendor --check. Selo externo: republicar HARNESS_SEAL_JSON fora do repo. FU-38 mantem CI red."
   },
   "overrides": [],
   "overrides_history": [
@@ -84,7 +84,7 @@
       "created": "2026-10-07T19:57:29.951Z"
     }
   ],
-  "last_update": "2026-10-08T11:27:07.471Z",
+  "last_update": "2026-10-09T12:30:45.396Z",
   "spec_score": 0.94,
   "spec_status": "v1_reviewed_aprovado_com_ajustes",
   "validation": {
@@ -100,9 +100,9 @@
     "U5": "c - dois ancoras",
     "U6": "b - selo de hash"
   },
-  "harness_status": "passed (dogfood mobile /tmp + suite 104/104 + installer 162/162)",
+  "harness_status": "passed (suiteFull novo: plugins 104/104 + installer 162/162 + static + vendor --check)",
   "code_review_status": "passed",
-  "sdd_stage": "Fase 6 — ARCHIVED. Deltas mesclados (harness-config.md). Aguardando commit (P6_fim).",
+  "sdd_stage": "FU-29 CLOSED (I9 wired no CI/suiteFull). Pendente: commit + pagar FU-38.",
   "backlog": {
     "total": 14,
     "todo": 0,
@@ -263,14 +263,16 @@
       "origem": "reviewer installer Batch 1",
       "texto": "IN-05: main() deve exigir backup.verified antes de applyMerge (I1 enforcement)",
       "bloqueia": false,
-      "dono": "Batch 2"
+      "dono": "Batch 2",
+      "status": "closed_verified_requireVerifiedBackup"
     },
     {
       "id": "FU-21",
       "origem": "reviewer installer Batch 1",
       "texto": "Corrigir merge-manifest S1 vacuous (incomingFiles + assert conteúdo)",
       "bloqueia": false,
-      "dono": "Batch 2"
+      "dono": "Batch 2",
+      "status": "closed_verified_MISSING_INCOMING"
     },
     {
       "id": "FU-22",
@@ -301,7 +303,8 @@
       "id": "FU-26",
       "origem": "instalacao ECM",
       "texto": "Denylist substring gera falso-positivo em proibicao/mencao (usar match contextual)",
-      "bloqueia": false
+      "bloqueia": false,
+      "status": "closed_resolved_by_FU32_redesenho_escopo"
     },
     {
       "id": "FU-27",
@@ -320,7 +323,8 @@
       "origem": "reviewer Batch2",
       "texto": "Wire vendor --check + installer tests no CI/suiteFull (paths protegidos)",
       "bloqueia": false,
-      "dono": "tech-debt ci-wiring-vendor-check"
+      "dono": "tech-debt ci-wiring-vendor-check",
+      "status": "closed_reviewed_ci_wired"
     },
     {
       "id": "FU-30",
@@ -338,8 +342,8 @@
       "id": "FU-32",
       "origem": "developer Batch3",
       "texto": "Checks pos-install do harness dao FAIL literal-denied: rules/skills citam taskflow/vuetify/primevue/lombok/mapstruct/restassured como baseline. Instalar harness em destino limpo => checks FAIL. Escalar FU-26 (denylist substring => match contextual).",
-      "bloqueia": true,
-      "status": "open",
+      "bloqueia": false,
+      "status": "closed_redesenho_escopo_aprovado",
       "dono": "pre-Batch4-dogfood"
     },
     {
@@ -529,7 +533,7 @@
     "veredito": "APPROVED",
     "traceability": "100%"
   },
-  "commit": "ad0eadb (local; push pendente)",
+  "commit": "779be3f",
   "remote": "git@github.com:freitasjh/harness.git (SSH; push + CI pendentes)",
   "ci_evidence": {
     "main": "GREEN confirmado na UI",
@@ -618,5 +622,10 @@
     "criticos": 0,
     "medio": 1,
     "ressalva": "I9 CI wiring -> FU-29"
-  }
+  },
+  "pending_actions": [
+    "republicar HARNESS_SEAL_JSON externo (novo suiteFull)",
+    "commit FU-29 (protected paths) com trailer Harness-Gate-Change",
+    "FU-38 (SDD-02 FAIL) para CI verde"
+  ]
 }
