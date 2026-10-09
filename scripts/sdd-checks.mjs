@@ -5,7 +5,7 @@
 // Runs locally and in CI with the same result: node scripts/sdd-checks.mjs
 // Exit 0 = all green. Exit 1 = at least one FAIL.
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { REPO_ROOT } from "../.opencode/plugins/lib/config.mjs";
 
@@ -90,17 +90,29 @@ export function isMappingLine(line) {
   return /→/.test(line) && line.includes(OLD_REVIEWER);
 }
 
+// Task ids seen in the repo: `INF-01`, `IM-BE-01`, `GATE-01`, `RENAME`, ...
+// built as a string so one source of truth serves both extractors.
+// Single-letter prefixes count (`T-01` in .spec/tech-debts/**/TASKS.md):
+// `[A-Z]+(?:-[A-Z]+)*-\d+` still rejects prose (`### WARNING —`,
+// `### Batch 1 —`, `### API v2`, `### Task 42`) because prose has no
+// uppercase-run followed by `-<digits>`.
+const TASK_ID_SRC = "[A-Z]+(?:-[A-Z]+)*-\\d+|RENAME";
+
 export function extractTaskIds(summaryText) {
+  const re = new RegExp(`\\|\\s*(?:Phase\\s+\\S+|Phase\\s+\\S+\\+\\S+)\\s*\\|\\s*\`?(${TASK_ID_SRC})\`?\\s*\\|`, "g");
   const ids = [];
-  for (const m of summaryText.matchAll(/\|\s*(?:Phase\s+\S+|Phase\s+\S+\+\S+)\s*\|\s*([A-Z]+-\d+|RENAME)\s*\|/g)) {
+  for (const m of summaryText.matchAll(re)) {
     ids.push(m[1]);
   }
   return [...new Set(ids)];
 }
 
+// Three real conventions coexist: "### Task ID: t", the backticked canonical
+// template "### Task `ID`: t" and batch-style "### ID — t".
 export function extractTaskSections(body) {
+  const re = new RegExp(`^###\\s+(?:Task\\s+)?\`?(${TASK_ID_SRC})\`?\\b`, "gm");
   const sections = [];
-  for (const m of body.matchAll(/^### Task ([A-Z]+-\d+|RENAME)\b/gm)) {
+  for (const m of body.matchAll(re)) {
     sections.push(m[1]);
   }
   return sections;
@@ -121,6 +133,191 @@ export function hasGatesConvention(root) {
   if (!existsSync(agent)) return false;
   const text = readFileSync(agent, "utf8");
   return text.includes("gates.P1_P2") && text.includes("gates.P2_P3");
+}
+
+// --- SDD-02 target resolution (FU-38) ---------------------------------------
+// The dogfood target must never be a hardcoded path: the bug being fixed here
+// was a check looking at `.spec/governance/<feature>` after that cycle had been
+// archived. The target is resolved from the repo's own state instead, and an
+// archived cycle (`.spec/archive/**`) is as valid as a live one.
+export const SDD_ARTIFACTS = ["PROPOSAL.md", "SPEC.md", "PLAN.md", "TASKS.md"];
+
+// Buckets under .spec/ that carry partial docs, not a full SDD cycle.
+const SPEC_NON_CYCLE = new Set(["archive", "tech-debts", "roadmap", "bugs"]);
+
+export function readWorkflowState(root) {
+  try {
+    return JSON.parse(readFileSync(join(root, "workflow-state.json"), "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+export function missingArtifacts(dir) {
+  return SDD_ARTIFACTS.filter((a) => !existsSync(join(dir, a)));
+}
+
+function subDirs(dir) {
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir, { withFileTypes: true })
+    .filter((e) => e.isDirectory())
+    .map((e) => e.name)
+    .sort();
+}
+
+// Ordered candidate list (first complete dir wins). Tiers: state pointers,
+// the cycle the state names, then any live cycle, then archived cycles
+// (newest first — the `<YYYYMMDD>-<feature>` prefix sorts chronologically).
+export function sddCycleCandidates(root) {
+  const state = readWorkflowState(root);
+  const out = [];
+  const add = (rel, via) => {
+    if (typeof rel !== "string") return;
+    const norm = rel.replace(/^\.\//, "").replace(/\/+$/, "");
+    if (norm.length === 0 || out.some((c) => c.rel === norm)) return;
+    out.push({ rel: norm, via });
+  };
+
+  const specDir = join(root, ".spec");
+  const groups = subDirs(specDir).filter((g) => !SPEC_NON_CYCLE.has(g));
+  const archives = subDirs(join(specDir, "archive")).reverse();
+
+  // Tier 1 — pointers declared by the state. Stale values are tolerated: an
+  // incomplete candidate is skipped by the caller, never fatal on its own.
+  // Every artifacts.* key counts (file pointers resolve to their dir; dir
+  // pointers — archive — are added as-is).
+  const stateArts = state?.artifacts;
+  if (stateArts && typeof stateArts === "object") {
+    for (const [k, v] of Object.entries(stateArts)) {
+      if (typeof v !== "string" || v.length === 0) continue;
+      add(v.endsWith(".md") ? dirname(v) : v, `state.artifacts.${k}`);
+    }
+  }
+  for (const f of Array.isArray(state?.features) ? state.features : []) {
+    const arts = f?.artifacts;
+    if (!arts || typeof arts !== "object") continue;
+    for (const v of Object.values(arts)) {
+      if (typeof v === "string" && v.endsWith(".md")) {
+        add(dirname(v), `state.features[${f?.name ?? "?"}].artifacts`);
+      }
+    }
+  }
+
+  // Tier 2 — the cycle the state names as current: live groups, then archive.
+  const feat = typeof state?.current_feature === "string" ? state.current_feature.trim() : "";
+  if (feat) {
+    for (const g of groups) add(`.spec/${g}/${feat}`, `current_feature="${feat}" (.spec/${g})`);
+    add(`.spec/${feat}`, `current_feature="${feat}" (.spec)`);
+    for (const a of archives) {
+      if (a === feat || a.endsWith(`-${feat}`)) add(`.spec/archive/${a}`, `current_feature="${feat}" (archive)`);
+    }
+  }
+
+  // Tier 3 — any live cycle (a feature may exist without a state pointer).
+  for (const g of groups) {
+    for (const f of subDirs(join(specDir, g))) add(`.spec/${g}/${f}`, `live cycle .spec/${g}/${f}`);
+    add(`.spec/${g}`, `live cycle .spec/${g}`);
+  }
+
+  // Tier 4 — archived cycles, newest first.
+  for (const a of archives) add(`.spec/archive/${a}`, "archived cycle");
+
+  return out;
+}
+
+export function resolveSddCycle(root = REPO_ROOT) {
+  const candidates = sddCycleCandidates(root);
+
+  // --- Precedence contract (FU-38 hard-stop) ---------------------------------
+  // 1. Tier-1 explicit state pointer → LIVE COMPLETE cycle beats drift. In the
+  //    multi-dir SDD layout (.spec/backend/<f>/ + .spec/frontend/<f>/) a
+  //    complete layer and a WIP layer share the feature name; the state's own
+  //    pointer says which dir IS the cycle, so a same-name WIP sibling must
+  //    not read as drift (false-red, mirror of the FU-38 archived-dir bug).
+  // 2. A Tier-1 pointer wins ONLY if it names a LIVE, COMPLETE dir. An
+  //    archive pointer (or a stale/incomplete one) NEVER masks drift — that
+  //    is the MF-1 contra-prova: a complete archived cycle does not absolve
+  //    a live incomplete current cycle.
+  // 3. Otherwise: the drift gate below judges current_feature-named live dirs,
+  //    then any complete live cycle, then the archive.
+  const state = readWorkflowState(root);
+  const feat = typeof state?.current_feature === "string" ? state.current_feature.trim() : "";
+  const isArchiveRel = (rel) => /(^|\/)\.spec\/archive\//.test(rel);
+  for (const c of candidates) {
+    if (!c.via.startsWith("state.")) continue; // explicit pointer only
+    if (isArchiveRel(c.rel)) continue; // archive never masks drift
+    if (!existsSync(join(root, c.rel))) continue; // stale pointer — not evidence
+    if (missingArtifacts(join(root, c.rel)).length > 0) continue; // live but incomplete
+    return { rel: c.rel, dir: join(root, c.rel), via: c.via, complete: true, candidates };
+  }
+
+  // MF-1 (review do FU-38): the state names a cycle as current. If that cycle
+  // EXISTS on disk (a live group, not an archived dir) and is INCOMPLETE, a
+  // complete archive must NOT mask it — that was the false-green of SDD-02.
+  // A live dir that no longer exists is the FU-38 false-red (already
+  // archived): still tolerated, the archive fallback wins.
+  if (feat) {
+    // Named dirs are matched by PATH, not by the candidate's via-label: a
+    // Tier-1 pointer may have registered the same dir first (dedup keeps one
+    // entry per path), and the drift gate must still classify it.
+    const groups = subDirs(join(root, ".spec")).filter((g) => !SPEC_NON_CYCLE.has(g));
+    const namedByFeat = new Set([...groups.map((g) => `.spec/${g}/${feat}`), `.spec/${feat}`]);
+    for (const c of candidates) {
+      if (!namedByFeat.has(c.rel)) continue;
+      if (!existsSync(join(root, c.rel))) continue; // archived away — not drift
+      if (missingArtifacts(join(root, c.rel)).length === 0) continue; // complete live cycle
+      return { rel: c.rel, dir: join(root, c.rel), via: c.via, complete: false, drift: true, candidates };
+    }
+  }
+
+  for (const c of candidates) {
+    if (missingArtifacts(join(root, c.rel)).length === 0) {
+      return { rel: c.rel, dir: join(root, c.rel), via: c.via, complete: true, candidates };
+    }
+  }
+  return { rel: null, dir: null, via: null, complete: false, candidates };
+}
+
+export function evaluateSdd02(root = REPO_ROOT) {
+  const cycle = resolveSddCycle(root);
+  if (!cycle.complete) {
+    if (cycle.drift) {
+      // Fail-closed on drift of the cycle the state itself declares current.
+      const missing = missingArtifacts(cycle.dir);
+      return {
+        ok: false,
+        detail: `live cycle named by state is incomplete — drift: ${cycle.rel} (via ${cycle.via}) missing ${missing.join(",")}; an archived cycle must not mask the current one`,
+      };
+    }
+    // Fail-closed: no cycle with the 4 artifacts anywhere (state or archive).
+    let closest = null;
+    for (const c of cycle.candidates) {
+      const missing = missingArtifacts(join(root, c.rel));
+      if (!closest || missing.length < closest.missing.length) closest = { ...c, missing };
+    }
+    const hint = closest
+      ? `closest ${closest.rel} (via ${closest.via}) missing ${closest.missing.join(",")}`
+      : "no candidate dir resolved (state + .spec scan empty)";
+    return {
+      ok: false,
+      detail: `no complete SDD cycle (${SDD_ARTIFACTS.join("/")}) — ${cycle.candidates.length} candidates, ${hint}`,
+    };
+  }
+  const tasks = readFileSync(join(cycle.dir, "TASKS.md"), "utf8");
+  const ids = extractTaskIds(tasks);
+  const sections = extractTaskSections(tasks);
+  // A backlog without a sprint-summary table declares its tasks via the
+  // sections themselves; when the table exists it must match 1:1.
+  const declared = ids.length > 0 ? ids : sections;
+  const orphans = ids.filter((id) => !sections.includes(id));
+  const ok = declared.length > 0 && orphans.length === 0;
+  const reason = sections.length === 0
+    ? ", no task sections"
+    : orphans.length > 0 ? `, orphan ids ${orphans.join(",")}` : "";
+  return {
+    ok,
+    detail: `cycle=${cycle.rel} (via ${cycle.via}) artifacts ${SDD_ARTIFACTS.length}/${SDD_ARTIFACTS.length}, tasks sections=${sections.length} declared=${declared.length}${reason}`,
+  };
 }
 
 // --- Repo checks -------------------------------------------------------------
@@ -159,21 +356,9 @@ export function runSddChecks(root = REPO_ROOT) {
   const noOrphanPromise = !/(garante|bloqueia|impede)[^\n]*\n(?![\s\S]*gate-contract\.md)/i.test(sddText) || sddText.includes("Nenhuma linha deste AGENT.md");
   record("SDD-01", !sddFileBad && noBypass && noOrphanPromise ? "PASS" : "FAIL", `refs-ok=${!sddFileBad} non-bypass=${noBypass} no-orphan-promise=${noOrphanPromise}`);
 
-  // SDD-02 — dogfood: artifacts exist + task sections 1:1 with sprint summary.
-  const specDir = join(root, ".spec/governance/harness-v7");
-  const artifacts = ["PROPOSAL.md", "SPEC.md", "PLAN.md", "TASKS.md"];
-  const missing = artifacts.filter((a) => !existsSync(join(specDir, a)));
-  let sdd02Detail = missing.length ? `missing ${missing.join(",")}` : "";
-  let sdd02Ok = missing.length === 0;
-  if (sdd02Ok) {
-    const tasks = readFileSync(join(specDir, "TASKS.md"), "utf8");
-    const ids = extractTaskIds(tasks);
-    const sections = extractTaskSections(tasks);
-    const orphanIds = ids.filter((id) => !sections.includes(id));
-    sdd02Ok = ids.length > 0 && orphanIds.length === 0;
-    sdd02Detail = `artifacts 4/4, tasks ${sections.length}/${ids.length} sections` + (orphanIds.length ? `, orphan ${orphanIds.join(",")}` : "");
-  }
-  record("SDD-02", sdd02Ok ? "PASS" : "FAIL", sdd02Detail);
+  // SDD-02 — dogfood: artifacts of the resolved cycle exist + tasks coherent.
+  const sdd02 = evaluateSdd02(root);
+  record("SDD-02", sdd02.ok ? "PASS" : "FAIL", sdd02.detail);
 
   // SDD-03 — gates:{} convention recorded; check (not runtime gate).
   let state = null;

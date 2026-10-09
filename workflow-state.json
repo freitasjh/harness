@@ -61,7 +61,7 @@
   "features": [
     {
       "name": "harness-installer-mobile",
-      "stage": "Completed",
+      "stage": "Archived",
       "progress": 100,
       "type": "feature",
       "forks": {
@@ -70,13 +70,7 @@
         "target": "C-flutter-project"
       },
       "artifacts": {
-        "proposal": ".spec/governance/harness-installer-mobile/PROPOSAL.md",
-        "spec": ".spec/governance/harness-installer-mobile/SPEC.md",
-        "review": ".spec/governance/harness-installer-mobile/REVIEW.md",
-        "security": ".spec/governance/harness-installer-mobile/SECURITY.md",
-        "plan": ".spec/governance/harness-installer-mobile/PLAN.md",
-        "tasks": ".spec/governance/harness-installer-mobile/TASKS.md",
-        "board": ".spec/governance/harness-installer-mobile/JIRA_BOARD.md"
+        "archive": ".spec/archive/20261008-harness-installer-mobile/"
       },
       "depends_on": [
         "harness-installer"
@@ -84,7 +78,7 @@
       "created": "2026-10-07T19:57:29.951Z"
     }
   ],
-  "last_update": "2026-10-09T12:30:45.396Z",
+  "last_update": "2026-10-09T13:56:04.246Z",
   "spec_score": 0.94,
   "spec_status": "v1_reviewed_aprovado_com_ajustes",
   "validation": {
@@ -100,9 +94,9 @@
     "U5": "c - dois ancoras",
     "U6": "b - selo de hash"
   },
-  "harness_status": "passed (suiteFull novo: plugins 104/104 + installer 162/162 + static + vendor --check)",
+  "harness_status": "passed (suiteFull exit 0: plugins 128/128 + installer 162/162 + static + vendor; sdd-checks 8/8 PASS)",
   "code_review_status": "passed",
-  "sdd_stage": "FU-29 CLOSED (I9 wired no CI/suiteFull). Pendente: commit + pagar FU-38.",
+  "sdd_stage": "FU-38 CLOSED — CI static-checks verde (SDD-02 resolvido dinamicamente).",
   "backlog": {
     "total": 14,
     "todo": 0,
@@ -380,6 +374,19 @@
       "id": "FU-38",
       "origem": "dev Batch4",
       "texto": "SDD-02 FAIL pre-existente em scripts/sdd-checks.mjs (fora do suiteFull; procura .spec/governance/harness-v7). Owner Batch 7/DOC-02.",
+      "bloqueia": false,
+      "status": "closed_reviewed_sdd02_dynamic"
+    },
+    {
+      "id": "FU-39",
+      "origem": "reviewer FU-38",
+      "texto": "Tier-1 vitória não escopada ao ciclo do current_feature (ponteiro stale completo abafa drift)",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-40",
+      "origem": "reviewer FU-38",
+      "texto": "Tier-1 ignora SPEC_NON_CYCLE (bucket tech-debts/bugs/roadmap com 4 artefatos viraria ciclo)",
       "bloqueia": false
     }
   ],
@@ -623,9 +630,5 @@
     "medio": 1,
     "ressalva": "I9 CI wiring -> FU-29"
   },
-  "pending_actions": [
-    "republicar HARNESS_SEAL_JSON externo (novo suiteFull)",
-    "commit FU-29 (protected paths) com trailer Harness-Gate-Change",
-    "FU-38 (SDD-02 FAIL) para CI verde"
-  ]
+  "pending_actions": []
 }

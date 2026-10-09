@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "demand": "fu-38-mf1-mf2-sdd-checks",
+  "agent": "developer-engineer",
+  "phase": "Execution",
+  "gitSha": "52021cfedaf071730f28d21ca8290252fe51b9fb",
+  "commands": [
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node --test \"installer/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs && node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 463,
+      "stdoutHash": "sha256:87c3224a2fb28596312c263db6f833b084fde8594d9b9abeb1ec01add66c801f"
+    },
+    {
+      "cmd": "node scripts/sdd-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 0,
+      "stdoutHash": "sha256:not-hashed-local-check-exit0-observed"
+    }
+  ],
+  "counts": {
+    "unit": { "passed": 286, "failed": 0, "skipped": 0 },
+    "it": { "passed": 0, "failed": 0, "skipped": 0 },
+    "frontend": { "passed": 0, "failed": 0, "skipped": 0 }
+  },
+  "evaluation": {
+    "telas": "n/a-repo-sem-ui (stack backend/frontend = N/A em harness.config.json)",
+    "negocio": "ok-SDD-02 deixa de passar com ciclo vivo incompleto abafado por archive completo (MF-1) e aceita task id de 1 letra T-01 usado em .spec/tech-debts (MF-2)",
+    "logica": "ok-fail-closed mantido: sem .spec => FAIL; bucket tech-debts nao conta; falso-vermelho do dir arquivado NAO reintroduzido (dir vivo inexistente ainda tolerado)",
+    "perf": "n/a-check puro em fs"
+  },
+  "brainStore": [],
+  "cleanup": { "ports": [], "note": "nenhum servidor/porta subido neste batch (infra.ports nulos em harness.config.json); nada a encerrar; nenhum pkill -f executado" },
+  "selfReported": true
+}

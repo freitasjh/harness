@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "demand": "fu-38-tier1-precedence-sdd-checks",
+  "agent": "developer-engineer",
+  "phase": "Execution",
+  "gitSha": "52021cfedaf071730f28d21ca8290252fe51b9fb",
+  "commands": [
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node --test \"installer/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs && node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 501,
+      "stdoutHash": "sha256:363531ea8b76a8a4583577a64a327b51bd3a30c2e52267d78995af5c90d6852f"
+    },
+    {
+      "cmd": "node scripts/sdd-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 64,
+      "stdoutHash": "sha256:c53826d4b437f9e5b96f12af0bc5b220804fd4621af694cc3af32bdf7da6ff34"
+    }
+  ],
+  "counts": {
+    "unit": { "passed": 290, "failed": 0, "skipped": 0 },
+    "it": { "passed": 0, "failed": 0, "skipped": 0 },
+    "frontend": { "passed": 0, "failed": 0, "skipped": 0 }
+  },
+  "evaluation": {
+    "telas": "n/a-repo-sem-ui (stack backend/frontend = N/A em harness.config.json)",
+    "negocio": "ok-fecha a precedencia do gate de drift SDD-02: ponteiro explicito do estado (Tier 1) para ciclo VIVO completo vence WIP mesmo-nomeado em layout multi-dir; ponteiro de archive nao mascara drift (MF-1 intacto)",
+    "logica": "ok-contrato documentado em codigo: Tier-1 vivo-completo > ciclo vivo completo > archive. Duas armadilhas corrigidas e cobertas por teste: (1) exclusao de archive por substring com barra inicial nunca casava em rel repo-relativo; (2) dedup por path sombreava o label current_feature= e perdia a classificacao de DRIFT — agora o drift casa por PATH (set namedByFeat). Fail-closed preservado: Tier-1 incompleto NAO vence; ponteiro stale tambem nao.",
+    "perf": "n/a-check puro em fs"
+  },
+  "brainStore": [
+    "regras/projetos/harness/sdd-02-tier1-precedence-fu38"
+  ],
+  "cleanup": {
+    "ports": [],
+    "note": "nenhum servidor/porta subido neste batch (infra.ports nulos em harness.config.json); nada a encerrar; nenhum pkill -f executado"
+  },
+  "selfReported": true
+}
