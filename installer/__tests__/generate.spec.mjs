@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { generateConfig } from '../install.mjs';
+import { generateConfig, STACK_PROFILES, profileOf } from '../install.mjs';
 
 describe('IN-03 S1: answers validos => config valido', () => {
   it('gera chaves do SPEC §5.1 / config do repo', () => {
@@ -11,6 +11,38 @@ describe('IN-03 S1: answers validos => config valido', () => {
     assert.ok(cfg.commands && typeof cfg.commands.suiteFull === 'string');
     assert.ok(cfg.evidence && cfg.evidence.path === 'harness/');
     assert.ok(Array.isArray(cfg.protectedPaths));
+  });
+});
+
+// FU-25: QUESTIONS nao pergunta composeFile/ports. Decisao JUSTIFICADA (nao
+// lacuna aberta): (a) perfil mobile nao tem servidor/compose — infra N/A por
+// natureza; (b) estender o Q&A mudaria o contrato congelado do baseline
+// golden (I7); (c) destino edita o bloco infra pos-install. O teste congela o
+// comportamento e a justificativa precisa existir NO CODIGO.
+describe('FU-25 infra (composeFile/ports) — N/A justificado, nao lacuna silenciosa', () => {
+  it('todo perfil gera infra com composeFile/ports null (comportamento congelado)', () => {
+    for (const stack of Object.keys(STACK_PROFILES)) {
+      const cfg = generateConfig({ project: 'demo', stack });
+      assert.deepEqual(
+        cfg.infra,
+        { composeFile: null, ports: { backend: null, frontend: null } },
+        `stack=${stack}: infra null em todos os perfis`,
+      );
+    }
+  });
+
+  it('a justificativa FU-25 esta documentada no codigo (QUESTIONS/infra)', () => {
+    const src = fs.readFileSync(new URL('../install.mjs', import.meta.url), 'utf8');
+    assert.match(src, /FU-25/, 'justificativa cita o item');
+    assert.match(src, /composeFile/, 'a justificativa nomeia composeFile');
+    assert.ok(/mobile[^]*N\/A|N\/A[^]*mobile/i.test(src), 'justifica N/A no perfil mobile');
+  });
+
+  it('QUESTIONS continua sem composeFile/ports (escopo do Q&A inalterado)', () => {
+    const src = fs.readFileSync(new URL('../install.mjs', import.meta.url), 'utf8');
+    const block = src.slice(src.indexOf('export const QUESTIONS'), src.indexOf('---------- perfis'));
+    assert.ok(!/composeFile/.test(block), 'nenhuma pergunta nova sobre composeFile');
+    assert.ok(!/key: 'ports'/.test(block), 'nenhuma pergunta nova sobre ports');
   });
 });
 

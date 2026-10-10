@@ -12,6 +12,9 @@ import {
   collectIncoming,
   promptAnswers,
   resolveAnswerSource,
+  canNoEcho,
+  readSecretRaw,
+  readSecretPrompt,
   InstallError,
 } from '../install.mjs';
 
@@ -35,6 +38,11 @@ function pipedInput(lines) {
 }
 function nullOutput() {
   return new Writable({ write(_c, _e, cb) { cb(); } });
+}
+function capture() {
+  let buf = '';
+  const stream = new Writable({ write(c, _e, cb) { buf += c.toString(); cb(); } });
+  return { stream, text: () => buf };
 }
 
 describe('CLI-01: stdin fechado sem --answers-file => aborta (nunca trava)', () => {
@@ -108,6 +116,44 @@ describe('CLI-02: dry-run = ZERO writes (inclui sem backup)', () => {
   });
 });
 
+// FU-28: main() em --dry-run devolvia `checks: { passed: true, failed: [] }` —
+// um PASS que nUNCA rodou. Consumidor que lesse `passed === true` interpretaria
+// instalacao verificada sem verificacao. Agora o dry-run sinaliza explicitamente.
+describe('CLI-02b FU-28: dry-run sinaliza checks NAO-executados', () => {
+  it('main dry-run: checks.passed === null (nao true), ran/skipped/reason explicitos', () => {
+    const target = mkTarget({ '.agents/rules/velha.md': '# destino\n' });
+    const out = main({
+      target,
+      scriptedAnswers: { project: 'demo', stack: 'node', suiteCommand: 'node', pluginsDir: target },
+      incomingFiles: { '.agents/rules/nova.md': '# nova\n' },
+      options: { ...OPTS, dryRun: true },
+    });
+    assert.equal(out.dryRun, true);
+    assert.notEqual(out.checks.passed, true, 'dry-run NUNCA pode dizer PASS');
+    assert.equal(out.checks.passed, null, 'passed null = veredito desconhecido (nao rodou)');
+    assert.equal(out.checks.ran, false, 'ran false explicito');
+    assert.equal(out.checks.skipped, true, 'skipped true explicito');
+    assert.match(out.checks.reason, /dry-run/, 'reason nomeia o dry-run');
+    assert.deepEqual(out.checks.failed, []);
+    // manifesto em memoria tambem nao mente
+    assert.notEqual(out.manifest.checks.passed, true, 'manifesto nao carrega PASS mentiroso');
+  });
+
+  it('main REAL: checks continua { passed: boolean, failed: [] } (ran implicito verdadeiro)', () => {
+    const target = mkTarget({});
+    const out = main({
+      target,
+      scriptedAnswers: { project: 'demo', stack: 'node', suiteCommand: 'node', pluginsDir: target },
+      incomingFiles: { '.agents/rules/x.md': '# regra limpa harness\n' },
+      options: { ...OPTS, backupRoot: fs.mkdtempSync(path.join(os.tmpdir(), 'harness-fu28-')) },
+    });
+    dirs.push(out.backup.backupDir);
+    assert.equal(out.checks.passed, true, 'instalacao real roda os checks');
+    assert.equal(out.checks.ran, undefined, 'caminho real nao carrega os campos de dry-run');
+    assert.ok(fs.existsSync(path.join(target, '.harness-install.json')));
+  });
+});
+
 describe('CLI-03: plano impresso contem create/merge/flag', () => {
   it('printPlan lista as 3 classes com paths', () => {
     const target = mkTarget({
@@ -161,6 +207,82 @@ describe('CLI-04: Q&A pipado valida respostas', () => {
       promptAnswers(target, { input: pipedInput(['so-projeto']), output: nullOutput() }),
       /stdin|abort|EOF/i,
     );
+  });
+});
+
+// FU-27: segredo (deployToken) lido com eco no TTY vazava para quem olhasse a
+// tela. Correcao: leitura SEM ECO (setRawMode + mascara '*'). Sem raw-mode
+// (pipe/redirect/teste) segue o leitor de linha — com aviso de --answers-file.
+describe('FU-27 segredo sem eco no TTY', () => {
+  // TTY simulado com digitacao SEQUENCIAL (delay por chunk): stream eager
+  // drenaria o script inteiro no buffer do readline antes da pergunta do
+  // segredo (o proprio fenomeno de typed-ahead de um TTY real). O delay mantem
+  // o Q&A e a entrada em sincronia, como um usuario digitando.
+  function ttyTyping(chunks, delayMs = 10) {
+    const input = new Readable({ read() {} });
+    input.isTTY = true;
+    input.setRawMode = () => input;
+    chunks.forEach((c, i) => setTimeout(() => { try { input.push(Buffer.from(c)); } catch { /* ja fechado */ } }, i * delayMs));
+    return input;
+  }
+  const noHang = (p, ms = 3000) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('HANG: leitura nao resolveu')), ms))]);
+
+  it('canNoEcho: true so em TTY real com setRawMode', () => {
+    assert.equal(canNoEcho(ttyTyping(['x'])), true);
+    assert.equal(canNoEcho(pipedInput(['x'])), false, 'pipe nao tem setRawMode');
+    const noRaw = pipedInput(['x']);
+    noRaw.isTTY = true;
+    assert.equal(canNoEcho(noRaw), false, 'isTTY sem setRawMode (stream injetado) nao engana');
+    assert.equal(canNoEcho(null), false);
+  });
+
+  it('readSecretRaw: le os caracteres, mascara com * e resolve no Enter', async () => {
+    const input = ttyTyping(['s', 'e', 'c', 'r', 'e', 't', '\r']);
+    const out = capture();
+    const value = await noHang(readSecretRaw(input, out.stream));
+    assert.equal(value, 'secret');
+    assert.match(out.text(), /\*{6}/, 'mascara exibida no lugar do token');
+    assert.ok(!out.text().includes('secret'), 'token nunca ecoado');
+  });
+
+  it('readSecretRaw: backspace apaga o ultimo caractere (e a mascara)', async () => {
+    const input = ttyTyping(['a', 'b', '\u007f', 'c', '\n']);
+    const out = capture();
+    assert.equal(await noHang(readSecretRaw(input, out.stream)), 'ac');
+    assert.match(out.text(), /\*/, 'mascara dos aceitos');
+  });
+
+  it('readSecretRaw: Ctrl+C rejeita com USER_ABORT (nunca resolve vazio)', async () => {
+    const input = ttyTyping(['a', '\u0003']);
+    await assert.rejects(
+      noHang(readSecretRaw(input, nullOutput())),
+      (e) => e instanceof InstallError && e.code === 'USER_ABORT',
+    );
+  });
+
+  it('readSecretRaw sem TTY cru => rejeita (nao cai em leitura com eco)', async () => {
+    await assert.rejects(
+      readSecretRaw(pipedInput(['x']), nullOutput()),
+      (e) => e instanceof InstallError && e.code === 'SECRET_TTY',
+    );
+  });
+
+  it('readSecretPrompt: em TTY devolve o token cru; sem TTY devolve null (leitor de linha)', async () => {
+    const tty = await noHang(readSecretPrompt({ input: ttyTyping(['t', 'k', '\r']), output: nullOutput(), prompt: 'token? ' }));
+    assert.equal(tty, 'tk');
+    assert.equal(await readSecretPrompt({ input: pipedInput(['tk\n']), output: nullOutput(), prompt: 'token? ' }), null);
+  });
+
+  it('promptAnswers em TTY: token entra pelo leitor sem eco e NAO vaza para a proxima pergunta', async () => {
+    const target = mkTarget({});
+    const input = ttyTyping(['demo\n', 'node\n', 'node\n', `${target}\n`, 'TOKEN-xyz', '\r']);
+    const out = capture();
+    const answers = await noHang(promptAnswers(target, { input, output: out.stream }), 5000);
+    assert.equal(answers.project, 'demo');
+    assert.equal(answers.stack, 'node');
+    assert.equal(answers.pluginsDir, path.resolve(target), 'pluginsDir nao virou o token (readline recriado)');
+    assert.equal(answers.deployToken, 'TOKEN-xyz');
+    assert.ok(!out.text().includes('TOKEN-xyz'), 'token nunca ecoado no output');
   });
 });
 

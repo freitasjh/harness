@@ -16,6 +16,7 @@ import {
   hasNoBypassClause,
   hasVocabTable,
   isMappingLine,
+  isNonCycleRel,
   missingArtifacts,
   readWorkflowState,
   resolveSddCycle,
@@ -405,5 +406,110 @@ describe("SDD-02 Tier-1 state-pointer precedence (FU-38 hard-stop)", () => {
     assert.equal(res.ok, false, res.detail);
     assert.match(res.detail, /nova-feature/);
     assert.match(res.detail, /PROPOSAL\.md/);
+  });
+});
+
+// --- FU-39: vitória do Tier-1 é ESCOPADA ao ciclo do current_feature --------
+// Um ponteiro Tier-1 COMPLETO de OUTRA feature (stale, de um ciclo anterior)
+// abafava o drift do ciclo que o estado nomeia como atual: ponteiro stale
+// completo declarava "ciclo ok" enquanto o ciclo corrente estava incompleto.
+// A vitória agora exige que o ponteiro nomeie o current_feature.
+describe("SDD-02 Tier-1 scoped to current_feature (FU-39)", () => {
+  it("Tier-1 completo de OUTRA feature NAO abafa drift do ciclo corrente", () => {
+    const root = tmp({});
+    writeCycle(root, ".spec/backend/velha-feature");           // completo, stale
+    const live = join(root, ".spec/backend/nova-feature");
+    mkdirSync(live, { recursive: true });
+    writeFileSync(join(live, "SPEC.md"), "wip\n");             // corrente, incompleto
+    writeState(root, {
+      current_feature: "nova-feature",
+      artifacts: {
+        spec: ".spec/backend/velha-feature/SPEC.md",
+        tasks: ".spec/backend/velha-feature/TASKS.md",
+      },
+    });
+    const res = evaluateSdd02(root);
+    assert.equal(res.ok, false, res.detail);
+    assert.match(res.detail, /nova-feature/, "drift do ciclo CORRENTE reportado");
+    assert.match(res.detail, /PROPOSAL\.md/, "faltantes do ciclo corrente listados");
+  });
+
+  it("Tier-1 do proprio current_feature continua vencendo (mesmo nome, camada diferente)", () => {
+    const root = tmp({});
+    writeCycle(root, ".spec/frontend/nova-feature");
+    const wip = join(root, ".spec/backend/nova-feature");
+    mkdirSync(wip, { recursive: true });
+    writeFileSync(join(wip, "SPEC.md"), "wip\n");
+    writeState(root, {
+      current_feature: "nova-feature",
+      artifacts: { spec: ".spec/frontend/nova-feature/SPEC.md" },
+    });
+    const res = evaluateSdd02(root);
+    assert.equal(res.ok, true, res.detail);
+    assert.match(res.detail, /\.spec\/frontend\/nova-feature/);
+  });
+
+  it("sem current_feature nao ha ciclo para escopar: Tier-1 completo vence (retrocompat)", () => {
+    const root = tmp({});
+    writeCycle(root, ".spec/backend/qualquer");
+    writeState(root, { artifacts: { spec: ".spec/backend/qualquer/SPEC.md" } });
+    const res = evaluateSdd02(root);
+    assert.equal(res.ok, true, res.detail);
+  });
+
+  it("isNonCycleRel classifica buckets sem-ciclo (.spec/<bucket>/...)", () => {
+    for (const bucket of ["tech-debts", "bugs", "roadmap", "archive"]) {
+      assert.equal(isNonCycleRel(`.spec/${bucket}/qualquer`), true, `${bucket} nao e ciclo`);
+    }
+    assert.equal(isNonCycleRel(".spec/backend/feature"), false);
+    assert.equal(isNonCycleRel(".spec/feature"), false);
+    assert.equal(isNonCycleRel(""), false);
+    assert.equal(isNonCycleRel(null), false);
+  });
+});
+
+// --- FU-40: Tier-1 ignora buckets não-ciclo ---------------------------------
+// .spec/tech-debts|bugs|roadmap carregam docs PARCIAIS. Com 4 artefatos
+// completos (proposta de ciclo), um ponteiro Tier-1 para esse bucket faria o
+// check amarar ciclo nesse diretorio — e o ciclo real (current_feature)
+// incompleto passaria sem drift. Buckets sem-ciclo nunca qualificam.
+describe("SDD-02 Tier-1 ignores SPEC_NON_CYCLE buckets (FU-40)", () => {
+  it("Tier-1 apontando para tech-debts COMPLETO nao abafa drift do ciclo corrente", () => {
+    const root = tmp({});
+    writeCycle(root, ".spec/tech-debts/x-completo");           // 4 artefatos, mas bucket parcial
+    const live = join(root, ".spec/governance/nova-feature");
+    mkdirSync(live, { recursive: true });
+    writeFileSync(join(live, "SPEC.md"), "wip\n");
+    writeState(root, {
+      current_feature: "nova-feature",
+      artifacts: { tasks: ".spec/tech-debts/x-completo/TASKS.md" },
+    });
+    const res = evaluateSdd02(root);
+    assert.equal(res.ok, false, res.detail);
+    assert.match(res.detail, /nova-feature/);
+  });
+
+  it("bugs/roadmap com 4 artefatos tambem nao viram ciclo", () => {
+    for (const bucket of ["bugs", "roadmap"]) {
+      const root = tmp({});
+      writeCycle(root, `.spec/${bucket}/y-completo`);
+      const live = join(root, ".spec/governance/nova-feature");
+      mkdirSync(live, { recursive: true });
+      writeFileSync(join(live, "SPEC.md"), "wip\n");
+      writeState(root, {
+        current_feature: "nova-feature",
+        artifacts: { tasks: `.spec/${bucket}/y-completo/TASKS.md` },
+      });
+      assert.equal(evaluateSdd02(root).ok, false, `${bucket} nao pode ser ciclo`);
+    }
+  });
+
+  it("ciclo real em grupo valido continua resolvendo normalmente", () => {
+    const root = tmp({});
+    writeCycle(root, ".spec/backend/nova-feature");
+    writeState(root, { current_feature: "nova-feature" });
+    const res = evaluateSdd02(root);
+    assert.equal(res.ok, true, res.detail);
+    assert.match(res.detail, /\.spec\/backend\/nova-feature/);
   });
 });

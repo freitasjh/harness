@@ -24,6 +24,7 @@ import {
   sanitizeFlutterCopy,
   sourceState,
   porcelainPaths,
+  reinstallVerdict,
   runDogfoodMobile,
   MOBILE_HARNESS_LAYERS,
 } from '../dogfood-mobile.mjs';
@@ -81,6 +82,33 @@ function mkFlutterSource() {
     'test/widget_test.dart': 'void main() {}\n',
   });
 }
+
+describe('FU-36 reinstallVerdict — so o code REINSTALL prova a prenda', () => {
+  it('abort com code REINSTALL => ok', () => {
+    const v = reinstallVerdict(Object.assign(new Error('re-install detected'), { code: 'REINSTALL' }));
+    assert.equal(v.aborted, true);
+    assert.equal(v.code, 'REINSTALL');
+    assert.equal(v.ok, true);
+  });
+
+  it('abort com OUTRO code => NAO ok (era o falso-verde medido por Boolean)', () => {
+    const v = reinstallVerdict(Object.assign(new Error('refusing to run as uid 0'), { code: 'UID_ROOT' }));
+    assert.equal(v.aborted, true);
+    assert.equal(v.code, 'UID_ROOT');
+    assert.equal(v.ok, false, 'qualquer erro nao pode valer como prova de REINSTALL');
+  });
+
+  it('erro sem code => NAO ok (code reportado null)', () => {
+    const v = reinstallVerdict(new Error('falha qualquer'));
+    assert.equal(v.ok, false);
+    assert.equal(v.code, null);
+  });
+
+  it('sem erro (nao abortou) => NAO ok', () => {
+    const v = reinstallVerdict(null);
+    assert.deepEqual(v, { aborted: false, code: null, ok: false });
+  });
+});
 
 describe('IM-VAL-06 assertMobileConfig — perfil flutter do harness.config.json', () => {
   const good = {
@@ -154,6 +182,13 @@ describe('IM-VAL-06 runDogfoodMobile — instalacao real em copia /tmp', () => {
     assert.equal(res.copyRemoved, true, 'copia limpa ao final');
     assert.ok(!fs.existsSync(res.copy), 'copia removida do disco');
     assert.ok(fs.existsSync(res.evidencePath), 'evidencia gravada');
+
+    // FU-36: a prenda de re-instalacao so vale pelo CODE.
+    assert.equal(res.reinstallCode, 'REINSTALL', 're-install abortou com code REINSTALL');
+    assert.equal(res.reinstallUnexpected, null, 'sem surpresa na re-instalacao');
+    assert.match(String(res.reinstallAbort), /re-install detected/i);
+    const evReinstall = JSON.parse(fs.readFileSync(res.evidencePath, 'utf8'));
+    assert.equal(evReinstall.reinstallCode, 'REINSTALL', 'code tambem na evidencia');
 
     const ev = JSON.parse(fs.readFileSync(res.evidencePath, 'utf8'));
     for (const k of ['version', 'demand', 'agent', 'phase', 'gitSha', 'commands', 'counts', 'evaluation', 'brainStore', 'cleanup', 'selfReported']) {

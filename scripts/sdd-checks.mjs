@@ -145,6 +145,14 @@ export const SDD_ARTIFACTS = ["PROPOSAL.md", "SPEC.md", "PLAN.md", "TASKS.md"];
 // Buckets under .spec/ that carry partial docs, not a full SDD cycle.
 const SPEC_NON_CYCLE = new Set(["archive", "tech-debts", "roadmap", "bugs"]);
 
+// FU-40: um rel sob `.spec/<bucket>/...` (bucket nao-ciclo) nunca qualifica
+// como ciclo, mesmo com os 4 artefatos. Um tech-debts/bugs/roadmap completo
+// faria o check amarrar "o ciclo" num diretorio de docs parciais.
+export function isNonCycleRel(rel) {
+  const m = /^\.spec\/([^/]+)/.exec(String(rel || ""));
+  return Boolean(m && SPEC_NON_CYCLE.has(m[1]));
+}
+
 export function readWorkflowState(root) {
   try {
     return JSON.parse(readFileSync(join(root, "workflow-state.json"), "utf8"));
@@ -238,14 +246,33 @@ export function resolveSddCycle(root = REPO_ROOT) {
   //    archive pointer (or a stale/incomplete one) NEVER masks drift — that
   //    is the MF-1 contra-prova: a complete archived cycle does not absolve
   //    a live incomplete current cycle.
+  // 2b. FU-39: the win is SCOPED to the cycle the state names as current
+  //     (`current_feature`). A stale COMPLETE pointer of ANOTHER feature must
+  //     not mask the drift of the current cycle; the multi-layer case keeps
+  //     working because the pointer still names the same feature
+  //     (`.spec/backend/<feat>` while `.spec/frontend/<feat>` is WIP). No
+  //     current_feature => nothing to scope to: legacy behavior (any explicit
+  //     live complete pointer wins).
+  // 2c. FU-40: a Tier-1 pointer into a SPEC_NON_CYCLE bucket (tech-debts,
+  //     bugs, roadmap — archive already excluded above) NEVER qualifies, even
+  //     with 4 artifacts: partial-doc buckets are not SDD cycles.
   // 3. Otherwise: the drift gate below judges current_feature-named live dirs,
   //    then any complete live cycle, then the archive.
   const state = readWorkflowState(root);
   const feat = typeof state?.current_feature === "string" ? state.current_feature.trim() : "";
   const isArchiveRel = (rel) => /(^|\/)\.spec\/archive\//.test(rel);
+  // FU-39: does the pointer name the cycle the state declares current?
+  const namesFeature = (rel) => {
+    if (!feat) return true; // no cycle named: legacy, nothing to scope to
+    if (rel === `.spec/${feat}`) return true;
+    const m = /^\.spec\/[^/]+\/([^/]+)/.exec(rel); // .spec/<group>/<name>
+    return Boolean(m && m[1] === feat);
+  };
   for (const c of candidates) {
     if (!c.via.startsWith("state.")) continue; // explicit pointer only
     if (isArchiveRel(c.rel)) continue; // archive never masks drift
+    if (isNonCycleRel(c.rel)) continue; // FU-40: partial-doc bucket is not a cycle
+    if (!namesFeature(c.rel)) continue; // FU-39: stale pointer of another feature
     if (!existsSync(join(root, c.rel))) continue; // stale pointer — not evidence
     if (missingArtifacts(join(root, c.rel)).length > 0) continue; // live but incomplete
     return { rel: c.rel, dir: join(root, c.rel), via: c.via, complete: true, candidates };

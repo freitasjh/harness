@@ -166,6 +166,12 @@ export function backup(target, { backupRoot, injectFailure = false } = {}) {
 
 // ---------- Q&A (IN-02/ADR-005/I5) ----------
 
+// FU-25 (decisao JUSTIFICADA, nao lacuna): `infra.composeFile`/`infra.ports`
+// NAO sao perguntados. Motivos: (a) perfil mobile (flutter/dart) nao tem
+// servidor nem compose — infra e N/A por natureza; (b) estender o Q&A
+// mudaria o contrato congelado do baseline golden (I7) e collectAnswers
+// (missing answer para scripted); (c) o destino edita o bloco `infra` depois
+// de instalar. O comportamento fica congelado por teste (generate.spec.mjs).
 export const QUESTIONS = [
   { key: 'project', prompt: 'Nome do projeto?', kind: 'name' },
   { key: 'stack', prompt: 'Stack do destino? (flutter/dart/node/java+vue/outra)', kind: 'stack' },
@@ -359,6 +365,8 @@ export function generateConfig(answers) {
       ...(profile ? profile.moduleMap : {}),
     },
     commands,
+    // FU-25: infra N/A — ver justificativa em QUESTIONS (mobile nao tem
+    // servidor/compose; contrato golden congelado; destino edita pos-install).
     infra: { composeFile: null, ports: { backend: null, frontend: null } },
     mcp: { required: [...(profile ? profile.mcp : ['chrome-devtools'])] },
     protectedPaths: [
@@ -598,18 +606,40 @@ export const DENYLIST = [
 // (.md/.txt) e binarios ficam fora — por isso a proibicao legítima nas rules/
 // skills do harness nao gera falso-positivo, enquanto a copia verbatim de
 // codigo de outro projeto segue reprovando.
+// FU-33 (cleanups pos-FU-32):
+// 1. SCAN_BASENAMES (pubspec.yaml/package.json/pom.xml/build.gradle/
+//    build.gradle.kts) foi REMOVIDO — era redundante: cada um ja casa pela
+//    extensao (.yaml/.json/.xml/.gradle/.kts). O teste "isScannablePath" em
+//    checks.spec.mjs cobre os cinco para a nao-regressao.
+// 2. Buracos da allowlist FECHADOS: .html/.css/.sh (web/shell reprovam igual)
+//    e Dockerfile (sem extensao => unica entrada em SCAN_NAMES, casa EXATO,
+//    minusculo, sem substring). Fora do scan, DECLARADO: .csv/.svg/etc.,
+//    extensionless (exceto Dockerfile) e binarios.
 const SCAN_EXTENSIONS = new Set([
   '.js', '.mjs', '.cjs', '.ts', '.tsx', '.vue', '.svelte',
   '.java', '.kt', '.kts', '.gradle', '.groovy', '.dart', '.cs',
   '.py', '.rb', '.go', '.rs', '.php',
   '.xml', '.json', '.yaml', '.yml', '.toml', '.properties', '.lock',
+  '.html', '.css', '.sh',
 ]);
 
-const SCAN_BASENAMES = new Set(['pubspec.yaml', 'package.json', 'pom.xml', 'build.gradle', 'build.gradle.kts']);
+// Arquivos sem extensao cobertos pelo scan (FU-33).
+const SCAN_NAMES = new Set(['dockerfile']);
 
 // Tooling/testes do proprio harness: nomeiam os padroes como dado de teste.
 // Nunca sao conteudo instalado util; o canario mira o CONTEUDO INSTALADO do
 // destino, nao a tooling/testes de quem instala.
+//
+// Justificativa (FU-33) — cada ramo tem motivo DISTINTO:
+// - `__tests__/`: CARREGA-VALOR. `.opencode/plugins` e INCOMING_ROOT
+//   (collectIncoming), entao `__tests__/*.spec.mjs` do harness E instalado no
+//   destino — e esses testes citam a DENYLIST como fixture (ex.: gate.spec
+//   nomeia os padroes para prova-los). Sem esta exclusao, instalar o harness
+//   reprovaria o proprio check com falso-positivo (o defeito do FU-32).
+// - `scripts/`: DEFENSIVA. `scripts/` NAO e INCOMING_ROOT hoje — mas se um
+//   destino vendorizar seus scripts como conteudo instalado, tooling que
+//   nomeia padroes como dado de teste nao pode reprovar o canario. Estreita:
+//   so o segmento `scripts`, em qualquer nivel; arquivo comum nunca.
 function isToolingPath(rel) {
   const norm = rel.replace(/\\/g, '/');
   return norm.startsWith('scripts/') || norm.includes('/scripts/')
@@ -621,7 +651,7 @@ export function isScannablePath(rel) {
   const norm = rel.replace(/\\/g, '/');
   if (isToolingPath(norm)) return false;
   const base = norm.slice(norm.lastIndexOf('/') + 1).toLowerCase();
-  if (SCAN_BASENAMES.has(base)) return true;
+  if (SCAN_NAMES.has(base)) return true;
   const dot = base.lastIndexOf('.');
   return dot >= 0 && SCAN_EXTENSIONS.has(base.slice(dot));
 }
@@ -774,6 +804,14 @@ export function main({ target, scriptedAnswers = {}, incomingFiles = {}, options
       fileContents[w.path] = fs.readFileSync(path.join(pf.target, w.path), 'utf8');
     } catch { /* noop: arquivo listado mas ilegivel nao entra no hash */ }
   }
+  let manifestRef = { skipped: true, path: null };
+  // FU-28: dry-run NAO roda checks — devolver `{ passed: true }` aqui seria um
+  // PASS que nunca executou (consumidor leria instalacao verificada sem
+  // verificacao). Sinal explicito: passed null (desconhecido), ran false,
+  // skipped true, reason nomeando o dry-run.
+  let checks = dryRun
+    ? { passed: null, failed: [], ran: false, skipped: true, reason: 'dry-run: checks nao executados' }
+    : { passed: true, failed: [] };
   const manifest = buildManifest({
     target: pf.target,
     backupDir: bk.backupDir,
@@ -781,12 +819,10 @@ export function main({ target, scriptedAnswers = {}, incomingFiles = {}, options
     merged,
     flagged: result.flagged || [],
     answers,
-    checks: { passed: true, failed: [] },
+    checks,
     fileContents,
     source: `harness@${VERSION}`,
   });
-  let manifestRef = { skipped: true, path: null };
-  let checks = { passed: true, failed: [] };
   if (!dryRun) {
     manifestRef = writeManifest(pf.target, manifest);
     checks = runChecks(pf.target, { manifest });
@@ -925,6 +961,69 @@ export function resolveAnswerSource({ stdinIsTTY = false, stdinKind = 'unknown',
 
 const EOF_ABORT = 'stdin fechado (EOF) antes de concluir o Q&A: passe --answers-file <json>. Abortando sem escrever nada.';
 
+// ---------- segredo sem eco (FU-27/Y5) ----------
+// O token (deployToken) era lido com ECO no TTY: quem olhasse a tela (ou o
+// scrollback) via o segredo. Correcao: em TTY real a leitura e SEM ECO
+// (setRawMode(true) + mascara '*'). Pipe/redirect/teste (sem raw-mode) seguem
+// no leitor de linha — pipe nao ecoa nada; o risco fica restrito ao TTY, onde
+// agora ha mascara.
+//
+// O leitor readline e FECHADO e RECRIADO em volta da leitura crua: dois
+// ouvintes no mesmo stdin fariam o readline enfilar o token como resposta da
+// PROXIMA pergunta (vazamento de segredo para pluginsDir). Janela residual
+// declarada: digitacao entre o Enter do segredo e o recreate do leitor (trecho
+// sincrono) depende do buffer do TTY — em pipe nao ha leitura crua.
+
+export function canNoEcho(input) {
+  return Boolean(input && input.isTTY && typeof input.setRawMode === 'function');
+}
+
+export function readSecretRaw(input, output, { mask = '*' } = {}) {
+  if (!canNoEcho(input)) {
+    return Promise.reject(new InstallError('leitura sem eco exige stdin TTY com setRawMode', 'SECRET_TTY'));
+  }
+  const write = (s) => { try { if (output && typeof output.write === 'function') output.write(s); } catch { /* stream opcional */ } };
+  return new Promise((resolve, reject) => {
+    let buf = '';
+    let settled = false;
+    const finish = (err, value) => {
+      if (settled) return;
+      settled = true;
+      input.removeListener('data', onData);
+      try { input.setRawMode(false); } catch { /* stream sem raw mode */ }
+      write('\n');
+      if (err) reject(err); else resolve(value);
+    };
+    const onData = (chunk) => {
+      const s = String(chunk);
+      for (const ch of s) {
+        if (ch === '\r' || ch === '\n') { finish(null, buf); return; }
+        if (ch === '\u0003') {
+          finish(new InstallError('digitacao do segredo cancelada (Ctrl+C): abortando sem escrever nada.', 'USER_ABORT'), null);
+          return;
+        }
+        if (ch === '\u007F' || ch === '\b') {
+          if (buf.length > 0) { buf = buf.slice(0, -1); write('\b \b'); }
+          continue;
+        }
+        buf += ch;
+        write(mask);
+      }
+    };
+    input.setRawMode(true);
+    input.on('data', onData);
+    if (typeof input.resume === 'function') input.resume();
+  });
+}
+
+// TTY real => token cru (sem eco). Sem raw-mode => null: o chamador usa o
+// leitor de linha (comportamento historico, retrocompat de pipe/redirect).
+export function readSecretPrompt({ input, output, prompt = '' } = {}) {
+  if (!canNoEcho(input)) return Promise.resolve(null);
+  try { if (output && typeof output.write === 'function') output.write(`${prompt} `); } catch { /* stream opcional */ }
+  return readSecretRaw(input, output);
+}
+
 // Leitor de linhas sem corrida com EOF: enfileira 'line' e resolve
 // pendencias no 'close' (undefined = EOF). Serve tty, pipe e redirect.
 // `terminal` (G6): true SO em TTY real (edicao de linha + historico vazio);
@@ -962,18 +1061,27 @@ function createLineReader({ input, output, terminal = false }) {
 }
 
 export function promptAnswers(target, { input, output } = {}) {
-  const r = createLineReader({ input, output });
+  let r = createLineReader({ input, output });
   const askOne = async (q) => {
     r.say(`${q.prompt} `);
     const line = await r.next();
     if (line === undefined) throw new InstallError(EOF_ABORT, 'NO_STDIN');
     return line;
   };
+  // FU-27: segredo em TTY real => leitura sem eco; o readline e fechado e
+  // recriado em volta para nao enfilar o token como proxima resposta.
+  const askSecret = async (q) => {
+    if (!canNoEcho(input)) return askOne(q);
+    r.close();
+    const raw = await readSecretPrompt({ input, output, prompt: q.prompt });
+    r = createLineReader({ input, output });
+    return raw;
+  };
   return (async () => {
     const answers = {};
     for (const q of QUESTIONS) {
       for (;;) {
-        const raw = await askOne(q);
+        const raw = q.secret ? await askSecret(q) : await askOne(q);
         const value = raw === '' && q.secret ? '' : raw;
         try {
           if (q.secret && value === '') { answers[q.key] = ''; break; }
@@ -1147,7 +1255,7 @@ export async function runWizard({
   const out = (s) => { try { stdout.write(`${s}\n`); } catch { /* stream opcional */ } };
   const interactive = Boolean(stdin && stdin.isTTY);
   // G6: edicao de linha so quando ha TTY real; pipe/redirect = terminal:false.
-  const r = createLineReader({ input: stdin, output: stdout, terminal: interactive });
+  let r = createLineReader({ input: stdin, output: stdout, terminal: interactive });
   const read = async (label) => {
     if (label) out(label);
     const line = await r.next();
@@ -1215,7 +1323,18 @@ export async function runWizard({
       const def = defaults[q.key] !== undefined ? defaults[q.key] : '';
       for (;;) {
         const shown = def !== '' && !q.secret ? ` (default: ${def})` : '';
-        const raw = await read(`[${i + 1}/${QUESTIONS.length}] ${q.prompt}${shown}`);
+        const label = `[${i + 1}/${QUESTIONS.length}] ${q.prompt}${shown}`;
+        let raw;
+        if (q.secret && canNoEcho(stdin)) {
+          // FU-27: token sem eco; readline fechado e recriado para nao enfilar
+          // o segredo como resposta da proxima pergunta.
+          r.close();
+          const secret = await readSecretPrompt({ input: stdin, output: stdout, prompt: label });
+          r = createLineReader({ input: stdin, output: stdout, terminal: interactive });
+          raw = secret;
+        } else {
+          raw = await read(label);
+        }
         const value = raw === '' ? def : raw;
         if (q.secret && value === '') { answers[q.key] = ''; break; }
         try {

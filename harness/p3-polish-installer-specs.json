@@ -1,0 +1,128 @@
+{
+  "version": 1,
+  "demand": "p3-polish-installer-specs-fu33-36-37-30-25-27-28-39-40",
+  "agent": "developer-engineer",
+  "phase": "Execution",
+  "gitSha": "71bf9ae85189f226ec73ac19237080aff9f357eb",
+  "commands": [
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node --test \"installer/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs && node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 10771,
+      "stdoutHash": "sha256:9d15b88548aa8a648962404c3bbea3092574b77e064926834ae190be3f294f1a"
+    },
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 929,
+      "stdoutHash": "sha256:b693ce618785ba2e380e7291d7c5eac25ae6ed2bbe0a30ff0b379e51db1c4ef2"
+    },
+    {
+      "cmd": "node --test \"installer/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 7021,
+      "stdoutHash": "sha256:313bb756dc72776ffc61a6e5f356d956cfa943e088e9121d03c7c2e51ae7f7eb"
+    },
+    {
+      "cmd": "node scripts/static-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 146,
+      "stdoutHash": "sha256:d8f233e62a199962b083b33237bb1f7288b0097019f0ef986464913bf7e3898f"
+    },
+    {
+      "cmd": "node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 93,
+      "stdoutHash": "sha256:e5e528c52d79fceaa1be828bd89116aa6e0be73294d2e99d39c4febe99e84516"
+    },
+    {
+      "cmd": "node scripts/sdd-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 177,
+      "stdoutHash": "sha256:630721396dac020ae45209823f6f903f3046f3e8f3f735705122412a4c74c5cc"
+    }
+  ],
+  "counts": {
+    "unit": {
+      "passed": 135,
+      "failed": 0,
+      "skipped": 0
+    },
+    "it": {
+      "passed": 280,
+      "failed": 0,
+      "skipped": 0
+    },
+    "frontend": {
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "evaluation": {
+    "telas": "n/a-CLI-sem-UI",
+    "negocio": "ok-9-itens-P3-fechados-ou-justificados-sem-mudanca-contratual",
+    "logica": "ok-tdd-red-green-por-item-plugins-135-installer-280-static-PASS-vendor-OK-sdd-PASS",
+    "perf": "n/a-suites-locais-sem-servidor"
+  },
+  "brainStore": [
+    "sessoes/harness/2026-10-09-p3-polish-installer-specs",
+    "regras/projetos/harness/state-pointer-scope-e-bucket-allowlist"
+  ],
+  "cleanup": {
+    "ports": [],
+    "note": "nenhum servidor subido (infra.ports null); specs limpam /tmp proprio (assert A1); probes de debug removidos"
+  },
+  "selfReported": true,
+  "items": [
+    {
+      "id": "FU-33",
+      "status": "feito",
+      "evidence": "checks.spec +2 (RED->GREEN); diff install.mjs (SCAN_BASENAMES removido, .html/.css/.sh+Dockerfile, isToolingPath justificado); SKILL.md §7 alinhado"
+    },
+    {
+      "id": "FU-36",
+      "status": "feito",
+      "evidence": "dogfood-mobile.spec +4 unit reinstallVerdict +2 asserts happy-path (reinstallCode REINSTALL); diff dogfood-mobile.mjs"
+    },
+    {
+      "id": "FU-37",
+      "status": "feito",
+      "evidence": "docs.spec +2 (ramo dart + exemplo API 6 stacks, RED no comentario stale); diff SKILL.md"
+    },
+    {
+      "id": "FU-30",
+      "status": "feito",
+      "evidence": "vendor.spec +1 (2 skills mesma fonte => 1 linha, RED com 2); diff vendor-skills.mjs (Map por arquivo)"
+    },
+    {
+      "id": "FU-25",
+      "status": "feito-justificado-N/A",
+      "evidence": "generate.spec +3 (infra null nos 6 perfis + justificativa no codigo + Q&A inalterado); diff install.mjs comentario; README remove claim \"portas\""
+    },
+    {
+      "id": "FU-27",
+      "status": "feito",
+      "evidence": "cli.spec +7 (canNoEcho/readSecretRaw/promptAnswers sem eco, RED export ausente); diff install.mjs (setRawMode + mascara, readline recreado)"
+    },
+    {
+      "id": "FU-28",
+      "status": "feito",
+      "evidence": "cli.spec +2 (dry-run passed:null/ran:false/skipped, RED antes); diff install.mjs main(); SKILL.md §7 nota"
+    },
+    {
+      "id": "FU-39",
+      "status": "feito",
+      "evidence": "sdd-checks.spec +4 (stale outra feature nao abafa, escopo proprio vence, sem feat retrocompat, isNonCycleRel); diff sdd-checks.mjs"
+    },
+    {
+      "id": "FU-40",
+      "status": "feito",
+      "evidence": "sdd-checks.spec +3 (tech-debts/bugs/roadmap com 4 artefatos nao viram ciclo); diff sdd-checks.mjs (isNonCycleRel no Tier-1)"
+    }
+  ],
+  "debt": [
+    "FU-27: janela residual de typed-ahead entre Enter do segredo e recreate do readline (trecho sincrono, buffer do TTY) — declarada no codigo",
+    "FU-33: .csv/.svg/extensionless (exceto Dockerfile)/binarios seguem fora do scan — buraco declarado no codigo e na SKILL.md"
+  ]
+}

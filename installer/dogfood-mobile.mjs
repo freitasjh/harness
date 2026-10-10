@@ -5,7 +5,8 @@
 // Fluxo: copia a origem -> sanitiza as camadas do harness na copia (o alvo passa
 // a ser um projeto Flutter limpo) -> dirige o CLI REAL (runCli, wizard W0..W7 por
 // stdin TTY-simulado) -> valida o harness.config.json mobile + checks PASS ->
-// prova re-instalacao (aborta) e origem intocada -> grava evidencia harness-report
+// prova re-instalacao (aborta com InstallError code=REINSTALL — FU-36) e origem
+// intocada -> grava evidencia harness-report
 // em .spec/governance/harness-installer-mobile/harness/<timestamp>.json ->
 // remove a copia e o backup.
 //
@@ -175,6 +176,17 @@ async function driveWizardInstall(copy, { suiteCommand } = {}) {
   return { result, stdout: out.text(), stderr: err.text() };
 }
 
+// ---- prova de re-instalacao (FU-36) ----------------------------------------
+// A prova antiga media `Boolean(reinstallAbort)` — QUALQUER erro contava como
+// sucesso. O dogfood afirma "re-instalacao aborta"; so o code REINSTALL prova
+// isso. Erro com outro code (ex.: UID_ROOT, BAD_TARGET, falha de I/O antes do
+// preflight) abortaria igual e passaria em branco — falso-verde.
+export function reinstallVerdict(error) {
+  const aborted = Boolean(error);
+  const code = aborted && error.code ? String(error.code) : null;
+  return { aborted, code, ok: aborted && code === 'REINSTALL' };
+}
+
 // ---- dogfood ---------------------------------------------------------------
 
 const NO_SUITES = { commands: [], counts: { unit: { passed: 0, failed: 0, skipped: 0 }, it: { passed: 0, failed: 0, skipped: 0 }, frontend: { passed: 0, failed: 0, skipped: 0 } } };
@@ -220,6 +232,8 @@ export async function runDogfoodMobile({
   let planCounts = {};
   let flags = [];
   let reinstallAbort = null;
+  let reinstallCode = null;
+  let reinstallUnexpected = null;
   let after = null;
   let failure = null;
   let backupDir = null;
@@ -244,13 +258,20 @@ export async function runDogfoodMobile({
     planCounts = (result?.plan || []).reduce((acc, p) => { acc[p.action] = (acc[p.action] || 0) + 1; return acc; }, {});
     flags = (result?.manifest?.flagged || []).map((f) => f.path);
 
-    // Re-instalacao deve abortar (manifesto pre-existente).
+    // Re-instalacao deve abortar (manifesto pre-existente). FU-36: a prova
+    // exige o CODE — `Boolean(abort)` aceitava qualquer erro como sucesso.
     try {
       const empty = Readable.from([]);
       empty.isTTY = true;
       await runCli({ argv: ['--target', copy, '--allow-root', '--yes'], stdin: empty, stdout: sink(), stderr: sink(), sourceDir: INSTALLER_ROOT });
+      reinstallUnexpected = 're-instalacao NAO abortou: prenda REINSTALL esperada, segunda instalacao seguiu';
     } catch (e) {
-      reinstallAbort = String(e.message);
+      const verdict = reinstallVerdict(e);
+      reinstallAbort = String(e && e.message ? e.message : e);
+      reinstallCode = verdict.code;
+      if (!verdict.ok) {
+        reinstallUnexpected = `aborte inesperado (code=${verdict.code ?? 'nenhum'}): esperado code=REINSTALL`;
+      }
     }
 
     after = sourceState(src);
@@ -284,7 +305,10 @@ export async function runDogfoodMobile({
     ? runRepoSuites()
     : NO_SUITES;
 
-  const ok = !failure && mobile.ok && checks.passed === true && Boolean(reinstallAbort) && sourceUntouched;
+  // FU-36: so o code REINSTALL prova a prenda — qualquer outro aborto (ou a
+  // ausencia dele) derruba o veredito, mesmo que `reinstallAbort` exista.
+  const reinstallProved = reinstallVerdict({ code: reinstallCode }).ok && Boolean(reinstallAbort);
+  const ok = !failure && mobile.ok && checks.passed === true && reinstallProved && sourceUntouched;
 
   const gitSha = (() => {
     try { return execFileSync('git', ['-C', INSTALLER_ROOT, 'rev-parse', 'HEAD'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim(); }
@@ -341,6 +365,8 @@ export async function runDogfoodMobile({
         : null,
     },
     reinstallAbort,
+    reinstallCode,
+    reinstallUnexpected,
     sourceUntouched: { before, after, untouched: sourceUntouched },
     copyRemoved,
     backupRemoved: cleanupState.backupRemoved,
@@ -365,6 +391,8 @@ export async function runDogfoodMobile({
     evidencePath,
     sourceUntouched,
     reinstallAbort,
+    reinstallCode,
+    reinstallUnexpected,
     failure,
     cleanupError,
     sanitized: removed.removed || [],

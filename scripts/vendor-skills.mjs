@@ -555,6 +555,10 @@ export function checkVendor({ destDir, sourceLicenses } = {}) {
     if (lic && typeof lic.file === "string" && lic.file) recorded.set(lic.file, lic.sha256 ?? null);
   }
   const expected = new Map();
+  // FU-30: mismatch lock-vs-fonte e por ARQUIVO agregado, nao por skill —
+  // N skills da mesma fonte repetiam a MESMA linha de erro (22x no vendor
+  // mobile). Um Map por arquivo colapsa em uma mensagem.
+  const mismatchByFile = new Map();
   for (const name of Object.keys(skills)) {
     const e = skills[name] || {};
     const file = e.licenseFile;
@@ -564,7 +568,9 @@ export function checkVendor({ destDir, sourceLicenses } = {}) {
     const fromTable = src ? expectedLicenseSha(src) : null;
     const fromLock = recorded.has(file) ? recorded.get(file) : null;
     if (fromTable && fromLock && fromTable !== fromLock) {
-      errors.push(`${file}: hash da licenca divergente (lock=${fromLock} fonte=${fromTable})`);
+      if (!mismatchByFile.has(file)) {
+        mismatchByFile.set(file, { fromLock, fromTable });
+      }
     }
     const want = fromTable ?? fromLock;
     if (!want) {
@@ -576,6 +582,9 @@ export function checkVendor({ destDir, sourceLicenses } = {}) {
       continue;
     }
     expected.set(file, want);
+  }
+  for (const [file, m] of mismatchByFile) {
+    errors.push(`${file}: hash da licenca divergente (lock=${m.fromLock} fonte=${m.fromTable})`);
   }
   // Entradas registradas no lock mas nao referenciadas por nenhuma skill
   // ainda sao validadas (nao ha arquivo agregado orfao passando em branco).

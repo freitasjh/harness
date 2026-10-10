@@ -42,7 +42,9 @@ Projetos **mobile (Flutter/Dart)** declaram `marionette_mcp` + `dart` (perfil ge
 # 1. Aponte para o destino (novo ou existente)
 node installer/install.mjs --target /caminho/do/projeto
 
-# 2. Responda o Q&A (stack, comandos, paths, portas) — tudo é validado na hora
+# 2. Responda o Q&A (stack, comandos, paths) — tudo é validado na hora
+#    (infra `composeFile`/`ports` não entra no Q&A: N/A justificado — §4 da
+#    skill harness-installer; edite o bloco `infra` no destino pós-install)
 # 3. Revise o --dry-run antes de aplicar de verdade
 node installer/install.mjs --target /caminho/do/projeto --dry-run
 
@@ -78,10 +80,10 @@ instrução. Detalhes em `.agents/skills/harness-installer/SKILL.md`.
 ## Verificação (neste repo)
 
 ```sh
-node --test ".opencode/plugins/__tests__/*.spec.mjs"  # 104 gates + dogfood
+node --test ".opencode/plugins/__tests__/*.spec.mjs"  # gates + dogfood
 node scripts/static-checks.mjs                        # V2/V3/V6/V7 (V14 exige remote+CI)
 node scripts/sdd-checks.mjs                           # V4/R-V12/V17/SDD/R-NODENY/RENAME
-node --test "installer/__tests__/*.spec.mjs"          # 162 installer (golden/mobile/wizard/vendor/dogfood)
+node --test "installer/__tests__/*.spec.mjs"          # installer (golden/mobile/wizard/vendor/dogfood/docs)
 ```
 
 ## Histórico

@@ -157,6 +157,25 @@ describe('FU-32: canario por ESCOPO (substring amplo so em codigo/config)', () =
     }
   });
 
+  it('FU-33: buracos da allowlist fechados (html/css/sh/Dockerfile); .csv/noext seguem fora', () => {
+    for (const p of ['a.html', 'b.css', 'c.sh', 'Dockerfile', 'dockerfile', 'sub/dir/page.html', 'sub/dir/Dockerfile']) {
+      assert.equal(isScannablePath(p), true, `escaneavel (FU-33): ${p}`);
+    }
+    for (const p of ['d.csv', 'e.svg', 'sem-extensao', 'Makefile']) {
+      assert.equal(isScannablePath(p), false, `fora do scan (FU-33): ${p}`);
+    }
+  });
+
+  it('FU-33: tooling/testes do harness fora do scan (justificativa: plugins/__tests__ entra no incoming)', () => {
+    for (const p of ['scripts/gerador.mjs', 'x/scripts/gerador.mjs', '__tests__/x.spec.mjs',
+      '.opencode/plugins/__tests__/gate.spec.mjs', '.agents/skills/x/__tests__/y.mjs']) {
+      assert.equal(isScannablePath(p), false, `fora do scan: ${p}`);
+    }
+    for (const p of ['app/main.js', '.opencode/plugins/gate.js', 'lib/util.dart']) {
+      assert.equal(isScannablePath(p), true, `dentro do scan: ${p}`);
+    }
+  });
+
   function targetWith(rel, content) {
     return mkTarget({
       'opencode.json': JSON.stringify({ plugin: ['harness'] }),

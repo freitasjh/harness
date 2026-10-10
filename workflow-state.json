@@ -42,12 +42,12 @@
     "FU32": "closed_approved_decision_B"
   },
   "code_review": {
-    "last_invoked_at": "2026-10-09T12:30:45.395Z",
+    "last_invoked_at": "2026-10-10T00:56:34.658Z",
     "last_status": "passed",
     "critical_issues": 0,
     "attention_issues": 2,
-    "suggestions": 3,
-    "reviewer_notes": "FU-29 APPROVED. suiteFull+CI com installer tests + vendor --check. Selo externo: republicar HARNESS_SEAL_JSON fora do repo. FU-38 mantem CI red."
+    "suggestions": 4,
+    "reviewer_notes": "Pacote P3 (9 itens) APPROVED. A1 FU-27 aresta EOF -> FU-44; A2 estado -> feito agora."
   },
   "overrides": [],
   "overrides_history": [
@@ -78,7 +78,7 @@
       "created": "2026-10-07T19:57:29.951Z"
     }
   ],
-  "last_update": "2026-10-09T23:49:13.540Z",
+  "last_update": "2026-10-10T00:56:34.659Z",
   "spec_score": 0.94,
   "spec_status": "v1_reviewed_aprovado_com_ajustes",
   "validation": {
@@ -94,9 +94,9 @@
     "U5": "c - dois ancoras",
     "U6": "b - selo de hash"
   },
-  "harness_status": "passed (plugins 128 + installer 259 + static + vendor)",
+  "harness_status": "passed (plugins 135 + installer 280 + static + vendor + sdd-checks)",
   "code_review_status": "passed",
-  "sdd_stage": "FU-43 CLOSED — 0 órfãos novos (35 execuções). Restam: P3 package, Brain MCP down, HARNESS_SEAL_JSON, push.",
+  "sdd_stage": "Pacote P3 CLOSED (9/9). Brain ok. Restam: Brain lessons pendentes (OK agora), HARNESS_SEAL_JSON, push, legado FU-01..18.",
   "backlog": {
     "total": 14,
     "todo": 0,
@@ -291,7 +291,8 @@
       "id": "FU-25",
       "origem": "instalacao ECM",
       "texto": "QUESTIONS sem composeFile/ports (completado a mao; estender instalador)",
-      "bloqueia": false
+      "bloqueia": false,
+      "status": "closed_justified_na_infra"
     },
     {
       "id": "FU-26",
@@ -304,13 +305,15 @@
       "id": "FU-27",
       "origem": "reviewer bugfix CLI",
       "texto": "Secret sem mask no tty (ler sem eco ou recomendar --answers-file)",
-      "bloqueia": false
+      "bloqueia": false,
+      "status": "closed_reviewed_secret_noecho"
     },
     {
       "id": "FU-28",
       "origem": "reviewer bugfix CLI",
       "texto": "main() dry-run retorna checks vazio; nao interpretar como PASS",
-      "bloqueia": false
+      "bloqueia": false,
+      "status": "closed_reviewed_dryrun_checks"
     },
     {
       "id": "FU-29",
@@ -324,7 +327,8 @@
       "id": "FU-30",
       "origem": "reviewer Batch2",
       "texto": "De-dup log lock-vs-source mismatch (cosmetico)",
-      "bloqueia": false
+      "bloqueia": false,
+      "status": "closed_reviewed_log_dedup"
     },
     {
       "id": "FU-32",
@@ -338,7 +342,8 @@
       "id": "FU-33",
       "origem": "reviewer FU-32 redesign",
       "texto": "cleanups nao-bloqueantes: (1) remover SCAN_BASENAMES redundante; (2) justificar/estreitar exclusao scripts//__tests__; (3) documentar/fechar buracos allowlist (html/css/sh/Dockerfile); (4) alinhar doc (.csv/noext fora do scan).",
-      "bloqueia": false
+      "bloqueia": false,
+      "status": "closed_reviewed_v15_cleanup"
     },
     {
       "id": "FU-34",
@@ -358,13 +363,15 @@
       "id": "FU-36",
       "origem": "reviewer Batch4",
       "texto": "dogfood-mobile: assertir reinstall abort code === REINSTALL",
-      "bloqueia": false
+      "bloqueia": false,
+      "status": "closed_reviewed_reinstall_code"
     },
     {
       "id": "FU-37",
       "origem": "reviewer Batch4",
       "texto": "docs.spec: cobrir ramo dart (dart test, mcp [dart])",
-      "bloqueia": false
+      "bloqueia": false,
+      "status": "closed_reviewed_docs_dart"
     },
     {
       "id": "FU-38",
@@ -377,13 +384,15 @@
       "id": "FU-39",
       "origem": "reviewer FU-38",
       "texto": "Tier-1 vitória não escopada ao ciclo do current_feature (ponteiro stale completo abafa drift)",
-      "bloqueia": false
+      "bloqueia": false,
+      "status": "closed_reviewed_tier1_scoped"
     },
     {
       "id": "FU-40",
       "origem": "reviewer FU-38",
       "texto": "Tier-1 ignora SPEC_NON_CYCLE (bucket tech-debts/bugs/roadmap com 4 artefatos viraria ciclo)",
-      "bloqueia": false
+      "bloqueia": false,
+      "status": "closed_reviewed_bucket_allowlist"
     },
     {
       "id": "FU-42",
@@ -398,6 +407,18 @@
       "texto": "P2: specs poluem /tmp (config-loader/gate/network/preflight) — saneamento H2",
       "bloqueia": false,
       "status": "closed_reviewed_zero_orphans"
+    },
+    {
+      "id": "FU-44",
+      "origem": "reviewer pacote P3",
+      "texto": "FU-27 aresta: readSecretRaw nao trata end/close do stdin (token perdido/hang em stdin eager); tratar EOF + drenar fila do readline",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-45",
+      "origem": "reviewer pacote P3",
+      "texto": "SKILL.md §4 nao menciona justificativa infra N/A (apontada no README); alinhar doc",
+      "bloqueia": false
     }
   ],
   "batches": {

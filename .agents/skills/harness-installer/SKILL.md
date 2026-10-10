@@ -58,7 +58,7 @@ const out = main({
   target: '/caminho/do/destino',
   scriptedAnswers: {
     project: 'nome-do-projeto',          // obrigatório, não-vazio
-    stack: 'node',                       // node | java+vue | outra
+    stack: 'node',                       // node | node-esm | java+vue | outra | flutter | dart
     suiteCommand: 'node --test',         // precisa resolver (PATH ou arquivo)
     pluginsDir: '/caminho/do/destino',   // precisa existir dentro do target
     // deployToken: '...'                // sensível: só memória, nunca em disco
@@ -128,13 +128,21 @@ discriminador, ou `dart` com ele) = `BAD_ANSWER` (fail-closed).
 alheia nos arquivos instalados (`DENYLIST` publicada em `installer/install.mjs`).
 FAIL lista o motivo acionável em `failed[]`.
 
+Em `--dry-run` os checks **não rodam** (zero writes): `out.checks` volta
+`{ passed: null, failed: [], ran: false, skipped: true, reason: 'dry-run: ...' }`
+— `passed: null` é **desconhecido**, nunca leia como PASS (FU-28).
+
 O scan do canário (**R3**) é por **ESCOPO** (FU-32): a `DENYLIST` é procurada
 como **substring** amplo, case-insensitive, mas **só em arquivos de
 código/config** (`.js .mjs .cjs .ts .tsx .vue .svelte .java .kt .kts .gradle
 .groovy .dart .cs .py .rb .go .rs .php .xml .json .yaml .yml .toml .properties
-.lock`, mais `pubspec.yaml`/`package.json`/`pom.xml`/`build.gradle`). Prosa
-(`.md`, `.txt`) e binários **nunca** são escaneados; `scripts/` e `__tests__/`
-(tooling/testes do próprio harness) também ficam fora do scan.
+.lock .html .css .sh` + `Dockerfile`). `pubspec.yaml`/`package.json`/
+`pom.xml`/`build.gradle` entram pela **extensão** (`.yaml`/`.json`/`.xml`/
+`.gradle`) — nenhuma lista de basenames além de `Dockerfile` (sem extensão).
+Prosa (`.md`, `.txt`) e binários **nunca** são escaneados; `.csv`, sem
+extensão (exceto `Dockerfile`) também ficam **fora** — buraco declarado.
+`scripts/` e `__tests__/` (tooling/testes do próprio harness) também ficam
+fora do scan.
 
 Por isso rules/skills do harness, que citam Vuetify/Lombok/... para bani-los,
 instalam em destino limpo **sem falso-positivo** — e a **adoção real** em

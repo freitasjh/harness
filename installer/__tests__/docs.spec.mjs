@@ -26,6 +26,23 @@ describe('IM-DOC-01 SKILL.md — perfil mobile fiel ao codigo (RF-17)', () => {
     assert.match(skill, /flutter test/i, 'cita a suite do perfil flutter');
   });
 
+  it('FU-37: cobre o ramo DART do perfil (dart test, mcp [dart]) — igual ao registry', () => {
+    // §9.1 tem uma linha por capacidade, com coluna flutter e coluna dart.
+    assert.match(skill, /\|\s*Campo\s*\|\s*`flutter`\s*\|\s*`dart`\s*\|/, 'tabela comparativa flutter x dart');
+    assert.match(skill, /\|\s*`commands\.suiteFull` \/ `unit`\s*\|[^|]*\|\s*`dart test`\s*\|/, 'suiteFull do dart = dart test');
+    assert.match(skill, /\|\s*`commands\.analyze`\s*\|[^|]*\|\s*`dart analyze`\s*\|/, 'analyze do dart = dart analyze');
+    assert.match(skill, /\|\s*`mcp\.required`\s*\|[^|]*\|\s*`\['dart'\]`\s*\|/, 'mcp do dart = [dart] (sem marionette)');
+    assert.match(skill, /\|\s*`stack\.backend` \/ `frontend`\s*\|[^|]*\|\s*`dart package \(Q&A\)`\s*\|/, 'stack do dart = dart package (Q&A)');
+  });
+
+  it('FU-37: exemplo de API lista os 6 stacks aceitos por validateAnswer', () => {
+    const m = skill.match(/stack: 'node',\s*\/\/\s*(.+)/);
+    assert.ok(m, 'exemplo de API comenta os stacks validos');
+    for (const s of ['node', 'node-esm', 'java+vue', 'outra', 'flutter', 'dart']) {
+      assert.ok(m[1].includes(s), `exemplo cita ${s}`);
+    }
+  });
+
   it('documenta o wizard W0..W7 e a deteccao de pubspec', () => {
     assert.match(skill, /wizard/i, 'cita o wizard');
     assert.match(skill, /W0/, 'cita W0');

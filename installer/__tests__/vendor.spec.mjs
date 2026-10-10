@@ -464,3 +464,33 @@ describe('licença agregada: byte-identidade upstream + verificação por --chec
     assert.deepEqual(res.licenseMissing, ['LICENSE-dart-lang-skills']);
   });
 });
+
+// --- FU-30: log de mismatch lock-vs-fonte DE-DUPLICADO ---------------------
+// O erro era empurrado uma vez POR SKILL da mesma fonte (22 skills dart-* /
+// flutter-* => mesma linha repetida 22x). O arquivo agregado e UM; a mensagem
+// tambem deve ser uma.
+describe('FU-30 lock-vs-source mismatch — 1 linha por arquivo, nao por skill', () => {
+  it('duas skills da MESMA fonte com hash divergente => UM erro de divergencia', () => {
+    const src = tmp('harness-vendor-src-');
+    for (const n of ['dart-a', 'dart-b']) write(src, `${n}/SKILL.md`, `---\nname: ${n}\n---\n# ${n}\n`);
+    const lock = fakeLock(src, ['dart-a', 'dart-b']);
+    for (const n of ['dart-a', 'dart-b']) lock.skills[n].source = 'dart-lang/skills';
+    const dest = tmp('harness-vendor-dest-');
+    const built = buildVendor({ sourceDir: src, sourceLock: lock, sourceCommits: { 'dart-lang/skills': '0d9f1c4a0ae29d6f5180bf6143d7997ec3bacf49' }, destDir: dest });
+    writeVendor(built, { destDir: dest });
+
+    // lock gravado com hash DIFERENTE do esperado pela tabela de fontes
+    const onDisk = JSON.parse(fs.readFileSync(path.join(dest, '.vendor-lock.json'), 'utf8'));
+    onDisk.licenses[0].sha256 = 'f'.repeat(64);
+    fs.writeFileSync(path.join(dest, '.vendor-lock.json'), JSON.stringify(onDisk, null, 2) + '\n');
+
+    const res = checkVendor({ destDir: dest });
+    assert.equal(res.ok, false, 'divergencia lock-vs-fonte reprova');
+    const mismatch = res.errors.filter((e) => /hash da licenca divergente/.test(e));
+    assert.equal(mismatch.length, 1, `FU-30: esperava 1 linha, veio ${mismatch.length}: ${JSON.stringify(res.errors)}`);
+    assert.match(mismatch[0], /LICENSE-dart-lang-skills/, 'a linha nomeia o arquivo');
+    assert.match(mismatch[0], /lock=f{64}/, 'a linha traz o hash do lock');
+    // o arquivo em disco continua valido contra a TABELA — só o lock divergiu
+    assert.deepEqual(res.licenseDivergences, [], 'arquivo agregado intacto');
+  });
+});
