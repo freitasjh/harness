@@ -48,7 +48,7 @@ export function assertInside(target, p) {
   return r;
 }
 
-export function preflight({ target, uid, allowRoot = false, nodeVersion } = {}) {
+export function preflight({ target, uid, allowRoot = false, nodeVersion, skipManifestGuard = false } = {}) {
   if (!target || typeof target !== 'string' || target.trim() === '') {
     throw new InstallError('missing --target', 'BAD_TARGET');
   }
@@ -70,9 +70,10 @@ export function preflight({ target, uid, allowRoot = false, nodeVersion } = {}) 
   if (effectiveUid === 0 && !allowRoot) {
     throw new InstallError('refusing to run as uid 0 without --allow-root (Y2)', 'UID_ROOT');
   }
-  // G3/R9: manifesto pre-existente => aborta com instrucao.
+  // G3/R9: manifesto pre-existente => aborta com instrucao (dispensado no
+  // doctor D0, que diagnostica destino ja instalado sem gravar).
   const manifestPath = path.join(resolved, MANIFEST_NAME);
-  if (fs.existsSync(manifestPath)) {
+  if (!skipManifestGuard && fs.existsSync(manifestPath)) {
     let parsed = null;
     try {
       parsed = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
@@ -132,11 +133,27 @@ function layerPresent(t, layer) {
 
 const BACKUP_TRACKED = ['opencode.json', 'harness.config.json', '.agents', '.opencode', MANIFEST_NAME];
 
+function safeReal(p) {
+  try {
+    return fs.realpathSync(p);
+  } catch {
+    return p;
+  }
+}
+
 export function resolveBackupDir(target, backupRoot) {
   const t = path.resolve(target);
   if (backupRoot) {
     const dir = path.resolve(backupRoot);
-    if (dir === t) throw new InstallError('backup dir must not equal target', 'BACKUP_FAIL');
+    const realT = safeReal(t);
+    const realD = safeReal(dir);
+    if (dir === t || realD === realT) throw new InstallError('backup dir must not equal target', 'BACKUP_FAIL');
+    if (dir.startsWith(t + path.sep) || realD.startsWith(realT + path.sep)) {
+      throw new InstallError('backup dir must not live inside target (nested)', 'BACKUP_FAIL');
+    }
+    if (t.startsWith(dir + path.sep) || realT.startsWith(realD + path.sep)) {
+      throw new InstallError('target must not live inside backup dir (nested)', 'BACKUP_FAIL');
+    }
     return dir;
   }
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -455,6 +472,10 @@ export function mergeAgentFile(existing, incomingSection) {
 }
 
 export function planMerge(target, incomingFiles, _opts = {}) {
+  // MUSTFIX-4 excecao (dono F3 doctor D3 / F4 init W4): planMerge e puro (sem IO,
+  // sem sink) e lanca CORRUPT com codigo; a camada de display formata via
+  // formatError — runWizard W4 e runCli (F1) formatam no catch; doctor/init
+  // (F3/F4) formatam no proprio display. Sem sink aqui por construcao.
   const t = path.resolve(target);
   const plan = [];
   for (const [rel, content] of Object.entries(incomingFiles)) {
@@ -502,6 +523,21 @@ export function planMerge(target, incomingFiles, _opts = {}) {
     plan.push({ path: rel, layer, action: 'flag', reason: `${layer}: exists-different => flag (never auto-merge)` });
   }
   return plan;
+}
+
+// ---------- gate create-only do init (REQ-10/INS-15, SPEC §9.3) ----------
+// Puro: classifica o plano pos-W4. So create|generate-overwrite|noop passam;
+// qualquer merge|flag aborta com flagged-open citando doctor. Sem sink aqui —
+// o display (bloco 4-linhas) vive no chamador (runWizard/runInit).
+export function assertCreateOnly(plan) {
+  const items = Array.isArray(plan) ? plan : [];
+  const offenders = items.filter((p) => p && (p.action === 'merge' || p.action === 'flag'));
+  if (offenders.length === 0) return { ok: true, total: items.length };
+  const kinds = [...new Set(offenders.map((p) => p.action))].join('|');
+  throw new InstallError(
+    `target nao-limpo: ${offenders.length} item(ns) ${kinds} — rode doctor / limpe o destino (create-only).`,
+    'flagged-open',
+  );
 }
 
 export function applyMerge(target, plan, { incomingFiles = {}, dryRun = false } = {}) {
@@ -663,29 +699,33 @@ export function scanLiterals(content) {
   return DENYLIST.filter((lit) => lower.includes(lit));
 }
 
-export function runChecks(target, { manifest = null } = {}) {
+export function runChecks(target, { manifest = null, answers = {} } = {}) {
   const t = path.resolve(target);
   const failed = [];
+  // INS-02 (REQ-06): cada falha sai como bloco 4-linhas (INS-01) com onde ver
+  // no manifesto/target real. Tokens legados preservados como substring.
+  // MUSTFIX-1/3: bloco redige com answers vigentes (sink sem sanitizacao = defeito).
+  const block = (what, code, fix, where) => formatError({ what, code, fix, where }, answers);
   if (!manifest) {
-    failed.push('manifest-missing: .harness-install.json nao informado');
+    failed.push(block('manifest-missing: .harness-install.json nao informado', 'manifest-missing', 'informe o manifesto via .harness-install.json no target ou rode a instalacao antes dos checks.', t));
     return { passed: false, failed };
   }
   const manifestPath = path.join(t, MANIFEST_NAME);
-  if (!fs.existsSync(manifestPath)) failed.push('manifest-missing: .harness-install.json ausente no target');
+  if (!fs.existsSync(manifestPath)) failed.push(block('manifest-missing: .harness-install.json ausente no target', 'manifest-missing', 'rode a instalacao para gerar o manifesto e rode os checks de novo.', manifestPath));
   for (const rel of ['opencode.json', 'harness.config.json']) {
     const abs = path.join(t, rel);
     if (!fs.existsSync(abs)) {
-      if (rel === 'harness.config.json') failed.push('config-missing: harness.config.json ausente');
+      if (rel === 'harness.config.json') failed.push(block('config-missing: harness.config.json ausente', 'config-missing', 'gere o harness.config.json via instalacao (generateConfig) no target.', abs));
       continue;
     }
     try {
       JSON.parse(fs.readFileSync(abs, 'utf8'));
     } catch {
-      failed.push(`json-invalid: ${rel} corrompido (R1)`);
+      failed.push(block(`json-invalid: ${rel} corrompido (R1)`, 'json-invalid', 'corrija o JSON apontado (valide com um parser) e rode os checks de novo.', abs));
     }
   }
   for (const f of manifest.flagged || []) {
-    failed.push(`flagged-open: ${f.path} (${f.reason || 'sem motivo'}) — resolucao humana pendente (I6)`);
+    failed.push(block(`flagged-open: ${f.path} (${f.reason || 'sem motivo'}) — resolucao humana pendente (I6)`, 'flagged-open', 'resolva cada item flagged manualmente e rode doctor/install de novo.', path.join(t, f.path)));
   }
   const listed = [...(manifest.installed || []), ...(manifest.merged || [])];
   for (const f of listed) {
@@ -695,9 +735,112 @@ export function runChecks(target, { manifest = null } = {}) {
     const st = fs.statSync(abs);
     if (!st.isFile()) continue;
     const hits = scanLiterals(fs.readFileSync(abs, 'utf8'));
-    for (const h of hits) failed.push(`literal-denied: ${f.path} contem '${h}' (R3/canario)`);
+    for (const h of hits) failed.push(block(`literal-denied: ${f.path} contem '${h}' (R3/canario)`, 'literal-denied', 'remova a dependencia/uso da stack alheia do arquivo apontado.', abs));
   }
   return { passed: failed.length === 0, failed };
+}
+
+// ---------- doctor brownfield read-only D0-D6 (INS-11/INS-12) ----------
+export function runDoctor({ target, sourceDir = null, answersFile = null, backupDir = null, allowRoot = false, output = null } = {}) {
+  const srcRoot = sourceDir || INSTALLER_ROOT;
+  const say = (s) => {
+    try {
+      if (output && typeof output.write === 'function') output.write(`${s}\n`);
+    } catch { /* stream opcional */ }
+  };
+  let redacting = {};
+  say('[INFO] D0 pre-flight (somente leitura): verifica destino sem criar nada.');
+  const pf = preflight({ target, allowRoot, skipManifestGuard: true });
+  if (backupDir) resolveBackupDir(pf.target, backupDir);
+  if (answersFile) {
+    const loaded = loadAnswersFile(answersFile);
+    redacting = { ...(loaded || {}) };
+  }
+  say(`[OK] D0 pre-flight: target=${pf.target}`);
+  say('[INFO] D1 inventario do destino (somente leitura).');
+  const inv = inventory(pf.target);
+  for (const l of inv.layers) {
+    say(`  [${l.present ? 'OK' : 'AVISO'}] D1 ${l.layer}${l.present ? ' presente' : ' ausente'}`);
+  }
+  say('[INFO] D2 deteccao pubspec (somente leitura, fontes arquivo:linha).');
+  const det = detect(pf.target);
+  if (det.hasPubspec) {
+    for (const s of det.sources) say(`  [OK] D2 ${s.field} <- ${s.file}:${s.line}`);
+    say(`  [INFO] D2 sugestao de stack: ${det.suggestedStack}`);
+  } else {
+    say('  [AVISO] D2 sem pubspec.yaml — diagnostico segue sem sugestao.');
+  }
+  for (const w of det.warnings || []) say(`  [AVISO] D2 ${w}`);
+  say('[INFO] D3 plano seco (classifica sem gravar).');
+  const prof = redacting.stack ? profileOf(redacting.stack) : null;
+  const stacks = prof ? prof.stacks : (redacting.stack ? [redacting.stack] : undefined);
+  const incomingFiles = collectIncoming(srcRoot, stacks ? { stacks } : undefined);
+  const plan = planMerge(pf.target, { ...incomingFiles, 'harness.config.json': '' });
+  const counts = {};
+  for (const p of plan) counts[p.action] = (counts[p.action] || 0) + 1;
+  say(`[INFO] D3 plano: ${plan.length} itens (${Object.entries(counts).map(([a, n]) => `${a}=${n}`).join(' ') || 'vazio'})`);
+  say('[INFO] D4 checks + scan (somente leitura).');
+  const failed = [];
+  const block = (what, code, fix, where) => formatError({ what, code, fix, where }, redacting);
+  for (const rel of ['opencode.json', 'harness.config.json']) {
+    const abs = path.join(pf.target, rel);
+    if (!fs.existsSync(abs)) continue;
+    try {
+      JSON.parse(fs.readFileSync(abs, 'utf8'));
+    } catch {
+      failed.push(block(`json-invalid: ${rel} corrompido`, 'json-invalid', 'corrija o JSON apontado (valide com um parser) e rode os checks de novo.', abs));
+    }
+  }
+  for (const p of plan) {
+    if (p.action !== 'flag') continue;
+    failed.push(block(`flagged-open: ${p.path} (${p.reason || 'sem motivo'}) — resolucao humana pendente`, 'flagged-open', 'resolva cada item flagged manualmente e rode o fluxo de escrita de novo.', path.join(pf.target, p.path)));
+  }
+  for (const p of plan) {
+    if (!isScannablePath(p.path)) continue;
+    const abs = path.join(pf.target, p.path);
+    if (!fs.existsSync(abs)) continue;
+    let st;
+    try { st = fs.statSync(abs); } catch { continue; }
+    if (!st.isFile()) continue;
+    let hits = [];
+    try { hits = scanLiterals(fs.readFileSync(abs, 'utf8')); } catch { continue; }
+    for (const h of hits) failed.push(block(`literal-denied: ${p.path} contem '${h}'`, 'literal-denied', 'remova a dependencia/uso da stack alheia do arquivo apontado.', abs));
+  }
+  say(`[INFO] D4 checks: ${failed.length === 0 ? 'PASS' : `FAIL ${failed.length} item(ns)`}`);
+  for (const f of failed) say(f);
+  say('[INFO] D5 manifesto existente (leitura pura, nunca grava).');
+  const manifestPath = path.join(pf.target, MANIFEST_NAME);
+  const manifestInfo = { present: false, path: manifestPath, mtimeMs: null, parsed: null };
+  if (fs.existsSync(manifestPath)) {
+    try {
+      manifestInfo.mtimeMs = fs.statSync(manifestPath).mtimeMs;
+      const raw = fs.readFileSync(manifestPath, 'utf8');
+      try { manifestInfo.parsed = JSON.parse(raw); } catch { manifestInfo.parsed = null; }
+      manifestInfo.present = true;
+      say(`  [OK] D5 manifesto presente: ${manifestPath}`);
+    } catch {
+      say(`  [AVISO] D5 manifesto ilegivel: ${manifestPath}`);
+    }
+  } else {
+    say(`  [AVISO] D5 sem manifesto: ${manifestPath} (destino ainda nao instalado)`);
+  }
+  say('[INFO] D6 relatorio por camada + proximos passos.');
+  const hasFlag = plan.some((p) => p.action === 'flag');
+  const hasMerge = plan.some((p) => p.action === 'merge');
+  const hasFailed = failed.length > 0;
+  let verdict = 'SAUDÁVEL';
+  let exitCode = 0;
+  if (hasFlag || hasFailed) { verdict = 'QUEBRADO'; exitCode = 1; }
+  else if (hasMerge) { verdict = 'ATENÇÃO'; exitCode = 1; }
+  let next = '';
+  if (verdict === 'QUEBRADO') next = 'resolva cada item flag/FAIL acima e rode o fluxo de escrita de novo.';
+  else if (verdict === 'ATENÇÃO') next = 'revise os itens merge acima e rode o fluxo de escrita de novo.';
+  else next = `nada a corrigir; para instalar do zero rode init --target ${pf.target}.`;
+  say(`  [INFO] D6 plano por camada: ${Object.entries(counts).map(([a, n]) => `${a}=${n}`).join(' ') || 'vazio'}`);
+  say(`  [INFO] D6 veredito: ${verdict} (exit ${exitCode})`);
+  say(`  [INFO] D6 proximos passos: ${next}`);
+  const report = { verdict, counts, next, total: plan.length, failed: failed.length };
+  return { target: pf.target, markers: ['D0', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6'], inventory: inv, detection: det, plan, checks: { passed: failed.length === 0, failed }, manifestInfo, manifest: manifestInfo, report, verdict, exitCode };
 }
 
 // ---------- manifesto em disco (IN-06/I4) ----------
@@ -710,10 +853,28 @@ export function writeManifest(target, manifest, { dryRun = false, fsImpl = fs } 
   return { skipped: false, path: abs };
 }
 
-// ---------- segredo fora do log (IN-06/Y5) ----------
+// ---------- segredo fora do log (IN-06/Y5) + display hygiene (REQ-18/M4) ----------
+
+// REQ-18 (INS-06): filtro ANSI/controle. Ordem explícita strip-then-redact:
+// primeiro remove escapes ANSI e controles (exceto \n\t), depois
+// sanitizeLog redige segredos. Strip antes garante que escape em volta do
+// token não quebre a redação por split.
+const ESC = String.fromCharCode(27);
+const CSI_RE = new RegExp(`${ESC}\\[[0-9;?]*[A-Za-z]`, 'g');
+const CHARSET_RE = new RegExp(`${ESC}[()][0-9A-B]`, 'g');
+
+function isDisplayControl(ch) {
+  const c = ch.codePointAt(0);
+  return c === 27 || (c >= 0 && c <= 8) || (c >= 11 && c <= 13) || (c >= 14 && c <= 31) || c === 127;
+}
+
+export function stripAnsiControls(s) {
+  const noAnsi = String(s).replace(CSI_RE, '').replace(CHARSET_RE, '');
+  return [...noAnsi].filter((ch) => !isDisplayControl(ch)).join('');
+}
 
 export function sanitizeLog(line, answers = {}) {
-  let out = String(line);
+  let out = stripAnsiControls(String(line));
   const secrets = new Set();
   for (const q of QUESTIONS) {
     if (!q.secret) continue;
@@ -722,6 +883,34 @@ export function sanitizeLog(line, answers = {}) {
   }
   for (const s of secrets) out = out.split(s).join('[REDACTED]');
   return out;
+}
+
+// ---------- erro padrão 4-linhas (REQ-05/INS-01, SPEC §9.2) ----------
+
+// Vocabulário real de códigos emitidos pelo CLI/checks. Fora dele => UNKNOWN.
+const ERROR_CODES = new Set([
+  'BAD_ANSWER', 'CORRUPT', 'NO_STDIN', 'USER_ABORT', 'BACKUP_FAIL',
+  'BACKUP_UNVERIFIED', 'BAD_TARGET', 'NODE_MIN', 'UID_ROOT', 'REINSTALL',
+  'FOREIGN_MANIFEST', 'OUTSIDE_TARGET', 'DOGFOOD_GUARD', 'MISSING_INCOMING',
+  'SECRET_TTY', 'manifest-missing', 'config-missing', 'json-invalid',
+  'flagged-open', 'literal-denied',
+]);
+
+export function formatError({ what, code, why, fix, where } = {}, answers = {}) {
+  const known = ERROR_CODES.has(code) ? code : 'UNKNOWN';
+  const oneLine = (v) => stripAnsiControls(String(v ?? '')).replace(/\s*\n\s*/g, ' ').trim();
+  const lines = [
+    `[ERRO] ${oneLine(what) || 'erro no instalador'}`,
+    `  porquê: ${known}${why ? `: ${oneLine(why)}` : ''}`,
+    `  como corrigir: ${oneLine(fix ?? howToFix('')) || 'revise o valor informado.'}`,
+    `  onde ver: ${oneLine(where) || 'installer/install.mjs'}`,
+  ];
+  return sanitizeLog(lines.join('\n'), answers);
+}
+
+// Dry-run nunca PASS (REQ-07/INS-03, SPEC §9.2): rótulo greppable único.
+export function dryRunNotice() {
+  return '[INFO] dry-run: NÃO EXECUTADO — nenhum write (plano + relatório apenas)';
 }
 
 // ---------- trava dogfood (IN-07/Y4/R5) ----------
@@ -825,7 +1014,7 @@ export function main({ target, scriptedAnswers = {}, incomingFiles = {}, options
   });
   if (!dryRun) {
     manifestRef = writeManifest(pf.target, manifest);
-    checks = runChecks(pf.target, { manifest });
+    checks = runChecks(pf.target, { manifest, answers });
     manifest.checks = checks;
     fs.writeFileSync(path.join(pf.target, MANIFEST_NAME), JSON.stringify(manifest, null, 2));
   }
@@ -905,8 +1094,10 @@ export function collectIncoming(sourceDir, { stacks } = {}) {
   return incoming;
 }
 
+const CLI_COMMANDS = new Set(['init', 'doctor']);
+
 export function parseArgs(argv) {
-  const out = { target: null, allowRoot: false, dryRun: false, answersFile: null, yes: false, backupDir: null, help: false };
+  const out = { command: null, target: null, allowRoot: false, dryRun: false, answersFile: null, yes: false, backupDir: null, help: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--target') out.target = argv[++i];
@@ -916,6 +1107,15 @@ export function parseArgs(argv) {
     else if (a === '--yes' || a === '-y') out.yes = true;
     else if (a === '--backup-dir') out.backupDir = argv[++i];
     else if (a === '--help' || a === '-h') out.help = true;
+    else if (!a.startsWith('-') && out.command === null) {
+      // SPEC §9.5 (INS-19): primeiro posicional seleciona o entrypoint.
+      if (!CLI_COMMANDS.has(a)) {
+        throw new InstallError(`comando desconhecido '${a}' (use init|doctor; sem comando segue o fluxo install legado)`, 'BAD_ANSWER');
+      }
+      out.command = a;
+    } else if (!a.startsWith('-')) {
+      throw new InstallError(`posicional extra '${a}' (um comando por invocacao: init|doctor)`, 'BAD_ANSWER');
+    }
   }
   return out;
 }
@@ -1088,7 +1288,9 @@ export function promptAnswers(target, { input, output } = {}) {
           answers[q.key] = validateAnswer(target, q.key, value);
           break;
         } catch (e) {
-          r.say(`resposta invalida para '${q.key}': ${sanitizeLog(e.message, { [q.key]: raw })} — tente de novo.`);
+          // MUSTFIX-1 (REQ-14): vigentes COMPLETOS — anteriores validados +
+          // raw atual. Parcial `{ [q.key]: raw }` vaza token de outra resposta.
+          r.say(sanitizeLog(`resposta invalida para '${q.key}': ${e.message} — tente de novo.`, { ...answers, [q.key]: raw }));
         }
       }
     }
@@ -1100,8 +1302,9 @@ export function promptAnswers(target, { input, output } = {}) {
   });
 }
 
-export function printPlan(plan, { output = process.stdout } = {}) {
-  const write = (s) => output.write(`${s}\n`);
+export function printPlan(plan, { output = process.stdout, answers = {} } = {}) {
+  // MUSTFIX-3: sink redige com vigentes (sink sem sanitizacao = defeito).
+  const write = (s) => output.write(`${sanitizeLog(String(s), answers)}\n`);
   const counts = {};
   for (const p of plan) counts[p.action] = (counts[p.action] || 0) + 1;
   write('plano de instalacao:');
@@ -1154,14 +1357,15 @@ export function confirmByLayer(plan, { input, output, yes = false, reader } = {}
 
 const ABORT_TOKENS = new Set(['q', 'quit', 'cancel', 'cancelar', 'abort', 'abortar']);
 
-const WIZARD_MENU = [
-  { key: '1', stack: 'flutter' },
-  { key: '2', stack: 'dart' },
-  { key: '3', stack: 'node' },
-  { key: '4', stack: 'outra' },
+export const WIZARD_MENU = [
+  { key: '1', label: 'App Flutter', stack: 'flutter' },
+  { key: '2', label: 'Pacote Dart', stack: 'dart' },
+  { key: '3', label: 'Projeto Node.js', stack: 'node', note: 'ESM incluso' },
+  { key: '4', label: 'Projeto Java + Vue', stack: 'java+vue' },
+  { key: '5', label: 'Outro projeto', stack: 'outra' },
 ];
 
-function isAbortToken(s) {
+export function isAbortToken(s) {
   return ABORT_TOKENS.has(String(s).trim().toLowerCase());
 }
 
@@ -1233,7 +1437,7 @@ function defaultSuiteFor(stack) {
   return candidates.length > 0 ? candidates[0] : '';
 }
 
-function howToFix(key) {
+export function howToFix(key) {
   switch (key) {
     case 'project': return 'informe um nome nao-vazio.';
     case 'stack': return 'use flutter|dart|node|java+vue|outra; flutter/dart exigem pubspec.yaml.';
@@ -1252,7 +1456,11 @@ export async function runWizard({
   apply = null,
   options = {},
 } = {}) {
-  const out = (s) => { try { stdout.write(`${s}\n`); } catch { /* stream opcional */ } };
+  // MUSTFIX-3: vigentes definidos antes do sink; out() redige toda linha com
+  // answers (sink sem sanitizacao = defeito). formatError ja redige; out
+  // redige de novo (idempotente, defesa em profundidade).
+  const answers = {};
+  const out = (s) => { try { stdout.write(`${sanitizeLog(String(s), answers)}\n`); } catch { /* stream opcional */ } };
   const interactive = Boolean(stdin && stdin.isTTY);
   // G6: edicao de linha so quando ha TTY real; pipe/redirect = terminal:false.
   let r = createLineReader({ input: stdin, output: stdout, terminal: interactive });
@@ -1272,6 +1480,7 @@ export async function runWizard({
     // W0 pre-flight (read-only; aborta sem escrever).
     const pf = preflight({ target, allowRoot: options.allowRoot === true });
     out(`[OK] W0 pre-flight: target=${pf.target} node=${process.version}`);
+    out('[OK] W0: pico-fim');
 
     // W1 inventario do destino.
     const inv = inventory(pf.target);
@@ -1291,20 +1500,26 @@ export async function runWizard({
     }
     for (const w of det.warnings || []) out(`  [AVISO] ${w}`);
 
-    // W2m menu manual (apenas sem pubspec). Fora de flutter/dart = fora de escopo.
+    // W2m menu manual (apenas sem pubspec). 5 itens produto (SPEC §9.1);
+    // cada item aponta para stack existente (I-01: sem nova key).
+    // node-esm segue digitavel em W3/validateAnswer, sem item proprio.
     let menuStack = null;
     if (!det.hasPubspec) {
-      out('[INFO] W2m menu manual — escolha a stack:');
-      for (const m of WIZARD_MENU) out(`  ${m.key}) ${m.stack}`);
+      out('[INFO] W2m menu manual — escolha o tipo do seu projeto:');
+      for (const m of WIZARD_MENU) {
+        const extra = m.note ? ` (${m.note})` : '';
+        out(`  ${m.key}) ${m.label} -> stack ${m.stack}${extra}`);
+      }
       for (;;) {
-        const raw = await read('> ');
+        const raw = await read('escolha [1-5] (q cancela) > ');
         const choice = WIZARD_MENU.find((m) => m.key === raw.trim());
         if (choice) { menuStack = choice.stack; break; }
-        out(`[ERRO] opcao '${raw.trim()}' invalida — digite 1, 2, 3 ou 4 (ou 'q' para cancelar).`);
+        out(formatError({ what: `opcao '${raw.trim()}' invalida — digite 1, 2, 3, 4 ou 5 (ou 'q' para cancelar).`, code: 'BAD_ANSWER', why: 'fora de [1,5]', fix: howToFix('stack'), where: 'installer/install.mjs (runWizard W2m)' }, answers));
       }
     }
 
     // W3 Q&A guiado, com default detectado e validacao por validateAnswer.
+    // (answers vem do topo do wizard — MUSTFIX-3 — para o sink out() redigir.)
     const defaults = {
       project: det.name || '',
       stack: det.suggestedStack || menuStack || '',
@@ -1312,7 +1527,6 @@ export async function runWizard({
       pluginsDir: pf.target,
       deployToken: '',
     };
-    const answers = {};
     for (let i = 0; i < QUESTIONS.length; i++) {
       const q = QUESTIONS[i];
       // should-fix: o default de suiteCommand acompanha o stack RESPONDIDO no
@@ -1323,7 +1537,7 @@ export async function runWizard({
       const def = defaults[q.key] !== undefined ? defaults[q.key] : '';
       for (;;) {
         const shown = def !== '' && !q.secret ? ` (default: ${def})` : '';
-        const label = `[${i + 1}/${QUESTIONS.length}] ${q.prompt}${shown}`;
+        const label = `[${i + 1}/${QUESTIONS.length}] ${q.prompt}${shown} (q cancela)`;
         let raw;
         if (q.secret && canNoEcho(stdin)) {
           // FU-27: token sem eco; readline fechado e recriado para nao enfilar
@@ -1332,6 +1546,10 @@ export async function runWizard({
           const secret = await readSecretPrompt({ input: stdin, output: stdout, prompt: label });
           r = createLineReader({ input: stdin, output: stdout, terminal: interactive });
           raw = secret;
+          // REQ-11 (INS-16): q vale em qualquer pergunta, inclusive segredo TTY.
+          if (isAbortToken(raw)) {
+            throw new InstallError('cancelado pelo usuario no wizard. Abortando sem escrever nada.', 'USER_ABORT');
+          }
         } else {
           raw = await read(label);
         }
@@ -1342,8 +1560,7 @@ export async function runWizard({
           out(`  [OK] ${q.key} = ${q.secret && answers[q.key] !== '' ? '[REDACTED]' : answers[q.key]}`);
           break;
         } catch (e) {
-          out(`  [ERRO] ${q.key}: ${sanitizeLog(e.message, { [q.key]: value })}`);
-          out(`  como corrigir: ${howToFix(q.key)}`);
+          out(formatError({ what: `resposta invalida para '${q.key}': ${e.message}`, code: e.code || 'BAD_ANSWER', fix: howToFix(q.key), where: 'installer/install.mjs (runWizard W3)' }, { ...answers, [q.key]: value }));
         }
       }
     }
@@ -1358,7 +1575,29 @@ export async function runWizard({
     out('[INFO] W4 resumo das respostas (segredos omitidos):');
     out(`  ${JSON.stringify(serializeAnswers(answers))}`);
     out('[INFO] W4 previa do plano (reusa printPlan):');
-    printPlan(plan, { output: stdout });
+    printPlan(plan, { output: stdout, answers });
+
+    // REQ-10 (INS-15): gate create-only pos-W4, pre-W5 (antes de qualquer
+    // write). So create|generate-overwrite|noop passam; merge|flag abortam
+    // com bloco citando doctor D0-D6. Display aqui; assertCreateOnly e puro.
+    if (options.createOnly === true) {
+      try {
+        assertCreateOnly(plan);
+      } catch (e) {
+        if (e instanceof InstallError) {
+          try {
+            out(formatError({
+              what: 'init abortado: destino nao esta limpo (create-only)',
+              code: e.code,
+              why: e.message,
+              fix: 'rode doctor --target <dir> para diagnosticar (D0-D6), ou limpe o destino e rode init de novo.',
+              where: 'installer/install.mjs (runWizard gate create-only; doctor D0-D6)',
+            }, answers));
+          } catch { /* bloco best-effort */ }
+        }
+        throw e;
+      }
+    }
 
     // W5 confirmacao por camada (reusa confirmByLayer, mesmo leitor/stream).
     if (options.dryRun) {
@@ -1370,6 +1609,7 @@ export async function runWizard({
 
     // W6/W7: DELEGADOS. O wizard nao escreve; `apply` (CLI) aplica + manifesta.
     if (typeof apply !== 'function' || options.dryRun) {
+      if (options.dryRun) out(dryRunNotice());
       out(`[INFO] W6/W7 nao executados pelo wizard (apply=${typeof apply === 'function' ? 'dry-run' : 'ausente'}); nenhum write.`);
       return { answers, profile: answers.stack, plan, applied: false, detection: det, inventory: inv };
     }
@@ -1378,34 +1618,213 @@ export async function runWizard({
     out('[INFO] W6 backup + aplicacao:');
     steps.forEach((s, i) => out(`  [${i + 1}/${total}] ${s.action} ${s.path}`));
     const result = await apply({ answers, profile: answers.stack, plan, target: pf.target });
+    out('[OK] apply: pico-fim');
     out('[INFO] W7 manifesto + checks:');
     const manifestPath = result && result.manifestRef && result.manifestRef.path ? result.manifestRef.path : '(dry-run)';
     out(`  [OK] manifesto: ${manifestPath}`);
     const checksOk = Boolean(result && result.checks && result.checks.passed);
     out(`  [${checksOk ? 'OK' : 'ERRO'}] checks: ${checksOk ? 'PASS' : `FAIL ${JSON.stringify(result && result.checks ? result.checks.failed : [])}`}`);
+    if (checksOk) out('[OK] checks: pico-fim');
     return { answers, profile: answers.stack, plan, applied: true, result, detection: det, inventory: inv };
+  } catch (e) {
+    // MUSTFIX-4: NO_STDIN/USER_ABORT/CORRUPT saem em bloco 4-linhas (SPEC §9.2)
+    // com vigentes; rethrow preserva code (contrato wizard.spec) com message
+    // sanitizada (H1). Outros erros passam sem display (sem sink novo).
+    if (e instanceof InstallError && (e.code === 'NO_STDIN' || e.code === 'USER_ABORT' || e.code === 'CORRUPT')) {
+      const what = e.code === 'USER_ABORT'
+        ? 'instalacao cancelada pelo usuario no wizard'
+        : e.code === 'NO_STDIN'
+          ? 'entrada indisponivel no wizard'
+          : 'configuracao corrompida no destino';
+      const fix = e.code === 'USER_ABORT'
+        ? 'operacao cancelada; nenhum write foi feito.'
+        : e.code === 'NO_STDIN'
+          ? 'rode interativo ou passe --answers-file <json>.'
+          : 'corrija o JSON apontado e rode de novo.';
+      try { out(formatError({ what, code: e.code, why: e.message, fix, where: 'installer/install.mjs (runWizard)' }, answers)); } catch { /* bloco best-effort */ }
+      try { e.message = sanitizeLog(String(e.message), answers); } catch { /* message ja segura */ }
+    }
+    throw e;
   } finally {
     r.close();
   }
 }
 
 export function printUsage({ output = process.stdout } = {}) {
-  output.write(`uso: node installer/install.mjs --target <dir> [--dry-run] [--answers-file <json>] [--yes] [--backup-dir <dir>] [--allow-root]\n`);
+  output.write(`uso: node installer/install.mjs init   --target <dir> [--dry-run] [--answers-file <json>] [--yes] [--backup-dir <dir>] [--allow-root]\n`);
+  output.write(`uso: node installer/install.mjs doctor --target <dir> [--answers-file <json>] [--backup-dir <dir>] [--allow-root]\n`);
+  output.write(`  init: greenfield create-only — so create|generate-overwrite|noop passam; merge|flag abortam com dica de doctor.\n`);
+  output.write(`  doctor: brownfield read-only — D0-D6 diagnostico, zero writes; ignora --dry-run/--yes.\n`);
   output.write(`  sem --answers-file exige stdin interativo ou pipado; stdin fechado aborta sem escrever.\n`);
   output.write(`  --dry-run: zero writes (nem backup cria); imprime plano + relatorio.\n`);
+  output.write(`  legado (sem init|doctor): node installer/install.mjs --target <dir> [--dry-run] [--answers-file <json>] [--yes] [--backup-dir <dir>] [--allow-root]\n`);
+}
+
+// ---------- init greenfield create-only W0-W7 (REQ-09/INS-14) ----------
+// Caminho limpo de instalacao: reaproveita o wizard W0-W7 (runWizard) com o
+// gate create-only ligado (options.createOnly) e o apply conectado ao main()
+// — que verifica o backup antes de qualquer write (requireVerifiedBackup).
+// Com --answers-file, o W3 e scriptado (validate + gate + confirm + main) sem
+// stdin. Retorna exitCode 0 no sucesso; aborts jogam InstallError (exit 1 no
+// CLI). Sem sink sem sanitizacao: todo display passa por answers vigentes.
+export async function runInit({
+  target,
+  stdin = process.stdin,
+  stdout = process.stdout,
+  stderr = process.stderr,
+  sourceDir = INSTALLER_ROOT,
+  answersFile = null,
+  options = {},
+} = {}) {
+  const answers = {};
+  const allowRoot = options.allowRoot === true;
+  const backupRoot = options.backupDir || undefined;
+  const say = (s) => { try { stdout.write(`${sanitizeLog(String(s), answers)}\n`); } catch { /* stream opcional */ } };
+  try {
+    if (options.backupDir) resolveBackupDir(target, options.backupDir);
+    if (answersFile) {
+      // W0 pre-flight (aborta sem escrever).
+      const pf = preflight({ target, allowRoot });
+      say(`[OK] W0 pre-flight: target=${pf.target} node=${process.version}`);
+      say('[OK] W0: pico-fim');
+      // W1/W2 somente leitura (relato).
+      const inv = inventory(pf.target);
+      say('[INFO] W1 inventario do destino:');
+      for (const l of inv.layers) {
+        say(`  [${l.present ? 'OK' : 'AVISO'}] ${l.layer}${l.present ? ' presente' : ' ausente'}`);
+      }
+      const det = detect(pf.target);
+      say(`[INFO] W2 deteccao: ${det.hasPubspec ? `sugestao ${det.suggestedStack}` : 'sem pubspec (answers-file supre o W2m/W3)'}`);
+      // W3 scriptado.
+      const rawFile = loadAnswersFile(answersFile);
+      Object.assign(answers, rawFile);
+      const scripted = collectAnswers(pf.target, rawFile);
+      Object.assign(answers, scripted);
+      // W4 previa + gate create-only (antes de qualquer write).
+      const profile = profileOf(scripted.stack);
+      const incomingFiles = collectIncoming(sourceDir, { stacks: profile ? profile.stacks : [scripted.stack] });
+      const generated = JSON.stringify(generateConfig(scripted), null, 2);
+      const plan = planMerge(pf.target, { ...incomingFiles, 'harness.config.json': generated });
+      say('[INFO] W4 previa do plano (init create-only):');
+      printPlan(plan, { output: stdout, answers });
+      try {
+        assertCreateOnly(plan);
+      } catch (e) {
+        if (e instanceof InstallError) {
+          try {
+            say(formatError({
+              what: 'init abortado: destino nao esta limpo (create-only)',
+              code: e.code,
+              why: e.message,
+              fix: 'rode doctor --target <dir> para diagnosticar (D0-D6), ou limpe o destino e rode init de novo.',
+              where: 'installer/install.mjs (runInit gate create-only; doctor D0-D6)',
+            }, answers));
+          } catch { /* bloco best-effort */ }
+        }
+        throw e;
+      }
+      // W5 confirmacao por camada (dispensada em dry-run).
+      if (options.dryRun) {
+        say('[INFO] W5 dry-run: confirmacao por camada dispensada (nada sera aplicado).');
+        say(dryRunNotice());
+        return { target: pf.target, answers: serializeAnswers(scripted), plan, applied: false, dryRun: true, checks: { passed: null, failed: [], ran: false, skipped: true, reason: 'dry-run: checks nao executados' }, backupDir: null, exitCode: 0 };
+      }
+      if (options.yes !== true) {
+        await confirmByLayer(plan, { input: stdin, output: stdout });
+      }
+      // W6/W7 via main (backup verificado antes de qualquer write).
+      const result = main({ target: pf.target, scriptedAnswers: scripted, incomingFiles, options: { allowRoot, dryRun: false, backupRoot } });
+      say('[OK] apply: pico-fim');
+      say('[INFO] W7 manifesto + checks:');
+      say(`  [OK] manifesto: ${result.manifestRef.path || '(sem manifesto?)'}`);
+      say(`  [${result.checks.passed ? 'OK' : 'ERRO'}] checks: ${result.checks.passed ? 'PASS' : `FAIL ${JSON.stringify(result.checks.failed)}`}`);
+      if (result.checks.passed) say('[OK] checks: pico-fim');
+      if (result.checks.passed) say('[OK] init: pico-fim');
+      else say('[ERRO] init: FAIL checks reprovaram (sem pico-fim)');
+      return { target: result.target, answers: serializeAnswers(scripted), plan, applied: true, result, checks: result.checks, manifestRef: result.manifestRef, backupDir: result.backup.backupDir, exitCode: 0 };
+    }
+    // Interativo: wizard W0-W7 com gate create-only + apply no main().
+    const w = await runWizard({
+      target,
+      stdin,
+      stdout,
+      sourceDir,
+      options: { allowRoot, yes: options.yes === true, dryRun: options.dryRun === true, createOnly: true },
+      apply: ({ answers: wa, target: wt }) => {
+        const prof = profileOf(wa.stack);
+        const files = collectIncoming(sourceDir, { stacks: prof ? prof.stacks : [wa.stack] });
+        return main({ target: wt, scriptedAnswers: wa, incomingFiles: files, options: { allowRoot, dryRun: false, backupRoot } });
+      },
+    });
+    if (!w.applied) {
+      return { target: w.target || path.resolve(target), answers: w.answers, plan: w.plan, applied: false, dryRun: true, checks: { passed: null, failed: [], ran: false, skipped: true, reason: 'dry-run: checks nao executados' }, backupDir: null, exitCode: 0 };
+    }
+    Object.assign(answers, w.answers);
+    if (w.result && w.result.checks && w.result.checks.passed) say('[OK] init: pico-fim');
+    else say('[ERRO] init: FAIL checks reprovaram (sem pico-fim)');
+    return { target: w.result.target, answers: w.answers, plan: w.plan, applied: true, result: w.result, checks: w.result.checks, manifestRef: w.result.manifestRef, backupDir: w.result.backup.backupDir, exitCode: 0 };
+  } catch (e) {
+    // Display fica com o chamador (runCli imprime o bloco); aqui so redige a
+    // mensagem relancada (invariante: erro nunca carrega segredo em claro).
+    if (e instanceof InstallError) {
+      try { e.message = sanitizeLog(String(e.message), answers); } catch { /* message ja segura */ }
+    }
+    throw e;
+  }
 }
 
 const INSTALLER_ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 
+// MUSTFIX-2: ultimos vigentes conhecidos pelo CLI; o catch top-level do
+// processo sanitiza com eles (sem sink sem sanitizacao). Espelho de
+// currentAnswers do runCli (ver atribuicoes abaixo).
+let lastCliAnswers = {};
+export function getLastCliAnswers() {
+  return lastCliAnswers;
+}
+
 export async function runCli({ argv = [], stdin = process.stdin, stdout = process.stdout, stderr = process.stderr, sourceDir = INSTALLER_ROOT } = {}) {
   const args = parseArgs(argv);
-  if (args.help || !args.target) {
+  // SPEC §9.5 (INS-19): help puro imprime o uso e sai 0, mesmo sem --target.
+  if (args.help) {
     printUsage({ output: stdout });
-    if (!args.target) throw new InstallError('missing --target', 'BAD_TARGET');
     return { help: true };
   }
-  const err = (s) => stderr.write(`${s}\n`);
-  const log = (s) => stdout.write(`${sanitizeLog(s)}\n`);
+  let currentAnswers = {};
+  const err = (s) => stderr.write(`${sanitizeLog(String(s), currentAnswers)}\n`);
+  const log = (s) => stdout.write(`${sanitizeLog(String(s), currentAnswers)}\n`);
+  try {
+  // SPEC §9.5 (INS-19): dispatch init|doctor; sem posicional segue o legado.
+  if (!args.target) throw new InstallError('missing --target', 'BAD_TARGET');
+  if (args.command === 'doctor') {
+    // REQ-13 (INS-12): read-only por construcao — --dry-run/--yes sem efeito.
+    const rep = runDoctor({
+      target: args.target,
+      sourceDir,
+      answersFile: args.answersFile,
+      backupDir: args.backupDir,
+      allowRoot: args.allowRoot,
+      output: stdout,
+    });
+    if (rep.exitCode !== 0) {
+      throw new InstallError(`doctor: veredito ${rep.verdict} — ${rep.report.next}`, 'flagged-open');
+    }
+    return rep;
+  }
+  if (args.command === 'init') {
+    const res = await runInit({
+      target: args.target,
+      stdin,
+      stdout,
+      stderr,
+      sourceDir,
+      answersFile: args.answersFile,
+      options: { allowRoot: args.allowRoot, yes: args.yes, dryRun: args.dryRun, backupDir: args.backupDir },
+    });
+    currentAnswers = res.answers || {};
+    lastCliAnswers = currentAnswers;
+    return res;
+  }
   const pf = preflight({ target: args.target, allowRoot: args.allowRoot });
   // TTY interativo => wizard B2 (ADR-010). --answers-file / pipe / redirect
   // seguem os caminhos v1 inalterados (retrocompat G6).
@@ -1428,13 +1847,15 @@ export async function runCli({ argv = [], stdin = process.stdin, stdout = proces
       }),
     });
     if (args.dryRun) {
+      currentAnswers = w.answers || {};
+      lastCliAnswers = currentAnswers;
       const out = main({
         target: pf.target,
         scriptedAnswers: w.answers,
         incomingFiles: incomingOf(w.answers.stack),
         options: { allowRoot: args.allowRoot, dryRun: true },
       });
-      log(`dry-run ok: ${out.plan.length} itens no plano, zero writes.`);
+      log(`${dryRunNotice()}: ${out.plan.length} itens no plano, zero writes.`);
       return out;
     }
     log(`instalado em ${pf.target}: ${w.result.manifestRef.path || 'sem manifesto?'}`);
@@ -1443,18 +1864,26 @@ export async function runCli({ argv = [], stdin = process.stdin, stdout = proces
   }
   let scripted;
   if (args.answersFile) {
-    scripted = collectAnswers(pf.target, loadAnswersFile(args.answersFile));
+    // MUSTFIX-2: best-effort — vigentes do arquivo ANTES de validar, para o
+    // catch sanitizar mesmo quando collectAnswers rejeita (ex.: canario no
+    // proprio valor que causou o erro).
+    const rawFile = loadAnswersFile(args.answersFile);
+    currentAnswers = { ...(rawFile || {}) };
+    lastCliAnswers = currentAnswers;
+    scripted = collectAnswers(pf.target, rawFile);
   } else {
     const kind = stdinKindOf(stdin);
     const src = resolveAnswerSource({ stdinIsTTY: Boolean(stdin && stdin.isTTY), stdinKind: kind, answersFile: null });
     if (src.mode !== 'prompt') throw new InstallError('fonte de respostas indisponivel', 'NO_STDIN');
     scripted = await promptAnswers(pf.target, { input: stdin, output: stdout });
   }
+  currentAnswers = scripted || {};
+  lastCliAnswers = currentAnswers;
   const profile = profileOf(scripted.stack);
   const incomingFiles = collectIncoming(sourceDir, { stacks: profile ? profile.stacks : [scripted.stack] });
   const generated = JSON.stringify(generateConfig(scripted), null, 2);
   const preview = planMerge(pf.target, { ...incomingFiles, 'harness.config.json': generated });
-  printPlan(preview, { output: stdout });
+  printPlan(preview, { output: stdout, answers: scripted });
   if (!args.dryRun) {
     await confirmByLayer(preview, { input: stdin, output: stdout, yes: args.yes });
   } else {
@@ -1467,16 +1896,39 @@ export async function runCli({ argv = [], stdin = process.stdin, stdout = proces
     options: { allowRoot: args.allowRoot, dryRun: args.dryRun, backupRoot: args.backupDir || undefined },
   });
   if (args.dryRun) {
-    log(`dry-run ok: ${out.plan.length} itens no plano, zero writes.`);
+    log(`${dryRunNotice()}: ${out.plan.length} itens no plano, zero writes.`);
   } else {
     log(`instalado em ${out.target}: ${out.manifestRef.path || 'sem manifesto?'}`);
     log(`checks: ${out.checks.passed ? 'PASS' : `FAIL ${JSON.stringify(out.checks.failed)}`}`);
   }
   return out;
+  } catch (e) {
+    // MUSTFIX-2/4: display em bloco 4-linhas com vigentes + erro sanitizado no
+    // rethrow (invariante: top-level nunca ve segredo em claro). Cobre
+    // NO_STDIN/USER_ABORT/CORRUPT/BAD_ANSWER de qualquer fonte (wizard,
+    // promptAnswers, planMerge, checks). Code preservado (contrato cli.spec).
+    if (e instanceof InstallError) {
+      try { err(formatError({ what: 'falha na instalacao', code: e.code, why: e.message, fix: howToFix(''), where: 'installer/install.mjs (runCli)' }, currentAnswers)); } catch { /* bloco best-effort */ }
+      try { e.message = sanitizeLog(String(e.message), currentAnswers); } catch { /* message ja segura */ }
+    }
+    throw e;
+  }
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const a = parseArgs(process.argv.slice(2));
+  let a;
+  try {
+    a = parseArgs(process.argv.slice(2));
+  } catch (e) {
+    // SPEC §9.5 (INS-19): posicional desconhecido aborta com bloco, exit 1.
+    let msg = '';
+    try {
+      msg = formatError({ what: 'falha na instalacao', code: e instanceof InstallError ? e.code : 'BAD_ANSWER', why: e instanceof Error ? e.message : String(e), fix: howToFix(''), where: 'installer/install.mjs (parseArgs)' }, lastCliAnswers);
+      msg = sanitizeLog(msg, lastCliAnswers);
+    } catch { /* bloco best-effort */ }
+    process.stderr.write(`${msg || 'abort: comando invalido'}\n`);
+    process.exit(1);
+  }
   if (!a.target && (a.help || process.argv.length <= 2)) {
     printUsage({});
     process.exit(a.help ? 0 : 1);
@@ -1484,7 +1936,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   runCli({ argv: process.argv.slice(2) }).then(
     () => process.exit(0),
     (e) => {
-      const safe = e && e.code === 'NO_STDIN' ? String(e.message) : `abort: ${e && e.message ? e.message : e}`;
+      // MUSTFIX-2: top-level sanitiza com os ultimos vigentes conhecidos
+      // (lastCliAnswers); runCli ja sanitiza e.message no rethrow — aqui e
+      // defesa em profundidade (sink sem sanitizacao = defeito).
+      const raw = e && e.code === 'NO_STDIN' ? String(e.message) : `abort: ${e && e.message ? e.message : e}`;
+      let safe = raw;
+      try { safe = sanitizeLog(raw, lastCliAnswers); } catch { /* raw ja seguro */ }
       process.stderr.write(`${safe}\n`);
       process.exit(1);
     },

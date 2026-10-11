@@ -1,0 +1,684 @@
+▶ IN-05 S1: instalacao limpa => checks PASS com veredito
+  ✔ PASS quando JSON valido + sem literais + flagged vazio (11.522363ms)
+✔ IN-05 S1: instalacao limpa => checks PASS com veredito (13.911736ms)
+▶ IN-05 S2: flagged pendente / literal-canario => FAIL com motivo
+  ✔ flagged nao-vazio => FAIL (I6) (9.046447ms)
+  ✔ denylist publicada e nao-vazia (0.670572ms)
+  ✔ canario R3: adocao real de stack alheia num arquivo de codigo => check falha (1.67864ms)
+  ✔ scanLiterals: quase-igual NAO casa (negativo) (0.345708ms)
+  ✔ opencode.json corrompido => FAIL (R1) (3.280663ms)
+✔ IN-05 S2: flagged pendente / literal-canario => FAIL com motivo (16.082101ms)
+▶ INS-02 S1: target sem manifesto => manifest-missing em bloco com onde ver no target
+  ✔ failed[] contem bloco 4-linhas com onde ver: <target> (2.733913ms)
+✔ INS-02 S1: target sem manifesto => manifest-missing em bloco com onde ver no target (3.268631ms)
+▶ INS-02 S2: config corrompido => json-invalid em bloco com como corrigir nao vazio
+  ✔ json-invalid em bloco + como corrigir nao vazio (3.47096ms)
+✔ INS-02 S2: config corrompido => json-invalid em bloco com como corrigir nao vazio (3.934564ms)
+▶ INS-02 S3: target integro => failed[] vazio sem bloco [ERRO]
+  ✔ sem falhas, nenhum bloco (3.235351ms)
+✔ INS-02 S3: target integro => failed[] vazio sem bloco [ERRO] (3.526735ms)
+▶ FU-32: canario por ESCOPO (substring amplo so em codigo/config)
+  ✔ scanLiterals: substring amplo casa adocao real que o contextual deixava passar (0.852765ms)
+  ✔ scanLiterals: case-insensitive, ordem da DENYLIST (0.238463ms)
+  ✔ scanLiterals: proibicao em prosa tambem casa (mencao crua) — o escopo e quem decide (0.137023ms)
+  ✔ isScannablePath: codigo/config sim, prosa/binario nao (0.365569ms)
+  ✔ FU-33: buracos da allowlist fechados (html/css/sh/Dockerfile); .csv/noext seguem fora (0.195404ms)
+  ✔ FU-33: tooling/testes do harness fora do scan (justificativa: plugins/__tests__ entra no incoming) (0.1673ms)
+  ✔ runChecks: prosa .md com proibicao/mencao => PASS (nao escaneada) (1.32899ms)
+  ✔ runChecks: .txt com mencao => PASS (nao escaneado) (0.799677ms)
+  ✔ runChecks: adocao em .opencode/plugins/plantada.js => FAIL (2.875537ms)
+  ✔ runChecks: adocao em .agents/agents/adotado.ts => FAIL (1.725457ms)
+  ✔ runChecks: adocao em harness-deps.json => FAIL (1.290322ms)
+  ✔ runChecks: adocao em pom.xml => FAIL (6.548922ms)
+  ✔ runChecks: adocao em build.gradle => FAIL (4.781318ms)
+  ✔ runChecks: adocao em package.json => FAIL (1.773895ms)
+  ✔ runChecks: tooling/testes do harness excluidos do SCAN (3.321428ms)
+  ✔ conteudo REAL do harness (incoming) instala sem literal-denied falso (165.175288ms)
+✔ FU-32: canario por ESCOPO (substring amplo so em codigo/config) (193.479774ms)
+▶ IN-05 S3: skill auto-suficiente (instala sem ler o SPEC)
+  ✔ SKILL.md existe com quickstart + Q&A + rollback, sem exigir SPEC (1.837957ms)
+  ✔ Y3: skill documenta retencao/descarte do backup (1.691005ms)
+✔ IN-05 S3: skill auto-suficiente (instala sem ler o SPEC) (3.977359ms)
+▶ FU-20: main() exige backup.verified===true antes de applyMerge (I1)
+  ✔ requireVerifiedBackup rejeita verified!==true (1.586675ms)
+  ✔ main sem backup (falha injetada) => aborta e nada instalado (1.176415ms)
+  ✔ main completo escreve conteudo + manifesto + checks PASS (9.231685ms)
+  ✔ segredo scriptado nunca chega a disco nem log (I5 via main) (15.45415ms)
+✔ FU-20: main() exige backup.verified===true antes de applyMerge (I1) (28.229595ms)
+[ERRO] falha na instalacao
+  porquê: NO_STDIN: stdin fechado e sem --answers-file: nada a perguntar. Rode interativo ou passe --answers-file <json>. Abortando sem escrever nada.
+  como corrigir: revise o valor informado.
+  onde ver: installer/install.mjs (runCli)
+stdin fechado e sem --answers-file: nada a perguntar. Rode interativo ou passe --answers-file <json>. Abortando sem escrever nada.
+▶ CLI-01: stdin fechado sem --answers-file => aborta (nunca trava)
+  ✔ resolveAnswerSource sem tty e sem answers-file => aborta alto (3.062788ms)
+  ✔ resolveAnswerSource: pipe/arquivo/tty/file liberam; char aborta (0.580588ms)
+  ✔ processo real com stdin fechado sai != 0 com mensagem (timeout = travou) (250.897007ms)
+✔ CLI-01: stdin fechado sem --answers-file => aborta (nunca trava) (257.517077ms)
+▶ CLI-02: dry-run = ZERO writes (inclui sem backup)
+  ✔ main dry-run nao chama nenhuma escrita (FS com contador) (9.485202ms)
+✔ CLI-02: dry-run = ZERO writes (inclui sem backup) (10.29337ms)
+▶ CLI-02b FU-28: dry-run sinaliza checks NAO-executados
+  ✔ main dry-run: checks.passed === null (nao true), ran/skipped/reason explicitos (4.206252ms)
+  ✔ main REAL: checks continua { passed: boolean, failed: [] } (ran implicito verdadeiro) (15.92584ms)
+✔ CLI-02b FU-28: dry-run sinaliza checks NAO-executados (22.025712ms)
+▶ CLI-03: plano impresso contem create/merge/flag
+  ✔ printPlan lista as 3 classes com paths (8.984965ms)
+✔ CLI-03: plano impresso contem create/merge/flag (12.085817ms)
+▶ CLI-04: Q&A pipado valida respostas
+  ✔ stdin pipado com respostas validas => answers validados (20.802213ms)
+  ✔ resposta invalida repete a pergunta ate validar (24.116011ms)
+  ✔ EOF antes de completar => aborta alto (nao trava) (19.888097ms)
+✔ CLI-04: Q&A pipado valida respostas (66.184426ms)
+▶ FU-27 segredo sem eco no TTY
+  ✔ canNoEcho: true so em TTY real com setRawMode (7.326353ms)
+  ✔ readSecretRaw: le os caracteres, mascara com * e resolve no Enter (64.567553ms)
+  ✔ readSecretRaw: backspace apaga o ultimo caractere (e a mascara) (41.398749ms)
+  ✔ readSecretRaw: Ctrl+C rejeita com USER_ABORT (nunca resolve vazio) (12.335653ms)
+  ✔ readSecretRaw sem TTY cru => rejeita (nao cai em leitura com eco) (1.442794ms)
+  ✔ readSecretPrompt: em TTY devolve o token cru; sem TTY devolve null (leitor de linha) (21.719854ms)
+[ERRO] falha na instalacao
+  porquê: BAD_TARGET: missing --target
+  como corrigir: revise o valor informado.
+  onde ver: installer/install.mjs (runCli)
+abort: missing --target
+  ✔ promptAnswers em TTY: token entra pelo leitor sem eco e NAO vaza para a proxima pergunta (52.974113ms)
+✔ FU-27 segredo sem eco no TTY (204.658635ms)
+▶ CLI-05: incoming canonico documentado no codigo
+  ✔ collectIncoming varre .opencode+.agents, exclui node_modules/.git (5.833706ms)
+✔ CLI-05: incoming canonico documentado no codigo (6.481587ms)
+▶ INS-19 parseArgs: posicional init|doctor, nenhum flag novo
+  ✔ primeiro posicional seleciona entrypoint; legado sem posicional (1.942961ms)
+  ✔ flags existentes preservados; comando desconhecido aborta (0.935619ms)
+✔ INS-19 parseArgs: posicional init|doctor, nenhum flag novo (3.372091ms)
+▶ INS-19 help: 2 entrypoints + notas, exit 0
+  ✔ printUsage exibe 1 linha por entrypoint + create-only/read-only (1.036726ms)
+  ✔ init --help / doctor --help: help puro sai 0 mesmo sem --target (2.738405ms)
+✔ INS-19 help: 2 entrypoints + notas, exit 0 (4.25181ms)
+▶ INS-19 sem --target: BAD_TARGET exit 1
+  ✔ init sem --target rejeita BAD_TARGET (1.873316ms)
+  ✔ processo real init sem --target sai 1 com bloco (124.568419ms)
+✔ INS-19 sem --target: BAD_TARGET exit 1 (127.087688ms)
+▶ INS-19 doctor ignora --dry-run/--yes (read-only)
+  ✔ diagnostico normal, flags sem efeito, sem writes (30.320938ms)
+✔ INS-19 doctor ignora --dry-run/--yes (read-only) (30.584794ms)
+▶ IM-DOC-01 SKILL.md — perfil mobile fiel ao codigo (RF-17)
+  ✔ documenta stacks mobile flutter/dart e o requisito pubspec.yaml (3.983109ms)
+  ✔ documenta o que o perfil mobile gera (mcp, commands, analyze) (0.812308ms)
+  ✔ FU-37: cobre o ramo DART do perfil (dart test, mcp [dart]) — igual ao registry (1.57621ms)
+  ✔ FU-37: exemplo de API lista os 6 stacks aceitos por validateAnswer (0.609494ms)
+  ✔ documenta o wizard W0..W7 e a deteccao de pubspec (0.635649ms)
+  ✔ documenta o filtro de vendor por stack + --check (0.7971ms)
+  ✔ documenta o dogfood mobile (copia Flutter sob /tmp) (0.435225ms)
+✔ IM-DOC-01 SKILL.md — perfil mobile fiel ao codigo (RF-17) (12.131526ms)
+▶ IM-DOC-01 README.md — aponta o caminho mobile
+  ✔ menciona instalacao mobile (flutter/dart) (2.379104ms)
+  ✔ aponta o script de dogfood mobile (0.731957ms)
+✔ IM-DOC-01 README.md — aponta o caminho mobile (3.998437ms)
+▶ INS-11 doctor D0-D6 read-only
+  ✔ D6 lista flag p/ x.md divergente + como corrigir + exit 1 (13.966131ms)
+  ✔ sequencia D0..D6 presente em ordem (5.17867ms)
+  ✔ target limpo => noop dominante + exit 0 + veredito SAUDAVEL (3.674148ms)
+  ✔ veredito acionavel cita init ou flags (5.586414ms)
+✔ INS-11 doctor D0-D6 read-only (32.460843ms)
+▶ INS-12 doctor zero writes por construcao
+  ✔ fs-mock: 0 writes no target durante D0-D6 (3.735635ms)
+  ✔ scan estatico: caminho doctor sem applyMerge|writeManifest|apply (0.699399ms)
+  ✔ D5 leitura pura: mtime do manifesto inalterado (7.175623ms)
+✔ INS-12 doctor zero writes por construcao (13.5294ms)
+▶ INS-13 resolveBackupDir validado (R3)
+  ✔ backup-dir igual ao target aborta BACKUP_FAIL em bloco 4-linhas (6.449632ms)
+  ✔ repasse sem bypass: doctor valida backup-dir (sem caminho alternativo) (21.107041ms)
+  ✔ relativo equivalente, nested e symlink => BACKUP_FAIL (3.689233ms)
+✔ INS-13 resolveBackupDir validado (R3) (36.54818ms)
+dogfood-mobile: removendo caminho autorizado: /tmp/harness-dogfood-mobile-2026-10-11T15-51-52-230Z
+dogfood-mobile: removendo caminho autorizado: /tmp/.harness-backup-harness-dogfood-mobile-2026-10-11T15-51-52-230Z-2026-10-11T15-51-52-400Z
+dogfood-mobile: removendo caminho autorizado: /tmp/harness-dogfood-mobile-2026-10-11T15-51-52-839Z
+dogfood-mobile: removendo caminho autorizado: /tmp/.harness-backup-harness-dogfood-mobile-2026-10-11T15-51-52-839Z-2026-10-11T15-51-52-908Z
+dogfood-mobile: removendo caminho autorizado: /tmp/harness-dogfood-mobile-2026-10-11T15-51-53-111Z
+dogfood-mobile: removendo caminho autorizado: /tmp/.harness-backup-harness-dogfood-mobile-2026-10-11T15-51-53-111Z-2026-10-11T15-51-53-176Z
+cp: não foi possível criar arquivo comum '/tmp/harness-dfm-TQjtL3/alvo/./pubspec.yaml': Permissão negada
+cp: não foi possível criar arquivo comum '/tmp/harness-dfm-TQjtL3/alvo/./analysis_options.yaml': Permissão negada
+cp: não foi possível criar o diretório '/tmp/harness-dfm-TQjtL3/alvo/./lib': Permissão negada
+cp: não foi possível criar o diretório '/tmp/harness-dfm-TQjtL3/alvo/./test': Permissão negada
+dogfood-mobile: removendo caminho autorizado: /tmp/harness-dfm-TQjtL3/alvo
+▶ FU-36 reinstallVerdict — so o code REINSTALL prova a prenda
+  ✔ abort com code REINSTALL => ok (15.630732ms)
+  ✔ abort com OUTRO code => NAO ok (era o falso-verde medido por Boolean) (1.030621ms)
+  ✔ erro sem code => NAO ok (code reportado null) (1.23905ms)
+  ✔ sem erro (nao abortou) => NAO ok (19.096749ms)
+✔ FU-36 reinstallVerdict — so o code REINSTALL prova a prenda (40.237309ms)
+▶ IM-VAL-06 assertMobileConfig — perfil flutter do harness.config.json
+  ✔ aceita o config mobile correto (3.738618ms)
+  ✔ rejeita config sem analyze, sem marionette_mcp ou com stack errada (1.766731ms)
+✔ IM-VAL-06 assertMobileConfig — perfil flutter do harness.config.json (6.083495ms)
+▶ IM-VAL-06 sanitizeFlutterCopy — copia vira projeto Flutter limpo
+  ✔ remove as camadas do harness e preserva o projeto (12.393085ms)
+✔ IM-VAL-06 sanitizeFlutterCopy — copia vira projeto Flutter limpo (12.769573ms)
+▶ IM-VAL-06 runDogfoodMobile — instalacao real em copia /tmp
+  ✔ config mobile + checks PASS + evidencia + copia removida + origem intocada (329.111437ms)
+  ✔ alvo fora de /tmp => aborta (nunca instala no repo real) (7.05996ms)
+✔ IM-VAL-06 runDogfoodMobile — instalacao real em copia /tmp (336.958965ms)
+▶ FU-34 sourceState — digest de conteudo (isolamento real)
+  ✔ git: conteudo alterado em arquivo JA modificado muda o digest (status igual) (127.657514ms)
+  ✔ git: arquivo untracked novo e delecao mudam o digest (92.842565ms)
+  ✔ sem git: alteracao de conteudo (mesmo tamanho) muda o digest (26.783741ms)
+  ✔ sem git: origem intacta => digest estavel (22.644335ms)
+✔ FU-34 sourceState — digest de conteudo (isolamento real) (271.196915ms)
+▶ FU-35 limpeza em qualquer caminho (try/finally)
+  ✔ falha na validacao => copia e backup removidos (sem orfao) (151.728193ms)
+  ✔ --keep preserva copia (e backup) mesmo em falha (120.015299ms)
+  ✔ caminho feliz continua limpando copia + backup (152.927952ms)
+✔ FU-35 limpeza em qualquer caminho (try/finally) (426.111402ms)
+▶ C1 porcelainPaths — parser do `git status --porcelain -z` (NUL, sem quote)
+  ✔ path com espaco, aspas, backslash e acento chega literal (3.297307ms)
+  ✔ rename/copy no formato -z tem DOIS campos (to from) — ambos entram (1.585898ms)
+  ✔ status posicional eh preservado (nao trima a entrada) (0.999586ms)
+✔ C1 porcelainPaths — parser do `git status --porcelain -z` (NUL, sem quote) (6.65656ms)
+▶ C1 sourceState — digest nao eh cego a path quotado
+  ✔ mutacao de conteudo em 'café.dart' muda o digest (status igual) (61.557962ms)
+  ✔ mutacao de conteudo em 'we"ird.dart' muda o digest (status igual) (51.286377ms)
+  ✔ mutacao de conteudo em 'a -> b.dart' muda o digest (status igual) (41.708854ms)
+  ✔ rename (R) de path estranho muda o digest (60.875703ms)
+✔ C1 sourceState — digest nao eh cego a path quotado (216.854749ms)
+▶ C2 trava destrutiva — --target nunca apaga a origem
+  ✔ --target == --source => ABORTA e a origem permanece inteira (18.256574ms)
+  ✔ --target ANCESTRAL da origem => ABORTA (irmaos do usuario intactos) (3.746184ms)
+  ✔ --target DESCENDENTE da origem => ABORTA (1.839236ms)
+✔ C2 trava destrutiva — --target nunca apaga a origem (24.452293ms)
+▶ A3 limpeza que lanca — evidencia sobrevive
+  ✔ rmSync falha (EACCES) => cleanupError preenchido e evidencia gravada (19.073492ms)
+✔ A3 limpeza que lanca — evidencia sobrevive (19.228967ms)
+▶ A4 varredura de backups orfaos (.harness-backup-<basename>-*)
+  ✔ remove orfao criado durante a execucao e preserva o antigo (2.403502ms)
+  ✔ --keep nao varre nem remove orfao (1.279146ms)
+✔ A4 varredura de backups orfaos (.harness-backup-<basename>-*) (3.908762ms)
+▶ A2/A1 higiene da nota e do /tmp
+  ✔ cleanupNote/cleanupErrorOf nao mentem sobre falha ou bloqueio (0.904869ms)
+  ✔ spec nao deixa orfao proprio em /tmp (0.790531ms)
+✔ A2/A1 higiene da nota e do /tmp (1.869111ms)
+dogfood: remocao BLOQUEADA (nenhum arquivo apagado) — atalho-na-arvore: /tmp/harness-dfs-XBVPJ5/alvo (/tmp/harness-dfs-XBVPJ5/alvo/lib/atalho -> /home/joao/harness-dfs-referent-IcFnZ7)
+dogfood: removendo caminho autorizado: /tmp/harness-dfs-XBVPJ5/.harness-backup-alvo-2026-10-11T15-51-52-311Z
+▶ C2 realpath — origem alcancada por symlink (FU-34 hard-stop)
+  ✔ --target no path real da origem => ABORTA (lexico passava, origin morria) (9.721033ms)
+  ✔ ancestral alcancado por symlink => ABORTA (16.266759ms)
+  ✔ alvo legitimo com origem por symlink NAO aborta (sem falso positivo) (9.49589ms)
+  ✔ (a) runDogfood com --source por symlink e --target no real => origem INTACTA (64.811604ms)
+✔ C2 realpath — origem alcancada por symlink (FU-34 hard-stop) (104.421685ms)
+▶ (b) ponta-a-ponta — copia com atalho para fora da zona
+  ✔ runDogfood bloqueia a limpeza e o referente sobrevive (140.081978ms)
+✔ (b) ponta-a-ponta — copia com atalho para fora da zona (140.416056ms)
+▶ Zona de remocao — atalho no topo da lista (FU-35)
+  ✔ removeWithinTmp bloqueia symlink e o referente FORA do /tmp sobrevive (13.311732ms)
+  ✔ cleanupDogfood bloqueia quando a copia eh um symlink (nao remove o referente) (15.58319ms)
+✔ Zona de remocao — atalho no topo da lista (FU-35) (34.744735ms)
+▶ Zona de remocao — atalho DENTRO da arvore
+  ✔ cleanupDogfood bloqueia a copia com symlink interno apontando para fora do /tmp (5.750522ms)
+  ✔ symlink interno para DENTRO do /tmp nao bloqueia a remocao (granularidade) (10.701134ms)
+  ✔ atalho que nao resolve (pendurado) => desprovavel => bloqueia (2.49617ms)
+✔ Zona de remocao — atalho DENTRO da arvore (19.965591ms)
+▶ backupOrphans — lstat ignora atalho (FU-35)
+  ✔ orfao em forma de symlink para fora do /tmp nao entra na lista de remocao (23.928895ms)
+✔ backupOrphans — lstat ignora atalho (FU-35) (24.18702ms)
+▶ 2a linha de defesa — re-validacao da disjointness no finally
+  ✔ cleanupDogfood(sourceReal cobrindo a copia) => bloqueia e nao remove (9.7455ms)
+  ✔ sourceReal por symlink (realpath) protege a origem real (2.228956ms)
+  ✔ copia legitima sob /tmp com origem alhures => remove (sem falso bloqueio) (27.629865ms)
+✔ 2a linha de defesa — re-validacao da disjointness no finally (40.585362ms)
+▶ higiene — nenhum orfao proprio em /tmp
+  ✔ spec nao deixa lixo (1.627865ms)
+✔ higiene — nenhum orfao proprio em /tmp (1.93254ms)
+▶ FU-42 trava de escrita: alvo via pai-symlink para fora do /tmp
+  ✔ atalho no caminho => ABORTA (OUTSIDE_TARGET) com o caminho REAL na mensagem (21.10418ms)
+  ✔ atalho pendurado no caminho => ABORTA antes de escrever (fail-closed) (10.298095ms)
+  ✔ atalho que continua DENTRO do /tmp passa (sem falso positivo) (7.052006ms)
+✔ FU-42 trava de escrita: alvo via pai-symlink para fora do /tmp (42.075857ms)
+▶ FU-42 retrocompat: caminho normal e escape explicit+confirmed
+  ✔ caminho normal em /tmp passa, mesmo ainda inexistente (19.976339ms)
+  ✔ o proprio /tmp passa (2.261657ms)
+  ✔ fora do /tmp sem flags aborta (DOGFOOD_GUARD); escape exige explicit+confirmed (2.837413ms)
+✔ FU-42 retrocompat: caminho normal e escape explicit+confirmed (26.013754ms)
+▶ zone.mjs — primitivas da zona por realpath
+  ✔ realOrResolved segue o atalho e anexa a cauda inexistente ao ancestral real (6.231448ms)
+  ✔ isInsideTmp/tmpRealRoot medem pelo real, nao pelo path escrito (5.464963ms)
+✔ zone.mjs — primitivas da zona por realpath (12.715435ms)
+▶ FU-42 ponta-a-ponta: runDogfood com --target sob pai-symlink
+  ✔ ABORTA antes de qualquer escrita e o referente FORA do /tmp fica intacto (50.925986ms)
+✔ FU-42 ponta-a-ponta: runDogfood com --target sob pai-symlink (51.566786ms)
+▶ higiene — nenhum orfao proprio em /tmp
+  ✔ spec nao deixa lixo (2.856708ms)
+✔ higiene — nenhum orfao proprio em /tmp (6.428492ms)
+dogfood: removendo caminho autorizado: /tmp/harness-dogfood-2026-10-11T15-51-52-238Z
+dogfood: removendo caminho autorizado: /tmp/.harness-backup-harness-dogfood-2026-10-11T15-51-52-238Z-2026-10-11T15-51-52-272Z
+dogfood: removendo caminho autorizado: /tmp/harness-dogfood-2026-10-11T15-51-52-442Z
+dogfood: removendo caminho autorizado: /tmp/.harness-backup-harness-dogfood-2026-10-11T15-51-52-442Z-2026-10-11T15-51-52-452Z
+cp: não foi possível criar arquivo comum '/tmp/harness-dfd-b5eNNR/alvo/./README.md': Permissão negada
+cp: não foi possível criar o diretório '/tmp/harness-dfd-b5eNNR/alvo/./lib': Permissão negada
+dogfood: removendo caminho autorizado: /tmp/harness-dfd-b5eNNR/alvo
+▶ runDogfood — stack generica em copia /tmp
+  ✔ instala de verdade, prova re-install abort e limpa copia + backup (133.766938ms)
+  ✔ C2: --target == origem => ABORTA sem apagar nada (30.758968ms)
+  ✔ C2: --target ANCESTRAL da origem => ABORTA (irmaos do usuario intactos) (20.60481ms)
+  ✔ C2: --target DESCENDENTE da origem => ABORTA (31.30223ms)
+  ✔ A4: falha apos o backup (opencode.json corrompido) => copia/backup orfaos removidos (81.525937ms)
+  ✔ A3: limpeza que lanca => evidencia ainda gravada + cleanupError preenchido (75.131905ms)
+  ✔ --keep preserva copia + backup e a nota diz onde esta (74.156575ms)
+  ✔ A2/A3: cleanupNote/cleanupErrorOf refletem falha e bloqueio sem mentir (3.049442ms)
+  ✔ A1: nenhum orfao deste run sob /tmp ao final (2.42634ms)
+✔ runDogfood — stack generica em copia /tmp (464.602603ms)
+▶ DEFAULT_SOURCE
+  ✔ aponta para o repo irmao documentado (1.778799ms)
+✔ DEFAULT_SOURCE (2.064644ms)
+▶ IN-03 S1: answers validos => config valido
+  ✔ gera chaves do SPEC §5.1 / config do repo (2.128413ms)
+✔ IN-03 S1: answers validos => config valido (5.841602ms)
+▶ FU-25 infra (composeFile/ports) — N/A justificado, nao lacuna silenciosa
+  ✔ todo perfil gera infra com composeFile/ports null (comportamento congelado) (3.988439ms)
+  ✔ a justificativa FU-25 esta documentada no codigo (QUESTIONS/infra) (3.468863ms)
+  ✔ QUESTIONS continua sem composeFile/ports (escopo do Q&A inalterado) (1.355939ms)
+✔ FU-25 infra (composeFile/ports) — N/A justificado, nao lacuna silenciosa (9.821122ms)
+▶ IN-03 S2: sem backend java => sem chaves maven + N/A justificado
+  ✔ stack node nao contem maven (0.544404ms)
+✔ IN-03 S2: sem backend java => sem chaves maven + N/A justificado (1.054749ms)
+▶ IN-03 S3: sem funcao de copia no codigo
+  ✔ grep: install.mjs nao expoe caminho de copia (3.811983ms)
+  ✔ gerador puro: deterministico e sem I/O (1.695241ms)
+✔ IN-03 S3: sem funcao de copia no codigo (6.421228ms)
+▶ IM-VAL-01 golden: stacks nao-mobile byte-identicos ao baseline (I7)
+  ✔ stack=node: suiteCommand explicito => byte-equal (2.693134ms)
+  ✔ stack=node: sem suiteCommand => default congelado byte-equal (0.464796ms)
+  ✔ stack=node-esm: suiteCommand explicito => byte-equal (0.194347ms)
+  ✔ stack=node-esm: sem suiteCommand => default congelado byte-equal (0.387221ms)
+  ✔ stack=java+vue: suiteCommand explicito => byte-equal (0.741017ms)
+  ✔ stack=java+vue: sem suiteCommand => default congelado byte-equal (0.213444ms)
+  ✔ stack=outra: suiteCommand explicito => byte-equal (0.221282ms)
+  ✔ stack=outra: sem suiteCommand => default congelado byte-equal (2.755866ms)
+✔ IM-VAL-01 golden: stacks nao-mobile byte-identicos ao baseline (I7) (11.136862ms)
+▶ IM-BE-01 registry puro (ADR-008)
+  ✔ STACK_PROFILES contem os 6 perfis (3.084132ms)
+  ✔ profileOf resolve por lookup; desconhecido => null (0.359191ms)
+✔ IM-BE-01 registry puro (ADR-008) (4.242093ms)
+▶ IM-BE-01 perfil mobile (RF-12)
+  ✔ flutter => mcp + suite + analyze + moduleMap (0.614529ms)
+  ✔ dart => mcp dart, sem marionette, suite dart test (0.763968ms)
+  ✔ suiteCommand do Q&A sobrepoe o default do perfil (mobile) (0.206037ms)
+✔ IM-BE-01 perfil mobile (RF-12) (1.887255ms)
+▶ IN-04 S1: destino novo => tudo instalado + manifesto completo
+  ✔ plan classifica novo + apply escreve CONTEUDO do incoming + manifesto schema-conformant (FU-21) (17.802907ms)
+✔ IN-04 S1: destino novo => tudo instalado + manifesto completo (22.786115ms)
+▶ IN-04 S2: corrompido-aborta R1 / colisao => flag
+  ✔ opencode.json invalido aborta (R1) (2.455989ms)
+  ✔ colisao real em opencode.json => flag com motivo (1.120868ms)
+  ✔ rules existente diferente => flag (nunca auto-merge de prosa) (5.543241ms)
+✔ IN-04 S2: corrompido-aborta R1 / colisao => flag (9.983833ms)
+▶ IN-04 S3: detectores normalizados R4 + whitespace G2
+  ✔ secao Harness casa com whitespace variado (3.450853ms)
+  ✔ quase-igual NAO casa (teste negativo) (1.452766ms)
+  ✔ agents/* com secao ausente => merge anexa; presente => flag (1.713809ms)
+  ✔ merge opencode.json: plugin uniao + instructions append + permission so-adiciona (7.991121ms)
+  ✔ normalizeSection colapsa whitespace (G2) (2.340747ms)
+  ✔ dry-run nao escreve nada (17.653632ms)
+✔ IN-04 S3: detectores normalizados R4 + whitespace G2 (36.51724ms)
+▶ IM-BE-04 merge aditivo do bloco mcp (A3/RF-16)
+  ✔ host sem mcp + incoming com mcp => adiciona (sem flag) (2.059466ms)
+  ✔ host com mcp divergente => uniao only-add + conflict (flag) (1.192799ms)
+  ✔ host com mcp identico => sem conflict (0.257317ms)
+  ✔ planMerge: mcp ausente => merge; mcp divergente => flag (3.045432ms)
+✔ IM-BE-04 merge aditivo do bloco mcp (A3/RF-16) (7.228652ms)
+▶ IM-BE-02 validateAnswer stack mobile (RF-11/ADR-005)
+  ✔ rama 1: flutter ok quando pubspec declara sdk: flutter (27.862458ms)
+  ✔ rama 2: dart ok quando pubspec NAO declara flutter (1.688681ms)
+  ✔ rama 3: pubspec ausente => BAD_ANSWER (fail-closed) (3.238286ms)
+  ✔ rama 4: mismatch flutter pubspec + stack dart => erro "use flutter" (1.711003ms)
+  ✔ rama 4b: pubspec dart + stack flutter => erro (sem sdk: flutter) (3.807166ms)
+  ✔ retrocompat: stack nao-mobile nao exige pubspec (0.992804ms)
+✔ IM-BE-02 validateAnswer stack mobile (RF-11/ADR-005) (42.390537ms)
+▶ IM-BE-03 collectIncoming filtra por stack (I10/A4)
+  ✔ com lock + stacks node => mobile fora, comum dentro, lock nunca copiado (6.274017ms)
+  ✔ com lock + stacks flutter => flutter entra; dart fora (perfil flutter) (2.83969ms)
+  ✔ sem lock => nada filtrado (retrocompat byte-identica) (5.134565ms)
+✔ IM-BE-03 collectIncoming filtra por stack (I10/A4) (15.295247ms)
+▶ MUSTFIX-1 S2-hard: sanitizeLog sempre com contexto vigente
+  ✔ zero call sem vigente (answers|currentAnswers|scripted|lastCliAnswers) (6.436137ms)
+  ✔ :1140 (promptAnswers r.say) passa vigentes completos (...answers) (3.784531ms)
+✔ MUSTFIX-1 S2-hard: sanitizeLog sempre com contexto vigente (13.655085ms)
+▶ MUSTFIX-2 top-level sanitizado com vigentes
+  ✔ bloco de entrada cli (process.stderr.write) sanitiza com vigentes (6.583525ms)
+  ✔ runCli com canario no answers-file que falha nao vaza no erro (12.724128ms)
+✔ MUSTFIX-2 top-level sanitizado com vigentes (20.155437ms)
+▶ MUSTFIX-3 out/printPlan com redacao no sink
+  ✔ printPlan redige canario com contexto answers (1.970934ms)
+  ✔ out() do wizard sanitiza com answers (sink sem sanitizacao = defeito) (2.203259ms)
+  ✔ :1352 (W2m invalida) passa contexto answers ao formatError (3.323101ms)
+✔ MUSTFIX-3 out/printPlan com redacao no sink (11.532133ms)
+▶ MUSTFIX-4 aborts em bloco 4-linhas
+  ✔ wizard stdin fechado emite bloco NO_STDIN (13.77024ms)
+  ✔ wizard 'q' no menu emite bloco USER_ABORT (15.17572ms)
+  ✔ CORRUPT do planMerge sai em bloco 4-linhas no runCli (73.339454ms)
+  ✔ CORRUPT em planMerge carrega excecao documentada com dono F3/F4 (1.384978ms)
+✔ MUSTFIX-4 aborts em bloco 4-linhas (104.922511ms)
+▶ IM-VAL-03 V15 rede em installer/ (V15/rede-installer)
+  ✔ detecta fetch( / node:http / node:https (26.489263ms)
+  ✔ ignora __tests__ e node_modules e código limpo (8.456307ms)
+  ✔ networkCheck => FAIL quando há hit (3.956895ms)
+✔ IM-VAL-03 V15 rede em installer/ (V15/rede-installer) (42.119167ms)
+▶ FU-31 V15 classe de rede (não só literal)
+  ✔ detecta builtins de rede sem prefixo node: e demais builtins (12.776775ms)
+  ✔ detecta libs HTTP terceiras por specifier (import/require) (17.997351ms)
+  ✔ detecta globais de rede WebSocket/XMLHttpRequest (7.144305ms)
+  ✔ detecta child_process com comando de rede (string e array) (3.842736ms)
+  ✔ zero falso-positivo no uso legitimo espelhado de dogfood*.mjs (14.441455ms)
+  ✔ repo real installer/ permanece limpo (guardião anti-regressão) (50.205866ms)
+✔ FU-31 V15 classe de rede (não só literal) (112.268664ms)
+▶ FU-31 review MF-2/MF-3/MF-5 — escapes E5-legado/E6-legado fechados (contraprova de bypass)
+  ✔ E5-legado side-effect import sem binding passa a ser HIT (8.847254ms)
+  ✔ E5-legado formas com binding continuam HIT (zero regressao) (16.173677ms)
+  ✔ E6-legado subcomando apos flag em string e array passa a ser HIT (10.338442ms)
+  ✔ E6-legado comandos locais com flag seguem permitidos (zero falso-positivo) (3.821348ms)
+  ✔ extras do review: bun add / npx / flutter+dart pub get cobertos (4.190126ms)
+  ✔ extras do review: indirecao via globalThis coberta; alias de global segue escape declarado (9.049873ms)
+✔ FU-31 review MF-2/MF-3/MF-5 — escapes E5-legado/E6-legado fechados (contraprova de bypass) (53.853676ms)
+▶ FU-31 review it-3 RE-1 — ReDoS bound nos comandos git/pkg
+  ✔ linha patologica de 200+ chars com muitas flags: scan < 250ms (mediana de 5, bound) (8.012343ms)
+  ✔ bound preserva cobertura: flags antes do subcomando seguem HIT (8.438027ms)
+  ✔ bound preserva zero falso-positivo local (npm run/init, git status) (4.854056ms)
+✔ FU-31 review it-3 RE-1 — ReDoS bound nos comandos git/pkg (22.006001ms)
+▶ FU-31 review it-3 RE-1 extra — fronteira do npx (FP my-npx)
+  ✔ my-npx (substring) nao é falso-positivo; npx real segue HIT (9.042702ms)
+✔ FU-31 review it-3 RE-1 extra — fronteira do npx (FP my-npx) (9.548114ms)
+▶ FU-31 review it-3 ES-1/ES-2 — arestas E7/E8 DECLARADAS (não caçadas)
+  ✔ E7: padrão dividido entre linhas escapa (scan é linha-a-linha) (3.297096ms)
+  ✔ E8: alias de require escapa (createRequire / const rq=require) (4.254065ms)
+✔ FU-31 review it-3 ES-1/ES-2 — arestas E7/E8 DECLARADAS (não caçadas) (8.152204ms)
+▶ FU-31 rodada final RE-1 — bound {0,200} no caminho ARRAY (metade array do ReDoS)
+  ✔ caminho array: linha patologica com muitos elementos: scan < 250ms (mediana de 5, bound {0,200}) (212.191155ms)
+  ✔ bound preserva semantica array: 4 HIT (subcomando em qualquer posicao) + 2 MISS (status/rev-parse) (3.349309ms)
+  ✔ limite declarado: elemento de array >200 chars antes do subcomando nao casa (2.230338ms)
+✔ FU-31 rodada final RE-1 — bound {0,200} no caminho ARRAY (metade array do ReDoS) (219.327621ms)
+▶ FU-42 negative control — regex antiga (sem bound) estoura o bound novo
+  ✔ string sem bound: 34 tokens de flag estouram SCAN_BOUND_MS (2346.989932ms)
+  ✔ array sem bound: 20000 prefixos ["git", estouram SCAN_BOUND_MS (2399.119361ms)
+✔ FU-42 negative control — regex antiga (sem bound) estoura o bound novo (4746.891933ms)
+▶ FU-31 rodada final D-2/D-3 — E9 (npx array-form) e FP npx --version declarados
+  ✔ E9 declarado: npx so na forma string-unica — array-form escapa (nao cacado) (13.251458ms)
+  ✔ FP residual anotado (D-3): "npx --version" casa — so imprime versao; declarado, nao cacado (1.581619ms)
+✔ FU-31 rodada final D-2/D-3 — E9 (npx array-form) e FP npx --version declarados (15.031834ms)
+▶ IN-01 S1 sucesso: pre-flight + inventario + backup
+  ✔ backup existe e verificado antes de qualquer escrita (24.994604ms)
+  ✔ uid 0 / node minimo pinado expostos (2.877845ms)
+✔ IN-01 S1 sucesso: pre-flight + inventario + backup (34.251589ms)
+▶ IN-01 S2 falha: aborta antes de qualquer escrita
+  ✔ .. no target aborta (6.18737ms)
+  ✔ uid 0 sem --allow-root aborta (1.322611ms)
+  ✔ node abaixo do minimo aborta (9.470618ms)
+  ✔ I1: falha injetada no backup => aborta e nada escrito (8.749777ms)
+✔ IN-01 S2 falha: aborta antes de qualquer escrita (31.535187ms)
+▶ IN-01 S3 borda: manifesto pre-existente aborta
+  ✔ re-instalacao (manifesto harness) aborta com instrucao (3.701738ms)
+  ✔ manifesto alheio aborta com instrucao distinta (2.31788ms)
+✔ IN-01 S3 borda: manifesto pre-existente aborta (6.671914ms)
+▶ IN-02 S1: respostas validas => answers completos
+  ✔ Q&A fake com respostas scriptadas passa (11.66251ms)
+✔ IN-02 S1: respostas validas => answers completos (14.289215ms)
+▶ IN-02 S2: resposta invalida => rejeita
+  ✔ path inexistente rejeita (7.464347ms)
+  ✔ comando que nao resolve rejeita (1.921407ms)
+  ✔ collectAnswers com path ruim rejeita e nao retorna parcial valido (2.061501ms)
+✔ IN-02 S2: resposta invalida => rejeita (12.457286ms)
+▶ IN-02 S3: segredo ausente de disco
+  ✔ campo secret so-memoria: serializacao exclui (1.296615ms)
+  ✔ QUESTIONS marca secret explicitamente (0.627275ms)
+✔ IN-02 S3: segredo ausente de disco (2.397167ms)
+▶ INS-05 S1: log com token canario redigido
+  ✔ qualquer log/say com o canario sai sem o canario (1.050224ms)
+  ✔ runCli dry-run com token no answers-file: stdout+stderr sem canario (73.036815ms)
+✔ INS-05 S1: log com token canario redigido (74.527987ms)
+▶ INS-05 S2: scan estatico — zero sanitizeLog( sem answers
+  ✔ toda chamada passa o 2º argumento (contexto vigente) (7.665314ms)
+✔ INS-05 S2: scan estatico — zero sanitizeLog( sem answers (8.393204ms)
+▶ INS-05 S3: resumo W4 + manifesto sem canario
+  ✔ serializeAnswers + resumo + manifesto omitem o segredo (2.550173ms)
+✔ INS-05 S3: resumo W4 + manifesto sem canario (2.821264ms)
+▶ INS-06 S1: answer com escape ANSI exibida sem efeito
+  ✔ output contem ola sem \x1b (0.767268ms)
+✔ INS-06 S1: answer com escape ANSI exibida sem efeito (1.175215ms)
+▶ INS-06 S2: \r overwrite removido
+  ✔ sem \r no output (0.467546ms)
+✔ INS-06 S2: \r overwrite removido (0.600811ms)
+▶ INS-06 S3: \n\t preservados, demais controles removidos
+  ✔ \n\t intactos; \x07 removido (0.302328ms)
+✔ INS-06 S3: \n\t preservados, demais controles removidos (0.553151ms)
+▶ INS-06 ordem: strip-then-redact (REQ-18)
+  ✔ token com ANSI em volta sai sem escape e sem token (0.465429ms)
+✔ INS-06 ordem: strip-then-redact (REQ-18) (0.604204ms)
+▶ INS-17 S1: arquivo objeto valido carrega e pula respondidas
+  ✔ loadAnswersFile devolve objeto; collectAnswers aplica (10.918129ms)
+✔ INS-17 S1: arquivo objeto valido carrega e pula respondidas (11.127431ms)
+▶ INS-17 S2: arquivo array aborta BAD_ANSWER em bloco
+  ✔ loadAnswersFile rejeita [1,2] com BAD_ANSWER (7.243567ms)
+✔ INS-17 S2: arquivo array aborta BAD_ANSWER em bloco (7.465403ms)
+▶ INS-17 S3: token do arquivo so-memoria (nunca serializado)
+  ✔ CANARIO_Y ausente em serializeAnswers + resumo + manifesto (1.309492ms)
+✔ INS-17 S3: token do arquivo so-memoria (nunca serializado) (1.54566ms)
+▶ INS-18 pipe (nao-TTY): leitor historico, sem hang
+  ✔ token via pipe capturado sem eco e sem travar (retrocompat) (12.552895ms)
+✔ INS-18 pipe (nao-TTY): leitor historico, sem hang (12.847886ms)
+▶ INS-18 wizard W3: token mascarado, proxima resposta intacta
+  ✔ token digitado nao aparece no output e nao vaza p/ proxima (10.956003ms)
+✔ INS-18 wizard W3: token mascarado, proxima resposta intacta (11.645206ms)
+▶ IN-06 S1: cobertura por invariante (2 ramos cada)
+  ✔ I1 backup: sucesso verificado / falha aborta sem writes (16.655977ms)
+  ✔ I2 sem sobrescrita silenciosa: novo=create / diferente=flag-ou-merge (2.558581ms)
+  ✔ I3 config gerado: chaves presentes / sem caminho de copia no codigo (2.482786ms)
+  ✔ I4 manifesto: run real grava / dry-run pula (FS fake conta zero) (13.541029ms)
+  ✔ I5 segredo: memoria mantem / disco+log excluem (1.796154ms)
+  ✔ I6 flag: vazio=PASS-path / pendente=FAIL-path (via plan) (2.704453ms)
+✔ IN-06 S1: cobertura por invariante (2 ramos cada) (52.335193ms)
+▶ IN-06 S2: leak por campo secret (Y5)
+  ✔ CADA campo secret excluido de manifesto+config+log (1.495191ms)
+✔ IN-06 S2: leak por campo secret (Y5) (1.884379ms)
+▶ IN-06 S3: dry-run zero writes (FS fake)
+  ✔ applyMerge dry-run nao toca disco (contador de writes) (3.498222ms)
+  ✔ applyMerge sem incomingFiles para create => aborta alto (nunca arquivo vazio silencioso) (3.172003ms)
+✔ IN-06 S3: dry-run zero writes (FS fake) (7.102294ms)
+▶ IN-07 S1 trava: abort fora de /tmp sem --target explicito + confirmacao (Y4)
+  ✔ dentro de /tmp passa; fora sem flags aborta; fora com flags passa (14.973249ms)
+  ✔ preflight valida respostas Q&A contra o real (path/comando) (8.79462ms)
+✔ IN-07 S1 trava: abort fora de /tmp sem --target explicito + confirmacao (Y4) (24.520892ms)
+▶ INS-01 S1: bloco completo para BAD_ANSWER
+  ✔ output tem [ERRO], porquê: BAD_ANSWER, como corrigir:, onde ver: (4 linhas) (1.283139ms)
+✔ INS-01 S1: bloco completo para BAD_ANSWER (1.604486ms)
+▶ INS-01 S2: codigo desconhecido cai em UNKNOWN sem throw
+  ✔ X_INVENTADO => porquê: UNKNOWN + onde ver generico (1.03597ms)
+✔ INS-01 S2: codigo desconhecido cai em UNKNOWN sem throw (1.183902ms)
+▶ INS-01 S3: segredo no texto redigido via sanitizeLog com contexto
+  ✔ canario ausente no output (0.412753ms)
+✔ INS-01 S3: segredo no texto redigido via sanitizeLog com contexto (0.510794ms)
+▶ INS-03 S1: install --dry-run em fixture imprime NAO EXECUTADO, zero writes, passed:null
+  ✔ output contem NÃO EXECUTADO; 0 arquivos criados; checks passed:null (72.643517ms)
+✔ INS-03 S1: install --dry-run em fixture imprime NAO EXECUTADO, zero writes, passed:null (72.869831ms)
+▶ INS-03 S2: regressao checks-como-PASS travada
+  ✔ nenhum passed:true; relatorio diz plano + relatório apenas (39.171381ms)
+✔ INS-03 S2: regressao checks-como-PASS travada (39.489243ms)
+▶ INS-03 S3: dry-run nao cria backup
+  ✔ nenhum .harness-backup-* surge ao lado do target (36.301163ms)
+✔ INS-03 S3: dry-run nao cria backup (36.617305ms)
+▶ INS-03 unidade: dryRunNotice rotula NAO EXECUTADO, nunca PASS
+  ✔ contem NÃO EXECUTADO e nao declara PASS (0.730246ms)
+✔ INS-03 unidade: dryRunNotice rotula NAO EXECUTADO, nunca PASS (0.952264ms)
+▶ INS-04 S1: etapa verde marca pico-fim
+  ✔ W0 verde => [OK] W0: pico-fim; apply+checks verdes => seus marcadores (15.184904ms)
+✔ INS-04 S1: etapa verde marca pico-fim (15.385139ms)
+▶ INS-04 S2: etapa com falha nunca marca pico-fim
+  ✔ checks FAIL => sem [OK] checks: pico-fim, com [ERRO] (4.361867ms)
+✔ INS-04 S2: etapa com falha nunca marca pico-fim (4.628199ms)
+▶ INS-04 S3: dry-run nunca marca pico-fim de apply
+  ✔ dry-run => sem [OK] apply: pico-fim, com NÃO EXECUTADO, apply nao chamado (4.946704ms)
+✔ INS-04 S3: dry-run nunca marca pico-fim de apply (5.236664ms)
+▶ FU-43 test-temp: tmp() cria, registra e escreve
+  ✔ tmp() devolve dir sob os.tmpdir() com o prefixo da label (5.812766ms)
+  ✔ tmp(files) escreve a arvore pedida (3.165808ms)
+  ✔ tmp({}, {root}) cria fora de os.tmpdir() (referente em homedir) (11.363744ms)
+  ✔ register() aceita path criado fora do helper (4.034354ms)
+✔ FU-43 test-temp: tmp() cria, registra e escreve (27.850813ms)
+▶ FU-43 test-temp: cleanup() remove exatamente o registrado
+  ✔ dir rastreado deixa de existir apos cleanup (3.027434ms)
+  ✔ cleanup idempotente: segunda chamada não erra e não remove alheio (3.386771ms)
+  ✔ caminho de FALHA limpa: dir criado antes do assert que estourou (3.507697ms)
+✔ FU-43 test-temp: cleanup() remove exatamente o registrado (10.588493ms)
+▶ FU-43 test-temp: sweep só mexe no pattern EXPLICITO e deste run
+  ✔ sem patterns, sweep não remove nada (5.692693ms)
+  ✔ orfão deste run no pattern é removido pelo sweep (3.880986ms)
+  ✔ nome que NÃO casa o pattern fica intocado (órfão alheio) (8.472166ms)
+  ✔ pattern com guarda de sufixo não casa o nome da spec vizinha (-mobile-) (10.328378ms)
+  ✔ órfão PRÉ-existente (mtime anterior ao run) não é removido (4.480865ms)
+  ✔ sweep respeita roots: orphan em root não listado fica (2.460931ms)
+  ✔ symlink em nome casante é desfeito sem atravessar para o alvo (4.263708ms)
+  ✔ sweepOrphans é puro quanto a direção: retorna só o que removeu (15.078254ms)
+✔ FU-43 test-temp: sweep só mexe no pattern EXPLICITO e deste run (60.44474ms)
+vendor-check OK (../../../../../tmp/harness-vendor-dest-cCIuVY/.vendor-lock.json)
+  divergent: fake-licensed
+vendor-check FAIL
+  error: lock ausente: .vendor-lock.json
+vendor-check FAIL
+vendor-check OK (../../../../../tmp/harness-vendor-dest-8QRCWy/.vendor-lock.json)
+  divergent-license: LICENSE-dart-lang-skills
+vendor-check FAIL
+  missing-license: LICENSE-dart-lang-skills
+vendor-check FAIL
+▶ IM-BE-05 treeHash (multi-arquivo, path\0sha256)
+  ✔ deterministico e sensivel a bytes e a path (17.349448ms)
+  ✔ rejeita symlink (fail-closed, S4) (14.008084ms)
+✔ IM-BE-05 treeHash (multi-arquivo, path\0sha256) (33.762111ms)
+▶ IM-BE-05 folderComputedHash (compat vercel skills-lock)
+  ✔ = sha256 de (relPath + content) ordenado por path (1.850869ms)
+✔ IM-BE-05 folderComputedHash (compat vercel skills-lock) (2.636153ms)
+▶ IM-BE-06 política P-02=(i) — licença
+  ✔ detectSpdx reconhece MIT/BSD-3/Apache-2.0 (4.013031ms)
+  ✔ SOURCE_LICENSES declara as fontes mobile (1.795619ms)
+✔ IM-BE-06 política P-02=(i) — licença (7.016984ms)
+▶ IM-VAL-02 buildVendor + writeVendor
+  ✔ vendoriza licenciada byte-idêntico; exclui sem licença com motivo (21.663423ms)
+  ✔ infere stacks dart/flutter pelo prefixo (4.780894ms)
+  ✔ fonte ausente => excluída source-missing (não vendoriza às cegas) (1.220188ms)
+✔ IM-VAL-02 buildVendor + writeVendor (28.558186ms)
+▶ IM-VAL-04 checkVendor (drift + symlink fail-closed)
+  ✔ verde no estado recém-vendoriado (5.811881ms)
+  ✔ hash adulterado => FAIL e lista divergência (5.298555ms)
+  ✔ symlink no vendor => FAIL (5.522717ms)
+  ✔ dir ausente => missing => FAIL (4.855272ms)
+✔ IM-VAL-04 checkVendor (drift + symlink fail-closed) (22.598999ms)
+▶ IM-BE-05 CLI
+  ✔ --check exit 0 verde / exit 1 adulterado (13.068218ms)
+  ✔ --check sem lock => exit 1 (fail-closed) (2.579376ms)
+✔ IM-BE-05 CLI (16.284587ms)
+▶ IM-BE-06 SPDX allowlist (frontmatter fail-closed)
+  ✔ isAllowedSpdx aceita permissivas e rejeita UNLICENSED/PROPRIETARY/desconhecido (0.457077ms)
+  ✔ `license: UNLICENSED` no frontmatter => skill EXCLUÍDA (não fail-open) (3.905003ms)
+✔ IM-BE-06 SPDX allowlist (frontmatter fail-closed) (4.72308ms)
+▶ IM-BE-06 licença agregada escrita pelo vendor (licenseFile não mente)
+  ✔ grava LICENSE-<slug> na raiz com texto+copyright e licenseFile aponta pra ele (7.200541ms)
+  ✔ SOURCE_LICENSES traz licenseText completo (não só SPDX) (1.724833ms)
+✔ IM-BE-06 licença agregada escrita pelo vendor (licenseFile não mente) (11.243132ms)
+▶ IM-VAL-04 symlink na raiz do skill (fail-closed)
+  ✔ buildVendor exclui dir de skill simlinkado (motivo symlink) (1.886329ms)
+  ✔ checkVendor: skill root simlinkado => FAIL (symlinks) (4.469618ms)
+  ✔ listTree classifica a raiz simlinkada como symlink "." (1.855365ms)
+✔ IM-VAL-04 symlink na raiz do skill (fail-closed) (9.311805ms)
+▶ licença agregada: byte-identidade upstream + verificação por --check
+  ✔ SOURCE_LICENSES bate byte-a-byte com o LICENSE upstream (sha congelado) (1.064088ms)
+  ✔ buildVendor registra lock.licenses; writeVendor grava o arquivo byte-identico (3.831868ms)
+  ✔ LICENSE-<slug> adulterado => FAIL (licenseDivergences) (2.895686ms)
+  ✔ LICENSE-<slug> ausente => FAIL (licenseMissing) (4.482174ms)
+  ✔ LICENSE-<slug> simlinkado => FAIL (licenseSymlinks) (2.281358ms)
+  ✔ CLI --check: exit 0 no estado bom, exit 1 ao apagar/adulterar LICENSE-* (3.690289ms)
+  ✔ lock sem o arquivo mas fonte conhecida: apagar LICENSE ainda falha (deriva da tabela) (8.524402ms)
+✔ licença agregada: byte-identidade upstream + verificação por --check (27.983611ms)
+▶ FU-30 lock-vs-source mismatch — 1 linha por arquivo, nao por skill
+  ✔ duas skills da MESMA fonte com hash divergente => UM erro de divergencia (3.80208ms)
+✔ FU-30 lock-vs-source mismatch — 1 linha por arquivo, nao por skill (4.090642ms)
+▶ IM-BE-07 detect() — leitura line-based do pubspec (ADR-010/G3)
+  ✔ pubspec flutter => sugere flutter + origem (arquivo:linha) (12.365639ms)
+  ✔ pubspec dart (sem sdk: flutter) => sugere dart (4.766954ms)
+  ✔ sem pubspec => sem sugestao (menu manual no W2m) (3.043665ms)
+✔ IM-BE-07 detect() — leitura line-based do pubspec (ADR-010/G3) (24.96264ms)
+▶ IM-VAL-05 wizard W0..W7 (I11/RF-15)
+  ✔ W0: pre-flight invalido aborta sem called apply e sem writes (13.437545ms)
+  ✔ W1/W2/W4: inventario + deteccao + previa do plano via printPlan (11.801542ms)
+  ✔ W2m: sem pubspec => menu manual (3=node) alimenta o default do W3 (6.960061ms)
+  ✔ W3: resposta invalida repete e depois aceita (erro inline + como corrigir) (10.49443ms)
+  ✔ W3: token de abort (q) => USER_ABORT e zero writes (4.522387ms)
+  ✔ W3: EOF => NO_STDIN com instrucao (nunca trava) (5.151999ms)
+  ✔ W5: negar camada => USER_ABORT e zero writes (5.979251ms)
+  ✔ W5 yes: camadas aprovadas sem ler stdin (reusa confirmByLayer) (5.86925ms)
+  ✔ W6/W7: apply injetado recebe answers validados; progresso [n/total] + manifesto/checks (7.015019ms)
+  ✔ detect injetado e respeitado (mesma tecnica de promptAnswers) (6.448831ms)
+  ✔ dry-run: dispensa confirmacao e nao chama apply (7.828788ms)
+✔ IM-VAL-05 wizard W0..W7 (I11/RF-15) (88.771144ms)
+▶ G6 regressao do leitor (terminal:false em pipe/redirect)
+  ✔ promptAnswers pipado continua identico (terminal:false) (5.62909ms)
+  ✔ runWizard aceita stdin com isTTY=true sem quebrar (terminal:true condicional) (14.252024ms)
+✔ G6 regressao do leitor (terminal:false em pipe/redirect) (20.415808ms)
+▶ IM-VAL-05 costura runCli -> runWizard (should-fix review)
+  ✔ stdin.isTTY=true sem --answers-file => runCli entra no wizard (marcador W0) (9.760543ms)
+  ✔ --answers-file => pula o wizard mesmo com stdin TTY (caminho v1, sem W0) (3.987345ms)
+✔ IM-VAL-05 costura runCli -> runWizard (should-fix review) (14.277777ms)
+▶ IM-VAL-05 W3 suiteCommand recalcula pelo stack escolhido (should-fix review)
+  ✔ stack sobrescrita no W3 recalcula o default de suiteCommand (4.534417ms)
+✔ IM-VAL-05 W3 suiteCommand recalcula pelo stack escolhido (should-fix review) (4.793779ms)
+▶ INS-07 W2m 5 itens produto (REQ-01)
+  ✔ menu exibe 5 itens produto com seta -> stack (4.770008ms)
+  ✔ regressao: menu nunca tem 4 itens (SPEC violada) (6.658528ms)
+  ✔ hint (q cancela) visivel no prompt W2m (5.249498ms)
+✔ INS-07 W2m 5 itens produto (REQ-01) (17.639015ms)
+▶ INS-08 mapeamento sem nova key (REQ-02)
+  ✔ escolhas 1..5 mapeiam para flutter|dart|node|java+vue|outra (2.529464ms)
+  ✔ menu 4 => java+vue alimenta default W3 (wizard) (5.665062ms)
+  ✔ menu 5 => outra alimenta default W3 (wizard) (5.881119ms)
+  ✔ node-esm valido em W3/validateAnswer mas sem item proprio no W2m (2.177654ms)
+✔ INS-08 mapeamento sem nova key (REQ-02) (17.159849ms)
+▶ INS-09 detect soberano (REQ-03)
+  ✔ com pubspec flutter: W2m pulado, default W3 = flutter (6.406858ms)
+  ✔ regressao: pubspec presente => suggestedStack nao-null e menu ausente (5.521392ms)
+  ✔ sem pubspec: W2m exibido (INS-07) (8.003094ms)
+✔ INS-09 detect soberano (REQ-03) (21.216427ms)
+▶ INS-10 invalida repete [1,5] (REQ-04)
+  ✔ '7' repete com bloco [ERRO] BAD_ANSWER fora de [1,5] (9.136838ms)
+  ✔ gerador invalido (0,6,x,'',espaco) nunca avanca para W3 (16.034711ms)
+  ✔ 'q' no menu => USER_ABORT sem writes (5.789013ms)
+✔ INS-10 invalida repete [1,5] (REQ-04) (31.828399ms)
+▶ INS-14 init W0-W7 (REQ-09)
+  ✔ destino limpo instala: config+skills, checks verdes, pico-fim, exit 0 (8.126955ms)
+  ✔ pre-flight falha (manifesto pre-existente): aborta sem writes (3.414587ms)
+  ✔ stdin fechado sem answers: NO_STDIN sem writes (4.40272ms)
+✔ INS-14 init W0-W7 (REQ-09) (16.616849ms)
+▶ INS-15 gate create-only (REQ-10)
+  ✔ plano so-create passa (create|generate-overwrite|noop) (0.615153ms)
+  ✔ merge presente: init aborta citando doctor, 0 writes (8.866038ms)
+  ✔ flag solitario tambem aborta (0.699732ms)
+✔ INS-15 gate create-only (REQ-10) (10.616771ms)
+▶ INS-16 contador + q (REQ-11)
+  ✔ prompts W3 exibem [i/N] sequencial 1..N (5.930089ms)
+  ✔ q na 3a pergunta => USER_ABORT, 0 writes (4.23672ms)
+  ✔ sinonimos quit/cancel/abort abortam idem q (8.75514ms)
+  ✔ hint (q cancela) em todo prompt W3 (5.336242ms)
+  ✔ isAbortToken exportado cobre q + sinonimos; valor comum nao aborta (0.31443ms)
+✔ INS-16 contador + q (REQ-11) (25.552851ms)
+ℹ tests 358
+ℹ suites 134
+ℹ pass 358
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5764.316894
+ℹ start of coverage report
+ℹ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ℹ file         | line % | branch % | funcs % | uncovered lines
+ℹ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ℹ installer    |        |          |         | 
+ℹ  install.mjs |  91.73 |    83.29 |   96.21 | 39 53-54 123-124 332 431 458 516-521 565-578 710-712 756-758 768-769 788-792 802-808 1049-1050 1128-1129 1393-1395 1423-1424 1543-1552 1686-1744 1759-1760 1781-1782 1808-1809 1813-1825 1886 1899-1901 1921-1929 1931-1933
+ℹ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ℹ all files    |  91.73 |    83.29 |   96.21 | 
+ℹ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ℹ end of coverage report

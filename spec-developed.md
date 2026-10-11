@@ -46,3 +46,11 @@ Registro cronológico de funcionalidades e refactors entregues.
 - [x] Fase 4/4.5 — Quality (104/104 + 162/162 + dogfood) + Security Verify pass
 - [x] Fase 5 — Verify (3 dimensões ✅, traceability 100%)
 - [x] Fase 6 — Archive
+| 2026-10-11 | `installer-melhoria` | Melhoria | Instalador: menu W2m 5 itens produto→stack (sem nova key), erro padrão 4-linhas + dry-run NÃO EXECUTADO + pico-fim, `init` greenfield create-only W0–W7, `doctor` brownfield read-only D0–D6, higiene de segredos H1/M1–M4, contrato CLI init/doctor. ADRs 011–014, 20/20 tasks, suite verde (plugins 135 + installer 358). | `.spec/archive/20261011-installer-melhoria/` | Completed |
+
+## Etapas concluídas — installer-melhoria
+- [x] Fase 1 — Análise (PROPOSAL + SPEC, ADRs 011–014, Delta Specs)
+- [x] Fase 2 — Planejamento (PLAN INS-01..INS-20 + TASKS BDD)
+- [x] Fase 3 — Execução (20/20 Done, reviews APPROVED, security 14/14)
+- [x] Fase 5 — Verify (3 dimensões ✅ PASS, coverage funcs 96.21%)
+- [x] Fase 6 — Archive (deltas: SKILL §9.2/§7 MODIFIED + §10/§11 ADDED, harness-config nota, spec-developed entrada)

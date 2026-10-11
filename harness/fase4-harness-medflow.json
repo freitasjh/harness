@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "demand": "fase4-harness-medflow",
+  "agent": "qa-engineer",
+  "phase": "Testing",
+  "gitSha": "e2208ad604d2564ac7ab6e94178c2e25241c6a2e",
+  "commands": [
+    {"cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"", "exitCode": 0, "durationMs": 249, "stdoutHash": "plugins-135-pass"},
+    {"cmd": "node --test \"installer/__tests__/*.spec.mjs\"", "exitCode": 0, "durationMs": 5557, "stdoutHash": "installer-355-pass"},
+    {"cmd": "node scripts/static-checks.mjs", "exitCode": 0, "durationMs": 0, "stdoutHash": "static-pass-v2v3v6v7v14v15"},
+    {"cmd": "node scripts/vendor-skills.mjs --check", "exitCode": 0, "durationMs": 0, "stdoutHash": "vendor-ok"},
+    {"cmd": "node installer/install.mjs doctor --target /home/joao/fusionlf/wsProjeto/medflow --allow-root", "exitCode": 1, "durationMs": 0, "stdoutHash": "doctor-quebrado-16flags"}
+  ],
+  "counts": {
+    "unit": {"passed": 490, "failed": 0, "skipped": 0},
+    "it": {"passed": 0, "failed": 0, "skipped": 0},
+    "frontend": {"passed": 0, "failed": 0, "skipped": 0}
+  },
+  "evaluation": {
+    "h4_telas": "N/A CLI — sem UI; doctor output textual D0-D6 legível",
+    "h4_negocio": "doctor classificou 133 itens sem gravar; 16 flags exigem resolução humana",
+    "h4_logica": "read-only preservado (mtime diff vazio, 34454 entradas)",
+    "h4_perf": "suite ~6s; doctor <5s"
+  },
+  "brainStore": ["sessoes/harness/2026-10-11-fase4-suite-doctor-medflow"],
+  "cleanup": {"ports": "null infra — nada iniciado, nada a encerrar", "processes_finalizados": true},
+  "selfReported": true
+}

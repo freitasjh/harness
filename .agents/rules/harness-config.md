@@ -22,6 +22,11 @@ plugins never hardcode its values (SPEC ADR-003). Enforcement lives in
 | `contraproveTimeoutMs` | identical to SPEC §5.1; re-execution past this timeout is a `contraprove-timeout` deny (ADR-002) |
 | `evidence` | `harness/` + report schema path |
 
+> Nota (installer-melhoria, 2026-10-11): menu W2m 5 itens produto→stack,
+> entrypoints `init`/`doctor` e padrão de erro 4-linhas **não alteram**
+> `harness.config.json` — comandos, portas, `mcp.required` e selo `suiteFull`
+> idênticos; `STACK_VALUES`/`STACK_PROFILES` preservados sem nova key.
+
 ## Fail-closed (RF-01/RF-02)
 
 Missing or invalid config ⇒ every gate fails closed with a clear

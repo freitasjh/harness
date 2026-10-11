@@ -7,6 +7,11 @@ import { Readable, Writable } from 'node:stream';
 import { execFileSync } from 'node:child_process';
 import {
   main,
+  runInit,
+  runDoctor,
+  runCli,
+  parseArgs,
+  printUsage,
   planMerge,
   printPlan,
   collectIncoming,
@@ -301,5 +306,90 @@ describe('CLI-05: incoming canonico documentado no codigo', () => {
     assert.ok(!Object.keys(incoming).some((k) => k.includes('.git')), 'exclui .git');
     const srcText = fs.readFileSync(new URL('../install.mjs', import.meta.url), 'utf8');
     assert.match(srcText, /INCOMING_ROOTS|lista can[oô]nica/i, 'lista canonica documentada no codigo');
+  });
+});
+
+// INS-19 contrato CLI init|doctor argv/flags/exit/help (SPEC §9.5) — TDD FIRST
+describe('INS-19 parseArgs: posicional init|doctor, nenhum flag novo', () => {
+  it("primeiro posicional seleciona entrypoint; legado sem posicional", () => {
+    assert.equal(parseArgs(['init', '--target', 'x']).command, 'init');
+    assert.equal(parseArgs(['doctor', '--target', 'x']).command, 'doctor');
+    assert.equal(parseArgs(['--target', 'x']).command, null);
+    assert.equal(parseArgs(['init', '--target', 'x']).target, 'x');
+  });
+
+  it('flags existentes preservados; comando desconhecido aborta', () => {
+    const a = parseArgs(['init', '--target', 'x', '--dry-run', '--answers-file', 'a.json', '--yes', '--backup-dir', 'b', '--allow-root']);
+    assert.equal(a.dryRun, true);
+    assert.equal(a.answersFile, 'a.json');
+    assert.equal(a.yes, true);
+    assert.equal(a.backupDir, 'b');
+    assert.equal(a.allowRoot, true);
+    assert.throws(() => parseArgs(['frobnicate', '--target', 'x']), /init\|doctor|desconhecido/i);
+  });
+});
+
+describe('INS-19 help: 2 entrypoints + notas, exit 0', () => {
+  it('printUsage exibe 1 linha por entrypoint + create-only/read-only', () => {
+    const lines = [];
+    printUsage({ output: { write: (s) => lines.push(s) } });
+    const text = lines.join('\n');
+    assert.match(text, /init.*--target/, 'linha init');
+    assert.match(text, /doctor.*--target/, 'linha doctor');
+    assert.match(text, /create-only/, 'nota create-only do init');
+    assert.match(text, /read-only/, 'nota read-only do doctor');
+  });
+
+  it('init --help / doctor --help: help puro sai 0 mesmo sem --target', async () => {
+    for (const cmd of ['init', 'doctor']) {
+      const out = capture();
+      const r = await runCli({ argv: [cmd, '--help'], stdin: pipedInput([]), stdout: out.stream, stderr: nullOutput() });
+      assert.equal(r.help, true, `${cmd} --help retorna help`);
+      assert.match(out.text(), /init/, 'uso exibe init');
+      assert.match(out.text(), /doctor/, 'uso exibe doctor');
+    }
+  });
+});
+
+describe('INS-19 sem --target: BAD_TARGET exit 1', () => {
+  it('init sem --target rejeita BAD_TARGET', async () => {
+    await assert.rejects(
+      runCli({ argv: ['init', '--allow-root'], stdin: pipedInput([]), stdout: nullOutput(), stderr: nullOutput() }),
+      (e) => e instanceof InstallError && e.code === 'BAD_TARGET',
+    );
+  });
+
+  it('processo real init sem --target sai 1 com bloco', () => {
+    let code = 0;
+    let errOut = '';
+    try {
+      execFileSync('node', ['installer/install.mjs', 'init', '--allow-root'], {
+        cwd: path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..'),
+        input: '',
+        encoding: 'utf8',
+        timeout: 15000,
+      });
+    } catch (e) {
+      code = e.status ?? 1;
+      errOut = String(e.stderr ?? e.stdout ?? e.message);
+    }
+    assert.equal(code, 1, 'init sem --target sai 1');
+    assert.match(errOut, /BAD_TARGET/, 'bloco cita BAD_TARGET');
+  });
+});
+
+describe('INS-19 doctor ignora --dry-run/--yes (read-only)', () => {
+  it('diagnostico normal, flags sem efeito, sem writes', async () => {
+    const target = mkTarget({ '.agents/rules/velha.md': '# destino\n' });
+    const before = JSON.stringify(fs.readdirSync(target));
+    const out = capture();
+    const r = await runCli({
+      argv: ['doctor', '--target', target, '--allow-root', '--dry-run', '--yes'],
+      stdin: pipedInput([]),
+      stdout: out.stream,
+      stderr: nullOutput(),
+    });
+    assert.ok(Array.isArray(r.markers) && r.markers.length === 7, 'D0-D6 executados');
+    assert.equal(JSON.stringify(fs.readdirSync(target)), before, 'doctor: disco intocado');
   });
 });

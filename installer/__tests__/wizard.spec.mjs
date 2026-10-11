@@ -8,7 +8,7 @@ import os from 'node:os';
 import path from 'node:path';
 import fs from 'node:fs';
 import { Readable, Writable } from 'node:stream';
-import { runWizard, detect, promptAnswers, runCli, InstallError } from '../install.mjs';
+import { runWizard, runInit, assertCreateOnly, isAbortToken, detect, promptAnswers, runCli, InstallError, WIZARD_MENU, validateAnswer } from '../install.mjs';
 
 let dirs = [];
 function mkTarget(files = {}) {
@@ -388,5 +388,386 @@ describe('IM-VAL-05 W3 suiteCommand recalcula pelo stack escolhido (should-fix r
     assert.equal(res.answers.suiteCommand, 'node --test', 'default recalculado do stack escolhido');
     const suiteLine = out.text().split('\n').find((l) => l.includes('suite de testes'));
     assert.match(suiteLine, /default: node --test/, 'default exibido vem do stack escolhido, nao do detectado');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Batch F2 (INS-07..10) — menu produto 5 itens (TDD-first, SPEC §9.1 + REQ-01..04).
+describe('INS-07 W2m 5 itens produto (REQ-01)', () => {
+  it('menu exibe 5 itens produto com seta -> stack', async () => {
+    const t = mkTarget({});
+    const src = mkSource();
+    const out = capture();
+    await runWizard({
+      target: t,
+      stdin: piped(['3', 'demo', '', 'node', '', '']),
+      stdout: out.stream,
+      sourceDir: src,
+      options: WOPTS,
+    });
+    const text = out.text();
+    assert.match(text, /escolha o tipo do seu projeto/i);
+    for (const [label, stack] of [
+      ['App Flutter', 'flutter'],
+      ['Pacote Dart', 'dart'],
+      ['Projeto Node\\.js', 'node'],
+      ['Projeto Java \\+ Vue', 'java\\+vue'],
+      ['Outro projeto', 'outra'],
+    ]) {
+      assert.match(text, new RegExp(`[1-5]\\) .*${label}.*-> stack ${stack}`), `item ${label} -> ${stack}`);
+    }
+  });
+
+  it('regressao: menu nunca tem 4 itens (SPEC violada)', async () => {
+    const t = mkTarget({});
+    const src = mkSource();
+    const out = capture();
+    await runWizard({
+      target: t,
+      stdin: piped(['3', 'demo', '', 'node', '', '']),
+      stdout: out.stream,
+      sourceDir: src,
+      options: WOPTS,
+    });
+    const items = out.text().split('\n').filter((l) => /^\s*[1-5]\)/.test(l));
+    assert.equal(items.length, 5, 'exatamente 5 itens');
+    assert.notEqual(items.length, 4, 'travada regressao aos 4 itens legados');
+  });
+
+  it('hint (q cancela) visivel no prompt W2m', async () => {
+    const t = mkTarget({});
+    const src = mkSource();
+    const out = capture();
+    await runWizard({
+      target: t,
+      stdin: piped(['3', 'demo', '', 'node', '', '']),
+      stdout: out.stream,
+      sourceDir: src,
+      options: WOPTS,
+    });
+    assert.match(out.text(), /\(q cancela\)/, 'hint q visivel');
+  });
+});
+
+describe('INS-08 mapeamento sem nova key (REQ-02)', () => {
+  it('escolhas 1..5 mapeiam para flutter|dart|node|java+vue|outra', () => {
+    const byKey = Object.fromEntries(WIZARD_MENU.map((m) => [m.key, m.stack]));
+    assert.deepEqual(byKey, { 1: 'flutter', 2: 'dart', 3: 'node', 4: 'java+vue', 5: 'outra' });
+  });
+
+  it('menu 4 => java+vue alimenta default W3 (wizard)', async () => {
+    const t = mkTarget({});
+    const src = mkSource();
+    const res = await runWizard({
+      target: t,
+      stdin: piped(['4', 'demo', '', 'node', '', '']),
+      stdout: capture().stream,
+      sourceDir: src,
+      options: WOPTS,
+    });
+    assert.equal(res.answers.stack, 'java+vue');
+  });
+
+  it('menu 5 => outra alimenta default W3 (wizard)', async () => {
+    const t = mkTarget({});
+    const src = mkSource();
+    const res = await runWizard({
+      target: t,
+      stdin: piped(['5', 'demo', '', 'node', '', '']),
+      stdout: capture().stream,
+      sourceDir: src,
+      options: WOPTS,
+    });
+    assert.equal(res.answers.stack, 'outra');
+  });
+
+  it('node-esm valido em W3/validateAnswer mas sem item proprio no W2m', () => {
+    const t = mkTarget({});
+    assert.equal(validateAnswer(t, 'stack', 'node-esm'), 'node-esm');
+    assert.ok(!WIZARD_MENU.some((m) => m.stack === 'node-esm'), 'sem item node-esm no menu');
+  });
+});
+
+describe('INS-09 detect soberano (REQ-03)', () => {
+  it('com pubspec flutter: W2m pulado, default W3 = flutter', async () => {
+    const t = mkTarget({ 'pubspec.yaml': PUBSPEC_FLUTTER });
+    const src = mkSource();
+    const out = capture();
+    const res = await runWizard({
+      target: t,
+      stdin: piped(['', '', 'node', '', '']),
+      stdout: out.stream,
+      sourceDir: src,
+      options: WOPTS,
+    });
+    assert.doesNotMatch(out.text(), /W2m menu manual/, 'menu nao exibido com pubspec');
+    assert.equal(res.answers.stack, 'flutter', 'default veio do suggestedStack');
+  });
+
+  it('regressao: pubspec presente => suggestedStack nao-null e menu ausente', async () => {
+    const t = mkTarget({ 'pubspec.yaml': PUBSPEC_DART });
+    const src = mkSource();
+    const out = capture();
+    const res = await runWizard({
+      target: t,
+      stdin: piped(['', '', 'node', '', '']),
+      stdout: out.stream,
+      sourceDir: src,
+      options: WOPTS,
+    });
+    assert.equal(res.detection.suggestedStack, 'dart');
+    assert.doesNotMatch(out.text(), /W2m menu manual/);
+  });
+
+  it('sem pubspec: W2m exibido (INS-07)', async () => {
+    const t = mkTarget({});
+    const src = mkSource();
+    const out = capture();
+    await runWizard({
+      target: t,
+      stdin: piped(['3', 'demo', '', 'node', '', '']),
+      stdout: out.stream,
+      sourceDir: src,
+      options: WOPTS,
+    });
+    assert.match(out.text(), /W2m menu manual/);
+  });
+});
+
+describe('INS-10 invalida repete [1,5] (REQ-04)', () => {
+  it("'7' repete com bloco [ERRO] BAD_ANSWER fora de [1,5]", async () => {
+    const t = mkTarget({});
+    const src = mkSource();
+    const out = capture();
+    const res = await runWizard({
+      target: t,
+      stdin: piped(['7', '3', 'demo', '', 'node', '', '']),
+      stdout: out.stream,
+      sourceDir: src,
+      options: WOPTS,
+    });
+    assert.match(out.text(), /\[ERRO\]/);
+    assert.match(out.text(), /porquê: BAD_ANSWER/);
+    assert.match(out.text(), /fora de \[1,5\]/);
+    assert.equal(res.answers.stack, 'node', 'repetiu e aceitou o valido');
+  });
+
+  it("gerador invalido (0,6,x,'',espaco) nunca avanca para W3", async () => {
+    for (const bad of ['0', '6', 'x', '', ' ']) {
+      const t = mkTarget({});
+      const src = mkSource();
+      const out = capture();
+      const res = await runWizard({
+        target: t,
+        stdin: piped([bad, '3', 'demo', '', 'node', '', '']),
+        stdout: out.stream,
+        sourceDir: src,
+        options: WOPTS,
+      });
+      assert.match(out.text(), /\[ERRO\]/, `invalido '${bad}' repetiu`);
+      assert.equal(res.answers.stack, 'node', `invalido '${bad}' nao avancou`);
+    }
+  });
+
+  it("'q' no menu => USER_ABORT sem writes", async () => {
+    const t = mkTarget({});
+    const src = mkSource();
+    const before = JSON.stringify(fs.readdirSync(t));
+    let applied = 0;
+    await assert.rejects(
+      runWizard({
+        target: t,
+        stdin: piped(['q']),
+        stdout: capture().stream,
+        sourceDir: src,
+        options: WOPTS,
+        apply: () => { applied++; return {}; },
+      }),
+      (e) => e instanceof InstallError && e.code === 'USER_ABORT',
+    );
+    assert.equal(applied, 0);
+    assert.equal(JSON.stringify(fs.readdirSync(t)), before, 'q: disco intocado (I-05)');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// INS-14 init W0-W7 greenfield (REQ-09) — TDD FIRST
+describe('INS-14 init W0-W7 (REQ-09)', () => {
+  it('destino limpo instala: config+skills, checks verdes, pico-fim, exit 0', async () => {
+    const t = mkTarget({});
+    const src = mkSource();
+    const out = capture();
+    const res = await runInit({
+      target: t,
+      stdin: piped(['3', 'demo', '', '', '', '']),
+      stdout: out.stream,
+      stderr: capture().stream,
+      sourceDir: src,
+      options: { allowRoot: true, yes: true },
+    });
+    dirs.push(res.backupDir);
+    assert.equal(res.exitCode, 0, 'init limpo sai 0');
+    assert.match(out.text(), /pico-fim/, 'sucesso marca pico-fim');
+    assert.ok(fs.existsSync(path.join(t, 'harness.config.json')), 'config instalado');
+    assert.ok(fs.existsSync(path.join(t, '.agents/rules/a.md')), 'skills instaladas');
+    assert.ok(fs.existsSync(path.join(t, '.harness-install.json')), 'manifesto escrito');
+    assert.equal(res.checks.passed, true, 'checks verdes');
+  });
+
+  it('pre-flight falha (manifesto pre-existente): aborta sem writes', async () => {
+    const t = mkTarget({ '.harness-install.json': JSON.stringify({ manifestSchemaVersion: 1, source: 'harness@x' }) });
+    const src = mkSource();
+    const before = JSON.stringify(fs.readdirSync(t));
+    await assert.rejects(
+      runInit({
+        target: t,
+        stdin: piped(['3', 'demo', '', '', '', '']),
+        stdout: capture().stream,
+        stderr: capture().stream,
+        sourceDir: src,
+        options: { allowRoot: true, yes: true },
+      }),
+      (e) => e instanceof InstallError,
+    );
+    assert.equal(JSON.stringify(fs.readdirSync(t)), before, 'abort em W0: disco intocado');
+  });
+
+  it('stdin fechado sem answers: NO_STDIN sem writes', async () => {
+    const t = mkTarget({});
+    const src = mkSource();
+    const before = JSON.stringify(fs.readdirSync(t));
+    await assert.rejects(
+      runInit({
+        target: t,
+        stdin: piped([]),
+        stdout: capture().stream,
+        stderr: capture().stream,
+        sourceDir: src,
+        options: { allowRoot: true, yes: true },
+      }),
+      (e) => e instanceof InstallError && e.code === 'NO_STDIN',
+    );
+    assert.equal(JSON.stringify(fs.readdirSync(t)), before, 'NO_STDIN: disco intocado');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// INS-15 gate create-only (REQ-10) — TDD FIRST
+describe('INS-15 gate create-only (REQ-10)', () => {
+  it('plano so-create passa (create|generate-overwrite|noop)', () => {
+    const r = assertCreateOnly([
+      { action: 'create', path: 'a' },
+      { action: 'generate-overwrite', path: 'harness.config.json' },
+      { action: 'noop', path: 'b' },
+    ]);
+    assert.equal(r.ok, true);
+  });
+
+  it('merge presente: init aborta citando doctor, 0 writes', async () => {
+    const t = mkTarget({ 'opencode.json': JSON.stringify({ plugin: ['dest'] }) });
+    const src = mkSource();
+    const before = JSON.stringify(fs.readdirSync(t));
+    const out = capture();
+    await assert.rejects(
+      runInit({
+        target: t,
+        stdin: piped(['3', 'demo', '', '', '', '']),
+        stdout: out.stream,
+        stderr: capture().stream,
+        sourceDir: src,
+        options: { allowRoot: true, yes: true },
+      }),
+      (e) => e instanceof InstallError && e.code === 'flagged-open',
+    );
+    assert.match(out.text(), /doctor/, 'abort cita doctor');
+    assert.equal(JSON.stringify(fs.readdirSync(t)), before, 'gate: disco intocado, 0 writes');
+  });
+
+  it('flag solitario tambem aborta', () => {
+    assert.throws(
+      () => assertCreateOnly([{ action: 'create', path: 'a' }, { action: 'flag', path: '.agents/rules/x.md' }]),
+      (e) => e instanceof InstallError && e.code === 'flagged-open' && /doctor/.test(e.message),
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// INS-16 contador + q (REQ-11) — TDD FIRST
+describe('INS-16 contador + q (REQ-11)', () => {
+  it('prompts W3 exibem [i/N] sequencial 1..N', async () => {
+    const t = mkTarget({});
+    const src = mkSource();
+    const out = capture();
+    await runWizard({
+      target: t,
+      stdin: piped(['3', 'demo', '', '', '', '']),
+      stdout: out.stream,
+      sourceDir: src,
+      options: WOPTS,
+    });
+    const text = out.text();
+    for (let i = 1; i <= 5; i++) assert.match(text, new RegExp(`\\[${i}/5\\]`), `contador [${i}/5] visivel`);
+  });
+
+  it('q na 3a pergunta => USER_ABORT, 0 writes', async () => {
+    const t = mkTarget({});
+    const src = mkSource();
+    const before = JSON.stringify(fs.readdirSync(t));
+    let applied = 0;
+    await assert.rejects(
+      runWizard({
+        target: t,
+        stdin: piped(['3', 'demo', '', 'q']),
+        stdout: capture().stream,
+        sourceDir: src,
+        options: WOPTS,
+        apply: () => { applied++; return {}; },
+      }),
+      (e) => e instanceof InstallError && e.code === 'USER_ABORT',
+    );
+    assert.equal(applied, 0);
+    assert.equal(JSON.stringify(fs.readdirSync(t)), before, 'q: disco intocado (I-05)');
+  });
+
+  it("sinonimos quit/cancel/abort abortam idem q", async () => {
+    for (const syn of ['quit', 'cancel', 'abort']) {
+      const t = mkTarget({});
+      const src = mkSource();
+      await assert.rejects(
+        runWizard({
+          target: t,
+          stdin: piped(['3', 'demo', '', syn]),
+          stdout: capture().stream,
+          sourceDir: src,
+          options: WOPTS,
+        }),
+        (e) => e instanceof InstallError && e.code === 'USER_ABORT',
+        `sinonimo '${syn}' aborta`,
+      );
+    }
+  });
+
+  it('hint (q cancela) em todo prompt W3', async () => {
+    const t = mkTarget({});
+    const src = mkSource();
+    const out = capture();
+    await runWizard({
+      target: t,
+      stdin: piped(['3', 'demo', '', '', '', '']),
+      stdout: out.stream,
+      sourceDir: src,
+      options: WOPTS,
+    });
+    const hits = out.text().match(/\(q cancela\)/g) || [];
+    assert.ok(hits.length >= 5, `hint em todo prompt W3 (achados ${hits.length})`);
+  });
+
+  it('isAbortToken exportado cobre q + sinonimos; valor comum nao aborta', () => {
+    assert.equal(isAbortToken('q'), true);
+    assert.equal(isAbortToken('quit'), true);
+    assert.equal(isAbortToken('cancel'), true);
+    assert.equal(isAbortToken('abort'), true);
+    assert.equal(isAbortToken('node'), false);
+    assert.equal(isAbortToken(''), false);
   });
 });

@@ -122,6 +122,62 @@ describe('IN-05 S2: flagged pendente / literal-canario => FAIL com motivo', () =
   });
 });
 
+// INS-02 (REQ-06): cada failed[] em bloco 4-linhas com onde ver
+describe('INS-02 S1: target sem manifesto => manifest-missing em bloco com onde ver no target', () => {
+  it('failed[] contem bloco 4-linhas com onde ver: <target>', () => {
+    const target = mkTarget({
+      'opencode.json': JSON.stringify({ plugin: ['harness'] }),
+      'harness.config.json': JSON.stringify({ version: 1, project: 'demo' }),
+    });
+    const bk = fs.mkdtempSync(path.join(os.tmpdir(), 'harness-ins02-bk-'));
+    dirs.push(bk);
+    const verdict = runChecks(target, { manifest: cleanManifest(target, bk) });
+    assert.equal(verdict.passed, false);
+    const entry = verdict.failed.find((f) => f.includes('manifest-missing'));
+    assert.ok(entry, 'failed[] contem manifest-missing');
+    assert.match(entry, /\[ERRO\]/);
+    assert.match(entry, /porquê: manifest-missing/);
+    assert.match(entry, /como corrigir: \S+/);
+    assert.ok(entry.includes(target), 'onde ver aponta o target real');
+    assert.equal(entry.split('\n').length, 4, 'bloco 4-linhas');
+  });
+});
+
+describe('INS-02 S2: config corrompido => json-invalid em bloco com como corrigir nao vazio', () => {
+  it('json-invalid em bloco + como corrigir nao vazio', () => {
+    const target = mkTarget({
+      'opencode.json': JSON.stringify({ plugin: ['harness'] }),
+      'harness.config.json': '{CORROMPIDO{{{',
+    });
+    const bk = fs.mkdtempSync(path.join(os.tmpdir(), 'harness-ins02-bk-'));
+    dirs.push(bk);
+    const manifest = cleanManifest(target, bk);
+    fs.writeFileSync(path.join(target, '.harness-install.json'), JSON.stringify(manifest));
+    const verdict = runChecks(target, { manifest });
+    assert.equal(verdict.passed, false);
+    const entry = verdict.failed.find((f) => f.includes('json-invalid'));
+    assert.ok(entry, 'failed[] contem json-invalid');
+    const fixLine = entry.split('\n').find((l) => l.includes('como corrigir:'));
+    assert.ok(fixLine && fixLine.replace('como corrigir:', '').trim().length > 0, 'como corrigir nao vazio');
+  });
+});
+
+describe('INS-02 S3: target integro => failed[] vazio sem bloco [ERRO]', () => {
+  it('sem falhas, nenhum bloco', () => {
+    const target = mkTarget({
+      'opencode.json': JSON.stringify({ plugin: ['harness'] }),
+      'harness.config.json': JSON.stringify({ version: 1, project: 'demo' }),
+    });
+    const bk = fs.mkdtempSync(path.join(os.tmpdir(), 'harness-ins02-bk-'));
+    dirs.push(bk);
+    const manifest = cleanManifest(target, bk);
+    fs.writeFileSync(path.join(target, '.harness-install.json'), JSON.stringify(manifest));
+    const verdict = runChecks(target, { manifest });
+    assert.deepEqual(verdict.failed, []);
+    assert.ok(!JSON.stringify(verdict.failed).includes('[ERRO]'));
+  });
+});
+
 describe('FU-32: canario por ESCOPO (substring amplo so em codigo/config)', () => {
   it('scanLiterals: substring amplo casa adocao real que o contextual deixava passar', () => {
     assert.deepEqual(scanLiterals("const Vuetify = require('vuetify/lib')"), ['vuetify'], 'CJS subpath');

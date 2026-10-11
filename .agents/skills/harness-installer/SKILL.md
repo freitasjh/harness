@@ -132,6 +132,20 @@ Em `--dry-run` os checks **não rodam** (zero writes): `out.checks` volta
 `{ passed: null, failed: [], ran: false, skipped: true, reason: 'dry-run: ...' }`
 — `passed: null` é **desconhecido**, nunca leia como PASS (FU-28).
 
+Todo erro do wizard/Q&A/checks usa o bloco padrão de 4 linhas
+(installer-melhoria, ADRs 012):
+
+```
+[ERRO] <o quê — ex: opção '7' inválida>
+  porquê: <código + motivo — ex: BAD_ANSWER: fora de [1,5]>
+  como corrigir: <howToFix>
+  onde ver: <arquivo:linha ou doc>
+```
+
+Dry-run declara `dry-run: NÃO EXECUTADO — nenhum write (plano + relatório
+apenas)`. Sucesso imprime marcador pico-fim por etapa
+(`[OK] <etapa>: pico-fim`).
+
 O scan do canário (**R3**) é por **ESCOPO** (FU-32): a `DENYLIST` é procurada
 como **substring** amplo, case-insensitive, mas **só em arquivos de
 código/config** (`.js .mjs .cjs .ts .tsx .vue .svelte .java .kt .kts .gradle
@@ -206,10 +220,15 @@ W0 pre-flight → W1 inventário → W2 detecção pubspec → (W2m menu se sem 
 - **W2 detecção** (`detect()`, line-based, sem parser YAML): lê `pubspec.yaml`,
   sugere `project`←`name`, `stack`←`sdk: flutter`/deps e `suiteCommand`←
   `flutter test`→`make test`→`dart test` (1ª que resolve). A origem é exibida
-  como `(arquivo:linha)`. Sem `pubspec.yaml` ⇒ **W2m** menu manual
-  (`1` flutter · `2` dart · `3` node · `4` outra).
-- **W3** valida cada resposta com `validateAnswer`; inválida = erro inline +
-  "como corrigir"; `q`/`quit`/`cancel` aborta. Trocou a stack no W3 ⇒ o default
+  como `(arquivo:linha)`. Sem `pubspec.yaml` ⇒ **W2m** menu manual em linguagem
+  de produto (installer-melhoria, ADR-011):
+  (`1` App Flutter→flutter · `2` Pacote Dart→dart · `3` Projeto Node.js→node
+  · `4` Projeto Java + Vue→java+vue · `5` Outro→outra).
+  `node-esm` segue digitável em W3 (sem item próprio). Inválida repete com o
+  bloco 4-linhas (§7); `q` aborta (`USER_ABORT`, 0 writes).
+- **W3** valida cada resposta com `validateAnswer`; inválida = bloco 4-linhas +
+  "como corrigir". Todo prompt exibe contador `[i/total]` e hint `(q cancela)`;
+  `q`/`quit`/`cancel` aborta. Trocou a stack no W3 ⇒ o default
   de `suiteCommand` é recalculado para ela.
 - **W4** imprime o resumo das respostas (segredos omitidos) + prévia do plano
   (`printPlan`). **W5** confirma por camada (`--yes` aprova tudo). Abort até o
@@ -282,4 +301,34 @@ O estado da origem (`sourceState`, compartilhado com `dogfood.mjs` via
    (com `-uall`: modificados, staged, untracked e renames — **arquivos
    ignorados pelo `.gitignore` não entram**); sem git, a árvore inteira
    (excluindo `.git` e `node_modules`).
+
+## 10. `init` greenfield (create-only W0–W7) — installer-melhoria (ADR-013)
+
+```sh
+node installer/install.mjs init --target <dir> [--dry-run] [--answers-file <json>] [--yes] [--backup-dir <dir>] [--allow-root]
+```
+
+- Executa o wizard W0–W7 (§9.2) com gate create-only: após W4 (prévia via
+  `planMerge`), qualquer `merge|flag` no plano **aborta** com bloco 4-linhas
+  (`porquê: target não-limpo`, `como corrigir: rode doctor / limpe o destino`).
+- Todo prompt W3 exibe `[i/total]` + `(q cancela)`.
+- Exit `0` sucesso/help; `1` abort
+  (`BAD_TARGET|BAD_ANSWER|BACKUP_FAIL|NO_STDIN|USER_ABORT|flagged-open`).
+  Com `--dry-run`: plano + relatório apenas, nem backup cria.
+
+## 11. `doctor` brownfield (read-only D0–D6) — installer-melhoria (ADR-014)
+
+```sh
+node installer/install.mjs doctor --target <dir> [--answers-file <json>] [--backup-dir <dir>] [--allow-root]
+```
+
+- 7 passos, todos read-only: D0 pre-flight (só leitura) → D1 inventário →
+  D2 detecção pubspec (com fontes `arquivo:linha`) → D3 plano seco
+  (`planMerge`, sem `apply`) → D4 checks + scan de escopo → D5 manifesto
+  existente (lê `.harness-install.json`; nunca escreve) → D6 relatório por
+  camada (`create|merge|flag|noop` + `checks.failed[]` em blocos 4-linhas +
+  próximos passos).
+- Zero writes por construção: o caminho do doctor nunca chama `applyMerge`,
+  `writeManifest` nem `apply`. Sem `--fix` (fora de escopo); humano resolve e
+  roda o fluxo de escrita. `--dry-run`/`--yes` são ignorados (read-only).
 
