@@ -42,4 +42,4 @@ Antes de avançar entre as fases (SPEC -> PLAN -> TASKS), o `sdd-orquestrador` d
 5. Solicitar aprovação explícita do usuário via `ask_user`.
 
 ## 5. Persistência no Brain
-Ao concluir as TASKS, o `planejador` deve consolidar a análise e as lições aprendidas em uma nota estruturada no sistema de memória (Obsidian).
+Ao concluir as TASKS, o `planejador` deve consolidar a análise e as lições aprendidas em uma nota estruturada no sistema de memória (brain, ver `BRAIN.MCP.md`).

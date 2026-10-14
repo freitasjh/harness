@@ -242,8 +242,8 @@ O **estado canônico** é o de `sdd-workflow-standard.md` (é o que vive em
 3. Mover `.spec/[feature]/` → `.spec/archive/[YYYYMMDD]-[feature]/`
 4. **Registrar aprendizados** no Brain (skill `brain`):
    - Tipo: `success` | `decision` | `anti-pattern`
-   - Template em `.agents/rules/brain-context-protocol.md` seção 3
-   - Salvar via `ObsidianBrain_write_note` em `lessons/{tipo}/{subcategoria}/`
+   - Template em `.agents/rules/brain-context.md` (ponte → `BRAIN.MCP.md`, dono brain; detalhe no `BRAIN.MCP.md`, não nesta ponte)
+   - Salvar via `brain_store` em `lessons/{tipo}/{subcategoria}/`
 5. Commit sugerido pelo `sdd-compiler archive` — confirmar antes de executar
 
 ### 3.6 Feedback Obrigatório (10-Point Summary)
@@ -585,7 +585,7 @@ Para **TODO** desenvolvimento, as skills apropriadas **OBRIGATORIAMENTE** devem 
 | `.agents/rules/frontend-coding-standards.md` | Padrões de codificação frontend |
 | `.agents/rules/db-migration-flyway.md` | Regras de migração Flyway |
 | `.agents/rules/security-standard.md` | **Fonte da verdade** de segurança (OWASP) — web, API, mobile |
-| `.agents/rules/brain-context-protocol.md` | Protocolo de contexto do Brain |
+| `.agents/rules/brain-context.md` | Ponte fina → `BRAIN.MCP.md` (dono brain) |
 | `.agents/rules/sdd-workflow-standard.md` | Padrão do workflow SDD |
 | `.agents/skills/dev-planner/SKILL.md` | **Planejamento técnico detalhado** — 6 fases (Descubra→Analise→Desafie→Projete→Estime→Valide), gera artefatos para sdd-compiler |
 | `AGENTS.md` | Visão geral do projeto e comandos essenciais |

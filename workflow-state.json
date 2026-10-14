@@ -1,13 +1,13 @@
 {
-  "current_feature": "harness-installer-mobile",
+  "current_feature": "harness-brain-separation",
   "current_phase": "Completed",
   "previous_phase": "Testing",
   "next_phase": null,
-  "type": "feature",
+  "type": "refactor",
   "layer": "governanca-de-agentes",
   "repo": "harness",
   "artifacts": {
-    "archive": ".spec/archive/20261008-harness-installer-mobile/"
+    "archive": ".spec/archive/20261014-harness-brain-separation/"
   },
   "scope": {
     "interpretation": "feature-mobile-profile + wizard-interativo",
@@ -76,9 +76,22 @@
         "harness-installer"
       ],
       "created": "2026-10-07T19:57:29.951Z"
+    },
+    {
+      "name": "harness-brain-separation",
+      "stage": "Archived",
+      "progress": 100,
+      "type": "refactor",
+      "depends_on": [
+        "harness-installer-mobile"
+      ],
+      "artifacts": {
+        "archive": ".spec/archive/20261014-harness-brain-separation/"
+      },
+      "created": "2026-10-14T00:00:00Z"
     }
   ],
-  "last_update": "2026-10-10T00:56:34.659Z",
+  "last_update": "2026-10-14T17:38:18Z",
   "spec_score": 0.94,
   "spec_status": "v1_reviewed_aprovado_com_ajustes",
   "validation": {
@@ -94,9 +107,10 @@
     "U5": "c - dois ancoras",
     "U6": "b - selo de hash"
   },
-  "harness_status": "passed (plugins 135 + installer 280 + static + vendor + sdd-checks)",
+  "harness_status": "passed",
+  "harness_evidence": "plugins 135/135 + installer 360/360 + static EXIT 0 (V15 rede-zero) + vendor-check OK + sdd-checks PASS; suiteFull de harness.config.json; archive 20261008-harness-installer-mobile intocado; installer/ intocado",
   "code_review_status": "passed",
-  "sdd_stage": "Pacote P3 CLOSED (9/9). Brain ok. Restam: Brain lessons pendentes (OK agora), HARNESS_SEAL_JSON, push, legado FU-01..18.",
+  "sdd_stage": "harness-brain-separation Archived 2026-10-14 (15/15 Done, VERIFY APPROVED 3/3, reviews APPROVED, security PASS, suite verde). Continuacao harness-installer-mobile. Debitos: D-01 DoD 08/09/10, O-01 BDD VAL-01 wording, O-02 residual saneado, P2-01 RUNTIME canonico + PIN-ME.",
   "backlog": {
     "total": 14,
     "todo": 0,

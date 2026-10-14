@@ -54,3 +54,12 @@ Registro cronológico de funcionalidades e refactors entregues.
 - [x] Fase 3 — Execução (20/20 Done, reviews APPROVED, security 14/14)
 - [x] Fase 5 — Verify (3 dimensões ✅ PASS, coverage funcs 96.21%)
 - [x] Fase 6 — Archive (deltas: SKILL §9.2/§7 MODIFIED + §10/§11 ADDED, harness-config nota, spec-developed entrada)
+| 2026-10-14 | `harness-brain-separation` | Refactor | Governança harness×brain (docs, ZERO código produto): H1 vendored REMOVED→ref, H2 ponte 259→15 linhas→BRAIN.MCP.md, H3 7+2 refs stale zerados, H4 doctor 0-writes+warn-não-fail prescrito, H5 fronteira README:18/RUNTIME:68 prescrita. 15/15 Done, 5 reviews APPROVED, security PASS, suite verde 135/135+360/360. Continuação harness-installer-mobile. | `.spec/archive/20261014-harness-brain-separation/` | Completed |
+
+## Etapas concluídas — harness-brain-separation
+- [x] Fase 1 — Análise (PROPOSAL + SPEC PASS, Delta 1 REMOVED+13 MODIFIED+1 ADDED)
+- [x] Fase 2 — Planejamento (PLAN + TASKS 15/15 BDD, JIRA_BOARD 15/15)
+- [x] Fase 3 — Execução (H1-H5 aplicados batches 2-4, 9 alvos + follow-ups :245-246)
+- [x] Fase 4 — Quality (reviews APPROVED 🔴0, security Fase3 PASS, suite verde)
+- [x] Fase 5 — Verify (3 dimensões ✅ APPROVED, D-01/O-01/O-02 explícitos)
+- [x] Fase 6 — Archive (mover + Completion + estado, Delta já-aplicado, installer/README/RUNTIME intocados)

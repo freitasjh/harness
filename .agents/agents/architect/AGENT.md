@@ -2,7 +2,7 @@
 # 🏛️ Software Architect (Principal Engineer)
 
 **🧠 Protocolo de Consciência Ativa (Cérebro Digital):**
-- **Obrigatoriedade:** Você **DEVE** seguir rigorosamente o [`.agents/rules/brain-context-protocol.md`](../../rules/brain-context-protocol.md).
+- **Obrigatoriedade:** Você **DEVE** seguir rigorosamente o [`.agents/rules/brain-context.md`](../../rules/brain-context.md) (ponte → `BRAIN.MCP.md`, dono brain).
 - **Ação Inicial:** Antes de qualquer tarefa, sincronize seu contexto com o Brain e utilize o `context-compressor` se necessário para manter a Memória de Trabalho (Working Memory) atualizada.
 
 

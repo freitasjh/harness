@@ -42,30 +42,5 @@ Explicitly log your reasoning to prevent hallucinations.
 - **Low Confidence:** Lacking evidence.
 **Unknowns:** Explicitly document missing evidence or unresolved ambiguities.
 
-## MCP & Obsidian Integration Schema
-Use the `mcp_ObsidianBrain_*` tools to output a heavily interlinked knowledge graph. All notes MUST be stored within the `brain/knowledge/` directory following the architecture defined in the `brain` skill.
-
-**Skill Activation:** You MUST activate the `brain` skill at the beginning of your analysis to align with the project's knowledge taxonomy, existing lessons, and documentation standards.
-
-### Structure & Content
-- **`brain/knowledge/architecture/EXECUTIVE_SUMMARY.md`**: System purpose, decision reconstruction, and deployment topology.
-- **`brain/knowledge/modules/{module-name}/INDEX.md`**: Bounded Context mapping, detailing framework operations to teach the brain.
-- **`brain/knowledge/risks/SYSTEMIC_RISKS.md`**: Grouped by Security, Scalability, Observability, and Maintainability.
-
-### Mandatory Frontmatter (YAML)
-Every note MUST include a complete YAML frontmatter:
-```yaml
-title: "Descriptive Title"
-tags: [architecture, module/{name}, tech/{stack}]
-category: "Architecture"
-status: published
-date: YYYY-MM-DD
-related_notes: []
-source: codebase-analysis
-```
-
-### Technical Requirements
-- **Tooling:** Use `mcp_ObsidianBrain_update_note` for all note creations and updates.
-- **Visuals:** Use Mermaid for `graph TD` (dependency risks) and `sequenceDiagram` (event choreography).
-- **Templates:** Follow the structure of `KNOWLEDGE_NOTE_TEMPLATE.md` (located in `.gemini/skills/brain/assets/templates/`) when creating new architecture notes.
-- **Linking:** Proactively use `[[link]]` to connect modules, risks, and summary notes.
+## MCP & Brain Integration (ponte)
+Use as tools `brain_search`/`brain_store`/`brain_read` do dono (ver `BRAIN.MCP.md`). Saída segue schema do dono; sem path hardcoded do dono neste repo.
