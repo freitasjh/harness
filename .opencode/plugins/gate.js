@@ -143,8 +143,13 @@ function logWarn(logger, err) {
 }
 
 function logError(logger, err) {
+  // I10: message-only, same as logWarn. The full Error object carries
+  // DenyError.details (paths, counts) and a stack; serializing loggers
+  // (app log JSON, console.error(err)) would echo that verbatim. The
+  // actionable signal is the reason/message string; details stay on the
+  // thrown DenyError for the caller, never in the log line.
   try {
-    logger?.error?.(err);
+    logger?.error?.(err instanceof Error ? err.message : String(err));
   } catch {
     // Logging is best-effort; it never changes the verdict.
   }
@@ -216,8 +221,11 @@ export function loadConfigOrDeny(path) {
   try {
     return loadHarnessConfig(path);
   } catch (err) {
+    // I10: never echo the loader's raw message (it embeds the failing
+    // path, which may be attacker-controlled). The actionable signal is
+    // the reason; the cause stays an enum.
     throw new DenyError(DENY_CONFIG_UNAVAILABLE, {
-      cause: err instanceof Error ? err.message : String(err),
+      cause: err?.code ?? "load-error",
     });
   }
 }
@@ -236,8 +244,21 @@ export function ensureConfig(ctx = {}) {
 
 const sessionAgentMap = new Map();
 
+// Bound on session entries: the map is fed by chat.params (one entry per
+// sessionID). Unbounded growth across long-lived hosts is a memory leak;
+// evict the oldest insertion when over cap (Map preserves insertion order).
+// Cap is generous on purpose: eviction only drops the agent hint, which
+// fail-opens per-agent rules to allow (SPEC G8), never to deny.
+export const MAX_SESSION_AGENTS = 1000;
+
 export function recordSessionAgent(sessionID, agent) {
-  if (sessionID && agent) sessionAgentMap.set(sessionID, agent);
+  if (sessionID && agent) {
+    if (!sessionAgentMap.has(sessionID) && sessionAgentMap.size >= MAX_SESSION_AGENTS) {
+      const oldest = sessionAgentMap.keys().next().value;
+      sessionAgentMap.delete(oldest);
+    }
+    sessionAgentMap.set(sessionID, agent);
+  }
 }
 
 export function resolveSessionAgent(ctx = {}) {
@@ -431,6 +452,38 @@ export function extractWriteTargets(tool, args) {
   return targets;
 }
 
+// ---------------------------------------------------------------------------
+// I10 detail hygiene (🟡-2 sec). DenyError.details travels to the caller
+// and (via fail-open logging) to log lines, so it must never echo raw
+// user-controlled strings (secrets, absolute paths in `args`). Allowed
+// keys are registry metadata ({tool, gateId, timing}) plus small enums;
+// any path is reduced to its allowlisted form below: basename (never a
+// directory, never absolute). Agents are reduced to the known enum — an
+// unknown/malicious agent string becomes "unknown" instead of leaking.
+// ---------------------------------------------------------------------------
+
+export function basenameOf(path) {
+  const segments = normalizePath(path).split("/");
+  return segments.length > 0 ? segments[segments.length - 1] : "";
+}
+
+const KNOWN_AGENTS = new Set([
+  "orchestrator",
+  "developer-engineer",
+  "qa-engineer",
+  "code-reviewer",
+  "ux-designer",
+  "unknown",
+]);
+
+export function sanitizeAgent(agent) {
+  return KNOWN_AGENTS.has(agent) ? agent : "unknown";
+}
+
+export function sanitizePathForDetails(path) {
+  return basenameOf(path);
+}
+
 export function checkWriteAccess({ agent, tool, targets = [], protectedPaths = [] } = {}) {
   for (const target of targets) {
     const normalized = normalizePath(target.path);
@@ -439,16 +492,24 @@ export function checkWriteAccess({ agent, tool, targets = [], protectedPaths = [
       // Sole exception: developer-engineer under delegation; the trailer
       // requirement itself is enforced out-of-band by CI (ADR-007).
       if (agent === "developer-engineer") continue;
-      throw new DenyError(DENY_PROTECTED, { path: normalized, agent: agent ?? "unknown" });
+      throw new DenyError(DENY_PROTECTED, {
+        tool,
+        path: sanitizePathForDetails(normalized),
+        agent: sanitizeAgent(agent ?? "unknown"),
+      });
     }
     if (agent === "orchestrator" && !isOrchAllowlisted(normalized)) {
-      throw new DenyError(DENY_ALLOWLIST, { path: normalized });
+      throw new DenyError(DENY_ALLOWLIST, { tool, path: sanitizePathForDetails(normalized) });
     }
     if (agent === "qa-engineer" && !isHarnessScoped(normalized)) {
-      throw new DenyError(DENY_QA_SCOPE, { path: normalized });
+      throw new DenyError(DENY_QA_SCOPE, { tool, path: sanitizePathForDetails(normalized) });
     }
     if (agent === "code-reviewer" || agent === "ux-designer") {
-      throw new DenyError(DENY_ROLE_WRITE, { path: normalized, agent });
+      throw new DenyError(DENY_ROLE_WRITE, {
+        tool,
+        path: sanitizePathForDetails(normalized),
+        agent: sanitizeAgent(agent),
+      });
     }
   }
   return true;
@@ -625,16 +686,18 @@ export function loadWorkflowState(statePath) {
     // Absent state is bootstrap: no previous cycle to gate => allow (null).
     if (err?.code === "ENOENT") return null;
     // Any other read failure denies fail-closed (FU-08): an unreadable
-    // state must not silently bless a new cycle.
-    throw new DenyError(DENY_STATE_CORRUPT, { statePath: resolved, cause: err?.code ?? "read-error" });
+    // state must not silently bless a new cycle. I10: details carry the
+    // basename + errno enum only, never the absolute path.
+    throw new DenyError(DENY_STATE_CORRUPT, { statePath: basenameOf(resolved), cause: err?.code ?? "read-error" });
   }
   try {
     return JSON.parse(raw);
-  } catch (err) {
+  } catch {
     // Corrupt state denies fail-closed (FU-08). Only ENOENT above allows.
+    // I10: parse errors never echo file content (may hold secrets).
     throw new DenyError(DENY_STATE_CORRUPT, {
-      statePath: resolved,
-      cause: err instanceof Error ? err.message : String(err),
+      statePath: basenameOf(resolved),
+      cause: "parse-error",
     });
   }
 }
@@ -816,7 +879,14 @@ export async function gateShellHygiene(ctx = {}) {
   if (isPkillF(command)) throw new DenyError(DENY_PKILL, { tool: ctx.tool });
   const config = ensureConfig(ctx);
   const hits = bashProtectedWrites(command, config?.protectedPaths ?? []);
-  if (hits.length > 0) throw new DenyError(DENY_PROTECTED, { hits, tool: ctx.tool });
+  // I10: hits carry raw redirect/tee targets (attacker-controlled paths).
+  // Details keep only the enum via + basename target, never the full path.
+  if (hits.length > 0) {
+    throw new DenyError(DENY_PROTECTED, {
+      tool: ctx.tool,
+      hits: hits.map((h) => ({ via: h.via, target: sanitizePathForDetails(h.target) })),
+    });
+  }
   return true;
 }
 
@@ -929,5 +999,224 @@ export const HarnessGate = async (input = {}) => {
 // { id, server } record BEFORE the legacy Object.values() sweep, which
 // throws "Plugin export is not a function" on the string/array unit-test
 // exports above and drops the whole plugin. Named exports (incl.
-// HarnessGate) stay untouched for the suite.
-export default { id: "harness-gate", server: HarnessGate };
+// HarnessGate) stay untouched for the suite. The v2 entry `setup` rides on
+// the same default record (dual-export, ADR-001): v1 loaders read `server`,
+// v2 runtimes read `setup`. When the v2 host exposes the Plugin global, the
+// record is wrapped via Plugin.define (identity with types since 1.18.29+,
+// target 1.18.30); otherwise the plain record is exported. `setup` is a
+// hoisted function declaration defined in the V2 adapter block below.
+export default (typeof globalThis.Plugin?.define === "function"
+  ? globalThis.Plugin.define({ id: "harness-gate", server: HarnessGate, setup })
+  : { id: "harness-gate", server: HarnessGate, setup });
+
+// ---------------------------------------------------------------------------
+// V2 adapter — dual-export v1+v2 (opencode-v2-plugin-migration, PL-02).
+//
+// SPEC: .spec/backend/opencode-v2-plugin-migration/SPEC.md (§5 H1-H6, §5.1
+// shims, ADR-001/002/004). Adapter discipline (a defect is any violation):
+//   - Thin adapter, zero deny logic. Every verdict flows through the same
+//     `decide` + `CORE_GATES` loop as the v1 `HarnessGate` entry above. Only
+//     `throw new DenyError` denies; any other error fail-opens via decide
+//     (ADR-006). No new catch converts a generic error into a deny.
+//   - Kill-switch unchanged: only host env HARNESS_GATES=off disables
+//     (ADR-009); the hermetic-config rule below mirrors HarnessGate exactly.
+//   - Confirmed hooks only (PLAN §1.1.1: gate.js:22-24,854-919 plus
+//     gate-contract.md plus migrate-v1). Golden rule: a v1 hook with no
+//     confirmed v2 equivalent raises a VISIBLE HOOK-NO-EQUIV error at load,
+//     never silence. This module never registers the permission prompt hook
+//     (H1), never assigns a system-transform scalar (H2), never subscribes a
+//     dead bus event (H3), and never claims prose blocking (H5).
+//   - H6 normalization reuses the same pure helpers (extractPromptText,
+//     extractWriteTargets, extractBashCommand, normalizePath/matchGlob).
+//     Shims never log raw args (I10): warnings carry hook names only.
+//   - setup() is idempotent per ctx object (second call reports
+//     alreadyRegistered without re-registering).
+// ---------------------------------------------------------------------------
+
+// Every tool with a gate. `task` covers the PICCO gate, anchor B and the
+// HITL pause; write-shaped tools cover completion anchor A; both shell
+// literals cover hygiene (H4: the v2 `shell` literal maps into SHELL_TOOLS,
+// `bash` stays for v1 parity).
+export const V2_TOOL_KEYS = ["task", "write", "edit", "apply_patch", "patch", "bash", "shell"];
+
+// Hooks that must never be registered by this adapter (H1).
+// Intentionally narrow: H1 names the single hook; H2 (scalar transform
+// output), H3 (dead bus event) and H5 (prose blocking) are not hook names
+// and cannot appear in this list — they are enforced structurally instead:
+// H2/H3 by static greps (scalar-assign, bus-filter) + the reserved
+// ctx.event.subscribe row with name null in V2_HOOK_TABLE below (never
+// subscribed this batch), H5 by the no-prose-injection discipline of both
+// entries. Widening this list with non-hook strings would give false
+// confidence; the table + greps are the enforcement.
+export const V2_FORBIDDEN_HOOKS = ["ask"];
+
+// v1 → v2-confirmed table (gap 1 evidence). Sources: RUNTIME-CONTRACT §2
+// where present, else PLAN §1.1.1 substitute (gate.js:22-24,854-919 plus
+// gate-contract.md plus migrate-v1). ctx.event.subscribe stays reserved:
+// the after-observer lands on a confirmed name only, in a later phase (H3).
+export const V2_HOOK_TABLE = [
+  { v1: "tool.execute.before", v2: { api: "ctx.tool.hook", tool: "task", timing: "before" }, core: "gatePiccoTask, gatePhaseAnchorB, gateHitlBatch via decide", note: "delegation gate, anchor B, HITL pause" },
+  { v1: "tool.execute.before", v2: { api: "ctx.tool.hook", tool: "write", timing: "before" }, core: "gateCompletionAnchorA via decide", note: "anchor A path check, both write arg shapes" },
+  { v1: "tool.execute.before", v2: { api: "ctx.tool.hook", tool: "edit", timing: "before" }, core: "gateCompletionAnchorA via decide", note: "anchor A path check, both write arg shapes" },
+  { v1: "tool.execute.before", v2: { api: "ctx.tool.hook", tool: "apply_patch", timing: "before" }, core: "gateCompletionAnchorA via decide", note: "anchor A patch-text targets" },
+  { v1: "tool.execute.before", v2: { api: "ctx.tool.hook", tool: "patch", timing: "before" }, core: "gateCompletionAnchorA via decide", note: "anchor A patch-text targets" },
+  { v1: "tool.execute.before", v2: { api: "ctx.tool.hook", tool: "bash", timing: "before" }, core: "gateShellHygiene via decide", note: "H4 parse-based, declared partial, CI backstop" },
+  { v1: "tool.execute.before", v2: { api: "ctx.tool.hook", tool: "shell", timing: "before" }, core: "gateShellHygiene via decide", note: "H4 v2 tool literal mapped into SHELL_TOOLS" },
+  { v1: "chat.params", v2: { api: "ctx.session.hook", event: "params" }, core: "noteChatParams + recordSessionAgent", note: "session to agent map" },
+  { v1: "chat.message", v2: { api: "ctx.session.hook", event: "message" }, core: "isHumanMessage + resetHitlTracker", note: "human-turn boundary" },
+  { v1: "tool.execute.after observer (future)", v2: { api: "ctx.event.subscribe", name: null }, core: "none this batch", note: "reserved, subscribe on a confirmed name only" },
+];
+
+// v2 tool-hook shim (SPEC §5.1). Normalizes the v2 payload — string vs
+// object args (H6), (input, output) pair or single envelope — into the same
+// base/ctx shape HarnessGate builds, then runs the identical decide loop.
+// Returns { verdict: "allow" }; deny escapes as DenyError via decide.
+export async function runGatesShim(v2Payload = {}, v2Output) {
+  const twoArgs = v2Output !== undefined;
+  const rawInput = twoArgs ? v2Payload : (v2Payload?.toolInput ?? v2Payload?.input ?? v2Payload);
+  const rawOutput = twoArgs ? v2Output : (v2Payload?.toolOutput ?? v2Payload?.output ?? v2Payload);
+  const toolInput = rawInput && typeof rawInput === "object" ? rawInput : {};
+  const toolOutput = rawOutput && typeof rawOutput === "object" ? rawOutput : {};
+  const payloadObj = v2Payload && typeof v2Payload === "object" ? v2Payload : {};
+  const sessionID = toolInput.sessionID ?? payloadObj.sessionID;
+  const logger = toolInput.logger ?? payloadObj.logger ?? console;
+  const base = {
+    tool: toolInput.tool ?? payloadObj.tool,
+    sessionID,
+    callID: toolInput.callID ?? payloadObj.callID,
+    args:
+      toolOutput.args ?? toolInput.args ?? payloadObj.args ??
+      (typeof v2Payload === "string" ? v2Payload : undefined),
+    defaultMode: DEFAULT_MODE,
+    logger,
+    statePath: toolInput.statePath ?? payloadObj.statePath,
+    configPath: toolInput.configPath ?? payloadObj.configPath,
+    env:
+      toolInput.env ??
+      payloadObj.env ??
+      (toolInput.config ?? payloadObj.config ? {} : process.env),
+  };
+  let config = toolInput.config ?? payloadObj.config ?? null;
+  if (!config) {
+    try {
+      config = loadConfigOrDeny(base.configPath);
+    } catch {
+      config = null;
+    }
+  }
+  const ctx = {
+    ...base,
+    config: config ?? undefined,
+    sessionAgent:
+      toolInput.sessionAgent ??
+      payloadObj.sessionAgent ??
+      (sessionID ? sessionAgentMap.get(sessionID) : undefined),
+    // Optional explicit seams (test/consumer injection only — prod callers
+    // leave every one undefined and fall through to the same lazy defaults
+    // the v1 HarnessGate uses: workflowState via loadWorkflowState,
+    // startsNewCycle via inferNewCycle, hitlTracker via hitlTrackerFor,
+    // contraproveExec via defaultContraproveExec, timeoutMs via
+    // config.contraproveTimeoutMs, treeHash "unknown" = cache bypass. The
+    // seam exists so decide() + CORE_GATES stay pure and unit-testable
+    // without MCP/network; narrowing to undefined in prod is the default
+    // path, not a separate branch.
+    workflowState: toolInput.workflowState ?? payloadObj.workflowState ?? undefined,
+    startsNewCycle: toolInput.startsNewCycle ?? payloadObj.startsNewCycle ?? undefined,
+    hitlTracker: toolInput.hitlTracker ?? payloadObj.hitlTracker ?? undefined,
+    contraproveExec: toolInput.contraproveExec ?? payloadObj.contraproveExec ?? undefined,
+    timeoutMs: toolInput.timeoutMs ?? payloadObj.timeoutMs ?? undefined,
+    treeHash: toolInput.treeHash ?? payloadObj.treeHash ?? undefined,
+    publishedSeal: loadPublishedSeal(),
+  };
+  ctx.report = toolInput.report ?? payloadObj.report ?? readEvidenceReport(ctx);
+  let outcome = { verdict: "allow" };
+  for (const gateFn of CORE_GATES) {
+    const result = await decide({ gateFn, mode: config ? modeForGate(gateFn, config) : DEFAULT_MODE, ctx, env: base.env, logger });
+    if (result && typeof result === "object") {
+      if (result.via && !outcome.via) outcome = result;
+      else if (!outcome.via) outcome = result;
+    }
+  }
+  return outcome;
+}
+
+// v2 session shim for chat.params (SPEC §5.1): same map write as v1.
+// Map maintenance never denies.
+export function noteChatParamsShim(input = {}) {
+  try {
+    noteChatParams(input);
+  } catch {
+    // Map maintenance never denies.
+  }
+}
+
+// v2 session shim for the human-turn boundary (SPEC §5.1): same reset as
+// the v1 chat.message handler. Counter maintenance never denies.
+export function humanBoundaryShim(messageInput = {}, output) {
+  try {
+    if (isHumanMessage(messageInput, output)) {
+      resetHitlTracker(messageInput?.sessionID ?? messageInput?.params?.sessionID);
+    }
+  } catch {
+    // Counter maintenance never denies.
+  }
+}
+
+const v2SetupSeen = new WeakSet();
+
+// v2 plugin entry (ADR-001): registers runGatesShim per gate-bearing tool
+// plus the two session shims. Hook without a confirmed equivalent raises a
+// visible HOOK-NO-EQUIV error, never silence. A rejected gate-bearing tool
+// hook throws GATE-ABSENT:<tool> (fail-closed, never warnings+success: a
+// half-registered adapter must not bless an unverified run). A stub
+// exposing only tool.hook registers that subset with an explicit session
+// warning; zero registrations raise SETUP-REGISTER-FAIL.
+// Idempotency note: the WeakSet short-circuit reports alreadyRegistered
+// without re-validating host hooks. Documented limitation: hosts retain
+// hooks for the ctx lifetime; a host-side reset needs a fresh ctx object
+// (no revalidation this batch by design — re-registering on the same ctx
+// would double-deny).
+export async function setup(ctx = {}) {
+  if (v2SetupSeen.has(ctx)) {
+    return { id: "harness-gate", registered: [], warnings: [], alreadyRegistered: true };
+  }
+  const registered = [];
+  const warnings = [];
+  const toolHook = ctx?.tool?.hook;
+  if (typeof toolHook !== "function") {
+    throw new Error("HOOK-NO-EQUIV:ctx.tool.hook");
+  }
+  for (const tool of V2_TOOL_KEYS) {
+    try {
+      await toolHook(tool, "before", runGatesShim);
+      registered.push(`tool:${tool}:before`);
+    } catch {
+      throw new Error(`GATE-ABSENT:${tool}`);
+    }
+  }
+  const sessionHook = ctx?.session?.hook;
+  if (typeof sessionHook === "function") {
+    for (const [event, handler] of [["params", noteChatParamsShim], ["message", humanBoundaryShim]]) {
+      try {
+        await sessionHook(event, handler);
+        registered.push(`session:${event}`);
+      } catch {
+        warnings.push(`HOOK-NO-EQUIV:session:${event}`);
+      }
+    }
+  } else {
+    warnings.push("HOOK-NO-EQUIV:session(params,message)");
+  }
+  if (registered.length === 0) {
+    throw new Error("SETUP-REGISTER-FAIL:GATE-ABSENT:all");
+  }
+  for (const warning of warnings) {
+    try {
+      console.error(`[harness-gate] ${warning}`);
+    } catch {
+      // Best-effort; never changes registration.
+    }
+  }
+  v2SetupSeen.add(ctx);
+  return { id: "harness-gate", registered, warnings };
+}

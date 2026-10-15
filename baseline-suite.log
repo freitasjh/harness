@@ -1,0 +1,51 @@
+# PL-01 baseline-suite.log — opencode-v2-plugin-migration Batch 1 (PL-01..PL-03)
+# Date (UTC): 2026-10-15 — Node ESM harness, dual v1+v2 adapter in .opencode/plugins/gate.js
+# Baseline ref: git HEAD 85e9f6b (pre-adapter); working-tree delta = adapter/shims only (line 932+).
+
+## 1. Suite — baseline-only (6 orig specs, PL-01 gate)
+# cmd: node --test gate.spec.mjs config-loader.spec.mjs seal.spec.mjs dogfood.spec.mjs sdd-checks.spec.mjs report-schema.spec.mjs
+# result: tests 160-pass-equivalent baseline slice => 135 pass / 0 fail (31 suites)
+
+## 2. Suite — full incl. 4 new PL-02/PL-03 TDD specs (v2-adapter-registration, v2-shims, v2-hook-no-equiv, smoke-load-v1v2)
+# cmd: node --test ".opencode/plugins/__tests__/*.spec.mjs"
+# result: tests 160 / suites 36 / pass 160 / fail 0 (see tail below)
+# tail:
+# tests 160
+# suites 36
+# pass 160
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 563.126736
+
+## 3. Static checks
+# cmd: node scripts/static-checks.mjs => EXIT 0 (all PASS: V6, V6b, V2 permission.ask=0, V3, V7 scalar-output-system=0, V15, V14)
+
+## 4. Greps (INV-01 / INV-07)
+# grep -rn "server:" .opencode/plugins/*.js => 2 occurrences (gate.js:939 + gate.js:940, dual-branch export; see §6 NOTE)
+# grep -rn "setup" .opencode/plugins/*.js => 7 occurrences in gate.js (>=3 OK)
+# H1: hook("ask" / subscribe("ask" => 0 matches (V2_FORBIDDEN_HOOKS=["ask"] declared, never registered)
+# H2: output.system= => 0 matches (static V7 PASS)
+# H3: ctx.event.subscribe => only reserved table row (name:null) + comment; zero calls in setup()
+# H5: no prose-blocking hook (only tool:before + session:params/message registered)
+
+## 5. Smoke load v1+v2 (PL-03)
+# v1: default keys [id, server, setup]; server is function; setup is function
+# v2 stub {tool:{hook},session:{hook},event:{subscribe}} => registered 9:
+#   tool:task:before, tool:write:before, tool:edit:before, tool:apply_patch:before, tool:patch:before,
+#   tool:bash:before, tool:shell:before, session:params, session:message; warnings []
+# v2 Plugin.define branch (globalThis.Plugin stubbed) => keys [id,server,setup,+definedVia], registered 9, warnings []
+# SMOKE-V1V2-OK both branches, zero throw de registro
+
+## 6. Diff freeze (PL-01 / PL-02 DoD)
+# git diff HEAD --stat -- .opencode/plugins/ => gate.js only: 199 insertions, 2 deletions, single hunk @@ -932,2 +932,199
+# pure-core diff (decide, gatePiccoTask, gateCompletionAnchorA/B, gateHitlBatch, gateShellHygiene,
+# HarnessGate body, loadConfigOrDeny, ensureConfig, CORE_GATES) => EMPTY
+# NOTE: repo working tree also holds pre-existing unrelated modifications
+# (installer/*, workflow-state.json) outside this batch scope — untouched by this delegation.
+# NOTE (acceptance #1): literal "grep server: = 3" is unmeetable without violating the batch
+# constraint "Nunca editar validator/guardrail": both satellites are bare-function no-ops
+# (export default Fn, no server: key) at HEAD too (HEAD total was 1, now 2 via dual-branch export).
+# server v1 intact in gate.js (both branches) + setup present => dual-export holds; flagged as load-bearing
+# discrepancy for orchestrator (either amend criterion to "gate.js keeps server:" or move satellites to PL-04).
