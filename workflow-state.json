@@ -1,39 +1,41 @@
 {
-  "current_feature": "harness-brain-separation",
-  "current_phase": "Completed",
-  "previous_phase": "Testing",
+  "current_feature": "installer-upgrade-regression",
+  "current_phase": "BugCompleted",
+  "previous_phase": "BugReview",
   "next_phase": null,
-  "type": "refactor",
+  "type": "bugfix",
   "layer": "governanca-de-agentes",
   "repo": "harness",
   "artifacts": {
+    "spec_dir": ".spec/backend/prd-adr-pipeline/",
+    "proposal": ".spec/backend/prd-adr-pipeline/PROPOSAL.md",
+    "spec": ".spec/backend/prd-adr-pipeline/SPEC.md",
+    "plan": ".spec/backend/prd-adr-pipeline/PLAN.md",
+    "tasks": ".spec/backend/prd-adr-pipeline/TASKS.md",
     "archive": ".spec/archive/20261014-harness-brain-separation/"
   },
   "scope": {
-    "interpretation": "feature-mobile-profile + wizard-interativo",
+    "interpretation": "esteira PRD->ADR->SDD no harness (visibilidade de intencao antes do codigo)",
     "entra": [
-      "perfil flutter/dart no Q&A + generateConfig (marionette+dart mcp, flutter test, moduleMap)",
-      "A1: vendorizar 22 skills dart-*/flutter-* em .agents/skills do harness",
-      "B2: wizard TUI zero-dep (menus, auto-detect pubspec.yaml, revisao por passo, resumo)",
-      "C: instalar harness em projetos de apps mobile (Flutter)"
+      "PRD.md + RESEARCH.md + ADR-INDEX.md em .spec/prd/{prd-id}/",
+      "ADRs/ADR-00N-{slug}/ como unidade de trabalho (1 branch + 1 PR por ADR)",
+      "checks PRD-01/ADR-01/ADR-02 dentro do suiteFull, com fixture PASS e FAIL por check",
+      "guard do resolver: bucket prd fora da deteccao de ciclo SDD (evita drift e verde-falso)",
+      "regras + skill + templates propagaveis; conserto do drift GEMINI.md/docs/* nos AGENT.md"
     ],
     "nao_entra": [
-      "rodar o instalador de dentro do celular (Termux)",
-      "deteccao automatica de stack fora de flutter/dart",
-      "upgrade/desinstalacao (porta via manifesto)"
+      "dogfood em projeto externo (ECM)",
+      "gate.js (nenhum deny novo) e commands.suiteFull (mudaria o selo)",
+      "PRD/ADR para bug (bug segue B1-B4)",
+      "propagacao de scripts/ e .github/ pelo installer (F3, cortavel)"
     ],
-    "aceite": [
-      "wizard instala em projeto Flutter real e imprime resumo",
-      "generateConfig mobile correto (mcp marionette+dart, suite flutter test)",
-      "suite do repo harness verde",
-      "dogfood em copia de projeto Flutter em /tmp"
-    ],
+    "aceite": "suiteFull verde + PRD-01/ADR-01/ADR-02 PASS com fixtures PASS e FAIL; assercoes concretas fixadas na SPEC",
     "rigor": "E1/E2 bloqueiam"
   },
   "gates": {
-    "P0_P1": "approved_user_2026_10_07 (A1/B2/C)",
-    "P1_P2": "pending_user_approval",
-    "P2_P3": "approved_user_2026_10_07",
+    "P0_P1": "approved_user_2026_10_15 (Feature prd-adr-pipeline; bloco PICCO confirmado)",
+    "P1_P2": "approved_user_2026_10_15 (spec-gate 10/10; spec-review 0 criticos)",
+    "P2_P3": "pending_user_approval",
     "P3_P4": "approved_auto_evidence_batches1-4",
     "P4_P5": "pending_user_approval",
     "P5_P6": "approved_user_2026_10_08",
@@ -42,12 +44,12 @@
     "FU32": "closed_approved_decision_B"
   },
   "code_review": {
-    "last_invoked_at": "2026-10-10T00:56:34.658Z",
+    "last_invoked_at": "2026-10-15T00:00:00Z",
     "last_status": "passed",
     "critical_issues": 0,
-    "attention_issues": 2,
-    "suggestions": 4,
-    "reviewer_notes": "Pacote P3 (9 itens) APPROVED. A1 FU-27 aresta EOF -> FU-44; A2 estado -> feito agora."
+    "attention_issues": 0,
+    "suggestions": 2,
+    "reviewer_notes": "bugfix installer-upgrade-regression: iteracao 1 = APPROVED WITH CHANGES (1 critico D1: exitCode nao propagado nos caminhos CLI; 2 atencao D2/D3). Iteracao 2 = APPROVED, zero criticos, D1/D2/D3 fechados. Ressalvas verdes nao-bloqueantes: sem spawn end-to-end de instalacao reprovada; scan do BF-04 nao robusto a parenteses em string."
   },
   "overrides": [],
   "overrides_history": [
@@ -89,18 +91,27 @@
         "archive": ".spec/archive/20261014-harness-brain-separation/"
       },
       "created": "2026-10-14T00:00:00Z"
+    },
+    {
+      "name": "prd-adr-pipeline",
+      "stage": "Discovery",
+      "progress": 5,
+      "type": "feature",
+      "depends_on": [],
+      "artifacts": {},
+      "created": "2026-10-15T00:00:00Z"
     }
   ],
-  "last_update": "2026-10-14T17:38:18Z",
+  "last_update": "2026-10-15T00:00:00Z",
   "spec_score": 0.94,
-  "spec_status": "v1_reviewed_aprovado_com_ajustes",
+  "spec_status": "v1_reviewed_aprovado (spec-gate 10/10; 1 laranja + 3 amarelos corrigidos; security pass com ressalva D11)",
+  "plan_status": "v2 apos parecer de negocio (12 tasks PAP-01..PAP-12; SDD-02 1:1 12/12; B-1..B-4 corrigidos, B-5 dry-run, B-6 instrumentado)",
   "validation": {
-    "architect": "aprovar_com_ajustes (A1-A5 incorporados)",
-    "ux-designer": "spec wizard entregue (vinculante)"
+    "architect": "Fase 1: 5 ADRs propostos (P01..P05) com prova de independencia par-a-par",
+    "product-manager": "Fase 1 e Fase 2: 14 defeitos levantados; 11 enderecados, 3 mitigados por regra de processo; P2->P3 desbloqueado apos correcoes",
+    "ux-designer": "N/A - sem tela, fluxo ou componente visual neste ciclo"
   },
-  "pending_user_decisions": [
-    "P-02 politica de licenca do vendor (bloquear|so-com-licenca|atribuir)"
-  ],
+  "pending_user_decisions": [],
   "spec_version": 4,
   "decisions_applied_v3": {
     "U4": "a - git init + remote + CI",
@@ -108,9 +119,9 @@
     "U6": "b - selo de hash"
   },
   "harness_status": "passed",
-  "harness_evidence": "plugins 135/135 + installer 360/360 + static EXIT 0 (V15 rede-zero) + vendor-check OK + sdd-checks PASS; suiteFull de harness.config.json; archive 20261008-harness-installer-mobile intocado; installer/ intocado",
+  "harness_evidence": "bugfix installer-upgrade-regression: installer 372/372 pass 0 fail 0 skip (era 355/5); determinismo 3x = 372/372/372; plugins 216/216; static-checks EXIT 0; vendor-check OK; sdd-checks 8/8. Diff restrito a installer/install.mjs + 1 spec novo; gate.js e harness.config.json com 0 linhas alteradas; nenhuma fixture original editada.",
   "code_review_status": "passed",
-  "sdd_stage": "harness-brain-separation Archived 2026-10-14 (15/15 Done, VERIFY APPROVED 3/3, reviews APPROVED, security PASS, suite verde). Continuacao harness-installer-mobile. Debitos: D-01 DoD 08/09/10, O-01 BDD VAL-01 wording, O-02 residual saneado, P2-01 RUNTIME canonico + PIN-ME.",
+  "sdd_stage": "BUGFIX installer-upgrade-regression CONCLUIDO (B1-B4: 372/372, determinismo 3x, review APPROVED em 2 iteracoes, exitCode corrigido). Ciclo feature prd-adr-pipeline PAUSADO em Planning (SPEC aprovada, PLAN/TASKS 12/12) aguardando retomada. Abertos declarados: seal HARNESS_SEAL_JSON nao republicado; Brain MCP down (HTTP 410); registro de agentes do harness ausente no runtime; skills do harness indisponiveis no tool skill; CI nao barra push com suite vermelha; push pendente.",
   "backlog": {
     "total": 14,
     "todo": 0,
@@ -676,8 +687,9 @@
     "ressalva": "I9 CI wiring -> FU-29"
   },
   "pending_actions": [
+    "Tech-debt P1 ABERTO: regressao do installer pos-68be417 (355/5 em main; 360/0 antes) — H2 bloqueia delegacao de prd-adr-pipeline. Ver .spec/tech-debts/installer-upgrade-regression/TASKS.md",
     "Brain MCP down (HTTP 410): registrar licoes pendentes (FU-34/35, FU-42, timing)",
-    "FU-43 P2: specs poluem /tmp (saneamento)",
+    "FU-43 P2: specs poluem /tmp (saneamento; possivel causa do flaky do installer)",
     "HARNESS_SEAL_JSON republicar (externo)",
     "push (nada enviado)"
   ]
