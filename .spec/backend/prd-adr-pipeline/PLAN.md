@@ -9,7 +9,7 @@
 
 - **Status**: `Strictly Validated` (spec-gate 10/10; spec-review 0 🔴; security pass com ressalva pré-existente)
 - **Identified Gaps/Warnings**:
-  - **G-1 (RESOLVIDO durante o P1→P2)**: a suíte ficou **RED** por drift do `SDD-02` enquanto `PLAN.md`/`TASKS.md` não existiam (estado transitório esperado entre P1 e P2). **Fechado** no instante em que os dois arquivos foram materializados — verificado: `sdd-checks` 8/8 PASS, `SDD-02` com `artifacts 4/4, tasks sections=10 declared=10`. **Não há drift em aberto.**
+  - **G-1 (RESOLVIDO durante o P1→P2)**: a suíte ficou **RED** por drift do `SDD-02` enquanto `PLAN.md`/`TASKS.md` não existiam (estado transitório esperado entre P1 e P2). **Fechado** no instante em que os dois arquivos foram materializados — verificado: `sdd-checks` 8/8 PASS, `SDD-02` com `artifacts 4/4, tasks sections=12 declared=12`. **Não há drift em aberto.**
   - **G-2 (declarado)**: `gate.js:487-516` não escopa escrita de `product-manager`/`architect` (lacuna D11). **Não corrigido** — exige editar `gate.js` (fora de escopo, ADR-P03).
   - **G-3 (declarado)**: em repo-destino o enforcement é 🟡 processo até F3; `INCOMING_ROOTS` não propaga `scripts/`+`.github/`.
 - **Assumptions Made**:
@@ -98,7 +98,7 @@
 
 ### Phase 4: Dogfood real + Fechamento
 - **Dependencies**: Phase 3 + `PAP-04` + `PAP-05`.
-- **Scope**: `PAP-11` (dogfood: rodar a esteira **sobre si mesma** — `.spec/prd/prd-adr-pipeline/` real com PRD, RESEARCH, ADR-INDEX e `ADRs/ADR-001..005`) → `PAP-10` (README + verificação final **com o artefato real em disco**) → `PAP-12` (instrumentação do baseline SM-1..SM-7).
+- **Scope**: `PAP-11` (dogfood: rodar a esteira **sobre si mesma** — `.spec/prd/prd-adr-pipeline/` real com PRD, RESEARCH, ADR-INDEX e `ADRs/ADR-00N-{slug}/`) → `PAP-10` (README + verificação final **com o artefato real em disco**) → `PAP-12` (instrumentação do baseline SM-1..SM-7).
 
 Adicionado após o parecer de negócio: sem `PAP-11` o critério central do produto (PRD aprovado antes do ADR) não tinha mecanismo real e o aceite passaria "verde por ausência" (achado O-1, bloqueador B-1).
 
@@ -106,13 +106,17 @@ Adicionado após o parecer de negócio: sem `PAP-11` o critério central do prod
 
 ## 7. Critical Execution Path
 
-Caminho mínimo para o MVP (ignora documentação secundária):
+Caminho crítico para o MVP (ignora documentação secundária):
 
-`PAP-01` → `PAP-02` → `PAP-03` → `PAP-04` → `PAP-07` → `PAP-09` → `PAP-11` → `PAP-10`
+`PAP-01` → `PAP-02` → `PAP-03` → `PAP-05` → `PAP-06` → `PAP-07` → `PAP-08` → `PAP-09` → `PAP-10` → `PAP-12`
 
-Justificativa: guard + checks + wiring dão o núcleo de máquina; `PAP-07` é **obrigatório** no caminho porque sem a emenda do vocabulário/layout a esteira contradiz a regra vigente (dois SSoT) e `§14.8` não fecha; `PAP-09` é **hard dependency declarada** de `PAP-10` (`PLAN §8`) e fecha `§14.7`; `PAP-11` entra antes de `PAP-10` porque o critério central exige o artefato **real** em disco (achado O-1). Corrigido após o parecer de negócio apontar que o caminho anterior (`...→04→10`) violava a própria dependência que ele mesmo declarava.
+com o ramo paralelo `PAP-03` → `PAP-04` → `PAP-11` → `PAP-10` convergindo em `PAP-10` (que exige `09` **e** `11`).
 
-Corte honesto: `PAP-05`/`PAP-06` (templates + regra) e `PAP-08` (wiring dos orquestradores) entregam **formato e operação**, não critério de máquina — são o que torna a esteira usável por um humano, e o parecer de negócio os manteve como Must (F1a/F1c da Fase 1). `PAP-12` é fechamento de medição e não bloqueia código.
+Justificativa: guard + checks + wiring dão o núcleo de máquina; `PAP-05`/`PAP-06` estão no caminho porque são **hard deps** de `PAP-06`/`PAP-07` (o vocabulário/layout sem a emenda contradiz a regra vigente e `§14.8` não fecha); `PAP-08` é hard dep de `PAP-09`; `PAP-09` é hard dep de `PAP-10` e fecha `§14.7`; `PAP-11` é hard dep de `PAP-10` porque o critério central exige o artefato **real** em disco (achado O-1); `PAP-12` fecha a medição.
+
+Histórico de correção: a 1ª versão deste caminho (`...→04→10`) violava hard deps; a 2ª (`...→04→07→09→11→10`) ainda pulava `PAP-05`, `PAP-06` e `PAP-08`. Ambas reprovadas no parecer de negócio — o caminho agora é derivado do grafo de `§8`, não escrito à mão.
+
+Corte honesto: `PAP-05`/`PAP-06`/`PAP-08` entregam **formato e operação** além de serem deps; `PAP-12` é fechamento de medição e não bloqueia código.
 
 ---
 
@@ -156,7 +160,7 @@ Corte honesto: `PAP-05`/`PAP-06` (templates + regra) e `PAP-08` (wiring dos orqu
   - **Depends on**: `PAP-03`
   - **Layer**: `Domain`
   - **Artifact**: `.agents/skills/prd-adr-pipeline/templates/{PRD,RESEARCH,ADR-INDEX,ADR}.md`, `.agents/skills/sdd-architecture-board/templates/ADR_TEMPLATE.md`
-  - **Enforcement**: `PRD.md` marcando as 6 seções obrigatórias (§4.4 da SPEC); `ADR.md` com `depende-de` e interface congelada
+  - **Enforcement**: `PRD.md` marcando as 7 seções obrigatórias (§4.4 da SPEC); `ADR.md` com `depende-de` e interface congelada
   - **Constraint Ref**: `RF-05`, `NFR-5`
   - **Framework Detail**: markdown puro
 
@@ -167,7 +171,7 @@ Corte honesto: `PAP-05`/`PAP-06` (templates + regra) e `PAP-08` (wiring dos orqu
   - **Layer**: `Application`
   - **Artifact**: `.agents/rules/prd-adr-pipeline.md`
   - **Enforcement**: nenhum gate sem mecanismo citado; nível de garantia por afirmação; limiar de isenção e teto de 5 ADRs declarados
-  - **Constraint Ref**: `RF-06`, `SPEC §4.4`, `§12.6`
+  - **Constraint Ref**: `RF-06`, `SPEC §4.4`, constraint 6 de `§12`
   - **Framework Detail**: markdown; exige trailer `Harness-Gate-Change`
 
 - **[PAP-07]** [ ] Emendas: vocabulário V17 + layout/estado
@@ -201,7 +205,7 @@ Corte honesto: `PAP-05`/`PAP-06` (templates + regra) e `PAP-08` (wiring dos orqu
 - **[PAP-11]** [ ] Dogfood: rodar a esteira sobre si mesma (`.spec/prd/prd-adr-pipeline/` real)
   - **Depends on**: `PAP-04`, `PAP-05`
   - **Layer**: `Integration`
-  - **Artifact**: `.spec/prd/prd-adr-pipeline/{PRD.md,RESEARCH.md,ADR-INDEX.md}`, `.spec/prd/prd-adr-pipeline/ADRs/ADR-001..005/ADR.md`
+  - **Artifact**: `.spec/prd/prd-adr-pipeline/{PRD.md,RESEARCH.md,ADR-INDEX.md}`, `.spec/prd/prd-adr-pipeline/ADRs/ADR-00N-{slug}/ADR.md` (5 dirs)
   - **Enforcement**: os 3 checks PASS sobre o artefato **real**; `prd-id == current_feature` (pior caso do guard); nenhum `SPEC.md`/`PLAN.md`/`TASKS.md` por ADR neste ciclo (ADR aqui é unidade **de decisão** dos 5 ADRs P01..P05 da SPEC, não ciclo SDD completo)
   - **Constraint Ref**: `INV-3`, `PROPOSAL §7` critério funcional #1, `SPEC §14.1`, achado O-1
   - **Framework Detail**: markdown; **deve rodar depois de `PAP-01`** (guard) ou o `SDD-02` acusa drift
@@ -219,7 +223,7 @@ Corte honesto: `PAP-05`/`PAP-06` (templates + regra) e `PAP-08` (wiring dos orqu
   - **Layer**: `Infrastructure`
   - **Artifact**: `workflow-state.json` (aditivo), `.spec/backend/prd-adr-pipeline/VERIFY.md`
   - **Enforcement**: congelar `baseline{suite, follow_ups, escalations, frozen_at}` no `VERIFY.md`; acrescentar `follow_ups[].created_at` e `prd_adr.snapshots[] = {adr, follow_ups_count, escalations_count, at}` (aditivo — `NFR-6` proíbe renomear/remover, não acrescentar); declarar **SM-1, SM-5, SM-7 como não falseáveis hoje** para não vender métrica falsa
-  - **Constraint Ref**: `Q7`/`Q10` do parecer de negócio, `PROPOSAL §6 R2`
+  - **Constraint Ref**: `Q7`/`Q10` do parecer de negócio, `PROPOSAL §6` (linha "Causa errada"), `NFR-6`
   - **Framework Detail**: edição de JSON aditiva + markdown
 
 ---
@@ -236,7 +240,7 @@ Corte honesto: `PAP-05`/`PAP-06` (templates + regra) e `PAP-08` (wiring dos orqu
 
 ## 10. Execution Readiness Checklist
 
-- [x] Todas as tasks têm dependência válida (sem ciclo). Caminho: 01→02→03→04→10 e 03→05→06→07→08→09→10.
+- [x] Todas as tasks têm dependência válida (sem ciclo). Caminho: `01→02→03→05→06→07→08→09→10→12`, com o ramo `03→04→11→10`.
 - [x] Ciclo de 4 tasks por evento — **N/A justificado** (§9, SPEC §6).
 - [x] Tasks de teste obrigatórias para as restrições críticas: `PAP-02` (fixtures PASS/FAIL por check) e `PAP-01` (regressão do verde-falso).
 - [x] Tasks de infra base explicitamente definidas: `PAP-01` (guard) e `PAP-03` (núcleo puro).

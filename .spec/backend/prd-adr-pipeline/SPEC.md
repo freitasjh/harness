@@ -45,8 +45,8 @@ Ver `PROPOSAL.md §3`. Resumo operacional:
 ### ADR-P02: Módulo de checks vive no path **propagável**
 
 - **Decision**: os checks `PRD-01`/`ADR-01`/`ADR-02` são implementados em `.agents/skills/prd-adr-pipeline/checks.mjs` (puro, exporta funções). `scripts/static-checks.mjs` **importa e chama**. Nada de lógica nova em `scripts/`.
-- **Context**: `INCOMING_ROOTS` do installer (`installer/install.mjs:1118`) propaga `.agents/agents`, `.agents/rules`, `.agents/skills`, `.opencode/plugins`, `opencode.json` — **não** `scripts/`, **não** `.github/`. Check que viva só em `scripts/` vira **gate órfão** no repo-destino: a regra propaga prometendo enforcement que não existe lá.
-- **Trade-offs**: **ganha** — o check propaga de graça e o repo-destino pode executá-lo com uma linha. **perde** — o módulo passa a ser parte do vendor de skills e é scanneado pela DENYLIST do installer (`install.mjs:685-693`), então não pode conter termos `taskflow`/`vuetify`/`primevue`/`lombok`/`mapstruct`/`restassured`.
+- **Context**: `INCOMING_ROOTS` do installer (`installer/install.mjs:1159`) propaga `.agents/agents`, `.agents/rules`, `.agents/skills`, `.opencode/plugins`, `opencode.json` — **não** `scripts/`, **não** `.github/`. Check que viva só em `scripts/` vira **gate órfão** no repo-destino: a regra propaga prometendo enforcement que não existe lá.
+- **Trade-offs**: **ganha** — o check propaga de graça e o repo-destino pode executá-lo com uma linha. **perde** — o módulo passa a ser parte do vendor de skills e é scanneado pela DENYLIST do installer (`install.mjs:669`), então não pode conter termos `taskflow`/`vuetify`/`primevue`/`lombok`/`mapstruct`/`restassured`.
 
 ### ADR-P03: Enforcement = suite + CI, **nunca** runtime
 
@@ -72,7 +72,7 @@ Ver `PROPOSAL.md §3`. Resumo operacional:
 
 - **Bounded Context**: `governanca-de-agentes`. O harness é o produto: regras (`.agents/rules`), skills (`.agents/skills`), agentes (`.agents/agents`), plugins/gates (`.opencode/plugins`), checks (`scripts/`), instalador (`installer/`).
 - **System Type**: toolchain determinística de governança + instalador repo→repo. Não é serviço, não tem estado de execução.
-- **Tenant Provisioning**: **N/A** — não há multi-tenancy. O análogo é o **repo-destino** do installer; a esteira entra nele por `.agents/rules` + `.agents/skills` + `opencode.json` (`install.mjs:1118`).
+- **Tenant Provisioning**: **N/A** — não há multi-tenancy. O análogo é o **repo-destino** do installer; a esteira entra nele por `.agents/rules` + `.agents/skills` + `opencode.json` (`install.mjs:1159`).
 - **Tenant Lifecycle**: **N/A**. Equivalente: ciclo de vida do repo-destino = `init` (greenfield) · `doctor` (brownfield, read-only) · `upgrade` (overwrite gerenciado) — todos já existentes, **nenhum tocado** neste ciclo.
 
 ---
@@ -137,9 +137,14 @@ Não há IdP/RBAC. O modelo real é o de escrita por agente, imposto em `gate.js
   "prd_id": "{prd-id}",
   "prd_status": "draft | approved | archived",
   "active_adr": "ADR-00N | null",
-  "adr_order": ["ADR-001", "ADR-002"]
+  "adr_order": ["ADR-001", "ADR-002"],
+  "snapshots": [
+    { "adr": "ADR-00N", "follow_ups_count": 43, "escalations_count": 3, "at": "AAAA-MM-DD" }
+  ]
 }
 ```
+
+`snapshots[]` é o que torna **SM-3** medível por ADR (Δ de retrabalho após cada merge) e alimenta o gatilho de pivot descrito em `§14.1`. Gravado pelo orquestrador no merge de cada ADR (mesmo dono do bloco).
 
 ### 4.4 Decisões de cerimônia (limites explícitos)
 
@@ -150,8 +155,11 @@ Sem estes limites, a esteira vira a dor que ela existe para resolver (`PROPOSAL 
 | **Limiar de isenção** | **Não** gera PRD nem ADR: typo · texto de documentação · rename interno · formatação · refactor interno **sem** mudança de comportamento observável · atualização de dependência de patch. Gera ADR sem PRD quando a mudança é arquitetural mas sem valor de produto novo. | Correção pequena não pode virar 5 documentos |
 | **Teto de ADRs por PRD** | **5**. Acima disso, o PRD é grande demais e se divide em dois PRDs com escopos separados | Gargalo de revisão é 1 humano, 1 merge por vez |
 | **Destino do PRD concluído** | Todos os ADRs `merged` ⇒ PRD vai para `.spec/archive/[YYYYMMDD]-prd-{prd-id}/` com os ADRs. `prd_status: archived` só é escrito **depois** do move | Evita candidato vivo eterno no resolver |
-| **ADR leve** | **Não existe nesta versão.** Todo ADR carrega `ADR.md` + `SPEC.md` + `PLAN.md` + `TASKS.md` + `VERIFY.md`. Se o custo provar excessivo, vira ADR de v2 — não improvisa agora | Uma forma só; duas formas = dois checks = mais superfície |
-| **Subconjunto obrigatório do PRD** | §1, §2, §6, §7, §9, §16 são obrigatórias; §3, §4, §5, §8, §10–§15 são recomendadas. `PRD-01` só exige as obrigatórias | Check rígido é cerimônia; NFR-5 manda o PRD caber em ≤120 linhas |
+| **ADR leve** | **Não existe nesta versão.** Todo ADR carrega `ADR.md` + `SPEC.md` + `PLAN.md` + `TASKS.md` + `VERIFY.md` — **exceto** os ADRs da regra abaixo | Uma forma só; duas formas = dois checks = mais superfície |
+| **ADR cujo SDD é o próprio ciclo em curso** | **Exceção declarada.** Um ADR que decide sobre a feature cujo ciclo SDD **já é** o ciclo corrente (caso dos 5 ADRs P01..P05 desta própria SPEC, documentados aqui e em `PLAN`/`TASKS`) é **decision-only**: contém apenas `ADR.md`. Dá-lo um SDD próprio seria recursão — o SDD dele é este ciclo. `ADR-01` valida `ADR.md` + o 1:1 com o índice; a composição de 5 arquivos **não** é exigida neste caso | Sem esta linha, o dogfood (`PAP-11`) contradiz `ADR-P04`/`§4.1`; com ela, a exceção é declarada em **um lugar** e é generalizável (não é "exceção de teste") |
+| **Subconjunto obrigatório do PRD** | §1, §2, **§5**, §6, §7, §9, §16 são obrigatórias; §3, §4, §8, §10–§15 são recomendadas. `PRD-01` só exige as obrigatórias — e **§5 entrou no obrigatório** justamente para o requisito de métrica não ficar condicional | Check rígido é cerimônia; NFR-5 manda o PRD caber em ≤120 linhas. A métrica com "como medir" é a única linha que o dono do produto consegue cobrar depois |
+| **Mapa de seções do PRD** | O **template** produzido em `PAP-05` é o **SSoT** da numeração e dos títulos das 16 seções; `PRD-01` parseia os títulos a partir dele. Toda referência a "§N" nesta SPEC usa essa numeração | Sem um SSoT do mapa, SPEC e template divergem sobre o que é "a §7" e o check vira inverificável |
+| **Colisão `ADR-00N` × `TASK_ID_SRC`** | **Fechado por análise.** Candidatos de ciclo do `sdd-checks` são `.spec/<bucket>` e `.spec/<bucket>/<name>` (2 níveis) — `ADRs/ADR-00N/**` **nunca** vira candidato; `extractTaskSections` lê apenas o `TASKS.md` do ciclo resolvido, e os `ADR-00N` vivem em `.spec/prd/**` | Registra a **prova** do fechamento; antes era só afirmação do orquestrador |
 
 ---
 
@@ -161,7 +169,7 @@ Cada check é **determinístico e estrutural**: presença, campo obrigatório, o
 
 | Check | Entrada | Falha quando |
 |-------|---------|--------------|
-| **PRD-01** | `.spec/prd/{prd-id}/PRD.md` | falta **seção obrigatória** do subconjunto mínimo (§1, §2, §6, §7, §9, §16); §7 ("NÃO entra") ausente ou vazia; nenhuma métrica com coluna "como medir" preenchida; story da §10 presente e sem `Dado`/`Quando`/`Então`; bloco §16 sem veredito **ou** sem data; **seção obrigatória sem a linha de pergunta fechada `> ❓ Validação:`**; **§15 (PICCO) presente com `<task>` ou `<context>` vazio**; **existe `ADRs/**` com §16 ainda sem veredito preenchido** |
+| **PRD-01** | `.spec/prd/{prd-id}/PRD.md` | falta **seção obrigatória** do subconjunto mínimo (§1, §2, §5, §6, §7, §9, §16); §7 ("NÃO entra") ausente ou vazia; nenhuma métrica da §5 com coluna "como medir" preenchida; story da §10 presente e sem `Dado`/`Quando`/`Então`; bloco §16 sem veredito **ou** sem data; **seção obrigatória sem a linha de pergunta fechada `> ❓ Validação:`**; **§15 (PICCO) presente com `<task>` ou `<context>` vazio**; **existe `ADRs/**` com §16 ainda sem veredito preenchido** |
 | **ADR-01** | `ADR-INDEX.md` × `ADRs/**` | dir em `ADRs/` sem linha no índice (órfão); linha no índice sem dir; `id` duplicado; `ADR.md` sem `depende-de` ou sem interface congelada; `dir` fora do padrão `ADRs/ADR-00N-{slug}/`; **`RESEARCH.md` ausente, ou com menos de 2 fontes (`http`), quando existe qualquer `ADRs/**`** |
 | **ADR-02** | `ADR-INDEX.md` | ≥2 linhas `in-progress`; linha `merged` sem campo `merge` preenchido; ADR com `order=N` em `in-progress` enquanto `order<N` não está `merged` (pulo de sequência); **`branch` fora do padrão `^adr/[a-z0-9-]+/\d{2}-[a-z0-9-]+$`** |
 
@@ -392,9 +400,27 @@ Linha na tabela de funcionalidades: "PRD→ADR→SDD — intenção aprovada ant
 6. `harness.config.json` inalterado: `git diff main -- harness.config.json` vazio.
 7. Zero referência viva a `GEMINI.md`, `docs/specs/`, `docs/adr/` nos AGENT.md/PROMPT.md.
 8. `V4` PASS com `.agents/rules` ≤1705 linhas.
-9. `code-reviewer` → zero 🔴.
+9. `code-reviewer` → zero 🔴 — **DoD explícito no `PAP-10`** (antes era critério sem task).
 10. Caminho de branch/PR documentado e validado por **dry-run local** (`git push --dry-run` + URL de compare montada), sem push real.
-11. Baseline de retrabalho congelado e datado no `VERIFY.md` (`baseline{suite, follow_ups, escalations, frozen_at}`); `prd_adr.snapshots[]` presente no state; **SM-1, SM-5 e SM-7 declaradas como não falseáveis hoje** — não são contadas como sucesso.
+11. Baseline de retrabalho congelado e datado no `VERIFY.md` (`baseline{suite, follow_ups, escalations, frozen_at}`); `prd_adr.snapshots[]` presente no state; as 7 métricas abaixo declaradas — as 3 marcadas **não falseáveis hoje** não contam como sucesso.
+12. **Regressão preservada**: `V4`, `V17`, `SDD-01/02/03`, `R-NODENY`, `RENAME-01` continuam PASS — **DoD explícito no `PAP-10`** (antes era critério sem task).
+13. **Aprovação humana do PRD do dogfood registrada**: o bloco §16 do PRD real de `PAP-11` cita o **evento de aprovação do owner** (data + qual portão). O agente **não** auto-assina: a evidência é o registro do portão, não a assinatura no arquivo.
+
+### 14.1 Métricas de produto (SM) — definição única
+
+`SM-3` aparece também em `PROPOSAL §6` (linha "Causa errada"); as demais existem só aqui. **SSoT da numeração**: esta tabela.
+
+| # | Métrica | Como se mede | Estado hoje |
+|---|---------|--------------|-------------|
+| **SM-1** | Desalinhamento capturado **antes** do trabalho | nº de pedidos de mudança feitos na leitura do PRD ÷ nº feitos depois de aprovar | ⚠️ **não falseável** — `scope_additions` hoje conta itens de planejamento, não pedidos pós-aprovação |
+| **SM-2** | Unidade de revisão pequena | 1 merge = 1 ADR; o owner resume o PR em 1 frase | ✅ medível (`git log --merges`) |
+| **SM-3** | Retrabalho pós-merge por ADR | Δ de `follow_ups` entre `prd_adr.snapshots[]` consecutivos | ✅ medível **após** `PAP-12` instrumentar |
+| **SM-4** | Zero merge revertido por desalinhamento | contagem de `git revert`/reabertura por "não era isso" | ✅ medível |
+| **SM-5** | Guardrail de cerimônia | nº de PRDs criados para bug/chore/abaixo do limiar (deve ser 0) | ⚠️ **não falseável** — sem campo que registre PRD indevido |
+| **SM-6** | Suíte confiável | `suiteFull` verde em 100% dos merges | ✅ medível (baseline congelado) |
+| **SM-7** | Tempo até o primeiro "não é isso" | quantos ADRs/branches existiam quando o owner disse isso | ⚠️ **não falseável** — não há registro do evento |
+
+**Gatilho de pivot (Q10)**: no merge do **ADR-3**, comparar SM-3 contra o baseline congelado. Se o Δ **não** cair, decisão do owner em ≤1 semana entre (i) pivotar para "unidade de verificação" (atacar a causa *drift*) ou (ii) manter o PRD e cortar o branch/PR por ADR. Sem `PAP-12` o gatilho é indetectável — é por isso que ele existe.
 
 ---
 
@@ -421,7 +447,7 @@ Aplicada à SPEC; checklist TaskFlow-específico marcado **N/A explícito** (sem
 
 | Gap | Sev | Correção aplicada |
 |---|---|---|
-| `PRD-01` exigia as 16 seções, colidindo com NFR-5 (PRD ≤120 linhas) | 🟠 | `§5` passou a exigir **subconjunto obrigatório** (§1, §2, §6, §7, §9, §16); os demais são recomendados |
+| `PRD-01` exigia as 16 seções, colidindo com NFR-5 (PRD ≤120 linhas) | 🟠 | `§5` passou a exigir **subconjunto obrigatório** (§1, §2, **§5**, §6, §7, §9, §16); os demais são recomendados |
 | Destino do PRD concluído indefinido (candidato vivo eterno no resolver) | 🟡 | `§4.4` — arquiva em `.spec/archive/[YYYYMMDD]-prd-{prd-id}/` |
 | Limiar de isenção citado mas não enumerado | 🟡 | `§4.4` — lista fechada (typo, doc, rename interno, formatação, refactor sem mudança observável, patch de dependência) |
 | Sem teto de ADRs por PRD (gargalo de revisão 1 humano) | 🟡 | `§4.4` — teto 5; acima disso, dividir o PRD |
@@ -440,7 +466,7 @@ Verdict: **pass com ressalva** (§11). Ressalva = lacuna D11 pré-existente e de
 - `.agents/rules/sdd-workflow-standard.md` — organização de arquivos e estado
 - `.opencode/plugins/gate.js` — `isOrchAllowlisted:391`, `checkWriteAccess:487`, âncoras A/B `:653,705`, `inferNewCycle:724`
 - `scripts/sdd-checks.mjs` — `SDD_ARTIFACTS:143`, `SPEC_NON_CYCLE:146`, `resolveSddCycle:236`, checks `:358`
-- `installer/install.mjs:1118` — `INCOMING_ROOTS` (linha recalculada após a base `main 68be417`)
+- `installer/install.mjs:1159` — `INCOMING_ROOTS` (linha recalculada após `ae90866`, o bugfix do installer que deslocou o arquivo)
 - `harness.config.json` — `commands.suiteFull:14`, `protectedPaths:27-37`
 - `.githooks/pre-commit` · `.github/workflows/harness-integrity.yml` — trailer de path protegido
 - `.agents/skills/sdd-compiler/**` — templates e asserts

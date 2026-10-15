@@ -31,7 +31,7 @@
 3. **ADR-INDEX.md + `ADRs/ADR-00N-{slug}/`**: cada ADR é unidade de trabalho independente (branch a partir de `main` atualizado após merge), com `ADR.md` + `SPEC.md` + `PLAN.md` + `TASKS.md` + `VERIFY.md`.
 4. **Checks de CI** `PRD-01`/`ADR-01`/`ADR-02` dentro do `suiteFull` existente, cada um com fixture PASS e FAIL — **nenhum deny novo** em `gate.js`.
 5. **Guard do resolver**: o bucket `prd` entra em `SPEC_NON_CYCLE` (`scripts/sdd-checks.mjs:146`), tirando a árvore PRD da detecção de ciclo SDD.
-6. **Módulo de checks no path propagável** (`.agents/skills/prd-adr-pipeline/checks.mjs`) — `scripts/` **não** propaga pelo installer (`INCOMING_ROOTS`, `installer/install.mjs:1118`), então check em `scripts/` viraria gate órfão no repo-destino.
+6. **Módulo de checks no path propagável** (`.agents/skills/prd-adr-pipeline/checks.mjs`) — `scripts/` **não** propaga pelo installer (`INCOMING_ROOTS`, `installer/install.mjs:1159`), então check em `scripts/` viraria gate órfão no repo-destino.
 
 **Alternativas descartadas**:
 - **Deny de runtime para PRD/ADR** — quebraria `R-NODENY` (`sdd-checks.mjs:400-404`) e a decisão #2 do owner.
@@ -131,7 +131,7 @@ Critérios verificáveis (binário). Redigidos como **asserção**, não como at
 - [ ] **Técnico**: cada um dos 3 checks tem ≥1 fixture que PASSA e ≥1 que FALHA, exercitada por teste unitário.
 - [ ] **Técnico**: `commands.suiteFull` do `harness.config.json` verde — `node --test` (plugins) + `node --test` (installer) + `static-checks` + `vendor-check` — **com** o bucket `prd` presente em disco. Nota de precisão: `sdd-checks` **não** faz parte do `suiteFull`; é executado no CI (`harness-integrity.yml`) e é comando de aceite **separado** (`node scripts/sdd-checks.mjs`).
 - [ ] **Qualidade**: com `.spec/prd/**` materializado, `SDD-02` continua apontando o ciclo SDD correto (nenhum verde-falso).
-- [ ] **Qualidade**: caminho executável de branch/PR documentado e exercitado (`git push` + URL de compare, sem `gh`).
+- [ ] **Qualidade**: caminho executável de branch/PR documentado e validado por **dry-run local** (`git push --dry-run` + URL de compare montada), sem push real.
 - [ ] **Regressão**: ciclos SDD existentes inalterados; `V4`, `V17`, `SDD-01/02/03`, `R-NODENY`, `RENAME-01` continuam PASS.
 
 ---

@@ -31,6 +31,7 @@ graph TD
     PAP-02 --> PAP-03
     PAP-03 --> PAP-04
     PAP-03 --> PAP-05
+    PAP-03 --> PAP-06
     PAP-04 --> PAP-11
     PAP-05 --> PAP-11
     PAP-05 --> PAP-06
@@ -119,7 +120,7 @@ graph TD
 #### ✅ Acceptance Criteria (BDD)
 
 - **Scenario 1 (Success)**:
-  - **Given** um PRD bem-formado com as 6 seções obrigatórias, cada uma com a linha `> ❓ Validação:`, e aprovação preenchida
+  - **Given** um PRD bem-formado com as 7 seções obrigatórias, cada uma com a linha `> ❓ Validação:`, e aprovação preenchida
   - **When** `runPrdChecks(root)` roda
   - **Then** `PRD-01` retorna `PASS`
 - **Scenario 2 (Failure Mode — §7 vazia)**:
@@ -138,10 +139,13 @@ graph TD
   - **Given** um PRD cuja §6 está sem a linha `> ❓ Validação:` **ou** cuja §15 tem `<task>` vazio
   - **When** `runPrdChecks(root)` roda
   - **Then** `PRD-01` retorna `FAIL` apontando a seção
-- **Scenario 6 (Failure Mode — ADR sem PRD aprovado / RESEARCH sem fonte)**:
-  - **Given** `ADRs/ADR-001-x/` existindo com §16 sem veredito, ou sem `RESEARCH.md` com ≥2 fontes
+- **Scenario 6 (Failure Mode — ADR sem PRD aprovado / RESEARCH sem fonte)** — dois casos distintos:
+  - **Given** `ADRs/ADR-001-*/` existindo com o bloco §16 do PRD ainda **sem veredito**
   - **When** `runPrdChecks(root)` roda
-  - **Then** `PRD-01` (PRD não aprovado) ou `ADR-01` (research insuficiente) retorna `FAIL`
+  - **Then** `PRD-01` retorna `FAIL`
+  - **Given** `ADRs/**` existindo **sem** `RESEARCH.md`, ou com menos de 2 fontes (`http`)
+  - **When** `runPrdChecks(root)` roda
+  - **Then** `ADR-01` retorna `FAIL`
 - **Scenario 7 (Edge Case — branch fora do padrão)**:
   - **Given** `ADR-INDEX.md` com `branch: feat/x` em vez de `adr/<prd-id>/<nn>-<slug>`
   - **When** `runPrdChecks(root)` roda
@@ -259,6 +263,7 @@ graph TD
 - [ ] `node scripts/static-checks.mjs` verde com e sem `.spec/prd/**`.
 - [ ] `git diff main -- harness.config.json` **vazio**.
 - [ ] Sem TODO pendente.
+- [ ] **Path protegido** (o teste vive em `.opencode/plugins/__tests__/**`): commit exige trailer `Harness-Gate-Change: <aprovador>` + `HARNESS_GATE_APPROVER` no pre-commit.
 
 ---
 
@@ -269,7 +274,7 @@ graph TD
 - **Dependency Type**: Soft
 - **Layer**: Domain
 - **Task Type**: Domain
-- **Priority**: P1
+- **Priority**: P0
 - **Risk Level**: Low
 - **Parallelizable**: Yes
 - **Artifact**: `.agents/skills/prd-adr-pipeline/templates/{PRD,RESEARCH,ADR-INDEX,ADR}.md`, `.agents/skills/sdd-architecture-board/templates/ADR_TEMPLATE.md`
@@ -280,7 +285,7 @@ graph TD
 - **Domain Impact**: sem template, cada PRD sai num formato e o check `PRD-01` vira obstáculo em vez de guardrail.
 
 #### 🛡️ Technical Enforcement (DO NOT IGNORE)
-- **Rule**: `PRD.md` deve marcar quais seções são **obrigatórias** (as 6 de `SPEC §4.4`) e manter o PRD ≤120 linhas; `ADR.md` deve conter `depende-de` e interface congelada.
+- **Rule**: `PRD.md` deve marcar quais seções são **obrigatórias** (as 7 de `SPEC §4.4`) e manter o PRD ≤120 linhas; `ADR.md` deve conter `depende-de` e interface congelada.
 - **Failure Mode**: exigir as 16 seções no check força PRD longo ⇒ cerimônia vira a dor que a feature existe para resolver.
 
 #### ✅ Acceptance Criteria (BDD)
@@ -288,7 +293,7 @@ graph TD
 - **Scenario 1 (Success)**:
   - **Given** o template `PRD.md`
   - **When** preenchido por um produto real
-  - **Then** cabe em ≤120 linhas e as 6 seções obrigatórias estão identificadas no próprio template
+  - **Then** cabe em ≤120 linhas e as 7 seções obrigatórias estão identificadas no próprio template
 - **Scenario 2 (Failure Mode — ref órfã)**:
   - **Given** `.agents/skills/sdd-architecture-board/SKILL.md` linha 36
   - **When** o caminho do template é resolvido
@@ -306,20 +311,21 @@ graph TD
 
 #### 🏁 Definition of Done (DoD)
 - [ ] Teste de existência escrito antes dos arquivos.
-- [ ] 5 templates existem; `PRD.md` marca as 6 seções obrigatórias.
+- [ ] 5 templates existem; `PRD.md` marca as **7** seções obrigatórias (§1, §2, §5, §6, §7, §9, §16).
 - [ ] `grep -c "templates/ADR_TEMPLATE.md" .agents/skills/sdd-architecture-board/SKILL.md` ≥1 e o arquivo resolve.
 - [ ] Sem TODO pendente.
+- [ ] **Path protegido** (o teste vive em `.opencode/plugins/__tests__/**`): commit exige trailer `Harness-Gate-Change`.
 
 ---
 
 ### Task `PAP-06`: Regra descritiva `.agents/rules/prd-adr-pipeline.md`
 
-- **Constraint Ref**: `RF-06`, `SPEC §4.4`, `§12.6`, `NFR-2`
+- **Constraint Ref**: `RF-06`, `SPEC §4.4`, constraint 6 de `§12`, `NFR-2`
 - **Depends on (PLAN)**: `PAP-03`, `PAP-05`
 - **Dependency Type**: Hard
 - **Layer**: Application
 - **Task Type**: API
-- **Priority**: P1
+- **Priority**: P0
 - **Risk Level**: Medium
 - **Parallelizable**: No
 - **Artifact**: `.agents/rules/prd-adr-pipeline.md`
@@ -369,7 +375,7 @@ graph TD
 - **Dependency Type**: Hard
 - **Layer**: Application
 - **Task Type**: API
-- **Priority**: P1
+- **Priority**: P0
 - **Risk Level**: High
 - **Parallelizable**: No
 - **Artifact**: `.agents/rules/workflow-rules.md`, `.agents/rules/sdd-workflow-standard.md`
@@ -420,7 +426,7 @@ graph TD
 - **Dependency Type**: Hard
 - **Layer**: Interface
 - **Task Type**: API
-- **Priority**: P1
+- **Priority**: P0
 - **Risk Level**: High
 - **Parallelizable**: No
 - **Artifact**: `.agents/agents/orchestrator/AGENT.md`, `.agents/agents/sdd-orquestrador/AGENT.md`
@@ -470,7 +476,7 @@ graph TD
 - **Dependency Type**: Soft
 - **Layer**: Interface
 - **Task Type**: API
-- **Priority**: P1
+- **Priority**: P0
 - **Risk Level**: Low
 - **Parallelizable**: Yes
 - **Artifact**: `.agents/agents/product-manager/AGENT.md`, `.agents/agents/architect/AGENT.md`, `.agents/agents/code-reviewer/PROMPT.md`
@@ -524,11 +530,11 @@ graph TD
 - **Priority**: P0
 - **Risk Level**: Medium
 - **Parallelizable**: No
-- **Artifact**: `.spec/prd/prd-adr-pipeline/{PRD.md,RESEARCH.md,ADR-INDEX.md}`, `.spec/prd/prd-adr-pipeline/ADRs/ADR-001..005/ADR.md`
+- **Artifact**: `.spec/prd/prd-adr-pipeline/{PRD.md,RESEARCH.md,ADR-INDEX.md}`, `.spec/prd/prd-adr-pipeline/ADRs/ADR-00N-{slug}/ADR.md` (5 dirs: `ADR-001-*`..`ADR-005-*`)
 - **Framework Detail**: markdown; templates de `PAP-05`; roda sobre os checks de `PAP-03`/`PAP-04`
 
 #### 📝 Context & Domain Impact
-- **Description**: materializar o PRD **real** desta própria feature no layout que estamos construindo — 6 seções obrigatórias com pergunta fechada, bloco de aprovação preenchido, `RESEARCH.md` com as fontes efetivamente usadas, `ADR-INDEX.md` e os 5 ADRs (P01..P05) como unidades de decisão.
+- **Description**: materializar o PRD **real** desta própria feature no layout que estamos construindo — 7 seções obrigatórias com pergunta fechada, bloco de aprovação preenchido, `RESEARCH.md` com as fontes efetivamente usadas, `ADR-INDEX.md` e os 5 ADRs (P01..P05) como unidades de decisão.
 - **Domain Impact**: sem isto o critério central do produto passa **"verde por ausência"** de `.spec/prd/` — o aceite validaria nada. Com isto, o guard é exercitado no **pior caso** (`prd-id == current_feature`), que é exatamente onde o verde-falso do `SDD-02` apareceria.
 
 #### 🛡️ Technical Enforcement (DO NOT IGNORE)
@@ -552,16 +558,20 @@ graph TD
 
 #### 🛠️ Implementation Steps (TDD - Test First)
 - [ ] `.opencode/plugins/__tests__/prd-checks.spec.mjs`: `Unit` — cenário 3 já coberto em `PAP-02`; aqui a prova é a **execução real** sobre o disco
-- [ ] `.spec/prd/prd-adr-pipeline/PRD.md` — 6 seções obrigatórias, cada uma com `> ❓ Validação:`, §7 não-vazia, §15 com `<task>`/`<context>` preenchidos, §16 com veredito + data
-- [ ] `.spec/prd/prd-adr-pipeline/RESEARCH.md` — ≥2 alternativas com fonte (URL) + recomendação
-- [ ] `.spec/prd/prd-adr-pipeline/ADR-INDEX.md` — 5 linhas (`ADR-001`..`ADR-005`) 1:1 com os dirs, `branch` no padrão, `depends_on` declarado
-- [ ] `.spec/prd/prd-adr-pipeline/ADRs/ADR-001..005/ADR.md` — decisão, motivo, alternativas, `depende-de`, interface congelada, status
+- [ ] `.spec/prd/prd-adr-pipeline/PRD.md` — **todas** as condições de `PRD-01` (`SPEC §5`), não só as óbvias:
+      §1, §2, **§5**, §6, §7, §9, §16 presentes · cada seção obrigatória com `> ❓ Validação:` · **§7 não-vazia** ·
+      **≥1 métrica da §5 com a coluna "como medir" preenchida** · **§10, se presente, com `Dado`/`Quando`/`Então` em cada story** ·
+      §15 com `<task>` e `<context>` não-vazios · §16 com veredito + data
+- [ ] `.spec/prd/prd-adr-pipeline/RESEARCH.md` — **≥2 fontes (`http`)** + alternativas + recomendação (condição de `ADR-01`)
+- [ ] `.spec/prd/prd-adr-pipeline/ADR-INDEX.md` — 5 linhas (`ADR-001`..`ADR-005`) 1:1 com os dirs; `dir` no padrão **`ADRs/ADR-00N-{slug}/`** (não `ADR-00N/`); `branch` casando `^adr/[a-z0-9-]+/\d{2}-[a-z0-9-]+$`; `depends_on` declarado
+- [ ] `.spec/prd/prd-adr-pipeline/ADRs/ADR-00N-{slug}/ADR.md` — 5 arquivos, cada um: decisão, motivo, alternativas descartadas + fonte, `depende-de`, interface congelada, status. **Somente `ADR.md`** — a composição de 5 arquivos por ADR é a exceção declarada em `SPEC §4.4` (ADR cujo SDD é o próprio ciclo em curso)
 
 #### 🏁 Definition of Done (DoD)
 - [ ] `node scripts/sdd-checks.mjs` 8/8 PASS **com** `.spec/prd/**` em disco.
-- [ ] `PRD-01`/`ADR-01`/`ADR-02` PASS sobre o artefato real (não só sobre fixtures).
+- [ ] `PRD-01`/`ADR-01`/`ADR-02` PASS sobre o artefato real (não só sobre fixtures) — cobrindo **todas** as condições de `SPEC §5`, não um subconjunto.
 - [ ] Cenário 2 (PRD não aprovado) falha quando o §16 é esvaziado.
 - [ ] `SDD-02` continua resolvendo `.spec/backend/prd-adr-pipeline`.
+- [ ] **Aprovação humana registrada, não auto-assinada**: o §16 cita o **evento de aprovação do owner** (data + portão) e a evidência está no `VERIFY.md` de `PAP-10`. O agente não preenche o veredito por conta própria (`SPEC §14.13`).
 - [ ] Sem TODO pendente.
 
 ---
@@ -612,13 +622,16 @@ graph TD
 - [ ] `git diff main -- .opencode/plugins/gate.js harness.config.json` vazio.
 - [ ] `R-NODENY` PASS e `SDD-02` PASS.
 - [ ] `VERIFY.md` com as 3 dimensões preenchidas.
+- [ ] **`code-reviewer` invocado após a última mudança, com zero 🔴** (`SPEC §14.9` — antes era critério sem task).
+- [ ] **Regressão preservada**: `V4`, `V17`, `SDD-01/02/03`, `R-NODENY`, `RENAME-01` continuam PASS (`SPEC §14.12` — antes era critério sem task).
 - [ ] Sem TODO pendente.
+- [ ] **Path protegido** (o teste vive em `.opencode/plugins/__tests__/**`): commit exige trailer `Harness-Gate-Change`.
 
 ---
 
 ### Task `PAP-12`: Instrumentação do baseline SM-1..SM-7
 
-- **Constraint Ref**: `Q7`/`Q10` do parecer de negócio, `PROPOSAL §6 R2`, `NFR-6`
+- **Constraint Ref**: `Q7`/`Q10` do parecer de negócio, `PROPOSAL §6` (linha "Causa errada"), `NFR-6`
 - **Depends on (PLAN)**: `PAP-10`
 - **Dependency Type**: Hard
 - **Layer**: Infrastructure
@@ -660,8 +673,10 @@ graph TD
 #### 🏁 Definition of Done (DoD)
 - [ ] Baseline congelado e datado no `VERIFY.md`.
 - [ ] Campos aditivos presentes; `SDD-03` PASS; `git diff` mostra só acréscimo.
-- [ ] SM-1/SM-5/SM-7 declaradas não falseáveis.
+- [ ] As 7 métricas de `SPEC §14.1` declaradas; SM-1/SM-5/SM-7 marcadas **não falseáveis hoje**.
+- [ ] `prd_adr.snapshots[]` criado (é o que torna SM-3 medível por ADR).
 - [ ] Sem TODO pendente.
+- [ ] **Path protegido** (o teste vive em `.opencode/plugins/__tests__/**`): commit exige trailer `Harness-Gate-Change`.
 
 ---
 

@@ -1,9 +1,9 @@
 {
-  "current_feature": "installer-upgrade-regression",
-  "current_phase": "BugCompleted",
-  "previous_phase": "BugReview",
-  "next_phase": null,
-  "type": "bugfix",
+  "current_feature": "prd-adr-pipeline",
+  "current_phase": "Planning",
+  "previous_phase": "BugCompleted",
+  "next_phase": "Execution",
+  "type": "feature",
   "layer": "governanca-de-agentes",
   "repo": "harness",
   "artifacts": {
@@ -105,10 +105,10 @@
   "last_update": "2026-10-15T00:00:00Z",
   "spec_score": 0.94,
   "spec_status": "v1_reviewed_aprovado (spec-gate 10/10; 1 laranja + 3 amarelos corrigidos; security pass com ressalva D11)",
-  "plan_status": "v2 apos parecer de negocio (12 tasks PAP-01..PAP-12; SDD-02 1:1 12/12; B-1..B-4 corrigidos, B-5 dry-run, B-6 instrumentado)",
+  "plan_status": "v3 aprovado para P2->P3 pelo parecer de negocio (rodada 4): 12 tasks PAP-01..PAP-12; SDD-02 1:1 12/12; 0 bloqueadores; 3 nits cosmeticos para P3 (notacao §14.N, cross-ref sem arquivo, frase ampla em SPEC:161)",
   "validation": {
     "architect": "Fase 1: 5 ADRs propostos (P01..P05) com prova de independencia par-a-par",
-    "product-manager": "Fase 1 e Fase 2: 14 defeitos levantados; 11 enderecados, 3 mitigados por regra de processo; P2->P3 desbloqueado apos correcoes",
+    "product-manager": "4 rodadas. R1: 14 defeitos (D1..D14) + 10 perguntas. R2: B-1..B-8 (reprovado). R3: 6 itens minimos + N-1..N-7 (reprovado; 6 fechados, 3 defeitos novos NB-1..NB-3). R4: APROVADO PARA P2->P3, lista minima vazia, 3 nits cosmeticos para P3",
     "ux-designer": "N/A - sem tela, fluxo ou componente visual neste ciclo"
   },
   "pending_user_decisions": [],
@@ -121,7 +121,7 @@
   "harness_status": "passed",
   "harness_evidence": "bugfix installer-upgrade-regression: installer 372/372 pass 0 fail 0 skip (era 355/5); determinismo 3x = 372/372/372; plugins 216/216; static-checks EXIT 0; vendor-check OK; sdd-checks 8/8. Diff restrito a installer/install.mjs + 1 spec novo; gate.js e harness.config.json com 0 linhas alteradas; nenhuma fixture original editada.",
   "code_review_status": "passed",
-  "sdd_stage": "BUGFIX installer-upgrade-regression CONCLUIDO (B1-B4: 372/372, determinismo 3x, review APPROVED em 2 iteracoes, exitCode corrigido). Ciclo feature prd-adr-pipeline PAUSADO em Planning (SPEC aprovada, PLAN/TASKS 12/12) aguardando retomada. Abertos declarados: seal HARNESS_SEAL_JSON nao republicado; Brain MCP down (HTTP 410); registro de agentes do harness ausente no runtime; skills do harness indisponiveis no tool skill; CI nao barra push com suite vermelha; push pendente.",
+  "sdd_stage": "prd-adr-pipeline Planning — PLAN/TASKS v3 APROVADOS pelo parecer de negocio (rodada 4). P2->P3 aguardando aprovacao do owner. SPEC aprovada P1->P2. 12 tasks PAP-01..PAP-12, caminho critico derivado do grafo, dogfood real (PAP-11) e instrumentacao de metricas (PAP-12) incorporados. Bugfix anterior installer-upgrade-regression concluido e commitado (ae90866 + 272f7a9). Abertos: seal HARNESS_SEAL_JSON nao republicado (Completed sera negado); CI nao barra push com suite vermelha; 3 nits cosmeticos para P3; push pendente.",
   "backlog": {
     "total": 14,
     "todo": 0,
