@@ -8,6 +8,7 @@ import path from 'node:path';
 import os from 'node:os';
 import crypto from 'node:crypto';
 import readline from 'node:readline';
+import { execFileSync } from 'node:child_process';
 import { Writable } from 'node:stream';
 import { danglingSymlinkInPath, insideDir, realOrResolved, tmpRealRoot } from './zone.mjs';
 
@@ -101,6 +102,7 @@ const LAYER_PREFIX = [
   { layer: 'opencode.json', paths: ['opencode.json'] },
   { layer: '.agents/agents', paths: ['.agents/agents'] },
   { layer: '.agents/rules', paths: ['.agents/rules'] },
+  { layer: '.agents/schemas', paths: ['.agents/schemas'] },
   { layer: '.agents/skills', paths: ['.agents/skills'] },
   { layer: '.opencode/plugins', paths: ['.opencode/plugins'] },
   { layer: 'harness.config.json', paths: ['harness.config.json'] },
@@ -426,6 +428,7 @@ function layerOf(rel) {
   if (rel === 'harness.config.json') return 'harness.config.json';
   if (rel.startsWith('.agents/agents/')) return '.agents/agents/*';
   if (rel.startsWith('.agents/rules/')) return '.agents/rules/*';
+  if (rel.startsWith('.agents/schemas/')) return '.agents/schemas/*';
   if (rel.startsWith('.agents/skills/')) return '.agents/skills/*';
   if (rel.startsWith('.opencode/plugins/')) return '.opencode/plugins/*';
   return 'other';
@@ -666,16 +669,17 @@ const SCAN_NAMES = new Set(['dockerfile']);
 // Nunca sao conteudo instalado util; o canario mira o CONTEUDO INSTALADO do
 // destino, nao a tooling/testes de quem instala.
 //
-// Justificativa (FU-33) — cada ramo tem motivo DISTINTO:
-// - `__tests__/`: CARREGA-VALOR. `.opencode/plugins` e INCOMING_ROOT
-//   (collectIncoming), entao `__tests__/*.spec.mjs` do harness E instalado no
-//   destino — e esses testes citam a DENYLIST como fixture (ex.: gate.spec
-//   nomeia os padroes para prova-los). Sem esta exclusao, instalar o harness
-//   reprovaria o proprio check com falso-positivo (o defeito do FU-32).
-// - `scripts/`: DEFENSIVA. `scripts/` NAO e INCOMING_ROOT hoje — mas se um
-//   destino vendorizar seus scripts como conteudo instalado, tooling que
-//   nomeia padroes como dado de teste nao pode reprovar o canario. Estreita:
-//   so o segmento `scripts`, em qualquer nivel; arquivo comum nunca.
+// Justificativa (FU-33, ajustada por harness-installer-operability) — cada ramo
+// DEFENSIVO: o canario mira o CONTEUDO INSTALADO do destino; tooling/testes de
+// quem instala nomeiam os padroes como dado de teste e nao podem reprovar.
+// - `__tests__/`: apos a Estrategia A o instalador NAO shipa mais
+//   `.opencode/plugins/__tests__` ao consumidor (collectIncoming exclui). A
+//   exclusao permanece por defesa: se um destino vendorizar seus testes como
+//   conteudo instalado, instalar o harness nao vira falso-positivo (defeito FU-32).
+// - `scripts/`: idem. `scripts/` nunca e INCOMING_ROOT; se um destino o
+//   vendorizar como conteudo instalado, tooling que nomeia padroes como dado de
+//   teste nao pode reprovar o canario. Estreita: so o segmento `scripts`, em
+//   qualquer nivel; arquivo comum nunca.
 function isToolingPath(rel) {
   const norm = rel.replace(/\\/g, '/');
   return norm.startsWith('scripts/') || norm.includes('/scripts/')
@@ -697,6 +701,43 @@ export function isScannablePath(rel) {
 export function scanLiterals(content) {
   const lower = String(content).toLowerCase();
   return DENYLIST.filter((lit) => lower.includes(lit));
+}
+
+// Q3(a): referencias que a config declara e o consumidor precisa ter em disco.
+// Escopo OWNED-BY-HARNESS (re-review F2): o instalador so shipa os roots do
+// proprio harness — `evidence.schema` + `moduleMap.{plugins,rules,schemas}`.
+// Chaves de stack do destino (`lib`/`test` do perfil flutter/dart, etc.) NAO
+// sao artefatos do harness e nao podem reprovar a instalacao (falso-FAIL).
+// Qualquer path com curinga (`*`, `**`) e padrao, nunca artefato concreto.
+const HARNESS_OWNED_MODULEMAP_KEYS = ['plugins', 'rules', 'schemas'];
+export function configReferenceTargets(config) {
+  const refs = [];
+  if (config && typeof config === 'object') {
+    const schema = config.evidence && config.evidence.schema;
+    if (typeof schema === 'string') refs.push({ label: 'evidence.schema', path: schema });
+    const map = config.moduleMap;
+    if (map && typeof map === 'object') {
+      for (const k of HARNESS_OWNED_MODULEMAP_KEYS) {
+        const v = map[k];
+        if (typeof v === 'string') refs.push({ label: `moduleMap.${k}`, path: v });
+      }
+    }
+  }
+  return refs.filter((r) => r.path.length > 0 && !r.path.includes('*'));
+}
+
+function collectPluginFiles(dir, out) {
+  let entries;
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return;
+  }
+  for (const e of entries) {
+    const abs = path.join(dir, e.name);
+    if (e.isDirectory()) collectPluginFiles(abs, out);
+    else if (e.isFile() && /\.(mjs|js)$/.test(e.name)) out.push(abs);
+  }
 }
 
 export function runChecks(target, { manifest = null, answers = {} } = {}) {
@@ -736,6 +777,46 @@ export function runChecks(target, { manifest = null, answers = {} } = {}) {
     if (!st.isFile()) continue;
     const hits = scanLiterals(fs.readFileSync(abs, 'utf8'));
     for (const h of hits) failed.push(block(`literal-denied: ${f.path} contem '${h}' (R3/canario)`, 'literal-denied', 'remova a dependencia/uso da stack alheia do arquivo apontado.', abs));
+  }
+  // Q3(a) (F1): referencias declaradas na config devem existir no destino.
+  // Config presente e valida: cada path citado (evidence.schema, moduleMap.*,
+  // protectedPaths) sem glob precisa existir — senao o gate de evidencia fica
+  // sem schema e o consumidor instala "verde" mas inoperante.
+  const configAbs = path.join(t, 'harness.config.json');
+  let parsedConfig = null;
+  if (fs.existsSync(configAbs)) {
+    try {
+      parsedConfig = JSON.parse(fs.readFileSync(configAbs, 'utf8'));
+    } catch {
+      parsedConfig = null;
+    }
+  }
+  if (parsedConfig && typeof parsedConfig === 'object') {
+    for (const ref of configReferenceTargets(parsedConfig)) {
+      const abs = path.join(t, ref.path);
+      if (!fs.existsSync(abs)) {
+        failed.push(block(`config-ref-missing: ${ref.label} aponta '${ref.path}' inexistente`, 'config-ref-missing', `instale/crie o artefato referenciado por ${ref.label} ('${ref.path}') no target e rode os checks de novo.`, abs));
+      }
+    }
+    // Q3(b) (F1): operabilidade real — cada plugin .js/.mjs instalado precisa
+    // parsear. node --check por stdin com input-type=module funciona para ESM
+    // em qualquer versao suportada (sem depender de package.json no destino).
+    const mapPlugins = parsedConfig.moduleMap && parsedConfig.moduleMap.plugins;
+    const pluginDir = (typeof mapPlugins === 'string' && mapPlugins.length > 0 && !mapPlugins.includes('**'))
+      ? path.join(t, mapPlugins)
+      : path.join(t, '.opencode/plugins');
+    const pluginFiles = [];
+    collectPluginFiles(pluginDir, pluginFiles);
+    for (const abs of pluginFiles) {
+      try {
+        execFileSync(process.execPath, ['--check', '--input-type=module'], {
+          input: fs.readFileSync(abs),
+          stdio: ['pipe', 'ignore', 'pipe'],
+        });
+      } catch {
+        failed.push(block(`plugin-parse: ${path.relative(t, abs)} nao parseia (node --check)`, 'plugin-parse', 'corrija a sintaxe do plugin apontado (rode node --check nele) e reinstale.', abs));
+      }
+    }
   }
   return { passed: failed.length === 0, failed };
 }
@@ -893,7 +974,7 @@ const ERROR_CODES = new Set([
   'BACKUP_UNVERIFIED', 'BAD_TARGET', 'NODE_MIN', 'UID_ROOT', 'REINSTALL',
   'FOREIGN_MANIFEST', 'OUTSIDE_TARGET', 'DOGFOOD_GUARD', 'MISSING_INCOMING',
   'SECRET_TTY', 'manifest-missing', 'config-missing', 'json-invalid',
-  'flagged-open', 'literal-denied',
+  'flagged-open', 'literal-denied', 'config-ref-missing', 'plugin-parse',
 ]);
 
 export function formatError({ what, code, why, fix, where } = {}, answers = {}) {
@@ -1025,18 +1106,26 @@ export function main({ target, scriptedAnswers = {}, incomingFiles = {}, options
 // Lista canonica dos incoming: o instalador GERA o harness.config.json a
 // partir do Q&A (ADR-002, nunca copia config alheio) e usa como incoming o
 // conteudo versionado destas raizes do repo harness:
-//   - dirs que entram: .agents/agents, .agents/rules, .agents/skills,
-//     .opencode/plugins (+ o arquivo opencode.json, merge aditivo)
-//   - o que exclui: segmentos node_modules e .git em qualquer nivel,
-//     e o manifesto .harness-install.json (estado, nunca conteudo).
+//   - dirs que entram: .agents/agents, .agents/rules, .agents/schemas,
+//     .agents/skills, .opencode/plugins (+ o arquivo opencode.json, merge aditivo)
+//   - o que exclui: segmentos node_modules e .git em qualquer nivel, o
+//     manifesto .harness-install.json (estado, nunca conteudo), o vendor-lock,
+//     e o tooling de CONSUMIDOR que nao e runtime: .opencode/plugins/__tests__
+//     (suite interna do repo-harness) e scripts/ (tooling interno).
+// Estrategia A (bugfix harness-installer-operability): entregamos runtime +
+// artefatos REFERENCIADOS (ex.: .agents/schemas, alvo de evidence.schema);
+// a auto-suite interna e scripts/ nunca sao artefato de consumidor.
 export const INCOMING_ROOTS = [
   '.agents/agents',
   '.agents/rules',
+  '.agents/schemas',
   '.agents/skills',
   '.opencode/plugins',
   'opencode.json',
 ];
 export const INCOMING_EXCLUDE = new Set(['node_modules', '.git']);
+// Prefixos de tooling interno que NUNCA vao ao consumidor.
+export const CONSUMER_EXCLUDED_PREFIXES = ['.opencode/plugins/__tests__/'];
 export const VENDOR_LOCK_NAME = '.vendor-lock.json';
 
 function readVendorLock(src) {
@@ -1074,6 +1163,8 @@ export function collectIncoming(sourceDir, { stacks } = {}) {
   const wanted = new Set(Array.isArray(stacks) ? stacks : []);
   const excluded = (rel) =>
     rel.split(path.sep).some((seg) => INCOMING_EXCLUDE.has(seg))
+    || rel === 'scripts' || rel.startsWith('scripts/')
+    || CONSUMER_EXCLUDED_PREFIXES.some((prefix) => rel.startsWith(prefix))
     || path.basename(rel) === MANIFEST_NAME
     || path.basename(rel) === VENDOR_LOCK_NAME;
   const walk = (abs, rel) => {
@@ -1094,7 +1185,7 @@ export function collectIncoming(sourceDir, { stacks } = {}) {
   return incoming;
 }
 
-const CLI_COMMANDS = new Set(['init', 'doctor']);
+const CLI_COMMANDS = new Set(['init', 'doctor', 'upgrade']);
 
 export function parseArgs(argv) {
   const out = { command: null, target: null, allowRoot: false, dryRun: false, answersFile: null, yes: false, backupDir: null, help: false };
@@ -1110,11 +1201,11 @@ export function parseArgs(argv) {
     else if (!a.startsWith('-') && out.command === null) {
       // SPEC §9.5 (INS-19): primeiro posicional seleciona o entrypoint.
       if (!CLI_COMMANDS.has(a)) {
-        throw new InstallError(`comando desconhecido '${a}' (use init|doctor; sem comando segue o fluxo install legado)`, 'BAD_ANSWER');
+        throw new InstallError(`comando desconhecido '${a}' (use init|doctor|upgrade; sem comando segue o fluxo install legado)`, 'BAD_ANSWER');
       }
       out.command = a;
     } else if (!a.startsWith('-')) {
-      throw new InstallError(`posicional extra '${a}' (um comando por invocacao: init|doctor)`, 'BAD_ANSWER');
+      throw new InstallError(`posicional extra '${a}' (um comando por invocacao: init|doctor|upgrade)`, 'BAD_ANSWER');
     }
   }
   return out;
@@ -1652,9 +1743,11 @@ export async function runWizard({
 
 export function printUsage({ output = process.stdout } = {}) {
   output.write(`uso: node installer/install.mjs init   --target <dir> [--dry-run] [--answers-file <json>] [--yes] [--backup-dir <dir>] [--allow-root]\n`);
-  output.write(`uso: node installer/install.mjs doctor --target <dir> [--answers-file <json>] [--backup-dir <dir>] [--allow-root]\n`);
+  output.write(`uso: node installer/install.mjs doctor   --target <dir> [--answers-file <json>] [--backup-dir <dir>] [--allow-root]\n`);
+output.write(`uso: node installer/install.mjs upgrade --target <dir> [--dry-run] [--answers-file <json>] [--yes] [--backup-dir <dir>] [--allow-root]\n`);
   output.write(`  init: greenfield create-only — so create|generate-overwrite|noop passam; merge|flag abortam com dica de doctor.\n`);
   output.write(`  doctor: brownfield read-only — D0-D6 diagnostico, zero writes; ignora --dry-run/--yes.\n`);
+output.write(`  upgrade: sobrescreve camadas gerenciadas pela versao atual do harness; backup automatico antes de escrever; idempotente; exige manifesto proprio.\n`);
   output.write(`  sem --answers-file exige stdin interativo ou pipado; stdin fechado aborta sem escrever.\n`);
   output.write(`  --dry-run: zero writes (nem backup cria); imprime plano + relatorio.\n`);
   output.write(`  legado (sem init|doctor): node installer/install.mjs --target <dir> [--dry-run] [--answers-file <json>] [--yes] [--backup-dir <dir>] [--allow-root]\n`);
@@ -1741,7 +1834,7 @@ export async function runInit({
       if (result.checks.passed) say('[OK] checks: pico-fim');
       if (result.checks.passed) say('[OK] init: pico-fim');
       else say('[ERRO] init: FAIL checks reprovaram (sem pico-fim)');
-      return { target: result.target, answers: serializeAnswers(scripted), plan, applied: true, result, checks: result.checks, manifestRef: result.manifestRef, backupDir: result.backup.backupDir, exitCode: 0 };
+      return { target: result.target, answers: serializeAnswers(scripted), plan, applied: true, result, checks: result.checks, manifestRef: result.manifestRef, backupDir: result.backup.backupDir, exitCode: result.checks.passed ? 0 : 1 };
     }
     // Interativo: wizard W0-W7 com gate create-only + apply no main().
     const w = await runWizard({
@@ -1762,7 +1855,7 @@ export async function runInit({
     Object.assign(answers, w.answers);
     if (w.result && w.result.checks && w.result.checks.passed) say('[OK] init: pico-fim');
     else say('[ERRO] init: FAIL checks reprovaram (sem pico-fim)');
-    return { target: w.result.target, answers: w.answers, plan: w.plan, applied: true, result: w.result, checks: w.result.checks, manifestRef: w.result.manifestRef, backupDir: w.result.backup.backupDir, exitCode: 0 };
+    return { target: w.result.target, answers: w.answers, plan: w.plan, applied: true, result: w.result, checks: w.result.checks, manifestRef: w.result.manifestRef, backupDir: w.result.backup.backupDir, exitCode: w.result.checks && w.result.checks.passed ? 0 : 1 };
   } catch (e) {
     // Display fica com o chamador (runCli imprime o bloco); aqui so redige a
     // mensagem relancada (invariante: erro nunca carrega segredo em claro).
@@ -1823,6 +1916,22 @@ export async function runCli({ argv = [], stdin = process.stdin, stdout = proces
     });
     currentAnswers = res.answers || {};
     lastCliAnswers = currentAnswers;
+    return res;
+  }
+  if (args.command === 'upgrade') {
+    const res = await runUpgrade({
+      target: args.target, stdin, stdout, stderr, sourceDir,
+      answersFile: args.answersFile,
+      options: { allowRoot: args.allowRoot, yes: args.yes, dryRun: args.dryRun, backupDir: args.backupDir },
+    });
+    currentAnswers = res.answers || {};
+    lastCliAnswers = currentAnswers;
+    if (res.applied === false) {
+      log(`dry-run: zero writes; plano=${res.plan.length} itens.`);
+      return res;
+    }
+    log(`upgrade aplicado em ${res.target}: checks ${res.checks && res.checks.passed ? 'PASS' : 'FAIL'}`);
+    log(`checks: ${res.checks && res.checks.passed ? 'PASS' : `FAIL ${JSON.stringify(res.checks && res.checks.failed)}`}`);
     return res;
   }
   const pf = preflight({ target: args.target, allowRoot: args.allowRoot });
@@ -1934,7 +2043,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     process.exit(a.help ? 0 : 1);
   }
   runCli({ argv: process.argv.slice(2) }).then(
-    () => process.exit(0),
+    (res) => process.exit(res && typeof res.exitCode === 'number' ? res.exitCode : 0),
     (e) => {
       // MUSTFIX-2: top-level sanitiza com os ultimos vigentes conhecidos
       // (lastCliAnswers); runCli ja sanitiza e.message no rethrow — aqui e
@@ -1946,4 +2055,131 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       process.exit(1);
     },
   );
+}
+
+// ---------- upgrade: overwrite gerenciado (feature installer-upgrade) ----------
+// Overwrite SEM merge: toda camada gerenciada trocada pela versao atual do
+// harness. Sem remoção automatica de user-owned; backup verificado antes de
+// toda escrita; dry-run sem writes.
+
+export function planUpgrade(target, incomingFiles) {
+  const t = path.resolve(target);
+  const plan = [];
+  for (const [rel, content] of Object.entries(incomingFiles)) {
+    assertInside(t, path.join(t, rel));
+    const layer = layerOf(rel);
+    const abs = path.join(t, rel);
+    const exists = fs.existsSync(abs);
+    if (layer === 'harness.config.json') {
+      if (!exists) { plan.push({ path: rel, layer, action: 'create', reason: 'generated from Q&A (ADR-002)' }); continue; }
+      let current;
+      try { current = fs.readFileSync(abs, 'utf8'); } catch { current = '__unreadable__'; }
+      if (current === content) { plan.push({ path: rel, layer, action: 'noop', reason: 'identical' }); continue; }
+      plan.push({ path: rel, layer, action: 'generate-overwrite', reason: 'managed overwrite (upgrade)' });
+      continue;
+    }
+    if (!exists) { plan.push({ path: rel, layer, action: 'create', reason: 'incoming-new' }); continue; }
+    let current = '';
+    try { current = fs.readFileSync(abs, 'utf8'); } catch { current = null; }
+    if (current === content) { plan.push({ path: rel, layer, action: 'noop', reason: 'identical' }); continue; }
+    plan.push({ path: rel, layer, action: 'overwrite', reason: 'managed overwrite (upgrade)' });
+  }
+  return plan;
+}
+
+export function applyUpgrade(target, plan, { incomingFiles = {}, dryRun = false } = {}) {
+  const t = path.resolve(target);
+  const written = [];
+  const flagged = [];
+  if (dryRun) return { written, flagged: plan.filter((p) => p.action === 'flag'), planned: plan.length };
+  for (const step of plan) {
+    const abs = assertInside(t, path.join(t, step.path));
+    if (step.action === 'noop') continue;
+    if (step.action === 'flag') { flagged.push(step); continue; }
+    const incoming = incomingFiles[step.path];
+    if (typeof incoming !== 'string') {
+      throw new InstallError(`missing incoming content for ${step.path}: refusing silent empty write (FU-21)`, 'MISSING_INCOMING');
+    }
+    const pre = fs.existsSync(abs) ? fs.readFileSync(abs, 'utf8') : null;
+    fs.mkdirSync(path.dirname(abs), { recursive: true });
+    fs.writeFileSync(abs, incoming);
+    written.push({ path: step.path, strategy: step.action, preMergeSha256: pre ? sha256(pre) : undefined });
+  }
+  return { written, flagged };
+}
+
+export async function runUpgrade({
+  target, stdin = process.stdin, stdout = process.stdout, stderr = process.stderr,
+  sourceDir = INSTALLER_ROOT, answersFile = null, options = {},
+} = {}) {
+  const answers = {};
+  const allowRoot = options.allowRoot === true;
+  const backupRoot = options.backupDir || undefined;
+  const say = (s) => { try { stdout.write(`${sanitizeLog(String(s), answers)}\n`); } catch { /* stream opcional */ } };
+  try {
+    const pf = preflight({ target, allowRoot, skipManifestGuard: true });
+    const manifestPath = path.join(pf.target, MANIFEST_NAME);
+    let prevManifest = null;
+    if (!fs.existsSync(manifestPath)) throw new InstallError('upgrade requires prior installation (.harness-install.json missing); run init first', 'NOT_INSTALLED');
+    try { prevManifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')); }
+    catch { throw new InstallError(`manifesto ilegivel: ${manifestPath}`, 'MANIFEST_INVALID'); }
+    if (!prevManifest || prevManifest.manifestSchemaVersion !== 1 || typeof prevManifest.source !== 'string') {
+      throw new InstallError('manifesto estrangeiro: nao e do harness-installer', 'FOREIGN_MANIFEST');
+    }
+    // W6: doctor pre-execucao (read-only).
+    Object.assign(answers, prevManifest.answers || {});
+    const report = runDoctor({ target: pf.target, sourceDir, answersFile, backupDir: backupRoot, allowRoot, output: stdout });
+    say(`[INFO] upgrade: doctor veredito ${report.verdict}`);
+
+    if (answersFile) {
+      const rawFile = loadAnswersFile(answersFile);
+      Object.assign(answers, rawFile);
+    }
+    const subjectAnswers = collectAnswers(pf.target, answers);
+    Object.assign(answers, subjectAnswers);
+
+    const profile = profileOf(subjectAnswers.stack);
+    const incomingFiles = collectIncoming(sourceDir, { stacks: profile ? profile.stacks : [subjectAnswers.stack] });
+    const generated = JSON.stringify(generateConfig(subjectAnswers), null, 2);
+    const incoming = { ...incomingFiles, 'harness.config.json': generated };
+
+    const plan = planUpgrade(pf.target, incoming);
+    say(`[INFO] upgrade: plano gerado (${plan.length} itens)`);
+    printPlan(plan, { output: stdout, answers });
+
+    if (options.dryRun === true) {
+      say(`[INFO] upgrade dry-run: zero writes. plano=${plan.length} itens`);
+      return { target: pf.target, answers: serializeAnswers(subjectAnswers), plan, applied: false, dryRun: true, checks: { passed: null, failed: [], ran: false, skipped: true, reason: 'dry-run: checks nao executados' }, backupDir: null, exitCode: 0 };
+    }
+
+    if (options.yes !== true) await confirmByLayer(plan, { input: stdin, output: stdout });
+
+    // Backup verificado antes de qualquer write (I1/FU-20).
+    const bk = backup(pf.target, { backupRoot, injectFailure: options.injectFailure === true });
+    requireVerifiedBackup(bk);
+    const result = applyUpgrade(pf.target, plan, { incomingFiles: incoming, dryRun: false });
+    const written = result.written || [];
+    const fileContents = {};
+    for (const w of written) { try { fileContents[w.path] = fs.readFileSync(path.join(pf.target, w.path), 'utf8'); } catch { /* noop */ } }
+    const installed = written.filter((w) => w.strategy === 'create' || w.strategy === 'generate-overwrite' || w.strategy === 'overwrite').map((w) => ({ path: w.path, kind: 'file' }));
+    const manifest = buildManifest({
+      target: pf.target, backupDir: bk.backupDir, installed, merged: [], flagged: result.flagged || [],
+      answers: subjectAnswers, checks: { passed: true, failed: [] }, fileContents, source: `harness@${VERSION}`,
+    });
+    manifest.upgradedFrom = prevManifest.source || null;
+    manifest.removed = [];
+    manifest.collisions = [];
+    manifest.doctorPre = { verdict: report.verdict, next: report.next };
+    const manifestRef = writeManifest(pf.target, manifest);
+    const checks = runChecks(pf.target, { manifest, answers: subjectAnswers });
+    manifest.checks = checks;
+    fs.writeFileSync(path.join(pf.target, MANIFEST_NAME), JSON.stringify(manifest, null, 2));
+    say(`[OK] upgrade: aplicado; checks ${checks.passed ? 'PASS' : 'FAIL'}`);
+    return { target: pf.target, answers: serializeAnswers(subjectAnswers), plan, applied: true, result, checks, manifestRef, backupDir: bk.backupDir, exitCode: checks.passed ? 0 : 1 };
+  } catch (e) {
+    if (e instanceof InstallError) {
+      try { e.message = sanitizeLog(String(e.message), answers); } catch { /* message ja segura */ }
+    }
+    throw e;
+  }
 }
