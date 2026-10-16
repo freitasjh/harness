@@ -63,3 +63,11 @@ Registro cronológico de funcionalidades e refactors entregues.
 - [x] Fase 4 — Quality (reviews APPROVED 🔴0, security Fase3 PASS, suite verde)
 - [x] Fase 5 — Verify (3 dimensões ✅ APPROVED, D-01/O-01/O-02 explícitos)
 - [x] Fase 6 — Archive (mover + Completion + estado, Delta já-aplicado, installer/README/RUNTIME intocados)
+| 2026-10-16 | `prd-adr-pipeline` | Feature | Esteira PRD → ADR → SDD no harness: layout `.spec/prd/**` non-cycle, 3 checks (`PRD-01`/`ADR-01`/`ADR-02`) em path propagável, fases = rótulos (PRD/RESEARCH→Discovery, ADR-INDEX/ADR→Planning), enforcement = suíte+CI (nunca deny); dogfood real com PRD aprovado e 5 ADRs decision-only. 12/12 tasks (`PAP-01`..`PAP-12`), 110/110 caixas, reviews APPROVED. Notas (1 linha): **C-1 aberto** — o schema do REPORT exige `counts`, mas a contraprova do gate nega counts não-observáveis (`gate.js:624-626` `counts-unverifiable`, fixture FU-09), logo ciclo fechado com desvio declarado no REPORT; abertos: selo não republicado (A-1, `sealed-command-mismatch` fail-closed), CI não barra push com suíte vermelha (A-2/R-4), enum de `status` do ADR-INDEX não modela "decisão realizada mas não mergeada" (D4), débito pré-existente de 4 regras citadas e ausentes em `orchestrator/AGENT.md` (A-3). | `.spec/archive/20261016-prd-adr-pipeline/` | Completed |
+
+## Etapas concluídas — prd-adr-pipeline
+- [x] Fase 1 — Análise (PROPOSAL + SPEC aprovada, ADRs 001–005, Delta Specs, dogfood `.spec/prd/prd-adr-pipeline/` real)
+- [x] Fase 2 — Planejamento (PLAN + TASKS, 12 tickets `PAP-01`..`PAP-12`, 110/110 caixas)
+- [x] Fase 3 — Execução (12/12 Done; loop §6.2 — iteração 1: 1 🔴 F-1 + 4 🟡 fechados; iteração 2: zero 🔴)
+- [x] Fase 5 — Verify (3 dimensões ✅ APPROVED; plugins 352/0 · installer 372/0 · static-checks EXIT 0 · `sdd-checks` 8/8)
+- [x] Fase 6 — Archive (move para `.spec/archive/20261016-prd-adr-pipeline/`, `current_phase: Completed`)

@@ -1,18 +1,15 @@
 {
   "current_feature": "prd-adr-pipeline",
-  "current_phase": "Planning",
-  "previous_phase": "BugCompleted",
-  "next_phase": "Execution",
+  "current_phase": "Completed",
+  "previous_phase": "Testing",
+  "next_phase": null,
   "type": "feature",
   "layer": "governanca-de-agentes",
   "repo": "harness",
   "artifacts": {
-    "spec_dir": ".spec/backend/prd-adr-pipeline/",
-    "proposal": ".spec/backend/prd-adr-pipeline/PROPOSAL.md",
-    "spec": ".spec/backend/prd-adr-pipeline/SPEC.md",
-    "plan": ".spec/backend/prd-adr-pipeline/PLAN.md",
-    "tasks": ".spec/backend/prd-adr-pipeline/TASKS.md",
-    "archive": ".spec/archive/20261014-harness-brain-separation/"
+    "archive": ".spec/archive/20261016-prd-adr-pipeline/",
+    "prd_adr": ".spec/prd/prd-adr-pipeline/",
+    "harness_report": "harness/prd-adr-pipeline.json"
   },
   "scope": {
     "interpretation": "esteira PRD->ADR->SDD no harness (visibilidade de intencao antes do codigo)",
