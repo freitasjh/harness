@@ -159,6 +159,8 @@ O **estado canônico** é o de `sdd-workflow-standard.md` (é o que vive em
 |---|---|
 | Explore, Proposal | Discovery |
 | SPEC, PLAN, TASKS | Planning |
+| PRD, RESEARCH | Discovery |
+| ADR-INDEX, ADR | Planning |
 | P0 (triagem) | Discovery |
 | P1 (spec) | Planning |
 | P2 (plan/tasks) | Planning |
@@ -312,6 +314,16 @@ O **estado canônico** é o de `sdd-workflow-standard.md` (é o que vive em
 **Assert:** `.agents/skills/sdd-compiler/asserts/traceability-gate.md`
 
 **Bloqueia archive** se score <60%. Warn se 60-79% (arquivo com justificativa).
+
+### 3.10 Esteira PRD → ADR → SDD (features)
+
+Fluxo: PRD aprovado → RESEARCH → ADR-INDEX → ADR (unidade/branch) → SDD scoped.
+Contrato completo, limiar de isenção e níveis de garantia: `.agents/rules/prd-adr-pipeline.md`.
+Nível: `PRD-01`/`ADR-01`/`ADR-02` em `.agents/skills/prd-adr-pipeline/checks.mjs`,
+via `scripts/static-checks.mjs` no `suiteFull` (🟢 neste repo; 🟡 processo em repo-destino
+até F3). Bug fora do funil (§4). Limiar de isenção: mudança sem comportamento observável
+não gera PRD/ADR. Os rótulos `PRD`/`RESEARCH`/`ADR-INDEX`/`ADR` mapeiam para o canônico
+(tabela V17 acima) — **não** são valores novos de `current_phase`.
 
 ---
 

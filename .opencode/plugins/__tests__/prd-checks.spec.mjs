@@ -1403,3 +1403,33 @@ describe("PAP-04 — static-checks registers the PRD/ADR checks (vacuous-safe)",
     assert.equal(report.ok, false);
   });
 });
+
+// ---------------------------------------------------------------------------
+// PAP-06 — a regra descritiva da esteira existe e cita o mecanismo.
+// Lar declarado: TASKS.md PAP-06 (mesma natureza de PAP-05 — existência/forma
+// de artefato da esteira, sem exercitar export de `scripts/sdd-checks.mjs`).
+// `.agents/rules/prd-adr-pipeline.md` é política DESCRITIVA (gate-contract.md
+// DOC-01): toda afirmação de gate cita o mecanismo que a sustenta. O teste
+// prova a existência, a citação de `checks.mjs` e o orçamento da task (≤80
+// linhas — constraint de TASKS.md PAP-06, NÃO o budget V4, que é o total de
+// 1705 linhas de `.agents/rules`). É TESTE da forma da regra, NÃO um 4º check:
+// o contrato de SPEC §5 permanece com exatamente PRD-01/ADR-01/ADR-02.
+// ---------------------------------------------------------------------------
+describe("PAP-06 — regra descritiva da esteira existe e cita o mecanismo", () => {
+  const RULE = join(REPO, ".agents", "rules", "prd-adr-pipeline.md");
+
+  it("o arquivo da regra existe (path protegido)", () => {
+    assert.ok(existsSync(RULE), `regra ausente: ${RULE}`);
+  });
+
+  it("a regra da esteira existe e cita checks.mjs", () => {
+    const text = readFileSync(RULE, "utf8");
+    assert.match(text, /checks\.mjs/, "a regra deve citar o mecanismo do check");
+  });
+
+  it("cabe no orçamento da task (≤80 linhas)", () => {
+    const text = readFileSync(RULE, "utf8");
+    const lines = text.split("\n").length - (text.endsWith("\n") ? 1 : 0);
+    assert.ok(lines <= 80, `regra tem ${lines} linhas (>80)`);
+  });
+});

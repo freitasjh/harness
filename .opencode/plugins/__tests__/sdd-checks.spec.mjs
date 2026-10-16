@@ -3,7 +3,7 @@
 // (no repo state, no network). Failing first, then green.
 import { describe, it, after, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { mkdirSync, writeFileSync, existsSync } from "node:fs";
+import { mkdirSync, writeFileSync, existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tempScope } from "../../../scripts/test-temp.mjs";
 import {
@@ -611,3 +611,34 @@ describe("SDD-02 guard: .spec/prd/** é non-cycle (PAP-01 / ADR-P01 / INV-4)", (
     assert.match(noGuard.detail, /cycle=\.spec\/prd\/nova-feature/, "sem guard o alvo é .spec/prd/**, não o ciclo SDD");
   });
 });
+
+// --- PAP-07: emenda V17 — rótulos da esteira no vocabulário canônico ---------
+// Os rótulos da esteira (PRD/RESEARCH/ADR-INDEX/ADR) são RÓTULOS, não valores
+// novos de `current_phase` (ADR-P05): entram como LINHAS na tabela de conversão
+// existente. Os marcadores que `hasVocabTable` exige devem sobreviver. A
+// fixture negativa prova que o teste cobre o defeito: removido o marcador do
+// cabeçalho, `hasVocabTable` = false — não passa por acidente.
+const REPO = join(import.meta.dirname, "..", "..", "..");
+const WORKFLOW_RULES = join(REPO, ".agents", "rules", "workflow-rules.md");
+
+describe("V17 emenda da esteira (PAP-07)", () => {
+  it("mapeia PRD/RESEARCH → Discovery e ADR-INDEX/ADR → Planning", () => {
+    const text = readFileSync(WORKFLOW_RULES, "utf8");
+    assert.equal(hasVocabTable(text), true, "a tabela viva preserva os marcadores");
+    assert.match(text, /\|\s*PRD,\s*RESEARCH\s*\|\s*Discovery\s*\|/);
+    assert.match(text, /\|\s*ADR-INDEX,\s*ADR\s*\|\s*Planning\s*\|/);
+  });
+
+  it("fixture negativa: removido o marcador canônico ⇒ hasVocabTable = false", () => {
+    const text = readFileSync(WORKFLOW_RULES, "utf8");
+
+    const semCabecalho = text.replace(/`current_phase` canônico/g, "REMOVED");
+    assert.notEqual(semCabecalho, text, "controle positivo: o marcador existia para remover");
+    assert.equal(hasVocabTable(semCabecalho), false, "sem o marcador do cabeçalho o check falha");
+
+    const semLinhas = text.replace(/^\|\s*(P0|Explore|SPEC)[^\n]*$/gm, "");
+    assert.notEqual(semLinhas, text, "controle positivo: as linhas de mapeamento existiam");
+    assert.equal(hasVocabTable(semLinhas), false, "sem as linhas de mapeamento o check falha");
+  });
+});
+
