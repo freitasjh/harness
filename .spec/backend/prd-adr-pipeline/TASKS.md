@@ -572,7 +572,7 @@ graph TD
 - [ ] `PRD-01`/`ADR-01`/`ADR-02` PASS sobre o artefato real (não só sobre fixtures) — cobrindo **todas** as condições de `SPEC §5`, não um subconjunto.
 - [ ] Cenário 2 (PRD não aprovado) falha quando o §16 é esvaziado.
 - [ ] `SDD-02` continua resolvendo `.spec/backend/prd-adr-pipeline`.
-- [ ] **Aprovação humana registrada, não auto-assinada**: o §16 cita o **evento de aprovação do owner** (data + portão) e a evidência está no `VERIFY.md` de `PAP-10`. O agente não preenche o veredito por conta própria (`SPEC §14.13`).
+- [ ] **Aprovação humana registrada, não auto-assinada**: o §16 cita o **evento de aprovação do owner** (data + portão) e a evidência é o registro do portão em `workflow-state.json.gates.G2_PRD` — **não** o `VERIFY.md` de `PAP-10` (que é posterior a esta task; apontar para lá era DoD circular — achado do review do PAP-11). O agente não preenche o veredito por conta própria (`SPEC §14`, item 13).
 - [ ] Sem TODO pendente.
 
 ---
