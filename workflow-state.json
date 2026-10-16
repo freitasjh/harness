@@ -686,6 +686,15 @@
     "medio": 1,
     "ressalva": "I9 CI wiring -> FU-29"
   },
+  "post_gate_edits": [
+    {
+      "date": "2026-10-15",
+      "artifacts": ["PROPOSAL.md", "SPEC.md", "PLAN.md", "TASKS.md"],
+      "motivo": "Review do PAP-01 (D1): ancoras de linha em criterio envelheceram quando o comentario empurrou SPEC_NON_CYCLE de :146 para :150. Trocadas por referencia a simbolo em 10 pontos (SPEC §14.4, ADR-P01, PROPOSAL §2/§4/§6, PLAN §3, TASKS PAP-01). Mesma classe em V4/R-NODENY.",
+      "visibilidade": "Registrado aqui porque a SPEC ja havia passado o P1->P2 e o PLAN/TASKS o P2->P3 — edicao pos-portao nao pode ser silenciosa (exigencia do code-reviewer).",
+      "efeito": "Nenhuma mudanca de escopo, decisao ou criterio; apenas a forma da referencia. SDD-02 continua 12/12."
+    }
+  ],
   "pending_actions": [
     "Tech-debt P1 ABERTO: regressao do installer pos-68be417 (355/5 em main; 360/0 antes) — H2 bloqueia delegacao de prd-adr-pipeline. Ver .spec/tech-debts/installer-upgrade-regression/TASKS.md",
     "Brain MCP down (HTTP 410): registrar licoes pendentes (FU-34/35, FU-42, timing)",

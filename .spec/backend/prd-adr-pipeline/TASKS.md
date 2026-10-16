@@ -85,7 +85,7 @@ graph TD
 
 #### 🛠️ Implementation Steps (TDD - Test First)
 - [ ] `.opencode/plugins/__tests__/sdd-checks.spec.mjs`: `Unit` — escrever os 3 cenários com fixture em dir temporário (TDD FIRST)
-- [ ] `scripts/sdd-checks.mjs:146`: adicionar `"prd"` ao `SPEC_NON_CYCLE`, mantendo o comentário FU-40 coerente
+- [ ] `scripts/sdd-checks.mjs`: adicionar `"prd"` ao const `SPEC_NON_CYCLE`, mantendo o comentário FU-40 coerente
 
 #### 🏁 Definition of Done (DoD)
 - [ ] Teste escrito antes da mudança no set.

@@ -39,13 +39,13 @@
 
 | SPEC Reference | Constraint | Enforcement Point | Failure Mode | Implementation Strategy |
 |----------------|------------|-------------------|--------------|-------------------------|
-| `ADR-P01` / `RF-01` | Bucket `prd` jamais reconhecido como ciclo SDD | `scripts/sdd-checks.mjs:146` (`SPEC_NON_CYCLE`) | **Verde-falso**: `SDD-02` valida o `TASKS.md` de outro ciclo enquanto o ADR ativo não é validado | Adicionar `"prd"` ao set + teste de regressão com fixture de `.spec/prd/<feat>/` incompleto |
+| `ADR-P01` / `RF-01` | Bucket `prd` jamais reconhecido como ciclo SDD | const `SPEC_NON_CYCLE` em `scripts/sdd-checks.mjs` | **Verde-falso**: `SDD-02` valida o `TASKS.md` de outro ciclo enquanto o ADR ativo não é validado | Adicionar `"prd"` ao set + teste de regressão com fixture de `.spec/prd/<feat>/` incompleto |
 | `ADR-P02` / `RF-02` | Check não pode virar gate órfão no repo-destino | `.agents/skills/prd-adr-pipeline/checks.mjs` (path propagável) | Regra propaga prometendo enforcement que o destino não tem | Módulo puro sob `.agents/skills/**`; `scripts/` só importa |
 | `ADR-P03` / `RF-04` | Zero deny novo; selo intacto | `gate.js` + `harness.config.json` intocados | `R-NODENY` FAIL; contraprova quebra por troca de selo | Proibição explícita + prova por `git diff` na verificação |
 | `ADR-P04` / `RF-03` | `ADR.md` declara `depende-de` + interface congelada | Check `ADR-01` | "Independência" vira aspiração; ADR-2 quebra no merge | Campo obrigatório validado por check |
 | `ADR-P05` / `RF-06` | Fases são rótulos, não valores novos de `current_phase` | Tabela V17 em `workflow-rules.md` | `gate.js` I2 recusa fase fora do canônico | Acrescentar linhas mantendo os marcadores `hasVocabTable` |
 | `RF-05` | Ref órfã `templates/ADR_TEMPLATE.md` | `.agents/skills/sdd-architecture-board/` | Template citado e inexistente (`SKILL.md:36`) | Criar o arquivo e repontar |
-| `NFR-2` | Budget de regras ≤1705 linhas | `V4` (`sdd-checks.mjs:362`) | Suíte vermelha por prosa excessiva | Regra enxuta; detalhe nos templates da skill |
+| `NFR-2` | Budget de regras ≤1705 linhas | `V4` (check em `scripts/sdd-checks.mjs`) | Suíte vermelha por prosa excessiva | Regra enxuta; detalhe nos templates da skill |
 | `RF-08` | SSoT único de requisito | 3 AGENT.md/PROMPT.md | SSoT triplo = retrabalho (a dor declarada) | Repontar `GEMINI.md`/`docs/specs/`/`docs/adr/` → `.spec/prd/**` |
 | `INV-6` | `current_feature` literal em toda delegação | `gate.js:724-743` (`inferNewCycle`) | `prev-cycle-not-completed` nega a delegação | Nomear o literal em todo prompt de `task` |
 | `RF-09` | Operação de branch/PR sem `gh` | procedimento + `git` | Automação inexequível (`gh` ausente) | `git push` + URL de compare impressa; merge humano |

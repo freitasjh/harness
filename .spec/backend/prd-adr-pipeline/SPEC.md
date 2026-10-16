@@ -37,10 +37,10 @@ Ver `PROPOSAL.md §3`. Resumo operacional:
 
 ### ADR-P01: `.spec/prd/**` é bucket **non-cycle** no resolver
 
-- **Decision**: `SPEC_NON_CYCLE` (`scripts/sdd-checks.mjs:146`) passa a incluir `"prd"`. A árvore PRD sai da detecção de ciclo SDD; a validação dos ADRs é feita por check dedicado (`ADR-01`/`ADR-02`), **não** pelo `SDD-02`.
-- **Context**: `resolveSddCycle` trata todo bucket de `.spec/` fora de `SPEC_NON_CYCLE` como grupo de ciclo (`sdd-checks.mjs:190,290`), e `SDD_ARTIFACTS` exige `PROPOSAL.md` (`:143`). O layout PRD não tem `PROPOSAL.md`.
+- **Decision**: `SPEC_NON_CYCLE` (const em `scripts/sdd-checks.mjs`) passa a incluir `"prd"`. A árvore PRD sai da detecção de ciclo SDD; a validação dos ADRs é feita por check dedicado (`ADR-01`/`ADR-02`), **não** pelo `SDD-02`.
+- **Context**: `resolveSddCycle` trata todo bucket de `.spec/` fora de `SPEC_NON_CYCLE` como grupo de ciclo (`sddCycleCandidates`/`resolveSddCycle` em `scripts/sdd-checks.mjs`), e `SDD_ARTIFACTS` exige `PROPOSAL.md`. O layout PRD não tem `PROPOSAL.md`.
 - **Trade-offs**: **ganha** — elimina duas falhas provadas: (a) vermelho por drift quando `current_feature == prd-id` (`:286-298`); (b) **verde-falso**, em que o resolver cai no próximo candidato completo e valida o `TASKS.md` de **outro** ciclo enquanto o ADR ativo não é validado. **perde** — o `SDD-02` deixa de validar a coerência 1:1 de seções de `TASKS.md` dentro de um ADR; essa coerência passa a ser responsabilidade do `ADR-01` (presença) e do `code-reviewer` (conteúdo).
-- **Precedente**: FU-40 aplicou exatamente este tratamento a `tech-debts` (`sdd-checks.mjs:148-154`).
+- **Precedente**: FU-40 aplicou exatamente este tratamento a `tech-debts` (mesmo const `SPEC_NON_CYCLE` em `scripts/sdd-checks.mjs`).
 
 ### ADR-P02: Módulo de checks vive no path **propagável**
 
@@ -51,7 +51,7 @@ Ver `PROPOSAL.md §3`. Resumo operacional:
 ### ADR-P03: Enforcement = suite + CI, **nunca** runtime
 
 - **Decision**: nenhum deny novo em `gate.js`. Os checks entram pelo `static-checks.mjs`, que o `commands.suiteFull` já executa (`harness.config.json:14`). Nível de garantia declarado: **🟢 neste repo** (roda no `suiteFull` e no CI), **🟡 processo** em repo-destino (o check propaga, mas o CI do destino não é instalado).
-- **Context**: `R-NODENY` (`sdd-checks.mjs:400-404`) falha se `gate.js` ganhar `DENY_SDD`/`DENY_ARTIFACT`/`artifact-gate`. Alterar `commands.suiteFull` mudaria o selo e quebraria o contraprova.
+- **Context**: `R-NODENY` (check em `scripts/sdd-checks.mjs`) falha se `gate.js` ganhar `DENY_SDD`/`DENY_ARTIFACT`/`artifact-gate`. Alterar `commands.suiteFull` mudaria o selo e quebraria o contraprova.
 - **Trade-offs**: **ganha** — zero risco de deny falso-positivo bloqueando trabalho legítimo; respeita a decisão #2 do owner. **perde** — nada impede, no runtime, começar a implementar sem PRD; quem impede é apenas o check no momento do CI.
 
 ### ADR-P04: `ADR.md` é a unidade; o SDD dentro do ADR é **scoped** e não é ciclo autônomo
@@ -63,7 +63,7 @@ Ver `PROPOSAL.md §3`. Resumo operacional:
 ### ADR-P05: Fases da esteira são **rótulos**, mapeados para o vocabulário canônico
 
 - **Decision**: nenhum valor novo em `current_phase`. `PRD`/`RESEARCH` → `Discovery`; `ADR-DECOMP`/`TASKS` → `Planning`; execução por ADR → `Execution`; review/harness → `Testing`; fim → `Completed`. A tabela V17 de `workflow-rules.md` ganha as linhas novas mantendo os marcadores existentes.
-- **Context**: `gate.js` valida só o canônico (I2) e `V17` exige a tabela (`sdd-checks.mjs:125-127,370-372`).
+- **Context**: `gate.js` valida só o canônico (I2) e `V17` exige a tabela (check em `scripts/sdd-checks.mjs`).
 - **Trade-offs**: **ganha** — zero mudança no runtime. **perde** — o `workflow-state.json` não distingue "fazendo PRD" de "explorando" sem ler o artefato.
 
 ---
@@ -130,7 +130,7 @@ Não há IdP/RBAC. O modelo real é o de escrita por agente, imposto em `gate.js
 
 ### 4.3 Campos aditivos em `workflow-state.json`
 
-**Aditivo, nunca destrutivo** — o runtime lê `current_phase`, `current_feature`, `harness_status`, `code_review_status` (`gate.js:705-743`) e `SDD-03` exige `gates.P1_P2` e `gates.P2_P3` (`sdd-checks.mjs:390-398`).
+**Aditivo, nunca destrutivo** — o runtime lê `current_phase`, `current_feature`, `harness_status`, `code_review_status` (`gate.js:705-743`) e `SDD-03` exige `gates.P1_P2` e `gates.P2_P3` (check em `scripts/sdd-checks.mjs`).
 
 ```json
 "prd_adr": {
@@ -173,7 +173,7 @@ Cada check é **determinístico e estrutural**: presença, campo obrigatório, o
 | **ADR-01** | `ADR-INDEX.md` × `ADRs/**` | dir em `ADRs/` sem linha no índice (órfão); linha no índice sem dir; `id` duplicado; `ADR.md` sem `depende-de` ou sem interface congelada; `dir` fora do padrão `ADRs/ADR-00N-{slug}/`; **`RESEARCH.md` ausente, ou com menos de 2 fontes (`http`), quando existe qualquer `ADRs/**`** |
 | **ADR-02** | `ADR-INDEX.md` | ≥2 linhas `in-progress`; linha `merged` sem campo `merge` preenchido; ADR com `order=N` em `in-progress` enquanto `order<N` não está `merged` (pulo de sequência); **`branch` fora do padrão `^adr/[a-z0-9-]+/\d{2}-[a-z0-9-]+$`** |
 
-**Saída**: `{ ok: boolean, results: [{ id, status: PASS|FAIL, detail }] }` — mesma forma de `sdd-checks.mjs:353-356`, para o relatório ficar homogêneo.
+**Saída**: `{ ok: boolean, results: [{ id, status: PASS|FAIL, detail }] }` — mesma forma de relatorio de `scripts/sdd-checks.mjs`, para o relatório ficar homogêneo.
 
 **Wiring**: `scripts/static-checks.mjs` importa `runPrdChecks()` de `.agents/skills/prd-adr-pipeline/checks.mjs` e registra no mesmo relatório; `commands.suiteFull` **não muda**.
 
@@ -395,7 +395,7 @@ Linha na tabela de funcionalidades: "PRD→ADR→SDD — intenção aprovada ant
 1. `node scripts/sdd-checks.mjs` → **PASS em todos os IDs**, **com** `.spec/prd/prd-adr-pipeline/**` **real** materializado em disco (não por fixture e **não** por ausência de `.spec/prd/`) — prova INV-4 e mata o verde-falso (achado O-1).
 2. `runPrdChecks` tem ≥1 fixture PASS e ≥1 FAIL por check, cobrindo os 8 cenários de `PAP-02` (inclui bug fora do funil, pergunta fechada por seção, §15 vazio, ADR sem PRD aprovado, `RESEARCH.md` sem fonte e `branch` fora do padrão).
 3. `commands.suiteFull` verde: `node --test` (plugins) + `node --test` (installer) + `static-checks` + `vendor-check`. **Comando de aceite separado**: `node scripts/sdd-checks.mjs` → PASS em todos os IDs — `sdd-checks` **não** integra o `suiteFull` (precisão: roda no CI e por invocação explícita).
-4. `grep` de `scripts/sdd-checks.mjs:146` mostra `"prd"` em `SPEC_NON_CYCLE`.
+4. `grep` do const `SPEC_NON_CYCLE` em `scripts/sdd-checks.mjs` mostra `"prd"` no conjunto (referencia por simbolo, nao por linha: ancoras de linha em criterio envelhecem a cada edicao).
 5. `gate.js` inalterado: `R-NODENY` PASS e `git diff main -- .opencode/plugins/gate.js` vazio.
 6. `harness.config.json` inalterado: `git diff main -- harness.config.json` vazio.
 7. Zero referência viva a `GEMINI.md`, `docs/specs/`, `docs/adr/` nos AGENT.md/PROMPT.md.
@@ -465,7 +465,7 @@ Verdict: **pass com ressalva** (§11). Ressalva = lacuna D11 pré-existente e de
 - `.agents/rules/workflow-rules.md` — §0 (prompt gate), §3 (SDD), §5 (harness H1–H7), §6 (code review)
 - `.agents/rules/sdd-workflow-standard.md` — organização de arquivos e estado
 - `.opencode/plugins/gate.js` — `isOrchAllowlisted:391`, `checkWriteAccess:487`, âncoras A/B `:653,705`, `inferNewCycle:724`
-- `scripts/sdd-checks.mjs` — `SDD_ARTIFACTS:143`, `SPEC_NON_CYCLE:146`, `resolveSddCycle:236`, checks `:358`
+- `scripts/sdd-checks.mjs` — símbolos (referência por nome, não por linha): `SDD_ARTIFACTS`, `SPEC_NON_CYCLE`, `sddCycleCandidates`, `resolveSddCycle`, `evaluateSdd02`, `runSddChecks`
 - `installer/install.mjs:1159` — `INCOMING_ROOTS` (linha recalculada após `ae90866`, o bugfix do installer que deslocou o arquivo)
 - `harness.config.json` — `commands.suiteFull:14`, `protectedPaths:27-37`
 - `.githooks/pre-commit` · `.github/workflows/harness-integrity.yml` — trailer de path protegido

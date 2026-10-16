@@ -30,11 +30,11 @@
 2. **RESEARCH.md**: ≥2 alternativas com fonte (URL/nome+versão) + trade-off + 1 recomendação. Tecnologia sem fonte não entra em ADR.
 3. **ADR-INDEX.md + `ADRs/ADR-00N-{slug}/`**: cada ADR é unidade de trabalho independente (branch a partir de `main` atualizado após merge), com `ADR.md` + `SPEC.md` + `PLAN.md` + `TASKS.md` + `VERIFY.md`.
 4. **Checks de CI** `PRD-01`/`ADR-01`/`ADR-02` dentro do `suiteFull` existente, cada um com fixture PASS e FAIL — **nenhum deny novo** em `gate.js`.
-5. **Guard do resolver**: o bucket `prd` entra em `SPEC_NON_CYCLE` (`scripts/sdd-checks.mjs:146`), tirando a árvore PRD da detecção de ciclo SDD.
+5. **Guard do resolver**: o bucket `prd` entra em `SPEC_NON_CYCLE` (const em `scripts/sdd-checks.mjs`), tirando a árvore PRD da detecção de ciclo SDD.
 6. **Módulo de checks no path propagável** (`.agents/skills/prd-adr-pipeline/checks.mjs`) — `scripts/` **não** propaga pelo installer (`INCOMING_ROOTS`, `installer/install.mjs:1159`), então check em `scripts/` viraria gate órfão no repo-destino.
 
 **Alternativas descartadas**:
-- **Deny de runtime para PRD/ADR** — quebraria `R-NODENY` (`sdd-checks.mjs:400-404`) e a decisão #2 do owner.
+- **Deny de runtime para PRD/ADR** — quebraria `R-NODENY` (check em `scripts/sdd-checks.mjs`) e a decisão #2 do owner.
 - **Todo ADR como ciclo SDD completo (com `PROPOSAL.md`)** — obriga artefato de "proposta" para uma decisão já tomada; ADR vira feature. Descartado pelo owner (Q1).
 - **Ensinar o resolver a reconhecer o layout ADR de 2 níveis** — mais superfície de detecção, exatamente a família de bug FU-38/MF-1/FU-39/FU-40.
 - **Automação de PR via `gh`** — `gh` não está instalado (verificado). Fallback: `git push` + URL de compare impressa (Q2).
@@ -74,7 +74,7 @@ Aplicabilidade adaptada: o harness é governança Node ESM, não aplicação de 
 | Regras (`.agents/rules/**`) — **protegido** | novo arquivo de regra + emenda em `workflow-rules.md` e `sdd-workflow-standard.md`; consome budget V4 (974/1705) | Sim — ADR-P01/P05 |
 | Agentes (`.agents/agents/**`) — **protegido** | wiring nos 2 orquestradores; conservar cláusula de não-bypass (SDD-01) e `gates.P1_P2`/`P2_P3` (SDD-03) | Sim — ADR-P05 |
 | Skills (`.agents/skills/**`) — **não protegido** | skill nova + templates + módulo de checks; **é o único canal que propaga** para repo-destino | Sim — ADR-P02/P03 |
-| Checks (`scripts/`) — **não protegido** | `sdd-checks.mjs:146` (`SPEC_NON_CYCLE += "prd"`) + wiring dos checks no `static-checks` | Sim — ADR-P03 |
+| Checks (`scripts/`) — **não protegido** | `SPEC_NON_CYCLE` em `scripts/sdd-checks.mjs` (`+= "prd"`) + wiring dos checks no `static-checks` | Sim — ADR-P03 |
 | Installer (`installer/`) | **sem mudança neste ciclo**; `INCOMING_ROOTS` não inclui `scripts/`/`.github/` — limitante registrado | Não (F3) |
 | Banco de dados / migrations | **N/A** — o harness não tem banco | Não |
 | Multi-tenancy | **N/A** — o harness não é multi-tenant | Não |
@@ -105,7 +105,7 @@ Aplicabilidade adaptada: o harness é governança Node ESM, não aplicação de 
 
 | Risco | Probabilidade | Impacto | Mitigação |
 |-------|---------------|---------|-----------|
-| **Verde-falso / vermelho na suíte** pelo bucket `prd` (`sdd-checks.mjs:146,286-298`) | Alta | Alto | Guard do resolver (`SPEC_NON_CYCLE += "prd"`) + teste de regressão **antes** de materializar `.spec/prd/**` |
+| **Verde-falso / vermelho na suíte** pelo bucket `prd` (`SPEC_NON_CYCLE` + gate de drift em `scripts/sdd-checks.mjs`) | Alta | Alto | Guard do resolver (`SPEC_NON_CYCLE += "prd"`) + teste de regressão **antes** de materializar `.spec/prd/**` |
 | **Gate órfão propagado**: check só em `scripts/` não chega ao destino | Alta | Alto | Módulo de checks em `.agents/skills/**` (propaga) + declarar 🟡 processo no destino |
 | **`prev-cycle-not-completed`** na delegação (âncora B) | Alta | Alto | `current_feature` único para toda a feature e literal obrigatório em todo prompt de `task` |
 | **Cerimônia vira a nova dor** (PRD para tudo) | Média | Alto | Limiar de isenção declarado + PRD ≤120 linhas + nenhum gate de runtime |
