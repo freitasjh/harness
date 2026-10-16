@@ -770,6 +770,17 @@
       "efeito": "Nenhuma mudanca de escopo, decisao ou criterio; apenas a forma da referencia. SDD-02 continua 12/12."
     }
   ],
+  "conflicts": [
+    {
+      "id": "C-1",
+      "severity": "P1",
+      "titulo": "Schema do REPORT exige `counts`; a contraprova NEGA counts declarados sem observacao",
+      "evidencia": "gate.js:653-678 (gateCompletionAnchorA exige REPORT+seal); .agents/schemas/harness-report.schema.json (counts obrigatorio, unit/it/frontend com passed/failed/skipped); gate.js:624-626 (DENY_CONTRAPROVE_DIVERGENT cause=counts-unverifiable); teste FU-09 em gate.spec.mjs:897,917 ('stated counts + unobserved counts => deny, both modes'); defaultContraproveExec retorna counts:null (gate.js:561-572)",
+      "consequencia": "Um REPORT conforme o schema NAO passa na contraprova: o executor padrao so observa exit code. Logo escrever current_phase=Completed exige um REPORT SEM counts — que o gate aceita (nao valida schema) e o schema proibe. O ciclo foi arquivado por decisao explicita do owner nessa condicao, com o desvio declarado no proprio REPORT.",
+      "nao_resolvido_aqui": "Corrigir o conflito exige emendar gate.js OU o schema (paths protegidos) — ciclo proprio. Opcoes: (a) gate ignora counts quando o executor nao os observa (trata como nao-comparavel, nao como divergente); (b) executor passa a observar counts; (c) schema torna counts opcional.",
+      "data": "2026-10-16"
+    }
+  ],
   "pending_actions": [
     "Tech-debt P1 ABERTO: regressao do installer pos-68be417 (355/5 em main; 360/0 antes) — H2 bloqueia delegacao de prd-adr-pipeline. Ver .spec/tech-debts/installer-upgrade-regression/TASKS.md",
     "Brain MCP down (HTTP 410): registrar licoes pendentes (FU-34/35, FU-42, timing)",
