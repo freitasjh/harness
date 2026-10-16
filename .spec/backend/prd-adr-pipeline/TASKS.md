@@ -387,7 +387,7 @@ graph TD
 
 #### 🛡️ Technical Enforcement (DO NOT IGNORE)
 - **Rule**: preservar os marcadores de `hasVocabTable` (`` `current_phase` canônico `` + linha iniciando com `| P0`/`| Explore`/`| SPEC`) e não introduzir valor novo de `current_phase`.
-- **Failure Mode**: `V17` FAIL e/ou `gate.js` I2 recusando uma fase fora do canônico.
+- **Failure Mode**: `V17` FAIL se o **marcador** da tabela for removido. **Correção de premissa** (review do PAP-07): um valor de `current_phase` fora do canônico **não** é recusado por mecanismo algum — o `gate.js` só compara com `Completed`. A proteção é processo (🟡) + a tabela de `sdd-workflow-standard.md`.
 
 #### ✅ Acceptance Criteria (BDD)
 

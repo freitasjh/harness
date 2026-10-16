@@ -62,8 +62,8 @@ Ver `PROPOSAL.md §3`. Resumo operacional:
 
 ### ADR-P05: Fases da esteira são **rótulos**, mapeados para o vocabulário canônico
 
-- **Decision**: nenhum valor novo em `current_phase`. `PRD`/`RESEARCH` → `Discovery`; `ADR-DECOMP`/`TASKS` → `Planning`; execução por ADR → `Execution`; review/harness → `Testing`; fim → `Completed`. A tabela V17 de `workflow-rules.md` ganha as linhas novas mantendo os marcadores existentes.
-- **Context**: `gate.js` valida só o canônico (I2) e `V17` exige a tabela (check em `scripts/sdd-checks.mjs`).
+- **Decision**: nenhum valor novo em `current_phase`. `PRD`/`RESEARCH` → `Discovery`; `ADR-INDEX`/`ADR` → `Planning`; execução por ADR → `Execution`; review/harness → `Testing`; fim → `Completed`. A tabela V17 de `workflow-rules.md` ganha as linhas novas mantendo os marcadores existentes.
+- **Context**: **correção de premissa** (achada no review do PAP-07): `gate.js` **não** valida um conjunto canônico de `current_phase` — ele só compara com `Completed`. E `V17` prova apenas o **marcador** da tabela, não o conteúdo das linhas. Logo, um valor inventado **não** é recusado por mecanismo algum: a proteção real é a tabela canônica de `sdd-workflow-standard.md` + **processo (🟡)**. O que se ganha aqui é vocabulário consistente, não um deny.
 - **Trade-offs**: **ganha** — zero mudança no runtime. **perde** — o `workflow-state.json` não distingue "fazendo PRD" de "explorando" sem ler o artefato.
 
 ---
