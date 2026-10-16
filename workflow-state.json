@@ -34,6 +34,7 @@
   },
   "gates": {
     "P0_P1": "approved_user_2026_10_15 (Feature prd-adr-pipeline; bloco PICCO confirmado)",
+    "G2_PRD": "approved_user_2026_10_16 (PRD do dogfood aprovado sem ressalvas; .spec/prd/prd-adr-pipeline/PRD.md §16)",
     "P1_P2": "approved_user_2026_10_15 (spec-gate 10/10; spec-review 0 criticos)",
     "P2_P3": "pending_user_approval",
     "P3_P4": "approved_auto_evidence_batches1-4",
@@ -102,7 +103,10 @@
       "created": "2026-10-15T00:00:00Z"
     }
   ],
-  "last_update": "2026-10-15T00:00:00Z",
+  "last_update": "2026-10-16T00:00:00Z",
+  "follow_ups_prd11": [
+    "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
+  ],
   "spec_score": 0.94,
   "spec_status": "v1_reviewed_aprovado (spec-gate 10/10; 1 laranja + 3 amarelos corrigidos; security pass com ressalva D11)",
   "plan_status": "v3 aprovado para P2->P3 pelo parecer de negocio (rodada 4): 12 tasks PAP-01..PAP-12; SDD-02 1:1 12/12; 0 bloqueadores; 3 nits cosmeticos para P3 (notacao §14.N, cross-ref sem arquivo, frase ampla em SPEC:161)",
