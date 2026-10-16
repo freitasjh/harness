@@ -27,6 +27,7 @@ import { readFileSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tempScope } from "../../../scripts/test-temp.mjs";
 import { runPrdChecks } from "../../../.agents/skills/prd-adr-pipeline/checks.mjs";
+import { runStaticChecks, prdCheckResults } from "../../../scripts/static-checks.mjs";
 
 const TMP = tempScope({ label: "prd-checks" });
 afterEach(() => TMP.cleanup());
@@ -1111,5 +1112,294 @@ describe("checks.mjs module-loading guard (RF-02/NFR-1)", () => {
     );
     assert.equal(/\*\//.test(src), false, "the real source carries no `*/`");
     assert.equal(/\*\//.test(`${src}\n*/`), true, "the assertion discriminates a stray `*/`");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// PAP-05 — templates. Existence + positive control for each of the 5 files, and
+// the coherence contract: a template the check itself would reject is a defect.
+// Each template is read from disk, filled to a "valid" state and run through
+// runPrdChecks; the same artefact is then broken to prove the check names it.
+// ---------------------------------------------------------------------------
+const REPO = join(import.meta.dirname, "..", "..", "..");
+const SKILLS = join(REPO, ".agents", "skills");
+const PRD_TPL = join(SKILLS, "prd-adr-pipeline", "templates", "PRD.md");
+const RESEARCH_TPL = join(SKILLS, "prd-adr-pipeline", "templates", "RESEARCH.md");
+const INDEX_TPL = join(SKILLS, "prd-adr-pipeline", "templates", "ADR-INDEX.md");
+const ADR_TPL = join(SKILLS, "prd-adr-pipeline", "templates", "ADR.md");
+const ADR_BOARD_TPL = join(SKILLS, "sdd-architecture-board", "templates", "ADR_TEMPLATE.md");
+const BOARD_SKILL = join(SKILLS, "sdd-architecture-board", "SKILL.md");
+
+const PRD_REQUIRED = [1, 2, 5, 6, 7, 9, 16];
+
+describe("PAP-05 — the 5 templates exist (existence + non-empty control)", () => {
+  for (const [name, p] of [
+    ["prd-adr-pipeline/templates/PRD.md", PRD_TPL],
+    ["prd-adr-pipeline/templates/RESEARCH.md", RESEARCH_TPL],
+    ["prd-adr-pipeline/templates/ADR-INDEX.md", INDEX_TPL],
+    ["prd-adr-pipeline/templates/ADR.md", ADR_TPL],
+    ["sdd-architecture-board/templates/ADR_TEMPLATE.md", ADR_BOARD_TPL],
+  ]) {
+    it(`exists and is non-empty: ${name}`, () => {
+      assert.ok(existsSync(p), `missing template ${name}`);
+      assert.ok(readFileSync(p, "utf8").trim().length > 0, `empty template ${name}`);
+    });
+  }
+});
+
+describe("PAP-05 — PRD.md marks the 7 required sections (§4.4)", () => {
+  const tpl = readFileSync(PRD_TPL, "utf8");
+  const heads = [...tpl.matchAll(/^##[ \t]+(\d+)\.[ \t]*(.*)$/gm)];
+  const numbers = heads.map((m) => Number(m[1]));
+  const marked = heads.filter((m) => /\[obrigat[óo]ria\]/i.test(m[2])).map((m) => Number(m[1]));
+
+  it("all 16 section numbers are present", () => {
+    for (let n = 1; n <= 16; n++) assert.ok(numbers.includes(n), `missing section §${n}`);
+  });
+
+  it("exactly the 7 required numbers carry the [obrigatória] marker", () => {
+    assert.deepEqual([...marked].sort((a, b) => a - b), PRD_REQUIRED);
+  });
+
+  it("each required section carries the closed-question line", () => {
+    const bodies = new Map();
+    for (let i = 0; i < heads.length; i++) {
+      const start = heads[i].index + heads[i][0].length;
+      const end = i + 1 < heads.length ? heads[i + 1].index : tpl.length;
+      bodies.set(Number(heads[i][1]), tpl.slice(start, end));
+    }
+    for (const n of PRD_REQUIRED) {
+      assert.match(bodies.get(n) ?? "", /^\s*>\s*❓\s*Valida[çc][ãa]o\s*:/im, `§${n} sem linha de validação`);
+    }
+  });
+
+  it("§5 exposes a 'como medir' column and §15 exposes the PICCO block", () => {
+    assert.match(tpl, /\|\s*Como medir\s*\|/i);
+    assert.match(tpl, /<task>[\s\S]*?<\/task>/i);
+    assert.match(tpl, /<context>[\s\S]*?<\/context>/i);
+  });
+
+  it("§16 is an approval block (verdict + date labels)", () => {
+    assert.match(tpl, /\*\*Veredito\*\*/i);
+    assert.match(tpl, /\*\*Data\*\*/i);
+  });
+
+  it("stays within the NFR-5 budget (≤120 lines)", () => {
+    const lines = tpl.split("\n").length;
+    assert.ok(lines <= 120, `PRD template has ${lines} lines`);
+  });
+});
+
+describe("PAP-05 — template ↔ check coherence (PRD-01)", () => {
+  it("a FILLED copy of PRD.md passes PRD-01; emptying §7 fails naming §7", () => {
+    const raw = readFileSync(PRD_TPL, "utf8");
+    const filled = raw
+      .replace("| <métrica> | — | <meta> |", "| tempo | contagem de merges | ≤7 dias |")
+      .replace("- **Veredito**:\n- **Data**:\n", "- **Veredito**: aprovado\n- **Data**: 2026-10-15\n");
+    assert.notEqual(filled, raw, "control: filling changes the template");
+    const ok = fixture({ ".spec/prd/p1/PRD.md": filled });
+    assert.ok(existsSync(join(ok, ".spec/prd/p1/PRD.md")), "control: target exists");
+    assert.equal(byId(runPrdChecks(ok), "PRD-01").status, "PASS");
+
+    const broken = filled.replace("- <o que fica FORA, explícito — por construção não-vazio>\n", "");
+    assert.notEqual(broken, filled, "control: emptying §7 changes the filled PRD");
+    const bad = fixture({ ".spec/prd/p1/PRD.md": broken });
+    const r = byId(runPrdChecks(bad), "PRD-01");
+    assert.equal(r.status, "FAIL");
+    assert.match(r.detail, /§?7\b/);
+  });
+});
+
+describe("PAP-05 — template ↔ check coherence (ADR-01)", () => {
+  it("templates build a consistent ADR tree (ADR-01 PASS); removing depende-de fails", () => {
+    const research = readFileSync(RESEARCH_TPL, "utf8");
+    const indexTpl = readFileSync(INDEX_TPL, "utf8");
+    const adr = readFileSync(ADR_TPL, "utf8");
+    assert.ok((research.match(/https?:\/\//g) ?? []).length >= 2, "control: RESEARCH has ≥2 sources");
+    assert.match(indexTpl, /ADRs\/ADR-001-exemplo\//, "control: index example row uses the dir pattern");
+
+    // The example row ships COMMENTED (a `>` blockquote) so a fresh copy cannot
+    // orphan on a dir that does not exist (🟡4). Making it a real row AND creating
+    // its dir is the coherent path.
+    const index = indexTpl.replace(/^>\s*(\| 1 \| ADR-001)/m, "$1");
+    assert.notEqual(index, indexTpl, "control: uncommenting changes the index");
+    assert.match(index, /^\| 1 \| ADR-001/m, "control: the example row is now a real row");
+
+    const files = {
+      ".spec/prd/p1/PRD.md": validPrd(),
+      ".spec/prd/p1/RESEARCH.md": research,
+      ".spec/prd/p1/ADR-INDEX.md": index,
+      ".spec/prd/p1/ADRs/ADR-001-exemplo/ADR.md": adr,
+    };
+    const root = fixture(files);
+    assert.ok(existsSync(join(root, ".spec/prd/p1/ADR-INDEX.md")), "control: target exists");
+    assert.equal(byId(runPrdChecks(root), "ADR-01").status, "PASS");
+
+    const broken = adr.replace(/- \*\*depende-de\*\*:.*\n/, "");
+    assert.notEqual(broken, adr, "control: removing depende-de changes the ADR");
+    const bad = fixture({ ...files, ".spec/prd/p1/ADRs/ADR-001-exemplo/ADR.md": broken });
+    const r = byId(runPrdChecks(bad), "ADR-01");
+    assert.equal(r.status, "FAIL");
+    assert.match(r.detail, /depende-de/i);
+  });
+
+  it("🟡4 naive fill: leaving the COMMENTED example row does not orphan the index (ADR-01 PASS)", () => {
+    const indexTpl = readFileSync(INDEX_TPL, "utf8");
+    const research = readFileSync(RESEARCH_TPL, "utf8");
+    const adr = readFileSync(ADR_TPL, "utf8");
+    assert.match(indexTpl, /^> \| 1 \| ADR-001 \|/m, "control: the example row ships commented");
+
+    // A user copies the template, adds ONE real row and leaves the example line
+    // untouched. Because the example is not parsed, it cannot orphan.
+    const filled = indexTpl.replace(
+      /^(\| order \|.*\n\|[-|]+\|\n)/m,
+      "$1| 1 | ADR-001 | Minha decisão | todo | — | ADRs/ADR-001-minha/ | adr/p1/01-minha | — |\n",
+    );
+    assert.notEqual(filled, indexTpl, "control: adding a real row changes the index");
+    assert.match(filled, /^\| 1 \| ADR-001 \| Minha decisão/m, "control: the real row is present");
+    assert.match(filled, /^> \| 1 \| ADR-001 \|/m, "control: the example row is still there (commented)");
+
+    const files = {
+      ".spec/prd/p1/PRD.md": validPrd(),
+      ".spec/prd/p1/RESEARCH.md": research,
+      ".spec/prd/p1/ADR-INDEX.md": filled,
+      ".spec/prd/p1/ADRs/ADR-001-minha/ADR.md": adr,
+    };
+    const root = fixture(files);
+    assert.ok(existsSync(join(root, ".spec/prd/p1/ADRs/ADR-001-minha/ADR.md")), "control: target exists");
+    // The fixture is valid end-to-end (PRD + RESEARCH + 1 real row + its dir):
+    // assert the AGGREGATE verdict, not just ADR-01 — a naive fill must be a
+    // green pipeline, and any regression in the sibling checks must surface here.
+    const report = runPrdChecks(root);
+    assert.equal(
+      report.ok,
+      true,
+      `expected ok=true, got: ${report.results.map((r) => `${r.id}:${r.status}`).join(" ")}`,
+    );
+    for (const id of ["PRD-01", "ADR-01", "ADR-02"]) {
+      assert.equal(byId(report, id).status, "PASS");
+    }
+  });
+});
+
+// PAP-05 × ADR-02 coherence. SPEC §4.1 has the flow create ADR-INDEX BEFORE the
+// 1st ADR, so a 0-row ledger is a legitimate STEP — but ADR-02 FAILs on it, and
+// the template must never present that step as a valid FINAL state nor instruct
+// producing it. The index is born WITH the 1st real row and its dir; "delete the
+// example row" is exactly the 0-row ledger ADR-02 rejects.
+describe("PAP-05 — template ↔ check coherence (ADR-02)", () => {
+  const indexTpl = readFileSync(INDEX_TPL, "utf8");
+
+  it("the index template never instructs a 0-row ledger (the state ADR-02 rejects)", () => {
+    assert.doesNotMatch(
+      indexTpl,
+      /apague-a/i,
+      "the template must not say 'delete it' — that yields the 0-row ledger ADR-02 rejects",
+    );
+    assert.match(
+      indexTpl,
+      /1[ªa]\s+linha\s+real|nasce junto|primeira linha real/i,
+      "the template must say the ledger is born with the 1st real row + its dir",
+    );
+    assert.match(indexTpl, /ADR-02/, "the template must name the check a 0-row ledger fails");
+  });
+
+  it("verbatim template copy (0 real rows) is NOT a valid final state — ADR-02 FAIL", () => {
+    const research = readFileSync(RESEARCH_TPL, "utf8");
+    const root = fixture({
+      ".spec/prd/p1/PRD.md": validPrd(),
+      ".spec/prd/p1/RESEARCH.md": research,
+      ".spec/prd/p1/ADR-INDEX.md": indexTpl,
+    });
+    assert.ok(existsSync(join(root, ".spec/prd/p1/ADR-INDEX.md")), "control: target exists");
+    const report = runPrdChecks(root);
+    assert.equal(byId(report, "PRD-01").status, "PASS");
+    assert.equal(byId(report, "ADR-01").status, "PASS");
+    assert.equal(byId(report, "ADR-02").status, "FAIL");
+    assert.equal(report.ok, false, "the verbatim template is not a valid final state");
+    assert.match(byId(report, "ADR-02").detail, /linha|tabela|malformado/i);
+  });
+
+  it("template + 1 real row + its dir ⇒ the 3 checks PASS with ok=true", () => {
+    const research = readFileSync(RESEARCH_TPL, "utf8");
+    const adr = readFileSync(ADR_TPL, "utf8");
+    const index = indexTpl.replace(/^>\s*(\| 1 \| ADR-001)/m, "$1");
+    assert.notEqual(index, indexTpl, "control: uncommenting the example row changes the index");
+    const root = fixture({
+      ".spec/prd/p1/PRD.md": validPrd(),
+      ".spec/prd/p1/RESEARCH.md": research,
+      ".spec/prd/p1/ADR-INDEX.md": index,
+      ".spec/prd/p1/ADRs/ADR-001-exemplo/ADR.md": adr,
+    });
+    assert.ok(existsSync(join(root, ".spec/prd/p1/ADRs/ADR-001-exemplo/ADR.md")), "control: dir exists");
+    const report = runPrdChecks(root);
+    assert.equal(
+      report.ok,
+      true,
+      `expected ok=true, got: ${report.results.map((r) => `${r.id}:${r.status}`).join(" ")}`,
+    );
+    for (const id of ["PRD-01", "ADR-01", "ADR-02"]) {
+      assert.equal(byId(report, id).status, "PASS");
+    }
+  });
+});
+
+describe("PAP-05 — sdd-architecture-board SKILL.md ref resolves (orphan fix)", () => {
+  it("the path cited in SKILL.md exists on disk", () => {
+    const rel = ".agents/skills/sdd-architecture-board/templates/ADR_TEMPLATE.md";
+    assert.ok(readFileSync(BOARD_SKILL, "utf8").includes(rel), "SKILL.md must cite the template path");
+    assert.ok(existsSync(join(REPO, rel)), `unresolved orphan ref: ${rel}`);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// PAP-04 — wiring of the pure core into scripts/static-checks.mjs. The check
+// must not merely exist: it must be registered in the report and bar (ok=false)
+// on a malformed target, while staying vacuous-safe when `.spec/prd/` is absent.
+// ---------------------------------------------------------------------------
+describe("PAP-04 — static-checks registers the PRD/ADR checks (vacuous-safe)", () => {
+  // (🔴1) The vacuous case is CONSTRUCTED in a temp root — never presumed from the
+  // repo. The repo's real `.spec/prd/` may legitimately exist (PAP-11 dogfood) and
+  // be valid; presuming its absence made this test break the moment the pipeline
+  // was dogfooded, blocking the cycle's own acceptance.
+  it("vacuous-safe: an empty temp root ⇒ the 3 checks PASS with N/A", () => {
+    const root = fixture({ "README.md": "# empty repo\n" });
+    assert.ok(!existsSync(join(root, ".spec/prd")), "control: fixture root has no .spec/prd/");
+    const res = prdCheckResults(root);
+    for (const id of ["PRD-01", "ADR-01", "ADR-02"]) {
+      const r = res.find((x) => x.id === id);
+      assert.ok(r, `report missing ${id}`);
+      assert.equal(r.status, "PASS");
+      assert.match(r.detail, /N\/A/);
+    }
+  });
+
+  // (🔴1) On the REAL repo root the wired check must be registered and report a
+  // valid status in BOTH states: `.spec/prd/` absent (PAP-11 not yet landed) and
+  // `.spec/prd/prd-adr-pipeline/` materialised (dogfood). No absence control and
+  // no `/N\/A/` — either state is legitimate.
+  it("real root: the report carries PRD-01/ADR-01/ADR-02 with a valid status", () => {
+    const report = runStaticChecks();
+    for (const id of ["PRD-01", "ADR-01", "ADR-02"]) {
+      const r = report.results.find((x) => x.id === id);
+      assert.ok(r, `static-checks report missing ${id}`);
+      assert.ok(r.status === "PASS" || r.status === "FAIL", `bad status ${r.status} for ${id}`);
+      assert.equal(typeof r.detail, "string");
+    }
+  });
+
+  // (🟡3) The ADAPTER's verdict bars: the wired check must reach the results array
+  // that defines `ok`/exit — not just the console. A malformed fixture root makes
+  // PRD-01 FAIL and drives `ok=false`. Mutating `record()`→`console.log()` in
+  // static-checks.mjs drops PRD-01 from the report and this test fails.
+  it("the wired verdict bars (ok=false) when the PRD check FAILs on a fixture root", () => {
+    const root = fixture({ ".spec/prd/p1/PRD.md": "# malformado\nsem seções obrigatórias\n" });
+    assert.ok(existsSync(join(root, ".spec/prd/p1/PRD.md")), "control: target exists");
+    const report = runStaticChecks(root);
+    const prd = report.results.find((r) => r.id === "PRD-01");
+    assert.ok(prd, "static-checks report must carry PRD-01 from the wired check");
+    assert.equal(prd.status, "FAIL");
+    assert.match(prd.detail, /PRD\.md|§|seção/i);
+    assert.equal(report.ok, false);
   });
 });

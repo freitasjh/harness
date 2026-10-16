@@ -24,7 +24,7 @@ Use este modo quando uma mudança significativa for proposta (Nova lib, mudança
 - **Trigger:** "Adicionar tecnologia X", "Mudar para arquitetura Y", "Refatorar módulo Z".
 - **Ações:**
   1. Avaliar o impacto da mudança contra a arquitetura atual.
-  2. Gerar um novo arquivo em `.agents/skills/sdd-architecture-board/adr/YYYY-MM-DD-titulo.md` usando o template oficial.
+  2. Gerar um novo arquivo em `.spec/prd/<prd-id>/ADRs/ADR-00N-{slug}/ADR.md` (layout de `SPEC §4.1`) usando o template oficial.
   3. Atualizar `AGENTS.md` e `.agents/rules/` para refletir o novo estado aprovado.
 
 ## 📝 Invariantes de Saída
