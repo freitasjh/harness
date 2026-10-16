@@ -10,18 +10,18 @@
 
 | Phase | Task ID | Type | Priority | Risk | Complexity | Status |
 |-------|---------|------|----------|------|------------|--------|
-| Phase 1 | `PAP-01` | Infra | P0 | High | 3 | Todo |
-| Phase 1 | `PAP-02` | Test | P0 | Medium | 5 | Todo |
-| Phase 1 | `PAP-03` | Domain | P0 | High | 5 | Todo |
-| Phase 1 | `PAP-04` | Infra | P0 | Medium | 2 | Todo |
-| Phase 1 | `PAP-05` | Domain | P0 | Low | 3 | Todo |
-| Phase 2 | `PAP-06` | API | P0 | Medium | 3 | Todo |
-| Phase 2 | `PAP-07` | API | P0 | High | 3 | Todo |
-| Phase 3 | `PAP-08` | API | P0 | High | 5 | Todo |
-| Phase 3 | `PAP-09` | API | P0 | Low | 2 | Todo |
-| Phase 4 | `PAP-11` | Domain | P0 | Medium | 3 | Todo |
-| Phase 4 | `PAP-10` | Test | P0 | Medium | 3 | Todo |
-| Phase 4 | `PAP-12` | Infra | P1 | Low | 2 | Todo |
+| Phase 1 | `PAP-01` | Infra | P0 | High | 3 | Done |
+| Phase 1 | `PAP-02` | Test | P0 | Medium | 5 | Done |
+| Phase 1 | `PAP-03` | Domain | P0 | High | 5 | Done |
+| Phase 1 | `PAP-04` | Infra | P0 | Medium | 2 | Done |
+| Phase 1 | `PAP-05` | Domain | P0 | Low | 3 | Done |
+| Phase 2 | `PAP-06` | API | P0 | Medium | 3 | Done |
+| Phase 2 | `PAP-07` | API | P0 | High | 3 | Done |
+| Phase 3 | `PAP-08` | API | P0 | High | 5 | Done |
+| Phase 3 | `PAP-09` | API | P0 | Low | 2 | Done |
+| Phase 4 | `PAP-11` | Domain | P0 | Medium | 3 | Done |
+| Phase 4 | `PAP-10` | Test | P0 | Medium | 3 | Done |
+| Phase 4 | `PAP-12` | Infra | P1 | Low | 2 | Done (F-1 do review fechado na iteração 1 do loop §6.2) |
 
 ## 3. Dependency Graph
 
@@ -84,15 +84,15 @@ graph TD
   - **Then** nenhum drift é reportado e o ciclo SDD de outro bucket segue sendo o alvo
 
 #### 🛠️ Implementation Steps (TDD - Test First)
-- [ ] `.opencode/plugins/__tests__/sdd-checks.spec.mjs`: `Unit` — escrever os 3 cenários com fixture em dir temporário (TDD FIRST)
-- [ ] `scripts/sdd-checks.mjs`: adicionar `"prd"` ao const `SPEC_NON_CYCLE`, mantendo o comentário FU-40 coerente
+- [x] `.opencode/plugins/__tests__/sdd-checks.spec.mjs`: `Unit` — escrever os 3 cenários com fixture em dir temporário (TDD FIRST)
+- [x] `scripts/sdd-checks.mjs`: adicionar `"prd"` ao const `SPEC_NON_CYCLE`, mantendo o comentário FU-40 coerente
 
 #### 🏁 Definition of Done (DoD)
-- [ ] Teste escrito antes da mudança no set.
-- [ ] Os 3 cenários passam; o cenário 2 falha se o set for revertido.
-- [ ] `node --test ".opencode/plugins/__tests__/*.spec.mjs"` verde.
-- [ ] Sem TODO pendente.
-- [ ] **Path protegido** (`.opencode/plugins/__tests__/**`): commit exige trailer `Harness-Gate-Change: <aprovador>`.
+- [x] Teste escrito antes da mudança no set.
+- [x] Os 3 cenários passam; o cenário 2 falha se o set for revertido.
+- [x] `node --test ".opencode/plugins/__tests__/*.spec.mjs"` verde.
+- [x] Sem TODO pendente.
+- [x] **Path protegido** (`.opencode/plugins/__tests__/**`): commit exige trailer `Harness-Gate-Change: <aprovador>`.
 
 ---
 
@@ -156,16 +156,16 @@ graph TD
   - **Then** os 3 checks retornam `PASS` com `N/A` e nenhum critério de PRD é exigido
 
 #### 🛠️ Implementation Steps (TDD - Test First)
-- [ ] `.opencode/plugins/__tests__/prd-checks.spec.mjs`: `Unit` — os 8 cenários acima (PAP-02 e PAP-03 formam o par TDD)
-- [ ] Nenhum arquivo de produção nesta task
+- [x] `.opencode/plugins/__tests__/prd-checks.spec.mjs`: `Unit` — os 8 cenários acima (PAP-02 e PAP-03 formam o par TDD)
+- [x] Nenhum arquivo de produção nesta task
 
 #### 🏁 Definition of Done (DoD)
-- [ ] Teste escrito antes da implementação (TDD evidenciado).
-- [ ] **Par TDD atômico**: `PAP-02` + `PAP-03` fecham **juntas**. Os testes de `PAP-02` ficam legitimamente vermelhos até `PAP-03` implementar o núcleo; nenhuma das duas é declarada `Done` isoladamente (correção do defeito C-1 do parecer de negócio).
-- [ ] ≥1 PASS e ≥1 FAIL por check, incluindo o caso vacuous-safe e o cenário de bug (`type=bug` ⇒ `N/A`, sem exigir PRD).
-- [ ] `node --test ".opencode/plugins/__tests__/*.spec.mjs"` verde.
-- [ ] Sem TODO pendente.
-- [ ] **Path protegido**: commit exige trailer `Harness-Gate-Change`.
+- [x] Teste escrito antes da implementação (TDD evidenciado).
+- [x] **Par TDD atômico**: `PAP-02` + `PAP-03` fecham **juntas**. Os testes de `PAP-02` ficam legitimamente vermelhos até `PAP-03` implementar o núcleo; nenhuma das duas é declarada `Done` isoladamente (correção do defeito C-1 do parecer de negócio).
+- [x] ≥1 PASS e ≥1 FAIL por check, incluindo o caso vacuous-safe e o cenário de bug (`type=bug` ⇒ `N/A`, sem exigir PRD).
+- [x] `node --test ".opencode/plugins/__tests__/*.spec.mjs"` verde.
+- [x] Sem TODO pendente.
+- [x] **Path protegido**: commit exige trailer `Harness-Gate-Change`.
 
 ---
 
@@ -206,15 +206,15 @@ graph TD
   - **Then** `ADR-02` retorna `FAIL` por pulo de sequência
 
 #### 🛠️ Implementation Steps (TDD - Test First)
-- [ ] `.opencode/plugins/__tests__/prd-checks.spec.mjs`: `Unit` — já escrito em `PAP-02`; rodar e ver falhar (red)
-- [ ] `.agents/skills/prd-adr-pipeline/checks.mjs`: implementar as asserções de `SPEC §5` até verde
+- [x] `.opencode/plugins/__tests__/prd-checks.spec.mjs`: `Unit` — já escrito em `PAP-02`; rodar e ver falhar (red)
+- [x] `.agents/skills/prd-adr-pipeline/checks.mjs`: implementar as asserções de `SPEC §5` até verde
 
 #### 🏁 Definition of Done (DoD)
-- [ ] Teste existia antes da implementação (TDD evidenciado).
-- [ ] `runPrdChecks` puro — critério **comportamental/estrutural**, não por vocabulário: o conjunto de **especificadores de import** do módulo é exatamente `{node:fs, node:path}`, e não há `import(`/`require(` dinâmico. (Corrigido em `SPEC §5`/revisão: o critério anterior — "grep por `exec|spawn|fetch|http` vazio" — era inaplicável, contradizia a condição de `ADR-01` que **precisa** procurar `http` em `RESEARCH.md`, e reprovaria o próprio arquivo de teste. Um grep por vocabulário não prova ausência de capacidade: `execSync` não casa `\bexec\b`, e `node:net`/`node:child_process` passam por qualquer regex de token. A allowlist de imports é determinística e version-independente — não depende de `--permission`, cuja disponibilidade varia entre o Node do CI (22) e o local.)
-- [ ] `node --test` verde nos 3 checks + vacuous-safe.
-- [ ] Sem TODO pendente.
-- [ ] Path **não** protegido (`.agents/skills/**`) — sem trailer.
+- [x] Teste existia antes da implementação (TDD evidenciado).
+- [x] `runPrdChecks` puro — critério **comportamental/estrutural**, não por vocabulário: o conjunto de **especificadores de import** do módulo é exatamente `{node:fs, node:path}`, e não há `import(`/`require(` dinâmico. (Corrigido em `SPEC §5`/revisão: o critério anterior — "grep por `exec|spawn|fetch|http` vazio" — era inaplicável, contradizia a condição de `ADR-01` que **precisa** procurar `http` em `RESEARCH.md`, e reprovaria o próprio arquivo de teste. Um grep por vocabulário não prova ausência de capacidade: `execSync` não casa `\bexec\b`, e `node:net`/`node:child_process` passam por qualquer regex de token. A allowlist de imports é determinística e version-independente — não depende de `--permission`, cuja disponibilidade varia entre o Node do CI (22) e o local.)
+- [x] `node --test` verde nos 3 checks + vacuous-safe.
+- [x] Sem TODO pendente.
+- [x] Path **não** protegido (`.agents/skills/**`) — sem trailer.
 
 ---
 
@@ -255,15 +255,15 @@ graph TD
   - **Then** exit 0, com os 3 checks declarados `N/A` (vacuous-safe, sem vermelho falso)
 
 #### 🛠️ Implementation Steps (TDD - Test First)
-- [ ] `.opencode/plugins/__tests__/prd-checks.spec.mjs`: `Unit` — cenário 3 (integração vacuous-safe no relatório)
-- [ ] `scripts/static-checks.mjs`: importar + registrar; sem tocar `harness.config.json`
+- [x] `.opencode/plugins/__tests__/prd-checks.spec.mjs`: `Unit` — cenário 3 (integração vacuous-safe no relatório)
+- [x] `scripts/static-checks.mjs`: importar + registrar; sem tocar `harness.config.json`
 
 #### 🏁 Definition of Done (DoD)
-- [ ] Cenário 3 coberto por teste.
-- [ ] `node scripts/static-checks.mjs` verde com e sem `.spec/prd/**`.
-- [ ] `git diff main -- harness.config.json` **vazio**.
-- [ ] Sem TODO pendente.
-- [ ] **Path protegido** (o teste vive em `.opencode/plugins/__tests__/**`): commit exige trailer `Harness-Gate-Change: <aprovador>` + `HARNESS_GATE_APPROVER` no pre-commit.
+- [x] Cenário 3 coberto por teste.
+- [x] `node scripts/static-checks.mjs` verde com e sem `.spec/prd/**`.
+- [x] `git diff main -- harness.config.json` **vazio**.
+- [x] Sem TODO pendente.
+- [x] **Path protegido** (o teste vive em `.opencode/plugins/__tests__/**`): commit exige trailer `Harness-Gate-Change: <aprovador>` + `HARNESS_GATE_APPROVER` no pre-commit.
 
 ---
 
@@ -304,17 +304,17 @@ graph TD
   - **Then** existe campo explícito para registrar `—` (não se omite: declara)
 
 #### 🛠️ Implementation Steps (TDD - Test First)
-- [ ] `.opencode/plugins/__tests__/prd-checks.spec.mjs`: `Unit` — teste de existência dos 5 arquivos de template e do campo `depende-de`
-- [ ] `.agents/skills/prd-adr-pipeline/templates/PRD.md`, `RESEARCH.md`, `ADR-INDEX.md`, `ADR.md`
-- [ ] `.agents/skills/sdd-architecture-board/templates/ADR_TEMPLATE.md`
-- [ ] `.agents/skills/sdd-architecture-board/SKILL.md`: repontar a referência de saída do ADR para o novo layout
+- [x] `.opencode/plugins/__tests__/prd-checks.spec.mjs`: `Unit` — teste de existência dos 5 arquivos de template e do campo `depende-de`
+- [x] `.agents/skills/prd-adr-pipeline/templates/PRD.md`, `RESEARCH.md`, `ADR-INDEX.md`, `ADR.md`
+- [x] `.agents/skills/sdd-architecture-board/templates/ADR_TEMPLATE.md`
+- [x] `.agents/skills/sdd-architecture-board/SKILL.md`: repontar a referência de saída do ADR para o novo layout
 
 #### 🏁 Definition of Done (DoD)
-- [ ] Teste de existência escrito antes dos arquivos.
-- [ ] 5 templates existem; `PRD.md` marca as **7** seções obrigatórias (§1, §2, §5, §6, §7, §9, §16).
-- [ ] `grep -c "templates/ADR_TEMPLATE.md" .agents/skills/sdd-architecture-board/SKILL.md` ≥1 e o arquivo resolve.
-- [ ] Sem TODO pendente.
-- [ ] **Path protegido** (o teste vive em `.opencode/plugins/__tests__/**`): commit exige trailer `Harness-Gate-Change`.
+- [x] Teste de existência escrito antes dos arquivos.
+- [x] 5 templates existem; `PRD.md` marca as **7** seções obrigatórias (§1, §2, §5, §6, §7, §9, §16).
+- [x] `grep -c "templates/ADR_TEMPLATE.md" .agents/skills/sdd-architecture-board/SKILL.md` ≥1 e o arquivo resolve.
+- [x] Sem TODO pendente.
+- [x] **Path protegido** (o teste vive em `.opencode/plugins/__tests__/**`): commit exige trailer `Harness-Gate-Change`.
 
 ---
 
@@ -355,16 +355,16 @@ graph TD
   - **Then** nenhum PRD nem ADR é exigido (limiar de isenção explícito)
 
 #### 🛠️ Implementation Steps (TDD - Test First)
-- [ ] `.opencode/plugins/__tests__/prd-checks.spec.mjs`: `Unit` — teste de que o arquivo da regra existe e cita `checks.mjs` (é **teste**, não um 4º check: o contrato de `SPEC §5` permanece com exatamente 3 checks)
-- [ ] `.agents/rules/prd-adr-pipeline.md`: escrever a regra
-- [ ] Declarar no texto da regra que `prompt-optimizer` valida **demanda** (E1..E6), nunca o PRD (fecha o parcial D13)
+- [x] `.opencode/plugins/__tests__/prd-checks.spec.mjs`: `Unit` — teste de que o arquivo da regra existe e cita `checks.mjs` (é **teste**, não um 4º check: o contrato de `SPEC §5` permanece com exatamente 3 checks)
+- [x] `.agents/rules/prd-adr-pipeline.md`: escrever a regra
+- [x] Declarar no texto da regra que `prompt-optimizer` valida **demanda** (E1..E6), nunca o PRD (fecha o parcial D13)
 
 #### 🏁 Definition of Done (DoD)
-- [ ] Teste de existência/citação escrito antes.
-- [ ] `V4` PASS; regra ≤80 linhas.
-- [ ] Toda afirmação de gate cita mecanismo + nível.
-- [ ] Sem TODO pendente.
-- [ ] **Path protegido**: commit exige trailer `Harness-Gate-Change`.
+- [x] Teste de existência/citação escrito antes.
+- [x] `V4` PASS; regra ≤80 linhas.
+- [x] Toda afirmação de gate cita mecanismo + nível.
+- [x] Sem TODO pendente.
+- [x] **Path protegido**: commit exige trailer `Harness-Gate-Change`.
 
 ---
 
@@ -405,17 +405,17 @@ graph TD
   - **Then** nenhum deny — a fase da esteira é rótulo, não valor novo
 
 #### 🛠️ Implementation Steps (TDD - Test First)
-- [ ] `.opencode/plugins/__tests__/sdd-checks.spec.mjs`: `Unit` — fixture de tabela V17 sem o marcador ⇒ `hasVocabTable` = false
-- [ ] `.agents/rules/workflow-rules.md`: subseção + 2 linhas na tabela V17
-- [ ] `.agents/rules/sdd-workflow-standard.md`: §1 layout `.spec/prd/**` + §2 campo `prd_adr`
+- [x] `.opencode/plugins/__tests__/sdd-checks.spec.mjs`: `Unit` — fixture de tabela V17 sem o marcador ⇒ `hasVocabTable` = false
+- [x] `.agents/rules/workflow-rules.md`: subseção + 2 linhas na tabela V17
+- [x] `.agents/rules/sdd-workflow-standard.md`: §1 layout `.spec/prd/**` + §2 campo `prd_adr`
 
 #### 🏁 Definition of Done (DoD)
-- [ ] Fixture negativa escrita antes da emenda.
-- [ ] `V17`, `V4`, `SDD-02` PASS.
-- [ ] Nenhum valor novo de `current_phase` introduzido (grep).
-- [ ] Bloco `prd_adr` do `SPEC §4.3` emendado no standard **com dono declarado**: escrito/atualizado pelo orquestrador no merge de cada ADR (fecha o parcial O-7 — sem isto o bloco entra sem dono e sem critério).
-- [ ] Sem TODO pendente.
-- [ ] **Path protegido**: commit exige trailer `Harness-Gate-Change`.
+- [x] Fixture negativa escrita antes da emenda.
+- [x] `V17`, `V4`, `SDD-02` PASS.
+- [x] Nenhum valor novo de `current_phase` introduzido (grep).
+- [x] Bloco `prd_adr` do `SPEC §4.3` emendado no standard **com dono declarado**: escrito/atualizado pelo orquestrador no merge de cada ADR (fecha o parcial O-7 — sem isto o bloco entra sem dono e sem critério).
+- [x] Sem TODO pendente.
+- [x] **Path protegido**: commit exige trailer `Harness-Gate-Change`.
 
 ---
 
@@ -456,16 +456,16 @@ graph TD
   - **Then** o push acontece e a URL de compare é impressa; o merge é humano
 
 #### 🛠️ Implementation Steps (TDD - Test First)
-- [ ] `.opencode/plugins/__tests__/sdd-checks.spec.mjs`: `Unit` — fixture sem a cláusula não-bypass ⇒ `hasNoBypassClause` = false
-- [ ] `.agents/agents/sdd-orquestrador/AGENT.md`: fases + branch/PR, preservando a estrutura existente
-- [ ] `.agents/agents/orchestrator/AGENT.md`: idem
+- [x] `.opencode/plugins/__tests__/sdd-checks.spec.mjs`: `Unit` — fixture sem a cláusula não-bypass ⇒ `hasNoBypassClause` = false
+- [x] `.agents/agents/sdd-orquestrador/AGENT.md`: fases + branch/PR, preservando a estrutura existente
+- [x] `.agents/agents/orchestrator/AGENT.md`: idem
 
 #### 🏁 Definition of Done (DoD)
-- [ ] Fixtures negativas escritas antes da edição.
-- [ ] `SDD-01` e `SDD-03` PASS.
-- [ ] Procedimento de branch/PR documentado e validado por **dry-run local** (URL de compare montada e conferida, `git push --dry-run`) — **sem push real** (decisão do owner; evita efeito externo).
-- [ ] Sem TODO pendente.
-- [ ] **Path protegido**: commit exige trailer `Harness-Gate-Change`.
+- [x] Fixtures negativas escritas antes da edição.
+- [x] `SDD-01` e `SDD-03` PASS.
+- [x] Procedimento de branch/PR documentado e validado por **dry-run local** (URL de compare montada e conferida, `git push --dry-run`) — **sem push real** (decisão do owner; evita efeito externo).
+- [x] Sem TODO pendente.
+- [x] **Path protegido**: commit exige trailer `Harness-Gate-Change`.
 
 ---
 
@@ -506,18 +506,18 @@ graph TD
   - **Then** a referência é removida ou marcada como condicional (não se cria arquivo novo)
 
 #### 🛠️ Implementation Steps (TDD - Test First)
-- [ ] `.opencode/plugins/__tests__/prd-checks.spec.mjs`: `Unit` — teste de ausência dos 3 ponteiros mortos em `.agents/` (é **teste**, não um 5º check)
-- [ ] `.agents/agents/product-manager/AGENT.md`: SSoT → `.spec/prd/**`
-- [ ] `.agents/agents/architect/AGENT.md`: idem + modo ADR
-- [ ] `.agents/agents/code-reviewer/PROMPT.md`: ponteiro → `.spec/prd/**`
-- [ ] `.agents/agents/qa-engineer/AGENT.md`: ponteiro → `.agents/rules/**` (escopo corrigido: o defeito existia e o RF-08 não o nomeava)
+- [x] `.opencode/plugins/__tests__/prd-checks.spec.mjs`: `Unit` — teste de ausência dos 3 ponteiros mortos em `.agents/` (é **teste**, não um 5º check)
+- [x] `.agents/agents/product-manager/AGENT.md`: SSoT → `.spec/prd/**`
+- [x] `.agents/agents/architect/AGENT.md`: idem + modo ADR
+- [x] `.agents/agents/code-reviewer/PROMPT.md`: ponteiro → `.spec/prd/**`
+- [x] `.agents/agents/qa-engineer/AGENT.md`: ponteiro → `.agents/rules/**` (escopo corrigido: o defeito existia e o RF-08 não o nomeava)
 
 #### 🏁 Definition of Done (DoD)
-- [ ] Teste de ausência escrito antes da edição.
-- [ ] `grep` dos 3 ponteiros = 0 em `.agents/`.
-- [ ] Sem TODO pendente.
-- [ ] **Path protegido**: commit exige trailer `Harness-Gate-Change`.
-- [ ] **Escopo esperado por agente declarado** na regra de `PAP-06` (`product-manager`/`architect` escrevem apenas `.spec/prd/**`) — mitiga o parcial D11 sem tocar `gate.js`.
+- [x] Teste de ausência escrito antes da edição.
+- [x] `grep` dos 3 ponteiros = 0 em `.agents/`.
+- [x] Sem TODO pendente.
+- [x] **Path protegido**: commit exige trailer `Harness-Gate-Change`.
+- [x] **Escopo esperado por agente declarado** na regra de `PAP-06` (`product-manager`/`architect` escrevem apenas `.spec/prd/**`) — mitiga o parcial D11 sem tocar `gate.js`.
 
 ---
 
@@ -558,22 +558,22 @@ graph TD
   - **Then** nenhum drift é reportado (o pior caso do guard, provado em condições reais)
 
 #### 🛠️ Implementation Steps (TDD - Test First)
-- [ ] `.opencode/plugins/__tests__/prd-checks.spec.mjs`: `Unit` — cenário 3 já coberto em `PAP-02`; aqui a prova é a **execução real** sobre o disco
-- [ ] `.spec/prd/prd-adr-pipeline/PRD.md` — **todas** as condições de `PRD-01` (`SPEC §5`), não só as óbvias:
+- [x] `.opencode/plugins/__tests__/prd-checks.spec.mjs`: `Unit` — cenário 3 já coberto em `PAP-02`; aqui a prova é a **execução real** sobre o disco
+- [x] `.spec/prd/prd-adr-pipeline/PRD.md` — **todas** as condições de `PRD-01` (`SPEC §5`), não só as óbvias:
       §1, §2, **§5**, §6, §7, §9, §16 presentes · cada seção obrigatória com `> ❓ Validação:` · **§7 não-vazia** ·
       **≥1 métrica da §5 com a coluna "como medir" preenchida** · **§10, se presente, com `Dado`/`Quando`/`Então` em cada story** ·
       §15 com `<task>` e `<context>` não-vazios · §16 com veredito + data
-- [ ] `.spec/prd/prd-adr-pipeline/RESEARCH.md` — **≥2 fontes (`http`)** + alternativas + recomendação (condição de `ADR-01`)
-- [ ] `.spec/prd/prd-adr-pipeline/ADR-INDEX.md` — 5 linhas (`ADR-001`..`ADR-005`) 1:1 com os dirs; `dir` no padrão **`ADRs/ADR-00N-{slug}/`** (não `ADR-00N/`); `branch` casando `^adr/[a-z0-9-]+/\d{2}-[a-z0-9-]+$`; `depends_on` declarado
-- [ ] `.spec/prd/prd-adr-pipeline/ADRs/ADR-00N-{slug}/ADR.md` — 5 arquivos, cada um: decisão, motivo, alternativas descartadas + fonte, `depende-de`, interface congelada, status. **Somente `ADR.md`** — a composição de 5 arquivos por ADR é a exceção declarada em `SPEC §4.4` (ADR cujo SDD é o próprio ciclo em curso)
+- [x] `.spec/prd/prd-adr-pipeline/RESEARCH.md` — **≥2 fontes (`http`)** + alternativas + recomendação (condição de `ADR-01`)
+- [x] `.spec/prd/prd-adr-pipeline/ADR-INDEX.md` — 5 linhas (`ADR-001`..`ADR-005`) 1:1 com os dirs; `dir` no padrão **`ADRs/ADR-00N-{slug}/`** (não `ADR-00N/`); `branch` casando `^adr/[a-z0-9-]+/\d{2}-[a-z0-9-]+$`; `depends_on` declarado
+- [x] `.spec/prd/prd-adr-pipeline/ADRs/ADR-00N-{slug}/ADR.md` — 5 arquivos, cada um: decisão, motivo, alternativas descartadas + fonte, `depende-de`, interface congelada, status. **Somente `ADR.md`** — a composição de 5 arquivos por ADR é a exceção declarada em `SPEC §4.4` (ADR cujo SDD é o próprio ciclo em curso)
 
 #### 🏁 Definition of Done (DoD)
-- [ ] `node scripts/sdd-checks.mjs` 8/8 PASS **com** `.spec/prd/**` em disco.
-- [ ] `PRD-01`/`ADR-01`/`ADR-02` PASS sobre o artefato real (não só sobre fixtures) — cobrindo **todas** as condições de `SPEC §5`, não um subconjunto.
-- [ ] Cenário 2 (PRD não aprovado) falha quando o §16 é esvaziado.
-- [ ] `SDD-02` continua resolvendo `.spec/backend/prd-adr-pipeline`.
-- [ ] **Aprovação humana registrada, não auto-assinada**: o §16 cita o **evento de aprovação do owner** (data + portão) e a evidência é o registro do portão em `workflow-state.json.gates.G2_PRD` — **não** o `VERIFY.md` de `PAP-10` (que é posterior a esta task; apontar para lá era DoD circular — achado do review do PAP-11). O agente não preenche o veredito por conta própria (`SPEC §14`, item 13).
-- [ ] Sem TODO pendente.
+- [x] `node scripts/sdd-checks.mjs` 8/8 PASS **com** `.spec/prd/**` em disco.
+- [x] `PRD-01`/`ADR-01`/`ADR-02` PASS sobre o artefato real (não só sobre fixtures) — cobrindo **todas** as condições de `SPEC §5`, não um subconjunto.
+- [x] Cenário 2 (PRD não aprovado) falha quando o §16 é esvaziado.
+- [x] `SDD-02` continua resolvendo `.spec/backend/prd-adr-pipeline`.
+- [x] **Aprovação humana registrada, não auto-assinada**: o §16 cita o **evento de aprovação do owner** (data + portão) e a evidência é o registro do portão em `workflow-state.json.gates.G2_PRD` — **não** o `VERIFY.md` de `PAP-10` (que é posterior a esta task; apontar para lá era DoD circular — achado do review do PAP-11). O agente não preenche o veredito por conta própria (`SPEC §14`, item 13).
+- [x] Sem TODO pendente.
 
 ---
 
@@ -614,19 +614,19 @@ graph TD
   - **Then** continuam verdes (vacuous-safe) — **mas este cenário NÃO substitui o cenário 1**: o aceite é o cenário 1
 
 #### 🛠️ Implementation Steps (TDD - Test First)
-- [ ] `.opencode/plugins/__tests__/prd-checks.spec.mjs`: `Unit` — cenário 3 reafirmado no nível da suíte
-- [ ] `README.md`: linha na tabela de funcionalidades
-- [ ] `.spec/backend/prd-adr-pipeline/VERIFY.md`: 3 dimensões + evidências literais coladas
+- [x] `.opencode/plugins/__tests__/prd-checks.spec.mjs`: `Unit` — cenário 3 reafirmado no nível da suíte
+- [x] `README.md`: linha na tabela de funcionalidades
+- [x] `.spec/backend/prd-adr-pipeline/VERIFY.md`: 3 dimensões + evidências literais coladas
 
 #### 🏁 Definition of Done (DoD)
-- [ ] `suiteFull` verde e `sdd-checks` 8/8 **com** `.spec/prd/**` presente.
-- [ ] `git diff main -- .opencode/plugins/gate.js harness.config.json` vazio.
-- [ ] `R-NODENY` PASS e `SDD-02` PASS.
-- [ ] `VERIFY.md` com as 3 dimensões preenchidas.
-- [ ] **`code-reviewer` invocado após a última mudança, com zero 🔴** (`SPEC §14.9` — antes era critério sem task).
-- [ ] **Regressão preservada**: `V4`, `V17`, `SDD-01/02/03`, `R-NODENY`, `RENAME-01` continuam PASS (`SPEC §14.12` — antes era critério sem task).
-- [ ] Sem TODO pendente.
-- [ ] **Path protegido** (o teste vive em `.opencode/plugins/__tests__/**`): commit exige trailer `Harness-Gate-Change`.
+- [x] `suiteFull` verde e `sdd-checks` 8/8 **com** `.spec/prd/**` presente.
+- [x] `git diff main -- .opencode/plugins/gate.js harness.config.json` vazio.
+- [x] `R-NODENY` PASS e `SDD-02` PASS.
+- [x] `VERIFY.md` com as 3 dimensões preenchidas.
+- [x] **`code-reviewer` invocado após a última mudança, com zero 🔴** (`SPEC §14.9` — antes era critério sem task). **FECHADO pelo orquestrador**: o subagente que executou PAP-10/PAP-12 não pode invocar `code-reviewer` (limite de profundidade = 1) e **não fez self-review**; o parecer foi emitido em 2 rodadas (iteração 1: 1 🔴 F-1 + 4 🟡; iteração 2: **zero 🔴**, "DoD de `code-reviewer` do PAP-10 SATISFEITO"). O 🔴 e os 🟡 N-1/N-2/N-3 foram corrigidos e verificados. Ver `VERIFY.md` §1.4 e §5.
+- [x] **Regressão preservada**: `V4`, `V17`, `SDD-01/02/03`, `R-NODENY`, `RENAME-01` continuam PASS (`SPEC §14.12` — antes era critério sem task).
+- [x] Sem TODO pendente.
+- [x] **Path protegido** (o teste vive em `.opencode/plugins/__tests__/**`): commit exige trailer `Harness-Gate-Change`.
 
 ---
 
@@ -667,17 +667,17 @@ graph TD
   - **Then** as 3 aparecem explicitamente como **não falseáveis hoje** (não são declaradas como sucesso)
 
 #### 🛠️ Implementation Steps (TDD - Test First)
-- [ ] `.opencode/plugins/__tests__/prd-checks.spec.mjs`: `Unit` — teste de que `workflow-state.json` preserva os campos lidos pelo gate após a instrumentação
-- [ ] `workflow-state.json`: acrescentar `follow_ups[].created_at` e `prd_adr.snapshots[]` (aditivo)
-- [ ] `.spec/backend/prd-adr-pipeline/VERIFY.md`: baseline congelado + lista de métricas não falseáveis
+- [x] `.opencode/plugins/__tests__/prd-checks.spec.mjs`: `Unit` — teste que **lê o `workflow-state.json` real** (não fixture) e assere que os 4 campos lidos pelo `gate.js` (`current_phase`/`current_feature`/`harness_status`/`code_review_status`) existem com o tipo esperado, que `prd_adr.snapshots` é array e que todo `follow_ups[].created_at` é string; + 3 testes de discriminação (cópia com `current_phase` renomeado / `snapshots` removido / `created_at` removido ⇒ o guard falha). Fechado na iteração 1 do loop §6.2 (achado **F-1** do review: o `[x]` anterior não tinha artefato).
+- [x] `workflow-state.json`: acrescentar `follow_ups[].created_at` e `prd_adr.snapshots[]` (aditivo)
+- [x] `.spec/backend/prd-adr-pipeline/VERIFY.md`: baseline congelado + lista de métricas não falseáveis
 
 #### 🏁 Definition of Done (DoD)
-- [ ] Baseline congelado e datado no `VERIFY.md`.
-- [ ] Campos aditivos presentes; `SDD-03` PASS; `git diff` mostra só acréscimo.
-- [ ] As 7 métricas de `SPEC §14.1` declaradas; SM-1/SM-5/SM-7 marcadas **não falseáveis hoje**.
-- [ ] `prd_adr.snapshots[]` criado (é o que torna SM-3 medível por ADR).
-- [ ] Sem TODO pendente.
-- [ ] **Path protegido** (o teste vive em `.opencode/plugins/__tests__/**`): commit exige trailer `Harness-Gate-Change`.
+- [x] Baseline congelado e datado no `VERIFY.md`.
+- [x] Campos aditivos presentes; `SDD-03` PASS; `git diff --numstat -- workflow-state.json` = `58 1` — as 58 adições incluem as 57 do PAP-12 (43 `created_at` + 13 do bloco `prd_adr` + 1 `follow_ups_created_at_basis`) mais 1 linha `sdd_stage` pré-existente do orquestrador; a única deleção é a `sdd_stage` antiga (não é do PAP-12). PAP-12 = 0 remoções.
+- [x] As 7 métricas de `SPEC §14.1` declaradas; SM-1/SM-5/SM-7 marcadas **não falseáveis hoje**.
+- [x] `prd_adr.snapshots[]` criado (é o que torna SM-3 medível por ADR).
+- [x] Sem TODO pendente.
+- [x] **Path protegido** (o teste vive em `.opencode/plugins/__tests__/**`): commit exige trailer `Harness-Gate-Change`.
 
 ---
 
