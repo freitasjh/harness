@@ -121,7 +121,7 @@
   "harness_status": "passed",
   "harness_evidence": "bugfix installer-upgrade-regression: installer 372/372 pass 0 fail 0 skip (era 355/5); determinismo 3x = 372/372/372; plugins 216/216; static-checks EXIT 0; vendor-check OK; sdd-checks 8/8. Diff restrito a installer/install.mjs + 1 spec novo; gate.js e harness.config.json com 0 linhas alteradas; nenhuma fixture original editada.",
   "code_review_status": "passed",
-  "sdd_stage": "prd-adr-pipeline Execution — PAP-01..PAP-07 CONCLUIDOS (7/12), todos commitados. Núcleo de checks puro + templates coerentes; wiring provado por exit code; regra descritiva da esteira (.agents/rules/prd-adr-pipeline.md, 79 linhas) com mecanismo+nivel por afirmacao; vocabulario V17 e layout/estado emendados. plugins 216->335 pass; installer 372/0; sdd-checks 8/8; V4 1069/1705. Loop §6.2: PAP-02/03 em 4 iteracoes (2 escalacoes), PAP-04/05 em 2, PAP-06/07 em 1. FALTAM: PAP-08 (wiring nos 2 orquestradores), PAP-09 (drift de SSoT), PAP-10 (README+verificacao final), PAP-11 (dogfood real), PAP-12 (metricas). Abertos: seal HARNESS_SEAL_JSON nao republicado (Completed sera negado); CI nao barra push com suite vermelha (R-4); 3 nits cosmeticos de §14.N; push pendente.",
+  "sdd_stage": "prd-adr-pipeline Execution — PAP-01..PAP-09 CONCLUIDOS (9/12), todos commitados. Núcleo de checks puro + templates; wiring provado por exit code; regra descritiva (mecanismo+nivel por afirmacao); vocabulario V17 e layout/estado emendados; esteira wired nos 2 orquestradores (insercao pura, marcadores SDD-01/03 byte-identicos) e drift de SSoT corrigido em 4 AGENT.md (qa-engineer entrou por achado do proprio subagente, que recusou sair do escopo). plugins 216->346 pass; installer 372/0; sdd-checks 8/8; V4 1069/1705. Loop §6.2: PAP-02/03 em 4 iteracoes (2 escalacoes), PAP-04/05 em 2, PAP-06/07 em 1, PAP-08/09 em 1 (zero criticos no review). FALTAM: PAP-10 (README+verificacao final), PAP-11 (dogfood real), PAP-12 (metricas). Abertos: seal HARNESS_SEAL_JSON nao republicado (Completed sera negado); CI nao barra push com suite vermelha (R-4); 3 nits cosmeticos de §14.N; debito pre-existente (orchestrator/AGENT.md cita 4 regras de .agents/rules/** que nao existem); push pendente.",
   "backlog": {
     "total": 14,
     "todo": 0,
@@ -689,10 +689,17 @@
   "post_gate_edits": [
     {
       "date": "2026-10-15",
-      "artifacts": ["SPEC.md", "TASKS.md"],
-      "motivo": "Review do PAP-02/PAP-03: (a) SPEC §4.2 ganhou o escopo normativo explicito (o que os checks impoem vs o que e descritivo) — o defeito 'detail afirma conformidade nao avaliada' apareceu 2x; (b) TASKS PAP-03 DoD trocou o criterio de pureza por allowlist de import specifiers, porque 'grep por exec|spawn|fetch|http vazio' contradizia a condicao de ADR-01 que PRECISA procurar http em RESEARCH.md.",
-      "visibilidade": "Registrado aqui porque a SPEC ja havia passado o P1->P2 e o PLAN/TASKS o P2->P3.",
-      "efeito": "Nenhuma mudanca de escopo ou criterio de aceite; precisao de contrato e correcao de criterio inaplicavel. SDD-02 continua 12/12."
+      "artifacts": ["PROPOSAL.md", "SPEC.md", "PLAN.md", "TASKS.md"],
+      "motivo": "Review do PAP-08/PAP-09: o RF-08/PAP-09 nomeava 3 arquivos, mas o defeito (ponteiro vivo para GEMINI.md/docs/specs/docs/adr) existe em 4 — .agents/agents/qa-engineer/AGENT.md:11 tambem. Escopo corrigido nos 4 artefatos. Declarado que 'referencia viva' = ponteiro de projeto; exemplo generico em skill (context-compressor) nao conta.",
+      "visibilidade": "Registrado aqui porque a SPEC ja havia passado o P1->P2 e o PLAN/TASKS o P2->P3. Foi o proprio subagente que recusou sair do escopo autorizado e reportou o conflito — comportamento correto.",
+      "efeito": "Amplia o escopo de PAP-09 em 1 arquivo (mesma classe de defeito, mesmo fix). Nenhuma mudanca de criterio de aceite."
+    },
+    {
+      "date": "2026-10-15",
+      "artifacts": ["SPEC.md", "PLAN.md", "TASKS.md"],
+      "motivo": "Review do PAP-07: SPEC/PLAN/TASKS afirmavam que 'o gate.js I2 recusa fase fora do canonico' — FALSO. O gate.js nao tem conjunto canonico de current_phase (so compara com Completed) e o V17 prova apenas o MARCADOR da tabela, nao o conteudo das linhas. Corrigida a premissa nos 3 artefatos e trocado o rotulo ADR-DECOMP por ADR-INDEX (ADR-P05), alinhando com o §13.",
+      "visibilidade": "Registrado aqui (edicao pos-portao).",
+      "efeito": "Correcao de premissa falsa sobre o mecanismo; nenhuma mudanca de escopo."
     },
     {
       "date": "2026-10-15",

@@ -479,7 +479,7 @@ graph TD
 - **Priority**: P0
 - **Risk Level**: Low
 - **Parallelizable**: Yes
-- **Artifact**: `.agents/agents/product-manager/AGENT.md`, `.agents/agents/architect/AGENT.md`, `.agents/agents/code-reviewer/PROMPT.md`
+- **Artifact**: `.agents/agents/product-manager/AGENT.md`, `.agents/agents/architect/AGENT.md`, `.agents/agents/code-reviewer/PROMPT.md`, **`.agents/agents/qa-engineer/AGENT.md`** (escopo corrigido — o ponteiro vivo estava lá e não era nomeado)
 - **Framework Detail**: markdown em path **protegido**
 
 #### 📝 Context & Domain Impact
@@ -510,6 +510,7 @@ graph TD
 - [ ] `.agents/agents/product-manager/AGENT.md`: SSoT → `.spec/prd/**`
 - [ ] `.agents/agents/architect/AGENT.md`: idem + modo ADR
 - [ ] `.agents/agents/code-reviewer/PROMPT.md`: ponteiro → `.spec/prd/**`
+- [ ] `.agents/agents/qa-engineer/AGENT.md`: ponteiro → `.agents/rules/**` (escopo corrigido: o defeito existia e o RF-08 não o nomeava)
 
 #### 🏁 Definition of Done (DoD)
 - [ ] Teste de ausência escrito antes da edição.

@@ -195,7 +195,7 @@ Corte honesto: `PAP-05`/`PAP-06`/`PAP-08` entregam **formato e operação** alé
 - **[PAP-09]** [ ] Conserto do drift de SSoT
   - **Depends on**: `PAP-08`
   - **Layer**: `Interface`
-  - **Artifact**: `.agents/agents/product-manager/AGENT.md`, `.agents/agents/architect/AGENT.md`, `.agents/agents/code-reviewer/PROMPT.md`
+  - **Artifact**: `.agents/agents/product-manager/AGENT.md`, `.agents/agents/architect/AGENT.md`, `.agents/agents/code-reviewer/PROMPT.md`, `.agents/agents/qa-engineer/AGENT.md` (escopo corrigido no review do PAP-08/09)
   - **Enforcement**: zero referência viva a `GEMINI.md`/`docs/specs/`/`docs/adr/`
   - **Constraint Ref**: `RF-08`, `BR-12`
   - **Framework Detail**: markdown; exige trailer

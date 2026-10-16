@@ -270,7 +270,7 @@ Conforme §5, vacuous-safe, com fixture PASS e FAIL por check, exercitadas em `.
 `orchestrator` e `sdd-orquestrador` ganham as fases da esteira e a operação de branch/PR, **preservando**: cláusula de não-bypass (SDD-01) e `gates.P1_P2`/`P2_P3` (SDD-03).
 
 ### RF-08 — Conserto do drift de SSoT
-`product-manager/AGENT.md`, `architect/AGENT.md` e `code-reviewer/PROMPT.md` deixam de apontar para `GEMINI.md`, `docs/specs/` e `docs/adr/` (inexistentes) e apontam para `.spec/prd/**`.
+`product-manager/AGENT.md`, `architect/AGENT.md`, `code-reviewer/PROMPT.md` **e `qa-engineer/AGENT.md`** deixam de apontar para `GEMINI.md`, `docs/specs/` e `docs/adr/` (inexistentes) e apontam para `.spec/prd/**` / `.agents/rules/**`. **Escopo corrigido** (achado do review do PAP-08/09): o `qa-engineer/AGENT.md:11` tem o mesmo ponteiro vivo e não estava nomeado aqui. **"Referência viva" = ponteiro de projeto**; exemplo genérico em skill (`context-compressor/SKILL.md:20`, "Rules from `GEMINI.md` or `MEMORY.md`") **não** é defeito desta task e fica declarado como não-vivo.
 
 ### RF-09 — Operação de branch/PR sem `gh`
 Procedimento documentado e exercitado: `git checkout main && git pull` → `git checkout -b adr/{prd-id}/{nn}-{slug}` → push → **imprimir URL de compare** do GitHub. Merge é sempre humano.
