@@ -513,3 +513,101 @@ describe("SDD-02 Tier-1 ignores SPEC_NON_CYCLE buckets (FU-40)", () => {
     assert.match(res.detail, /\.spec\/backend\/nova-feature/);
   });
 });
+
+// --- PAP-01 / ADR-P01 / INV-4: bucket `prd` é non-cycle ---------------------
+// `.spec/prd/{id}/` carrega `PRD.md` e NÃO tem `PROPOSAL.md` (exigido por
+// SDD_ARTIFACTS). Sem o guard, um `current_feature` igual ao `prd-id` faz o
+// resolver tratar o dir como grupo de ciclo: o gate de drift acusa vermelho
+// (MF-1) ou, pior, cai no próximo candidato COMPLETO e valida o `TASKS.md` de
+// OUTRO ciclo — verde-falso. Precedente: FU-40 deu o mesmo tratamento a
+// `tech-debts`/`bugs`/`roadmap`.
+describe("SDD-02 guard: .spec/prd/** é non-cycle (PAP-01 / ADR-P01 / INV-4)", () => {
+  it("cenário 1: .spec/prd/<feat> incompleto (só PRD.md) não vira ciclo — SDD-02 resolve o ciclo real e PASSa", () => {
+    const root = tmp({});
+    writeCycle(root, ".spec/backend/nova-feature");                 // ciclo real, completo
+    mkdirSync(join(root, ".spec/prd/nova-feature"), { recursive: true });
+    writeFileSync(join(root, ".spec/prd/nova-feature/PRD.md"), "# PRD\n"); // sem PROPOSAL/SPEC/PLAN/TASKS
+    writeState(root, { current_feature: "nova-feature" });          // prd-id == current_feature
+    // D5: controle positivo — se a string do path rotar, o cenário passaria por
+    // ausência de alvo; o existsSync prova que o alvo existe no disco.
+    assert.ok(existsSync(join(root, ".spec/prd/nova-feature/PRD.md")), "controle positivo: PRD.md em disco");
+    assert.deepEqual(missingArtifacts(join(root, ".spec/prd/nova-feature")), ["PROPOSAL.md", "SPEC.md", "PLAN.md", "TASKS.md"], "controle positivo: dir prd é incompleto (não é ciclo)");
+    const cycle = resolveSddCycle(root);
+    assert.equal(cycle.complete, true, "ciclo real deve resolver");
+    assert.equal(cycle.rel, ".spec/backend/nova-feature");
+    assert.ok(!String(cycle.rel).startsWith(".spec/prd"), "prd não pode ser o ciclo resolvido");
+    const res = evaluateSdd02(root);
+    assert.equal(res.ok, true, res.detail);
+    assert.match(res.detail, /\.spec\/backend\/nova-feature/);
+  });
+
+  // Contra-prova VIVA (D2): o predicado é INJETÁVEL, não só o set global. Com o
+  // guard default, `.spec/prd/**` sai da detecção de ciclo; injetando `nonCycle`
+  // SEM `prd`, o MESMO dir volta a ser candidato. Se a injeção fosse ignorada
+  // (uso do set global), o 2º assert FALHARIA — é a asserção que discrimina.
+  it("cenário 2: `nonCycle` injetado é respeitado — sem `prd` o dir vira ciclo (falha se ignorado)", () => {
+    const root = tmp({});
+    writeCycle(root, ".spec/backend/nova-feature");
+    mkdirSync(join(root, ".spec/prd/nova-feature"), { recursive: true });
+    writeFileSync(join(root, ".spec/prd/nova-feature/PRD.md"), "# PRD\n");
+    writeState(root, { current_feature: "nova-feature" });
+    assert.ok(existsSync(join(root, ".spec/prd/nova-feature/PRD.md")), "controle positivo: fixture em disco");
+
+    // guard default (com `prd`): bucket sai da detecção de ciclo.
+    const guarded = resolveSddCycle(root);
+    assert.deepEqual(guarded.candidates.filter((c) => c.rel.startsWith(".spec/prd")), []);
+    assert.equal(guarded.rel, ".spec/backend/nova-feature");
+    assert.equal(isNonCycleRel(".spec/prd/nova-feature"), true);
+
+    // guard injetado SEM `prd`: o dir volta a ser acusado como candidato de ciclo.
+    const noPrd = new Set(["archive", "tech-debts", "roadmap", "bugs"]);
+    const noGuard = resolveSddCycle(root, { nonCycle: noPrd });
+    const prdCandidates = noGuard.candidates.filter((c) => c.rel.startsWith(".spec/prd"));
+    assert.ok(prdCandidates.length > 0, "sem `prd` em nonCycle, .spec/prd/** é candidato de ciclo");
+    assert.equal(prdCandidates[0].rel, ".spec/prd/nova-feature");
+    assert.equal(isNonCycleRel(".spec/prd/nova-feature", noPrd), false, "predicado injetável respeita o set recebido");
+  });
+
+  it("cenário 3: .spec/prd/outro-id incompleto com current_feature não correspondente — nenhum drift", () => {
+    const root = tmp({});
+    writeCycle(root, ".spec/backend/ciclo-real");
+    mkdirSync(join(root, ".spec/prd/outro-id"), { recursive: true });
+    writeFileSync(join(root, ".spec/prd/outro-id/PRD.md"), "# PRD\n");
+    writeState(root, { current_feature: "ciclo-real" });
+    // D5: controle positivo — o alvo existe; senão o cenário passaria por ausência.
+    assert.ok(existsSync(join(root, ".spec/prd/outro-id/PRD.md")), "controle positivo: PRD.md de outro-id em disco");
+    assert.ok(existsSync(join(root, ".spec/backend/ciclo-real/TASKS.md")), "controle positivo: ciclo real em disco");
+    const cycle = resolveSddCycle(root);
+    assert.equal(cycle.complete, true);
+    assert.equal(cycle.rel, ".spec/backend/ciclo-real");
+    // D4: `assert.ok(!cycle.drift)` é sensível ao guard — `notEqual(drift, true)`
+    // passava trivialmente com `drift === undefined`.
+    assert.ok(!cycle.drift, "nenhum drift reportado");
+    assert.deepEqual(cycle.candidates.filter((c) => c.rel.startsWith(".spec/prd")), [], "nenhum candidato em .spec/prd/**");
+    assert.equal(evaluateSdd02(root).ok, true);
+  });
+
+  // D3: o pior caso — verde-falso. `.spec/prd/<feat>/` COMPLETO (4 artefatos) e
+  // SEM ciclo real. Com o guard, `prd` não é ciclo ⇒ fail-closed (`ok === false`).
+  // Sem o guard, o resolver escolheria `.spec/prd/...` e validaria o TASKS.md
+  // errado (verde-falso) — demonstrado pela injeção de `nonCycle` sem `prd`.
+  it("cenário D3: .spec/prd/<feat> COMPLETO sem ciclo real ⇒ fail-closed (não verde-falso)", () => {
+    const root = tmp({});
+    writeCycle(root, ".spec/prd/nova-feature");                      // 4 artefatos no bucket parcial
+    writeState(root, { current_feature: "nova-feature" });           // prd-id == current_feature
+    // D5: controle positivo — a fixture É completa (senão fail-closed passaria por ausência).
+    assert.ok(existsSync(join(root, ".spec/prd/nova-feature/PROPOSAL.md")), "controle positivo: prd COMPLETO em disco");
+    assert.deepEqual(missingArtifacts(join(root, ".spec/prd/nova-feature")), [], "controle positivo: 4/4 artefatos presentes");
+
+    // guard presente: bucket parcial não vira ciclo ⇒ nenhum ciclo completo.
+    const res = evaluateSdd02(root);
+    assert.equal(res.ok, false, res.detail);
+    assert.match(res.detail, /no complete SDD cycle/i);
+
+    // sem o guard (nonCycle injetado sem `prd`): o dir prd vence ⇒ verde-falso.
+    const noPrd = new Set(["archive", "tech-debts", "roadmap", "bugs"]);
+    const noGuard = evaluateSdd02(root, { nonCycle: noPrd });
+    assert.equal(noGuard.ok, true, "sem guard o dir prd vence — verde-falso demonstrado");
+    assert.match(noGuard.detail, /cycle=\.spec\/prd\/nova-feature/, "sem guard o alvo é .spec/prd/**, não o ciclo SDD");
+  });
+});

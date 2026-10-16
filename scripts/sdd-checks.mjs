@@ -143,14 +143,21 @@ export function hasGatesConvention(root) {
 export const SDD_ARTIFACTS = ["PROPOSAL.md", "SPEC.md", "PLAN.md", "TASKS.md"];
 
 // Buckets under .spec/ that carry partial docs, not a full SDD cycle.
-const SPEC_NON_CYCLE = new Set(["archive", "tech-debts", "roadmap", "bugs"]);
+// `prd` (ADR-P01): `.spec/prd/{id}/` carrega PRD.md e nao tem PROPOSAL.md, que
+// SDD_ARTIFACTS exige. Com `prd-id == current_feature` o dir viraria grupo de
+// ciclo: drift vermelho (MF-1) ou verde-falso validando o TASKS.md de OUTRO
+// ciclo. O guard da validacao dos ADRs e o check dedicado (ADR-01/ADR-02).
+const SPEC_NON_CYCLE = new Set(["archive", "tech-debts", "roadmap", "bugs", "prd"]);
 
 // FU-40: um rel sob `.spec/<bucket>/...` (bucket nao-ciclo) nunca qualifica
-// como ciclo, mesmo com os 4 artefatos. Um tech-debts/bugs/roadmap completo
+// como ciclo, mesmo com os 4 artefatos. Um tech-debts/bugs/roadmap/prd completo
 // faria o check amarrar "o ciclo" num diretorio de docs parciais.
-export function isNonCycleRel(rel) {
+// `nonCycle` é injetável (default = SPEC_NON_CYCLE): o predicado é o que os
+// testes exercitam no caso negativo (D2) sem exportar o set global — exportar
+// só para asserir o próprio valor seria tautológico.
+export function isNonCycleRel(rel, nonCycle = SPEC_NON_CYCLE) {
   const m = /^\.spec\/([^/]+)/.exec(String(rel || ""));
-  return Boolean(m && SPEC_NON_CYCLE.has(m[1]));
+  return Boolean(m && nonCycle.has(m[1]));
 }
 
 export function readWorkflowState(root) {
@@ -176,7 +183,7 @@ function subDirs(dir) {
 // Ordered candidate list (first complete dir wins). Tiers: state pointers,
 // the cycle the state names, then any live cycle, then archived cycles
 // (newest first — the `<YYYYMMDD>-<feature>` prefix sorts chronologically).
-export function sddCycleCandidates(root) {
+export function sddCycleCandidates(root, nonCycle = SPEC_NON_CYCLE) {
   const state = readWorkflowState(root);
   const out = [];
   const add = (rel, via) => {
@@ -187,7 +194,7 @@ export function sddCycleCandidates(root) {
   };
 
   const specDir = join(root, ".spec");
-  const groups = subDirs(specDir).filter((g) => !SPEC_NON_CYCLE.has(g));
+  const groups = subDirs(specDir).filter((g) => !nonCycle.has(g));
   const archives = subDirs(join(specDir, "archive")).reverse();
 
   // Tier 1 — pointers declared by the state. Stale values are tolerated: an
@@ -233,8 +240,8 @@ export function sddCycleCandidates(root) {
   return out;
 }
 
-export function resolveSddCycle(root = REPO_ROOT) {
-  const candidates = sddCycleCandidates(root);
+export function resolveSddCycle(root = REPO_ROOT, { nonCycle = SPEC_NON_CYCLE } = {}) {
+  const candidates = sddCycleCandidates(root, nonCycle);
 
   // --- Precedence contract (FU-38 hard-stop) ---------------------------------
   // 1. Tier-1 explicit state pointer → LIVE COMPLETE cycle beats drift. In the
@@ -253,9 +260,9 @@ export function resolveSddCycle(root = REPO_ROOT) {
   //     (`.spec/backend/<feat>` while `.spec/frontend/<feat>` is WIP). No
   //     current_feature => nothing to scope to: legacy behavior (any explicit
   //     live complete pointer wins).
-  // 2c. FU-40: a Tier-1 pointer into a SPEC_NON_CYCLE bucket (tech-debts,
-  //     bugs, roadmap — archive already excluded above) NEVER qualifies, even
-  //     with 4 artifacts: partial-doc buckets are not SDD cycles.
+  // 2c. FU-40 / ADR-P01: a Tier-1 pointer into a SPEC_NON_CYCLE bucket
+  //     (tech-debts, bugs, roadmap, prd — archive already excluded above) NEVER
+  //     qualifies, even with 4 artifacts: partial-doc buckets are not SDD cycles.
   // 3. Otherwise: the drift gate below judges current_feature-named live dirs,
   //    then any complete live cycle, then the archive.
   const state = readWorkflowState(root);
@@ -271,7 +278,7 @@ export function resolveSddCycle(root = REPO_ROOT) {
   for (const c of candidates) {
     if (!c.via.startsWith("state.")) continue; // explicit pointer only
     if (isArchiveRel(c.rel)) continue; // archive never masks drift
-    if (isNonCycleRel(c.rel)) continue; // FU-40: partial-doc bucket is not a cycle
+    if (isNonCycleRel(c.rel, nonCycle)) continue; // FU-40: partial-doc bucket is not a cycle
     if (!namesFeature(c.rel)) continue; // FU-39: stale pointer of another feature
     if (!existsSync(join(root, c.rel))) continue; // stale pointer — not evidence
     if (missingArtifacts(join(root, c.rel)).length > 0) continue; // live but incomplete
@@ -287,7 +294,7 @@ export function resolveSddCycle(root = REPO_ROOT) {
     // Named dirs are matched by PATH, not by the candidate's via-label: a
     // Tier-1 pointer may have registered the same dir first (dedup keeps one
     // entry per path), and the drift gate must still classify it.
-    const groups = subDirs(join(root, ".spec")).filter((g) => !SPEC_NON_CYCLE.has(g));
+    const groups = subDirs(join(root, ".spec")).filter((g) => !nonCycle.has(g));
     const namedByFeat = new Set([...groups.map((g) => `.spec/${g}/${feat}`), `.spec/${feat}`]);
     for (const c of candidates) {
       if (!namedByFeat.has(c.rel)) continue;
@@ -305,8 +312,10 @@ export function resolveSddCycle(root = REPO_ROOT) {
   return { rel: null, dir: null, via: null, complete: false, candidates };
 }
 
-export function evaluateSdd02(root = REPO_ROOT) {
-  const cycle = resolveSddCycle(root);
+// `opts` (2º parâmetro opcional) é repassado a `resolveSddCycle`; chamadores
+// existentes e o `runSddChecks` seguem usando só `root` (default preservado).
+export function evaluateSdd02(root = REPO_ROOT, opts = {}) {
+  const cycle = resolveSddCycle(root, opts);
   if (!cycle.complete) {
     if (cycle.drift) {
       // Fail-closed on drift of the cycle the state itself declares current.
