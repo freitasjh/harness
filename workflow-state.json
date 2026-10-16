@@ -1,13 +1,14 @@
 {
-  "current_feature": "harness-brain-separation",
-  "current_phase": "Completed",
-  "previous_phase": "Testing",
+  "current_feature": "harness-installer-operability",
+  "current_phase": "BugCompleted",
+  "previous_phase": "BugAnalysis",
   "next_phase": null,
-  "type": "refactor",
+  "type": "bugfix",
   "layer": "governanca-de-agentes",
   "repo": "harness",
   "artifacts": {
-    "archive": ".spec/archive/20261014-harness-brain-separation/"
+    "archive": ".spec/archive/20261014-harness-brain-separation/",
+    "tasks": ".spec/bugs/harness-installer-operability/TASKS.md"
   },
   "scope": {
     "interpretation": "feature-mobile-profile + wizard-interativo",
@@ -42,12 +43,11 @@
     "FU32": "closed_approved_decision_B"
   },
   "code_review": {
-    "last_invoked_at": "2026-10-10T00:56:34.658Z",
+    "last_invoked_at": "2026-10-14T22:33:07Z",
     "last_status": "passed",
     "critical_issues": 0,
-    "attention_issues": 2,
-    "suggestions": 4,
-    "reviewer_notes": "Pacote P3 (9 itens) APPROVED. A1 FU-27 aresta EOF -> FU-44; A2 estado -> feito agora."
+    "attention_issues": 0,
+    "reviewer_notes": "Re-review iteracao 2 APPROVED. 0 🔴 / 0 🟡 introduzidos. F1/F2/F3 fechados com prova. 5 follow-ups 🟢 aceitaveis."
   },
   "overrides": [],
   "overrides_history": [
@@ -91,7 +91,7 @@
       "created": "2026-10-14T00:00:00Z"
     }
   ],
-  "last_update": "2026-10-14T17:38:18Z",
+  "last_update": "2026-10-14T22:33:07Z",
   "spec_score": 0.94,
   "spec_status": "v1_reviewed_aprovado_com_ajustes",
   "validation": {
@@ -108,7 +108,12 @@
     "U6": "b - selo de hash"
   },
   "harness_status": "passed",
-  "harness_evidence": "plugins 135/135 + installer 360/360 + static EXIT 0 (V15 rede-zero) + vendor-check OK + sdd-checks PASS; suiteFull de harness.config.json; archive 20261008-harness-installer-mobile intocado; installer/ intocado",
+  "harness_evidence": {
+    "plugins": "135/0",
+    "installer": "372/0",
+    "static": "0 FAIL",
+    "vendor": "OK"
+  },
   "code_review_status": "passed",
   "sdd_stage": "harness-brain-separation Archived 2026-10-14 (15/15 Done, VERIFY APPROVED 3/3, reviews APPROVED, security PASS, suite verde). Continuacao harness-installer-mobile. Debitos: D-01 DoD 08/09/10, O-01 BDD VAL-01 wording, O-02 residual saneado, P2-01 RUNTIME canonico + PIN-ME.",
   "backlog": {

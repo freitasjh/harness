@@ -357,6 +357,8 @@ describe('FU-20: main() exige backup.verified===true antes de applyMerge (I1)', 
       incomingFiles: {
         'opencode.json': JSON.stringify({ plugin: ['harness'], instructions: ['hard'] }),
         '.agents/rules/x.md': '# regra limpa harness\n',
+        '.opencode/plugins/smoke.js': 'export const smoke = true;\n',
+        '.agents/schemas/harness-report.schema.json': '{}\n',
       },
       options: { allowRoot: true, nodeVersion: 'v26.7.0', backupRoot: fs.mkdtempSync(path.join(os.tmpdir(), 'harness-in05-main-')) },
     });

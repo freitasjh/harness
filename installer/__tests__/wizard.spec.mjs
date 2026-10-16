@@ -49,6 +49,10 @@ dependencies:
 function mkSource() {
   return mkTarget({
     '.agents/rules/a.md': '# a\n',
+    // Harness v7 operability: a config gerada referencia moduleMap.plugins e
+    // evidence.schema; um install coerente precisa shipar os dois (Estrategia A).
+    '.opencode/plugins/smoke.js': 'export const smoke = true;\n',
+    '.agents/schemas/harness-report.schema.json': '{}\n',
     'opencode.json': JSON.stringify({ plugin: ['harness'] }),
   });
 }
@@ -197,7 +201,7 @@ describe('IM-VAL-05 wizard W0..W7 (I11/RF-15)', () => {
     await assert.rejects(
       runWizard({
         target: t,
-        stdin: piped(['3', 'demo', '', 'node', '', '', 'n', 'n', 'n', 'n']),
+        stdin: piped(['3', 'demo', '', 'node', '', '', 'n', 'n', 'n', 'n', 'n']),
         stdout: capture().stream,
         sourceDir: src,
         options: { allowRoot: true, yes: false },
@@ -221,6 +225,10 @@ describe('IM-VAL-05 wizard W0..W7 (I11/RF-15)', () => {
     });
     assert.equal(res.applied, false, 'sem apply injetado: W6/W7 nao executados');
     assert.ok(res.plan.some((p) => p.action !== 'noop'));
+    // F1 (re-review): todo item do plano cai em uma camada conhecida — nenhum
+    // '.agents/schemas/*' vira 'other' (o padding de 'n' mascarava isso).
+    assert.ok(res.plan.every((p) => p.layer !== 'other'), `layer 'other' inesperado: ${JSON.stringify([...new Set(res.plan.map((p) => p.layer))])}`);
+    assert.ok(res.plan.some((p) => p.layer === '.agents/schemas/*'), 'schemas classificados como camada propria');
   });
 
   it('W6/W7: apply injetado recebe answers validados; progresso [n/total] + manifesto/checks', async () => {

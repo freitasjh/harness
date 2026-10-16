@@ -118,6 +118,11 @@ export async function runDogfood({
       incomingFiles: {
         'opencode.json': JSON.stringify({ plugin: ['harness-dogfood'], instructions: ['dogfood smoke'] }),
         '.agents/rules/dogfood.md': '# regra dogfood harness\nconteudo limpo de teste\n',
+        // Harness v7 operability (Estrategia A): o smoke precisa shipar o que a
+        // config gerada referencia (moduleMap.plugins + evidence.schema), senao
+        // os checks corretamente reprovam a instalacao por referencia ausente.
+        '.opencode/plugins/dogfood-smoke.js': 'export const dogfoodSmoke = true;\n',
+        '.agents/schemas/harness-report.schema.json': '{}\n',
       },
       options: { allowRoot: true, nodeVersion: process.version },
     });

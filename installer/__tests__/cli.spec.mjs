@@ -149,7 +149,12 @@ describe('CLI-02b FU-28: dry-run sinaliza checks NAO-executados', () => {
     const out = main({
       target,
       scriptedAnswers: { project: 'demo', stack: 'node', suiteCommand: 'node', pluginsDir: target },
-      incomingFiles: { '.agents/rules/x.md': '# regra limpa harness\n' },
+      incomingFiles: {
+        'opencode.json': JSON.stringify({ plugin: ['harness'] }),
+        '.agents/rules/x.md': '# regra limpa harness\n',
+        '.opencode/plugins/smoke.js': 'export const smoke = true;\n',
+        '.agents/schemas/harness-report.schema.json': '{}\n',
+      },
       options: { ...OPTS, backupRoot: fs.mkdtempSync(path.join(os.tmpdir(), 'harness-fu28-')) },
     });
     dirs.push(out.backup.backupDir);
