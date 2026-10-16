@@ -211,7 +211,7 @@ graph TD
 
 #### 🏁 Definition of Done (DoD)
 - [ ] Teste existia antes da implementação (TDD evidenciado).
-- [ ] `runPrdChecks` puro: `grep` por `exec|spawn|fetch|http` retorna vazio.
+- [ ] `runPrdChecks` puro — critério **comportamental/estrutural**, não por vocabulário: o conjunto de **especificadores de import** do módulo é exatamente `{node:fs, node:path}`, e não há `import(`/`require(` dinâmico. (Corrigido em `SPEC §5`/revisão: o critério anterior — "grep por `exec|spawn|fetch|http` vazio" — era inaplicável, contradizia a condição de `ADR-01` que **precisa** procurar `http` em `RESEARCH.md`, e reprovaria o próprio arquivo de teste. Um grep por vocabulário não prova ausência de capacidade: `execSync` não casa `\bexec\b`, e `node:net`/`node:child_process` passam por qualquer regex de token. A allowlist de imports é determinística e version-independente — não depende de `--permission`, cuja disponibilidade varia entre o Node do CI (22) e o local.)
 - [ ] `node --test` verde nos 3 checks + vacuous-safe.
 - [ ] Sem TODO pendente.
 - [ ] Path **não** protegido (`.agents/skills/**`) — sem trailer.

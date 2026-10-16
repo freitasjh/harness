@@ -121,7 +121,7 @@
   "harness_status": "passed",
   "harness_evidence": "bugfix installer-upgrade-regression: installer 372/372 pass 0 fail 0 skip (era 355/5); determinismo 3x = 372/372/372; plugins 216/216; static-checks EXIT 0; vendor-check OK; sdd-checks 8/8. Diff restrito a installer/install.mjs + 1 spec novo; gate.js e harness.config.json com 0 linhas alteradas; nenhuma fixture original editada.",
   "code_review_status": "passed",
-  "sdd_stage": "prd-adr-pipeline Planning — PLAN/TASKS v3 APROVADOS pelo parecer de negocio (rodada 4). P2->P3 aguardando aprovacao do owner. SPEC aprovada P1->P2. 12 tasks PAP-01..PAP-12, caminho critico derivado do grafo, dogfood real (PAP-11) e instrumentacao de metricas (PAP-12) incorporados. Bugfix anterior installer-upgrade-regression concluido e commitado (ae90866 + 272f7a9). Abertos: seal HARNESS_SEAL_JSON nao republicado (Completed sera negado); CI nao barra push com suite vermelha; 3 nits cosmeticos para P3; push pendente.",
+  "sdd_stage": "prd-adr-pipeline Execution — PAP-01, PAP-02 e PAP-03 CONCLUIDOS (3/12). Núcleo de checks puro + 89 testes; plugins 216->309 pass; installer 372/0; sdd-checks 8/8. Loop §6.2 do PAP-02/03 em 4 iteracoes com 2 escalacoes ao owner; classe recorrente 'valor vazio/malformado desarmando condicao normativa em silencio com detail afirmando conformidade' corrigida em 7 pontos (order/status, dir, branch, veredito §16 com false-green ok=true, interface congelada, coluna ausente ADR-02, heading partido). Proximo: PAP-04 (wiring no static-checks) e PAP-05 (templates). Abertos: seal HARNESS_SEAL_JSON nao republicado (Completed sera negado); CI nao barra push com suite vermelha; 3 nits cosmeticos de §14.N para P3; push pendente.",
   "backlog": {
     "total": 14,
     "todo": 0,
@@ -687,6 +687,13 @@
     "ressalva": "I9 CI wiring -> FU-29"
   },
   "post_gate_edits": [
+    {
+      "date": "2026-10-15",
+      "artifacts": ["SPEC.md", "TASKS.md"],
+      "motivo": "Review do PAP-02/PAP-03: (a) SPEC §4.2 ganhou o escopo normativo explicito (o que os checks impoem vs o que e descritivo) — o defeito 'detail afirma conformidade nao avaliada' apareceu 2x; (b) TASKS PAP-03 DoD trocou o criterio de pureza por allowlist de import specifiers, porque 'grep por exec|spawn|fetch|http vazio' contradizia a condicao de ADR-01 que PRECISA procurar http em RESEARCH.md.",
+      "visibilidade": "Registrado aqui porque a SPEC ja havia passado o P1->P2 e o PLAN/TASKS o P2->P3.",
+      "efeito": "Nenhuma mudanca de escopo ou criterio de aceite; precisao de contrato e correcao de criterio inaplicavel. SDD-02 continua 12/12."
+    },
     {
       "date": "2026-10-15",
       "artifacts": ["PROPOSAL.md", "SPEC.md", "PLAN.md", "TASKS.md"],

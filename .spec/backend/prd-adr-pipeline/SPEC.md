@@ -128,6 +128,16 @@ Não há IdP/RBAC. O modelo real é o de escrita por agente, imposto em `gate.js
 | `branch` | texto | `adr/{prd-id}/{nn}-{slug}` |
 | `merge` | sha ou `—` | obrigatório quando `status=merged` |
 
+**Escopo normativo desta tabela (evita overclaim):** os checks de `§5` impõem **somente**:
+
+- presença de `order` **inteiro ≥ 1** e `status` dentro do enum;
+- `id` único;
+- `dir` **preenchido** e no padrão `ADRs/ADR-00N-{slug}/`;
+- `branch` **preenchida** e casando o regex de `§5`;
+- `merge` **preenchido** quando `status=merged`.
+
+São **descritivos** (a tabela declara a forma esperada; os checks **não** impõem): o texto de `title`, o conteúdo de `depends_on`, o formato exato de `merge` (só exige preenchido), a unicidade/continuidade de `order` (buraco não é reprovado), e a coerência `id` × `dir`. Declarar isso aqui é o que impede o `detail` de afirmar conformidade sobre o que não foi avaliado — o defeito que o review pegou duas vezes (célula malformada desarmando condição).
+
 ### 4.3 Campos aditivos em `workflow-state.json`
 
 **Aditivo, nunca destrutivo** — o runtime lê `current_phase`, `current_feature`, `harness_status`, `code_review_status` (`gate.js:705-743`) e `SDD-03` exige `gates.P1_P2` e `gates.P2_P3` (check em `scripts/sdd-checks.mjs`).
@@ -158,7 +168,7 @@ Sem estes limites, a esteira vira a dor que ela existe para resolver (`PROPOSAL 
 | **ADR leve** | **Não existe nesta versão.** Todo ADR carrega `ADR.md` + `SPEC.md` + `PLAN.md` + `TASKS.md` + `VERIFY.md` — **exceto** os ADRs da regra abaixo | Uma forma só; duas formas = dois checks = mais superfície |
 | **ADR cujo SDD é o próprio ciclo em curso** | **Exceção declarada.** Um ADR que decide sobre a feature cujo ciclo SDD **já é** o ciclo corrente (caso dos 5 ADRs P01..P05 desta própria SPEC, documentados aqui e em `PLAN`/`TASKS`) é **decision-only**: contém apenas `ADR.md`. Dá-lo um SDD próprio seria recursão — o SDD dele é este ciclo. `ADR-01` valida `ADR.md` + o 1:1 com o índice; a composição de 5 arquivos **não** é exigida neste caso | Sem esta linha, o dogfood (`PAP-11`) contradiz `ADR-P04`/`§4.1`; com ela, a exceção é declarada em **um lugar** e é generalizável (não é "exceção de teste") |
 | **Subconjunto obrigatório do PRD** | §1, §2, **§5**, §6, §7, §9, §16 são obrigatórias; §3, §4, §8, §10–§15 são recomendadas. `PRD-01` só exige as obrigatórias — e **§5 entrou no obrigatório** justamente para o requisito de métrica não ficar condicional | Check rígido é cerimônia; NFR-5 manda o PRD caber em ≤120 linhas. A métrica com "como medir" é a única linha que o dono do produto consegue cobrar depois |
-| **Mapa de seções do PRD** | O **template** produzido em `PAP-05` é o **SSoT** da numeração e dos títulos das 16 seções; `PRD-01` parseia os títulos a partir dele. Toda referência a "§N" nesta SPEC usa essa numeração | Sem um SSoT do mapa, SPEC e template divergem sobre o que é "a §7" e o check vira inverificável |
+| **Mapa de seções do PRD** | O **template** produzido em `PAP-05` é o **SSoT** da numeração das 16 seções. `PRD-01` valida os **números** das seções obrigatórias (§1, §2, §5, §6, §7, §9, §16) — o **texto do título é irrelevante** para o check. Toda referência a "§N" nesta SPEC usa essa numeração | Sem um SSoT do mapa, SPEC e template divergem sobre o que é "a §7" e o check vira inverificável. O check valida número (não título) porque título acoplaria o módulo puro ao path do template do harness, violando `NFR-1` |
 | **Colisão `ADR-00N` × `TASK_ID_SRC`** | **Fechado por análise.** Candidatos de ciclo do `sdd-checks` são `.spec/<bucket>` e `.spec/<bucket>/<name>` (2 níveis) — `ADRs/ADR-00N/**` **nunca** vira candidato; `extractTaskSections` lê apenas o `TASKS.md` do ciclo resolvido, e os `ADR-00N` vivem em `.spec/prd/**` | Registra a **prova** do fechamento; antes era só afirmação do orquestrador |
 
 ---
