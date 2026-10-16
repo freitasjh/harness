@@ -1,39 +1,39 @@
 {
-  "current_feature": "harness-brain-separation",
+  "current_feature": "prd-adr-pipeline",
   "current_phase": "Completed",
   "previous_phase": "Testing",
   "next_phase": null,
-  "type": "refactor",
+  "type": "feature",
   "layer": "governanca-de-agentes",
   "repo": "harness",
   "artifacts": {
-    "archive": ".spec/archive/20261014-harness-brain-separation/"
+    "archive": ".spec/archive/20261016-prd-adr-pipeline/",
+    "prd_adr": ".spec/prd/prd-adr-pipeline/",
+    "harness_report": "harness/prd-adr-pipeline.json"
   },
   "scope": {
-    "interpretation": "feature-mobile-profile + wizard-interativo",
+    "interpretation": "esteira PRD->ADR->SDD no harness (visibilidade de intencao antes do codigo)",
     "entra": [
-      "perfil flutter/dart no Q&A + generateConfig (marionette+dart mcp, flutter test, moduleMap)",
-      "A1: vendorizar 22 skills dart-*/flutter-* em .agents/skills do harness",
-      "B2: wizard TUI zero-dep (menus, auto-detect pubspec.yaml, revisao por passo, resumo)",
-      "C: instalar harness em projetos de apps mobile (Flutter)"
+      "PRD.md + RESEARCH.md + ADR-INDEX.md em .spec/prd/{prd-id}/",
+      "ADRs/ADR-00N-{slug}/ como unidade de trabalho (1 branch + 1 PR por ADR)",
+      "checks PRD-01/ADR-01/ADR-02 dentro do suiteFull, com fixture PASS e FAIL por check",
+      "guard do resolver: bucket prd fora da deteccao de ciclo SDD (evita drift e verde-falso)",
+      "regras + skill + templates propagaveis; conserto do drift GEMINI.md/docs/* nos AGENT.md"
     ],
     "nao_entra": [
-      "rodar o instalador de dentro do celular (Termux)",
-      "deteccao automatica de stack fora de flutter/dart",
-      "upgrade/desinstalacao (porta via manifesto)"
+      "dogfood em projeto externo (ECM)",
+      "gate.js (nenhum deny novo) e commands.suiteFull (mudaria o selo)",
+      "PRD/ADR para bug (bug segue B1-B4)",
+      "propagacao de scripts/ e .github/ pelo installer (F3, cortavel)"
     ],
-    "aceite": [
-      "wizard instala em projeto Flutter real e imprime resumo",
-      "generateConfig mobile correto (mcp marionette+dart, suite flutter test)",
-      "suite do repo harness verde",
-      "dogfood em copia de projeto Flutter em /tmp"
-    ],
+    "aceite": "suiteFull verde + PRD-01/ADR-01/ADR-02 PASS com fixtures PASS e FAIL; assercoes concretas fixadas na SPEC",
     "rigor": "E1/E2 bloqueiam"
   },
   "gates": {
-    "P0_P1": "approved_user_2026_10_07 (A1/B2/C)",
-    "P1_P2": "pending_user_approval",
-    "P2_P3": "approved_user_2026_10_07",
+    "P0_P1": "approved_user_2026_10_15 (Feature prd-adr-pipeline; bloco PICCO confirmado)",
+    "G2_PRD": "approved_user_2026_10_16 (PRD do dogfood aprovado sem ressalvas; .spec/prd/prd-adr-pipeline/PRD.md §16)",
+    "P1_P2": "approved_user_2026_10_15 (spec-gate 10/10; spec-review 0 criticos)",
+    "P2_P3": "pending_user_approval",
     "P3_P4": "approved_auto_evidence_batches1-4",
     "P4_P5": "pending_user_approval",
     "P5_P6": "approved_user_2026_10_08",
@@ -42,12 +42,12 @@
     "FU32": "closed_approved_decision_B"
   },
   "code_review": {
-    "last_invoked_at": "2026-10-10T00:56:34.658Z",
+    "last_invoked_at": "2026-10-15T00:00:00Z",
     "last_status": "passed",
     "critical_issues": 0,
-    "attention_issues": 2,
-    "suggestions": 4,
-    "reviewer_notes": "Pacote P3 (9 itens) APPROVED. A1 FU-27 aresta EOF -> FU-44; A2 estado -> feito agora."
+    "attention_issues": 0,
+    "suggestions": 2,
+    "reviewer_notes": "bugfix installer-upgrade-regression: iteracao 1 = APPROVED WITH CHANGES (1 critico D1: exitCode nao propagado nos caminhos CLI; 2 atencao D2/D3). Iteracao 2 = APPROVED, zero criticos, D1/D2/D3 fechados. Ressalvas verdes nao-bloqueantes: sem spawn end-to-end de instalacao reprovada; scan do BF-04 nao robusto a parenteses em string."
   },
   "overrides": [],
   "overrides_history": [
@@ -89,18 +89,30 @@
         "archive": ".spec/archive/20261014-harness-brain-separation/"
       },
       "created": "2026-10-14T00:00:00Z"
+    },
+    {
+      "name": "prd-adr-pipeline",
+      "stage": "Discovery",
+      "progress": 5,
+      "type": "feature",
+      "depends_on": [],
+      "artifacts": {},
+      "created": "2026-10-15T00:00:00Z"
     }
   ],
-  "last_update": "2026-10-14T17:38:18Z",
-  "spec_score": 0.94,
-  "spec_status": "v1_reviewed_aprovado_com_ajustes",
-  "validation": {
-    "architect": "aprovar_com_ajustes (A1-A5 incorporados)",
-    "ux-designer": "spec wizard entregue (vinculante)"
-  },
-  "pending_user_decisions": [
-    "P-02 politica de licenca do vendor (bloquear|so-com-licenca|atribuir)"
+  "last_update": "2026-10-16T00:00:00Z",
+  "follow_ups_prd11": [
+    "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
+  "spec_score": 0.94,
+  "spec_status": "v1_reviewed_aprovado (spec-gate 10/10; 1 laranja + 3 amarelos corrigidos; security pass com ressalva D11)",
+  "plan_status": "v3 aprovado para P2->P3 pelo parecer de negocio (rodada 4): 12 tasks PAP-01..PAP-12; SDD-02 1:1 12/12; 0 bloqueadores; 3 nits cosmeticos para P3 (notacao §14.N, cross-ref sem arquivo, frase ampla em SPEC:161)",
+  "validation": {
+    "architect": "Fase 1: 5 ADRs propostos (P01..P05) com prova de independencia par-a-par",
+    "product-manager": "4 rodadas. R1: 14 defeitos (D1..D14) + 10 perguntas. R2: B-1..B-8 (reprovado). R3: 6 itens minimos + N-1..N-7 (reprovado; 6 fechados, 3 defeitos novos NB-1..NB-3). R4: APROVADO PARA P2->P3, lista minima vazia, 3 nits cosmeticos para P3",
+    "ux-designer": "N/A - sem tela, fluxo ou componente visual neste ciclo"
+  },
+  "pending_user_decisions": [],
   "spec_version": 4,
   "decisions_applied_v3": {
     "U4": "a - git init + remote + CI",
@@ -108,9 +120,9 @@
     "U6": "b - selo de hash"
   },
   "harness_status": "passed",
-  "harness_evidence": "plugins 135/135 + installer 360/360 + static EXIT 0 (V15 rede-zero) + vendor-check OK + sdd-checks PASS; suiteFull de harness.config.json; archive 20261008-harness-installer-mobile intocado; installer/ intocado",
+  "harness_evidence": "bugfix installer-upgrade-regression: installer 372/372 pass 0 fail 0 skip (era 355/5); determinismo 3x = 372/372/372; plugins 216/216; static-checks EXIT 0; vendor-check OK; sdd-checks 8/8. Diff restrito a installer/install.mjs + 1 spec novo; gate.js e harness.config.json com 0 linhas alteradas; nenhuma fixture original editada.",
   "code_review_status": "passed",
-  "sdd_stage": "harness-brain-separation Archived 2026-10-14 (15/15 Done, VERIFY APPROVED 3/3, reviews APPROVED, security PASS, suite verde). Continuacao harness-installer-mobile. Debitos: D-01 DoD 08/09/10, O-01 BDD VAL-01 wording, O-02 residual saneado, P2-01 RUNTIME canonico + PIN-ME.",
+  "sdd_stage": "prd-adr-pipeline ARQUIVADO (2026-10-16) — ciclo FECHADO. 12/12 tasks; VERIFY aprovado 3/3; archive em .spec/archive/20261016-prd-adr-pipeline/; spec-developed.md atualizado; Brain com sessao + 2 licoes. Evidencia: harness/prd-adr-pipeline.json (REPORT, exit 0 real) — a escrita de Completed passou pelo portao de ponta a ponta (REPORT + seal + contraprova por re-execucao). Suites finais: plugins 352/0, installer 372/0, static exit 0, sdd-checks 8/8, V4 1070/1705. Abertos: C-1 (conflito schema x gate no counts do REPORT, P1, exige emendar gate.js ou o schema); A-2/R-4 (CI nao barra push com suite vermelha); D4 (enum de status do ADR-INDEX nao modela 'realizada mas nao mergeada'); A-3 (orchestrator/AGENT.md cita 4 regras inexistentes); push pendente (nada enviado ao remote).",
   "backlog": {
     "total": 14,
     "todo": 0,
@@ -149,117 +161,137 @@
   },
   "active_task": "IN-05",
   "pending_remote_url": false,
+  "follow_ups_created_at_basis": "PAP-12: created_at de cada follow_up = data do commit mais antigo em que o id apareceu em workflow-state.json (git log -S \"<id>\" -- workflow-state.json). Nao havia timestamp registrado a mao; a data e derivada, nao inventada.",
   "follow_ups": [
     {
       "id": "FU-01",
+      "created_at": "2026-09-29T14:34:42-03:00",
       "origem": "reviewer sugestao",
       "texto": "diff-tree sem --root (root-commit bypass) + filename com espaco no pre-commit awk",
       "bloqueia": false
     },
     {
       "id": "FU-02",
+      "created_at": "2026-09-29T14:34:42-03:00",
       "origem": "reviewer Batch 2",
       "texto": "V6c: validar opencode.json + workflow-state.json em checkV6",
       "bloqueia": false
     },
     {
       "id": "FU-03",
+      "created_at": "2026-09-29T14:34:42-03:00",
       "origem": "reviewer Batch 2",
       "texto": "Batch 4: gate.js rejeitar seal/commands vazio; gitSha opaco + cache (demand,reportHash,treeHash)",
       "bloqueia": false
     },
     {
       "id": "FU-04",
+      "created_at": "2026-09-29T14:34:42-03:00",
       "origem": "reviewer Batch 3",
       "texto": "Remover DEAD_BUS_EVENT de CONTRACT_HOOKS (gate.spec.mjs:176) — dono Batch 4",
       "bloqueia": false
     },
     {
       "id": "FU-05",
+      "created_at": "2026-09-29T14:34:42-03:00",
       "origem": "reviewer Batch 3",
       "texto": "Mapear catch do loader para DenyError config-unavailable na borda do gate (GATE-03) — senao fail-closed vira allow",
       "bloqueia": false
     },
     {
       "id": "FU-06",
+      "created_at": "2026-09-29T14:34:42-03:00",
       "origem": "reviewer Batch 4",
       "texto": "Rotear resolveMode por gate antes do flip (DOG-01)",
       "bloqueia": false
     },
     {
       "id": "FU-07",
+      "created_at": "2026-09-29T14:34:42-03:00",
       "origem": "reviewer Batch 4",
       "texto": "treeHash real ou desabilitar cache quando unknown (DOG-01)",
       "bloqueia": false
     },
     {
       "id": "FU-08",
+      "created_at": "2026-09-29T14:34:42-03:00",
       "origem": "reviewer Batch 4",
       "texto": "State corrompido => deny (só ausente => allow) + fixture (Batch 5)",
       "bloqueia": false
     },
     {
       "id": "FU-09",
+      "created_at": "2026-09-29T14:34:42-03:00",
       "origem": "reviewer Batch 4",
       "texto": "Fixture counts-unverifiable (Batch 5, TST-01)",
       "bloqueia": false
     },
     {
       "id": "FU-10",
+      "created_at": "2026-09-29T14:34:42-03:00",
       "origem": "reviewer Batch 4",
       "texto": "SPEC §3: alinhar allowlist com N12 (DOC-01, Batch 6)",
       "bloqueia": false
     },
     {
       "id": "FU-11",
+      "created_at": "2026-09-29T14:34:42-03:00",
       "origem": "reviewer Batch 5",
       "texto": "HarnessGate: loadWorkflowState eager fora do decide() — tornar lazy ou rotear DenyError pelo dispatcher (dono DOG-01, Batch 8)",
       "bloqueia": false
     },
     {
       "id": "FU-12",
+      "created_at": "2026-09-29T14:34:42-03:00",
       "origem": "reviewer Batch 5",
       "texto": "harness-config.md:57 trocar owner FIX-01 por DOC-02 (dono DOC-02, Batch 7)",
       "bloqueia": false
     },
     {
       "id": "FU-13",
+      "created_at": "2026-09-29T14:34:42-03:00",
       "origem": "reviewer Batch 6",
       "texto": "PROMPT.md:8 suavizar hiperbole 'garantir que nenhum codigo...' (pega carona no RENAME, Batch 7)",
       "bloqueia": false
     },
     {
       "id": "FU-14",
+      "created_at": "2026-09-29T14:34:42-03:00",
       "origem": "developer Batch 7 nota 4",
       "texto": "orchestrator/AGENT.md:435 fato superado ('harness-validator.js injeta...') — só a ref foi re-apontada; reescrever a sentença (dono DOC-03 follow-up)",
       "bloqueia": false
     },
     {
       "id": "FU-15",
+      "created_at": "2026-09-29T14:34:42-03:00",
       "origem": "orquestrador (rename nao efetivo em runtime)",
       "texto": "Registro de agentes e do startup: opencode.json novo (chave code-reviewer, futuro gate.js) so vale apos restart. DOG-01 deve incluir restart + smoke. Review do Batch 7 via nome antigo ainda registrado.",
       "bloqueia": false
     },
     {
       "id": "FU-16",
+      "created_at": "2026-09-29T14:34:42-03:00",
       "origem": "reviewer Batch 7",
       "texto": "Ampliar lista de excecoes do RENAME em back-refs-DOC-02.md (PROPOSAL/SPEC pre-rename) + sentencas normativas stale (Batch 8 se couber)",
       "bloqueia": false
     },
     {
       "id": "FU-17",
+      "created_at": "2026-09-29T14:34:42-03:00",
       "origem": "reviewer Batch 8",
       "texto": "FLIP-RUNBOOK rollback definitivo: trocar 'git diff -> revert' por 'git status + git add -N + git diff' ou backup (repo sem commits)",
       "bloqueia": false
     },
     {
       "id": "FU-18",
+      "created_at": "2026-09-29T14:34:42-03:00",
       "origem": "developer LOADER-01 watch-out",
       "texto": "Possivel registro duplo de hooks (opencode.json lista arquivos E diretorio auto-carrega): verificar se HITL conta 2x por call; se sim, listar OU arquivos OU diretorio",
       "bloqueia": false
     },
     {
       "id": "FU-19",
+      "created_at": "2026-09-29T14:34:42-03:00",
       "origem": "smoke S6",
       "texto": "Reset do HITL via chat.message nao ocorreu: (a) role em path nao coberto, (b) sessionID divergente entre hooks, ou (c) Map em memoria nao compartilhado entre workers. Discriminar e corrigir.",
       "bloqueia": true,
@@ -268,6 +300,7 @@
     },
     {
       "id": "FU-20",
+      "created_at": "2026-09-29T15:41:37-03:00",
       "origem": "reviewer installer Batch 1",
       "texto": "IN-05: main() deve exigir backup.verified antes de applyMerge (I1 enforcement)",
       "bloqueia": false,
@@ -276,6 +309,7 @@
     },
     {
       "id": "FU-21",
+      "created_at": "2026-09-29T15:41:37-03:00",
       "origem": "reviewer installer Batch 1",
       "texto": "Corrigir merge-manifest S1 vacuous (incomingFiles + assert conteúdo)",
       "bloqueia": false,
@@ -284,6 +318,7 @@
     },
     {
       "id": "FU-22",
+      "created_at": "2026-09-29T15:41:37-03:00",
       "origem": "reviewer installer Batch 1",
       "texto": "Clarificar backup-outside-target (excecao em SPEC §3 ou guard explicito)",
       "bloqueia": false,
@@ -291,18 +326,21 @@
     },
     {
       "id": "FU-23",
+      "created_at": "2026-09-29T15:41:37-03:00",
       "origem": "reviewer installer Batch 2",
       "texto": "Assert dedicado FU-22 (backupDir fora do target) em suite.spec.mjs",
       "bloqueia": false
     },
     {
       "id": "FU-24",
+      "created_at": "2026-09-29T15:41:37-03:00",
       "origem": "reviewer installer Batch 2",
       "texto": "Drift CLI x SKILL (--dry-run nao imprime plano no CLI) - debito P3",
       "bloqueia": false
     },
     {
       "id": "FU-25",
+      "created_at": "2026-10-01T10:23:58-03:00",
       "origem": "instalacao ECM",
       "texto": "QUESTIONS sem composeFile/ports (completado a mao; estender instalador)",
       "bloqueia": false,
@@ -310,6 +348,7 @@
     },
     {
       "id": "FU-26",
+      "created_at": "2026-10-01T10:23:58-03:00",
       "origem": "instalacao ECM",
       "texto": "Denylist substring gera falso-positivo em proibicao/mencao (usar match contextual)",
       "bloqueia": false,
@@ -317,6 +356,7 @@
     },
     {
       "id": "FU-27",
+      "created_at": "2026-10-01T10:23:58-03:00",
       "origem": "reviewer bugfix CLI",
       "texto": "Secret sem mask no tty (ler sem eco ou recomendar --answers-file)",
       "bloqueia": false,
@@ -324,6 +364,7 @@
     },
     {
       "id": "FU-28",
+      "created_at": "2026-10-01T10:23:58-03:00",
       "origem": "reviewer bugfix CLI",
       "texto": "main() dry-run retorna checks vazio; nao interpretar como PASS",
       "bloqueia": false,
@@ -331,6 +372,7 @@
     },
     {
       "id": "FU-29",
+      "created_at": "2026-10-08T08:27:55-03:00",
       "origem": "reviewer Batch2",
       "texto": "Wire vendor --check + installer tests no CI/suiteFull (paths protegidos)",
       "bloqueia": false,
@@ -339,6 +381,7 @@
     },
     {
       "id": "FU-30",
+      "created_at": "2026-10-08T08:27:55-03:00",
       "origem": "reviewer Batch2",
       "texto": "De-dup log lock-vs-source mismatch (cosmetico)",
       "bloqueia": false,
@@ -346,6 +389,7 @@
     },
     {
       "id": "FU-32",
+      "created_at": "2026-10-08T08:27:55-03:00",
       "origem": "developer Batch3",
       "texto": "Checks pos-install do harness dao FAIL literal-denied: rules/skills citam taskflow/vuetify/primevue/lombok/mapstruct/restassured como baseline. Instalar harness em destino limpo => checks FAIL. Escalar FU-26 (denylist substring => match contextual).",
       "bloqueia": false,
@@ -354,6 +398,7 @@
     },
     {
       "id": "FU-33",
+      "created_at": "2026-10-08T08:27:55-03:00",
       "origem": "reviewer FU-32 redesign",
       "texto": "cleanups nao-bloqueantes: (1) remover SCAN_BASENAMES redundante; (2) justificar/estreitar exclusao scripts//__tests__; (3) documentar/fechar buracos allowlist (html/css/sh/Dockerfile); (4) alinhar doc (.csv/noext fora do scan).",
       "bloqueia": false,
@@ -361,6 +406,7 @@
     },
     {
       "id": "FU-34",
+      "created_at": "2026-10-08T08:27:55-03:00",
       "origem": "reviewer Batch4",
       "texto": "dogfood-mobile: sourceUntouched fraco (porcelain); usar digest de conteudo (git diff HEAD | sha256)",
       "bloqueia": false,
@@ -368,6 +414,7 @@
     },
     {
       "id": "FU-35",
+      "created_at": "2026-10-08T08:27:55-03:00",
       "origem": "reviewer Batch4",
       "texto": "dogfood-mobile: try/finally para limpar /tmp copy em falha",
       "bloqueia": false,
@@ -375,6 +422,7 @@
     },
     {
       "id": "FU-36",
+      "created_at": "2026-10-08T08:27:55-03:00",
       "origem": "reviewer Batch4",
       "texto": "dogfood-mobile: assertir reinstall abort code === REINSTALL",
       "bloqueia": false,
@@ -382,6 +430,7 @@
     },
     {
       "id": "FU-37",
+      "created_at": "2026-10-08T08:27:55-03:00",
       "origem": "reviewer Batch4",
       "texto": "docs.spec: cobrir ramo dart (dart test, mcp [dart])",
       "bloqueia": false,
@@ -389,6 +438,7 @@
     },
     {
       "id": "FU-38",
+      "created_at": "2026-10-08T08:27:55-03:00",
       "origem": "dev Batch4",
       "texto": "SDD-02 FAIL pre-existente em scripts/sdd-checks.mjs (fora do suiteFull; procura .spec/governance/harness-v7). Owner Batch 7/DOC-02.",
       "bloqueia": false,
@@ -396,6 +446,7 @@
     },
     {
       "id": "FU-39",
+      "created_at": "2026-10-09T10:56:04-03:00",
       "origem": "reviewer FU-38",
       "texto": "Tier-1 vitória não escopada ao ciclo do current_feature (ponteiro stale completo abafa drift)",
       "bloqueia": false,
@@ -403,6 +454,7 @@
     },
     {
       "id": "FU-40",
+      "created_at": "2026-10-09T10:56:04-03:00",
       "origem": "reviewer FU-38",
       "texto": "Tier-1 ignora SPEC_NON_CYCLE (bucket tech-debts/bugs/roadmap com 4 artefatos viraria ciclo)",
       "bloqueia": false,
@@ -410,6 +462,7 @@
     },
     {
       "id": "FU-42",
+      "created_at": "2026-10-09T17:33:06-03:00",
       "origem": "reviewer FU-34/35",
       "texto": "P2: dogfood escreve fora do /tmp via pai-symlink (assertDogfoodTarget lexical) — tech-debt dogfood-write-zone-symlink",
       "bloqueia": false,
@@ -417,6 +470,7 @@
     },
     {
       "id": "FU-43",
+      "created_at": "2026-10-09T17:33:06-03:00",
       "origem": "reviewer FU-34/35",
       "texto": "P2: specs poluem /tmp (config-loader/gate/network/preflight) — saneamento H2",
       "bloqueia": false,
@@ -424,12 +478,14 @@
     },
     {
       "id": "FU-44",
+      "created_at": "2026-10-09T21:56:34-03:00",
       "origem": "reviewer pacote P3",
       "texto": "FU-27 aresta: readSecretRaw nao trata end/close do stdin (token perdido/hang em stdin eager); tratar EOF + drenar fila do readline",
       "bloqueia": false
     },
     {
       "id": "FU-45",
+      "created_at": "2026-10-09T21:56:34-03:00",
       "origem": "reviewer pacote P3",
       "texto": "SKILL.md §4 nao menciona justificativa infra N/A (apontada no README); alinhar doc",
       "bloqueia": false
@@ -639,6 +695,19 @@
     "frozen_at": "2026-10-07T22:44:16.401Z",
     "env": "HARNESS_GATES=off (host)"
   },
+  "prd_adr": {
+    "prd_id": "prd-adr-pipeline",
+    "prd_status": "approved",
+    "active_adr": null,
+    "adr_order": [
+      "ADR-001",
+      "ADR-002",
+      "ADR-003",
+      "ADR-004",
+      "ADR-005"
+    ],
+    "snapshots": []
+  },
   "escalations": [
     {
       "id": "FU-32",
@@ -675,9 +744,44 @@
     "medio": 1,
     "ressalva": "I9 CI wiring -> FU-29"
   },
+  "post_gate_edits": [
+    {
+      "date": "2026-10-15",
+      "artifacts": ["PROPOSAL.md", "SPEC.md", "PLAN.md", "TASKS.md"],
+      "motivo": "Review do PAP-08/PAP-09: o RF-08/PAP-09 nomeava 3 arquivos, mas o defeito (ponteiro vivo para GEMINI.md/docs/specs/docs/adr) existe em 4 — .agents/agents/qa-engineer/AGENT.md:11 tambem. Escopo corrigido nos 4 artefatos. Declarado que 'referencia viva' = ponteiro de projeto; exemplo generico em skill (context-compressor) nao conta.",
+      "visibilidade": "Registrado aqui porque a SPEC ja havia passado o P1->P2 e o PLAN/TASKS o P2->P3. Foi o proprio subagente que recusou sair do escopo autorizado e reportou o conflito — comportamento correto.",
+      "efeito": "Amplia o escopo de PAP-09 em 1 arquivo (mesma classe de defeito, mesmo fix). Nenhuma mudanca de criterio de aceite."
+    },
+    {
+      "date": "2026-10-15",
+      "artifacts": ["SPEC.md", "PLAN.md", "TASKS.md"],
+      "motivo": "Review do PAP-07: SPEC/PLAN/TASKS afirmavam que 'o gate.js I2 recusa fase fora do canonico' — FALSO. O gate.js nao tem conjunto canonico de current_phase (so compara com Completed) e o V17 prova apenas o MARCADOR da tabela, nao o conteudo das linhas. Corrigida a premissa nos 3 artefatos e trocado o rotulo ADR-DECOMP por ADR-INDEX (ADR-P05), alinhando com o §13.",
+      "visibilidade": "Registrado aqui (edicao pos-portao).",
+      "efeito": "Correcao de premissa falsa sobre o mecanismo; nenhuma mudanca de escopo."
+    },
+    {
+      "date": "2026-10-15",
+      "artifacts": ["PROPOSAL.md", "SPEC.md", "PLAN.md", "TASKS.md"],
+      "motivo": "Review do PAP-01 (D1): ancoras de linha em criterio envelheceram quando o comentario empurrou SPEC_NON_CYCLE de :146 para :150. Trocadas por referencia a simbolo em 10 pontos (SPEC §14.4, ADR-P01, PROPOSAL §2/§4/§6, PLAN §3, TASKS PAP-01). Mesma classe em V4/R-NODENY.",
+      "visibilidade": "Registrado aqui porque a SPEC ja havia passado o P1->P2 e o PLAN/TASKS o P2->P3 — edicao pos-portao nao pode ser silenciosa (exigencia do code-reviewer).",
+      "efeito": "Nenhuma mudanca de escopo, decisao ou criterio; apenas a forma da referencia. SDD-02 continua 12/12."
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "C-1",
+      "severity": "P1",
+      "titulo": "Schema do REPORT exige `counts`; a contraprova NEGA counts declarados sem observacao",
+      "evidencia": "gate.js:653-678 (gateCompletionAnchorA exige REPORT+seal); .agents/schemas/harness-report.schema.json (counts obrigatorio, unit/it/frontend com passed/failed/skipped); gate.js:624-626 (DENY_CONTRAPROVE_DIVERGENT cause=counts-unverifiable); teste FU-09 em gate.spec.mjs:897,917 ('stated counts + unobserved counts => deny, both modes'); defaultContraproveExec retorna counts:null (gate.js:561-572)",
+      "consequencia": "Um REPORT conforme o schema NAO passa na contraprova: o executor padrao so observa exit code. Logo escrever current_phase=Completed exige um REPORT SEM counts — que o gate aceita (nao valida schema) e o schema proibe. O ciclo foi arquivado por decisao explicita do owner nessa condicao, com o desvio declarado no proprio REPORT.",
+      "nao_resolvido_aqui": "Corrigir o conflito exige emendar gate.js OU o schema (paths protegidos) — ciclo proprio. Opcoes: (a) gate ignora counts quando o executor nao os observa (trata como nao-comparavel, nao como divergente); (b) executor passa a observar counts; (c) schema torna counts opcional.",
+      "data": "2026-10-16"
+    }
+  ],
   "pending_actions": [
+    "Tech-debt P1 ABERTO: regressao do installer pos-68be417 (355/5 em main; 360/0 antes) — H2 bloqueia delegacao de prd-adr-pipeline. Ver .spec/tech-debts/installer-upgrade-regression/TASKS.md",
     "Brain MCP down (HTTP 410): registrar licoes pendentes (FU-34/35, FU-42, timing)",
-    "FU-43 P2: specs poluem /tmp (saneamento)",
+    "FU-43 P2: specs poluem /tmp (saneamento; possivel causa do flaky do installer)",
     "HARNESS_SEAL_JSON republicar (externo)",
     "push (nada enviado)"
   ]

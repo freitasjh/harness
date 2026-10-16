@@ -21,6 +21,11 @@ import {
   DEFAULT_CONFIG_PATH,
   REPO_ROOT,
 } from "../.opencode/plugins/lib/config.mjs";
+// PRD→ADR→SDD pipeline checks (PAP-04). The core lives under `.agents/skills/**`
+// because that is the only path the installer propagates (ADR-P02); this file is
+// just the adapter that registers the result in the same report the sealed
+// `commands.suiteFull` already runs — the command itself is NOT touched.
+import { runPrdChecks } from "../.agents/skills/prd-adr-pipeline/checks.mjs";
 
 // Re-exported so the tested loader interface stays stable after the
 // Batch 3/7 relocation (GATE-01/FIX-01 scope). Canonical home is
@@ -346,12 +351,31 @@ function reportLegacyBaseline() {
   record("LEGACY", "INFO", `FIX-01 done, baseline 0 (not green, history only): hardcode=${hard.length} scalar-assign=${scalar.length}`);
 }
 
-export function runStaticChecks() {
+// PAP-04: the pure core `runPrdChecks(root)` is invoked on an arbitrary root so
+// the adapter is testable without touching the repo's real `.spec/**`. Default
+// root is the repo root — identical to the sealed run.
+export function prdCheckResults(root = REPO_ROOT) {
+  return runPrdChecks(root).results;
+}
+
+function checkPrd(root = REPO_ROOT) {
+  for (const r of prdCheckResults(root)) record(r.id, r.status, r.detail);
+}
+
+// PAP-04 (🟡3): `root` is injectable so the ADAPTER's verdict — the `ok` flag that
+// defines the process exit code, not just the console line — is testable against
+// a malformed fixture without touching the repo's real `.spec/**`. Production
+// calls it with the default (REPO_ROOT): the sealed run and its exit code are
+// unchanged. `results` is reset per call so `ok` reflects THIS run only, keeping
+// the verdict deterministic regardless of how many times it is invoked.
+export function runStaticChecks(root = REPO_ROOT) {
+  results.length = 0;
   checkV6();
   checkV2V3V7();
   checkV15();
   checkV12();
   checkV14();
+  checkPrd(root);
   reportLegacyBaseline();
   const failed = results.filter((r) => r.status === "FAIL");
   return { ok: failed.length === 0, results };

@@ -3,7 +3,7 @@
 // (no repo state, no network). Failing first, then green.
 import { describe, it, after, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { mkdirSync, writeFileSync, existsSync } from "node:fs";
+import { mkdirSync, writeFileSync, existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tempScope } from "../../../scripts/test-temp.mjs";
 import {
@@ -513,3 +513,271 @@ describe("SDD-02 Tier-1 ignores SPEC_NON_CYCLE buckets (FU-40)", () => {
     assert.match(res.detail, /\.spec\/backend\/nova-feature/);
   });
 });
+
+// --- PAP-01 / ADR-P01 / INV-4: bucket `prd` é non-cycle ---------------------
+// `.spec/prd/{id}/` carrega `PRD.md` e NÃO tem `PROPOSAL.md` (exigido por
+// SDD_ARTIFACTS). Sem o guard, um `current_feature` igual ao `prd-id` faz o
+// resolver tratar o dir como grupo de ciclo: o gate de drift acusa vermelho
+// (MF-1) ou, pior, cai no próximo candidato COMPLETO e valida o `TASKS.md` de
+// OUTRO ciclo — verde-falso. Precedente: FU-40 deu o mesmo tratamento a
+// `tech-debts`/`bugs`/`roadmap`.
+describe("SDD-02 guard: .spec/prd/** é non-cycle (PAP-01 / ADR-P01 / INV-4)", () => {
+  it("cenário 1: .spec/prd/<feat> incompleto (só PRD.md) não vira ciclo — SDD-02 resolve o ciclo real e PASSa", () => {
+    const root = tmp({});
+    writeCycle(root, ".spec/backend/nova-feature");                 // ciclo real, completo
+    mkdirSync(join(root, ".spec/prd/nova-feature"), { recursive: true });
+    writeFileSync(join(root, ".spec/prd/nova-feature/PRD.md"), "# PRD\n"); // sem PROPOSAL/SPEC/PLAN/TASKS
+    writeState(root, { current_feature: "nova-feature" });          // prd-id == current_feature
+    // D5: controle positivo — se a string do path rotar, o cenário passaria por
+    // ausência de alvo; o existsSync prova que o alvo existe no disco.
+    assert.ok(existsSync(join(root, ".spec/prd/nova-feature/PRD.md")), "controle positivo: PRD.md em disco");
+    assert.deepEqual(missingArtifacts(join(root, ".spec/prd/nova-feature")), ["PROPOSAL.md", "SPEC.md", "PLAN.md", "TASKS.md"], "controle positivo: dir prd é incompleto (não é ciclo)");
+    const cycle = resolveSddCycle(root);
+    assert.equal(cycle.complete, true, "ciclo real deve resolver");
+    assert.equal(cycle.rel, ".spec/backend/nova-feature");
+    assert.ok(!String(cycle.rel).startsWith(".spec/prd"), "prd não pode ser o ciclo resolvido");
+    const res = evaluateSdd02(root);
+    assert.equal(res.ok, true, res.detail);
+    assert.match(res.detail, /\.spec\/backend\/nova-feature/);
+  });
+
+  // Contra-prova VIVA (D2): o predicado é INJETÁVEL, não só o set global. Com o
+  // guard default, `.spec/prd/**` sai da detecção de ciclo; injetando `nonCycle`
+  // SEM `prd`, o MESMO dir volta a ser candidato. Se a injeção fosse ignorada
+  // (uso do set global), o 2º assert FALHARIA — é a asserção que discrimina.
+  it("cenário 2: `nonCycle` injetado é respeitado — sem `prd` o dir vira ciclo (falha se ignorado)", () => {
+    const root = tmp({});
+    writeCycle(root, ".spec/backend/nova-feature");
+    mkdirSync(join(root, ".spec/prd/nova-feature"), { recursive: true });
+    writeFileSync(join(root, ".spec/prd/nova-feature/PRD.md"), "# PRD\n");
+    writeState(root, { current_feature: "nova-feature" });
+    assert.ok(existsSync(join(root, ".spec/prd/nova-feature/PRD.md")), "controle positivo: fixture em disco");
+
+    // guard default (com `prd`): bucket sai da detecção de ciclo.
+    const guarded = resolveSddCycle(root);
+    assert.deepEqual(guarded.candidates.filter((c) => c.rel.startsWith(".spec/prd")), []);
+    assert.equal(guarded.rel, ".spec/backend/nova-feature");
+    assert.equal(isNonCycleRel(".spec/prd/nova-feature"), true);
+
+    // guard injetado SEM `prd`: o dir volta a ser acusado como candidato de ciclo.
+    const noPrd = new Set(["archive", "tech-debts", "roadmap", "bugs"]);
+    const noGuard = resolveSddCycle(root, { nonCycle: noPrd });
+    const prdCandidates = noGuard.candidates.filter((c) => c.rel.startsWith(".spec/prd"));
+    assert.ok(prdCandidates.length > 0, "sem `prd` em nonCycle, .spec/prd/** é candidato de ciclo");
+    assert.equal(prdCandidates[0].rel, ".spec/prd/nova-feature");
+    assert.equal(isNonCycleRel(".spec/prd/nova-feature", noPrd), false, "predicado injetável respeita o set recebido");
+  });
+
+  it("cenário 3: .spec/prd/outro-id incompleto com current_feature não correspondente — nenhum drift", () => {
+    const root = tmp({});
+    writeCycle(root, ".spec/backend/ciclo-real");
+    mkdirSync(join(root, ".spec/prd/outro-id"), { recursive: true });
+    writeFileSync(join(root, ".spec/prd/outro-id/PRD.md"), "# PRD\n");
+    writeState(root, { current_feature: "ciclo-real" });
+    // D5: controle positivo — o alvo existe; senão o cenário passaria por ausência.
+    assert.ok(existsSync(join(root, ".spec/prd/outro-id/PRD.md")), "controle positivo: PRD.md de outro-id em disco");
+    assert.ok(existsSync(join(root, ".spec/backend/ciclo-real/TASKS.md")), "controle positivo: ciclo real em disco");
+    const cycle = resolveSddCycle(root);
+    assert.equal(cycle.complete, true);
+    assert.equal(cycle.rel, ".spec/backend/ciclo-real");
+    // D4: `assert.ok(!cycle.drift)` é sensível ao guard — `notEqual(drift, true)`
+    // passava trivialmente com `drift === undefined`.
+    assert.ok(!cycle.drift, "nenhum drift reportado");
+    assert.deepEqual(cycle.candidates.filter((c) => c.rel.startsWith(".spec/prd")), [], "nenhum candidato em .spec/prd/**");
+    assert.equal(evaluateSdd02(root).ok, true);
+  });
+
+  // D3: o pior caso — verde-falso. `.spec/prd/<feat>/` COMPLETO (4 artefatos) e
+  // SEM ciclo real. Com o guard, `prd` não é ciclo ⇒ fail-closed (`ok === false`).
+  // Sem o guard, o resolver escolheria `.spec/prd/...` e validaria o TASKS.md
+  // errado (verde-falso) — demonstrado pela injeção de `nonCycle` sem `prd`.
+  it("cenário D3: .spec/prd/<feat> COMPLETO sem ciclo real ⇒ fail-closed (não verde-falso)", () => {
+    const root = tmp({});
+    writeCycle(root, ".spec/prd/nova-feature");                      // 4 artefatos no bucket parcial
+    writeState(root, { current_feature: "nova-feature" });           // prd-id == current_feature
+    // D5: controle positivo — a fixture É completa (senão fail-closed passaria por ausência).
+    assert.ok(existsSync(join(root, ".spec/prd/nova-feature/PROPOSAL.md")), "controle positivo: prd COMPLETO em disco");
+    assert.deepEqual(missingArtifacts(join(root, ".spec/prd/nova-feature")), [], "controle positivo: 4/4 artefatos presentes");
+
+    // guard presente: bucket parcial não vira ciclo ⇒ nenhum ciclo completo.
+    const res = evaluateSdd02(root);
+    assert.equal(res.ok, false, res.detail);
+    assert.match(res.detail, /no complete SDD cycle/i);
+
+    // sem o guard (nonCycle injetado sem `prd`): o dir prd vence ⇒ verde-falso.
+    const noPrd = new Set(["archive", "tech-debts", "roadmap", "bugs"]);
+    const noGuard = evaluateSdd02(root, { nonCycle: noPrd });
+    assert.equal(noGuard.ok, true, "sem guard o dir prd vence — verde-falso demonstrado");
+    assert.match(noGuard.detail, /cycle=\.spec\/prd\/nova-feature/, "sem guard o alvo é .spec/prd/**, não o ciclo SDD");
+  });
+});
+
+// --- PAP-07: emenda V17 — rótulos da esteira no vocabulário canônico ---------
+// Os rótulos da esteira (PRD/RESEARCH/ADR-INDEX/ADR) são RÓTULOS, não valores
+// novos de `current_phase` (ADR-P05): entram como LINHAS na tabela de conversão
+// existente. Os marcadores que `hasVocabTable` exige devem sobreviver. A
+// fixture negativa prova que o teste cobre o defeito: removido o marcador do
+// cabeçalho, `hasVocabTable` = false — não passa por acidente.
+const REPO = join(import.meta.dirname, "..", "..", "..");
+const WORKFLOW_RULES = join(REPO, ".agents", "rules", "workflow-rules.md");
+
+describe("V17 emenda da esteira (PAP-07)", () => {
+  it("mapeia PRD/RESEARCH → Discovery e ADR-INDEX/ADR → Planning", () => {
+    const text = readFileSync(WORKFLOW_RULES, "utf8");
+    assert.equal(hasVocabTable(text), true, "a tabela viva preserva os marcadores");
+    assert.match(text, /\|\s*PRD,\s*RESEARCH\s*\|\s*Discovery\s*\|/);
+    assert.match(text, /\|\s*ADR-INDEX,\s*ADR\s*\|\s*Planning\s*\|/);
+  });
+
+  it("fixture negativa: removido o marcador canônico ⇒ hasVocabTable = false", () => {
+    const text = readFileSync(WORKFLOW_RULES, "utf8");
+
+    const semCabecalho = text.replace(/`current_phase` canônico/g, "REMOVED");
+    assert.notEqual(semCabecalho, text, "controle positivo: o marcador existia para remover");
+    assert.equal(hasVocabTable(semCabecalho), false, "sem o marcador do cabeçalho o check falha");
+
+    const semLinhas = text.replace(/^\|\s*(P0|Explore|SPEC)[^\n]*$/gm, "");
+    assert.notEqual(semLinhas, text, "controle positivo: as linhas de mapeamento existiam");
+    assert.equal(hasVocabTable(semLinhas), false, "sem as linhas de mapeamento o check falha");
+  });
+});
+
+// --- PAP-08: wiring da esteira nos 2 orquestradores --------------------------
+// As fases da esteira (PRD → RESEARCH → ADR-INDEX → loop por ADR) e a operação
+// de branch/PR sem `gh` entram nos DOIS orquestradores, apontando para
+// `.agents/rules/prd-adr-pipeline.md` (a regra), sem duplicar o contrato. Os
+// marcadores que `SDD-01`/`SDD-03` verificam precisam sobreviver à reescrita.
+const ORCH = join(REPO, ".agents", "agents", "orchestrator", "AGENT.md");
+const SDD_ORCH = join(REPO, ".agents", "agents", "sdd-orquestrador", "AGENT.md");
+
+describe("PAP-08 wiring da esteira nos 2 orquestradores", () => {
+  it("ambos apontam para a regra da esteira em vez de duplicar o contrato", () => {
+    for (const f of [ORCH, SDD_ORCH]) {
+      const text = readFileSync(f, "utf8");
+      assert.match(text, /\.agents\/rules\/prd-adr-pipeline\.md/, `${f} não cita a regra`);
+    }
+  });
+
+  it("ambos documentam as fases PRD → RESEARCH → ADR-INDEX → loop por ADR", () => {
+    for (const f of [ORCH, SDD_ORCH]) {
+      const text = readFileSync(f, "utf8");
+      for (const label of ["PRD", "RESEARCH", "ADR-INDEX"]) {
+        assert.match(text, new RegExp(label), `${f} não documenta a fase ${label}`);
+      }
+      assert.match(text, /loop por ADR|loop-por-ADR|por ADR/i, `${f} não documenta o loop por ADR`);
+    }
+  });
+
+  it("ambos documentam branch/PR sem gh: branch no padrão + URL de compare + merge humano", () => {
+    for (const f of [ORCH, SDD_ORCH]) {
+      const text = readFileSync(f, "utf8");
+      assert.match(text, /adr\/\{prd-id\}\/\{nn\}-\{slug\}/, `${f} não fixa o padrão de branch`);
+      assert.match(text, /compare/, `${f} não documenta a URL de compare`);
+      assert.match(text, /merge.{0,12}humano|humano.{0,12}merge/i, `${f} não marca o merge como humano`);
+    }
+  });
+
+  it("os rótulos da esteira NÃO introduzem valor novo de current_phase (ADR-P05)", () => {
+    for (const f of [ORCH, SDD_ORCH]) {
+      const text = readFileSync(f, "utf8");
+      assert.doesNotMatch(text, /current_phase["']?\s*[:=]\s*["']?(PRD|RESEARCH|ADR-INDEX|ADR)["']?/i);
+    }
+  });
+});
+
+// --- PAP-08 / SDD-01: preservação dos marcadores de gate ----------------------
+// A cláusula de não-bypass é o marcador que `hasNoBypassClause` exige
+// (regex de não-bypass + citação de `gate-contract.md`). A fixture negativa
+// prova que o teste cobre o defeito: removido o marcador, o check FALHA.
+describe("SDD-01 preservação do marcador de não-bypass (PAP-08)", () => {
+  it("o arquivo vivo carrega a cláusula de não-bypass", () => {
+    assert.equal(hasNoBypassClause(readFileSync(SDD_ORCH, "utf8")), true);
+  });
+
+  it("fixture negativa: removida a cláusula ⇒ hasNoBypassClause = false", () => {
+    const text = readFileSync(SDD_ORCH, "utf8");
+
+    const semMarcador = text.replace(/NÃO-BYPASS/g, "REMOVED");
+    assert.notEqual(semMarcador, text, "controle positivo: o marcador existia para remover");
+    assert.equal(hasNoBypassClause(semMarcador), false, "sem o marcador de não-bypass o check falha");
+
+    const semCitacao = text.replace(/gate-contract\.md/g, "removed.md");
+    assert.notEqual(semCitacao, text, "controle positivo: a citação de gate-contract.md existia");
+    assert.equal(hasNoBypassClause(semCitacao), false, "sem a citação de gate-contract.md o check falha");
+  });
+
+  it("os literais gates.P1_P2 / gates.P2_P3 sobrevivem (SDD-03 / hasGatesConvention)", () => {
+    const text = readFileSync(SDD_ORCH, "utf8");
+    assert.match(text, /gates\.P1_P2/);
+    assert.match(text, /gates\.P2_P3/);
+    assert.equal(hasGatesConvention(REPO), true);
+  });
+});
+
+// --- PAP-09: ausência de ponteiro morto de SSoT ------------------------------
+// Os arquivos apontavam para `GEMINI.md` / `docs/specs/` / `docs/adr/`, todos
+// INEXISTENTES no repo. O SSoT real é `.spec/prd/**` (artefatos da esteira) e,
+// quando é regra, `.agents/rules/**`. É TESTE (não um check novo): o contrato de
+// SPEC §5 continua com exatamente 3 checks.
+//
+// Iteração 1 do loop §6.2: o escopo foi EMENDADO para incluir
+// `qa-engineer/AGENT.md` — ponteiro vivo morto da mesma classe (apontava para
+// `GEMINI.md`, que não existe, e para `PROJECT_CONFIG.md`, também inexistente).
+// O SSoT de regras (inclui as regras de teste) é `.agents/rules/**`.
+const QA_AGENT = ".agents/agents/qa-engineer/AGENT.md";
+
+// `context-compressor/SKILL.md:20` cita `GEMINI.md` como EXEMPLO GENÉRICO de
+// skill ("Rules from `GEMINI.md` or `MEMORY.md` that must persist") — não é
+// ponteiro de projeto, é o ÚNICO resíduo declarado NÃO-VIVO. Fica EXCLUÍDO
+// explicitamente: o teste abaixo tolera-o e falha se surgir qualquer OUTRO
+// resíduo vivo em `.agents/**`.
+const CONTEXT_COMPRESSOR = ".agents/skills/context-compressor/SKILL.md";
+
+describe("PAP-09 ausência de ponteiro morto de SSoT", () => {
+  const PAP09_FILES = [
+    ".agents/agents/product-manager/AGENT.md",
+    ".agents/agents/architect/AGENT.md",
+    ".agents/agents/code-reviewer/PROMPT.md",
+    QA_AGENT, // emenda de escopo (iteração 1): mesma classe de defeito.
+  ];
+
+  // Subconjunto cujo SSoT primário é `.spec/prd/**` (artefatos da esteira).
+  // `qa-engineer` NÃO entra aqui: seu SSoT primário é `.agents/rules/**` (regras
+  // de teste), coberto por teste dedicado abaixo.
+  const PRD_SSoT_FILES = [
+    ".agents/agents/product-manager/AGENT.md",
+    ".agents/agents/architect/AGENT.md",
+    ".agents/agents/code-reviewer/PROMPT.md",
+  ];
+
+  it("zero referência viva a GEMINI.md / docs/specs / docs/adr", () => {
+    for (const rel of PAP09_FILES) {
+      const text = readFileSync(join(REPO, rel), "utf8");
+      assert.doesNotMatch(text, /GEMINI\.md|docs\/specs|docs\/adr/, `${rel} mantém ponteiro morto`);
+    }
+  });
+
+  it("aponta para o SSoT real .spec/prd/** (artefatos) e .agents/rules/** (regras)", () => {
+    for (const rel of PRD_SSoT_FILES) {
+      const text = readFileSync(join(REPO, rel), "utf8");
+      assert.match(text, /\.spec\/prd\//, `${rel} não aponta para .spec/prd/**`);
+    }
+  });
+
+  it("qa-engineer aponta para `.agents/rules/**` (SSoT de regras de teste), não para arquivo inventado", () => {
+    const text = readFileSync(join(REPO, QA_AGENT), "utf8");
+    assert.match(text, /\.agents\/rules\/\*\*/, "qa-engineer não aponta para .agents/rules/**");
+    // contra-prova: não pode citar o arquivo morto nem inventar outro.
+    assert.doesNotMatch(text, /GEMINI\.md|PROJECT_CONFIG\.md/, "qa-engineer mantém ponteiro morto");
+  });
+
+  it("o ÚNICO resíduo vivo em `.agents/**` é o exemplo genérico do context-compressor (declarado não-vivo)", () => {
+    const hits = findLiveRefs(REPO, ["GEMINI\\.md|docs/specs|docs/adr"]);
+    // discrimina: o resíduo tolerado existe e está sozinho — não passa por ausência.
+    assert.deepEqual(hits, [`${CONTEXT_COMPRESSOR}:20`], "o resíduo tolerado é exatamente 1 (context-compressor:20)");
+    // e qualquer resíduo fora do arquivo declarado quebra o teste.
+    const unexpected = hits.filter((h) => !h.startsWith(CONTEXT_COMPRESSOR));
+    assert.deepEqual(unexpected, [], `resíduo vivo não declarado: ${unexpected.join(", ")}`);
+  });
+});
+

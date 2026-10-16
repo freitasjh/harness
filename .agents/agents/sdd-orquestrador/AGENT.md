@@ -25,6 +25,35 @@ delega (`sdd-orquestrador` ou `orchestrator`):
 - Níveis de garantia sempre explícitos: 🟢 runtime · 🟠 parcial/CI-dependente ·
   🟡 processo · 🔴 declarado-aberto (`gate-contract.md` §3).
 
+## ESTEIRA PRD → ADR → SDD (features — entra ANTES do ciclo SDD)
+
+> Contrato completo em `.agents/rules/prd-adr-pipeline.md` (SSoT da esteira);
+> aqui só as fases e os pontos de parada. **Descritivo** — prosa descreve,
+> runtime nega (`gate-contract.md` §3); nenhuma linha deste AGENT.md nega tool
+> por si só.
+
+Fases (rótulos — mapeados ao vocabulário canônico, **sem** valor novo de
+`current_phase`: `PRD`/`RESEARCH` → `Discovery`; `ADR-INDEX`/`ADR` → `Planning`
+— SPEC ADR-P05):
+
+1. **PRD** — `product-manager` escreve `.spec/prd/{prd-id}/PRD.md` (16 seções;
+   §16 = bloco de aprovação humana). **Ponto de parada: PRD aprovado pelo humano
+   antes de qualquer design.**
+2. **RESEARCH** — alternativas com fonte (`http`) + trade-off + 1 recomendação.
+3. **ADR-INDEX** — ledger 1:1 com o disco (`.spec/prd/{prd-id}/ADR-INDEX.md`).
+4. **Loop por ADR** — 1 ADR = 1 unidade: `ADR.md` (decisão + `depende-de` +
+   interface congelada) → branch → SDD scoped → PR → merge. Teto: 5 ADRs por PRD.
+
+**Operação de branch/PR sem `gh`** (RF-09): `git checkout main && git pull` →
+`git checkout -b adr/{prd-id}/{nn}-{slug}` → `git push -u origin <branch>` →
+**imprimir a URL de compare** (`<remote>/compare/main...<branch>`). O **merge é humano** (1 ADR = 1 PR = 1 revisão). Nenhum passo exige `gh`; nenhum push
+automático. (🟡 processo — sem mecanismo; a recusa é humana.)
+
+Validação da esteira: `PRD-01`/`ADR-01`/`ADR-02` (módulo
+`.agents/skills/prd-adr-pipeline/checks.mjs`) — 🟢 neste repo via
+`scripts/static-checks.mjs` no `commands.suiteFull`; 🟡 processo no repo-destino.
+Os portões P1..P3 abaixo continuam valendo **depois** da esteira, não no lugar dela.
+
 ## REGRAS CRÍTICAS DE ORQUESTRAÇÃO
 
 ### 1. INTERAÇÃO HUMANA (MANDATÓRIO — 🟡 processo, não runtime)

@@ -361,8 +361,33 @@ export function serializeAnswers(answers) {
 // ---------- geracao (IN-03/ADR-002/I3) ----------
 // UNICA fonte do config: construido de answers validados. Nenhuma leitura de
 // template, nenhum caminho de copia neste arquivo por construcao.
+//
+// C (bugfix installer-upgrade-regression): AUTO-CONSISTENCIA. A config gerada
+// so cita artefato que a PROPRIA execucao escreve. `writtenPaths` = conjunto dos
+// paths relativos dos arquivos que a execucao vai gravar (chaves de
+// incomingFiles). Sem esse conjunto o gerador devolve o baseline congelado
+// (golden I7): todas as refs harness-owned presentes. O check
+// `config-ref-missing` NAO e afrouxado — segue exigindo que toda ref concreta
+// presente na config exista no destino; o que muda e que a config deixa de
+// declarar camadas que a execucao nao instalou.
+export const DEFAULT_EVIDENCE_SCHEMA = '.agents/schemas/harness-report.schema.json';
 
-export function generateConfig(answers) {
+// Conjunto normalizado dos paths relativos escritos nesta execucao.
+export function writtenPathsOf(incomingFiles = {}) {
+  return new Set(Object.keys(incomingFiles || {}).map((p) => String(p).replace(/\\/g, '/')));
+}
+
+// Um ref de DIRETORIO existe se algum arquivo escrito vive sob ele; um ref de
+// ARQUIVO (evidence.schema) existe so se o arquivo exato foi escrito.
+function refWillExist(rel, writtenPaths) {
+  const norm = String(rel).replace(/\\/g, '/');
+  if (writtenPaths.has(norm)) return true;
+  const prefix = norm.endsWith('/') ? norm : `${norm}/`;
+  for (const p of writtenPaths) if (p.startsWith(prefix)) return true;
+  return false;
+}
+
+export function generateConfig(answers, { writtenPaths = null } = {}) {
   if (!answers || !answers.project) throw new InstallError('answers.project required', 'BAD_ANSWER');
   const stack = answers.stack || 'node';
   const profile = profileOf(stack);
@@ -370,6 +395,20 @@ export function generateConfig(answers) {
   const suiteFull = answers.suiteCommand || defaultSuite;
   const commands = { suiteFull, unit: suiteFull };
   if (profile && profile.commands && profile.commands.analyze) commands.analyze = profile.commands.analyze;
+  const moduleMap = {
+    plugins: '.opencode/plugins',
+    rules: '.agents/rules',
+    schemas: '.agents/schemas',
+    ...(profile ? profile.moduleMap : {}),
+  };
+  const evidence = { path: 'harness/', schema: DEFAULT_EVIDENCE_SCHEMA };
+  if (writtenPaths) {
+    for (const k of HARNESS_OWNED_MODULEMAP_KEYS) {
+      const rel = moduleMap[k];
+      if (typeof rel === 'string' && !refWillExist(rel, writtenPaths)) delete moduleMap[k];
+    }
+    if (!refWillExist(evidence.schema, writtenPaths)) delete evidence.schema;
+  }
   return {
     version: 1,
     project: answers.project,
@@ -377,12 +416,7 @@ export function generateConfig(answers) {
       backend: profile ? profile.backend : `${stack} backend (declared via Q&A)`,
       frontend: profile ? profile.frontend : `${stack} frontend (declared via Q&A)`,
     },
-    moduleMap: {
-      plugins: '.opencode/plugins',
-      rules: '.agents/rules',
-      schemas: '.agents/schemas',
-      ...(profile ? profile.moduleMap : {}),
-    },
+    moduleMap,
     commands,
     // FU-25: infra N/A — ver justificativa em QUESTIONS (mobile nao tem
     // servidor/compose; contrato golden congelado; destino edita pos-install).
@@ -400,7 +434,7 @@ export function generateConfig(answers) {
     riskPaths: ['**/security/**', '**/auth/**'],
     escalateOnRisk: { e2eGreenfield: 'enforce', evidenceScenario: 'required' },
     contraproveTimeoutMs: 900000,
-    evidence: { path: 'harness/', schema: '.agents/schemas/harness-report.schema.json' },
+    evidence,
   };
 }
 
@@ -1057,7 +1091,7 @@ export function main({ target, scriptedAnswers = {}, incomingFiles = {}, options
     : backup(pf.target, { backupRoot: options.backupRoot, injectFailure: options.injectFailure === true });
   requireVerifiedBackup(bk);
   const answers = collectAnswers(pf.target, scriptedAnswers);
-  const generated = JSON.stringify(generateConfig(answers), null, 2);
+  const generated = JSON.stringify(generateConfig(answers, { writtenPaths: writtenPathsOf(incomingFiles) }), null, 2);
   const withGenerated = { ...incomingFiles, 'harness.config.json': generated };
   const plan = planMerge(pf.target, withGenerated);
   const result = applyMerge(pf.target, plan, { incomingFiles: withGenerated, dryRun });
@@ -1099,7 +1133,14 @@ export function main({ target, scriptedAnswers = {}, incomingFiles = {}, options
     manifest.checks = checks;
     fs.writeFileSync(path.join(pf.target, MANIFEST_NAME), JSON.stringify(manifest, null, 2));
   }
-  return { target: pf.target, inventory: inv, backup: bk, answers: serializeAnswers(answers), profile: answers.stack, plan, result, manifest, manifestRef, checks, dryRun };
+  // D1 (bugfix installer-upgrade-regression): `main()` e a raiz comum dos
+  // caminhos do consumidor — runInit/runUpgrade, o CLI legado e o wizard TTY
+  // devolvem este objeto (verbatim em runCli). O top-level faz
+  // `res.exitCode ?? 0`; sem exitCode aqui, uma instalacao REPROVADA sai 0 em
+  // silencio. `checks.passed === false` => 1; PASS ou dry-run (passed null,
+  // checks nao executados) => 0.
+  const exitCode = checks && checks.passed === false ? 1 : 0;
+  return { target: pf.target, inventory: inv, backup: bk, answers: serializeAnswers(answers), profile: answers.stack, plan, result, manifest, manifestRef, checks, dryRun, exitCode };
 }
 
 // ---------- CLI: incoming canonico + Q&A + plano + main ----------
@@ -1796,7 +1837,7 @@ export async function runInit({
       // W4 previa + gate create-only (antes de qualquer write).
       const profile = profileOf(scripted.stack);
       const incomingFiles = collectIncoming(sourceDir, { stacks: profile ? profile.stacks : [scripted.stack] });
-      const generated = JSON.stringify(generateConfig(scripted), null, 2);
+      const generated = JSON.stringify(generateConfig(scripted, { writtenPaths: writtenPathsOf(incomingFiles) }), null, 2);
       const plan = planMerge(pf.target, { ...incomingFiles, 'harness.config.json': generated });
       say('[INFO] W4 previa do plano (init create-only):');
       printPlan(plan, { output: stdout, answers });
@@ -1990,7 +2031,7 @@ export async function runCli({ argv = [], stdin = process.stdin, stdout = proces
   lastCliAnswers = currentAnswers;
   const profile = profileOf(scripted.stack);
   const incomingFiles = collectIncoming(sourceDir, { stacks: profile ? profile.stacks : [scripted.stack] });
-  const generated = JSON.stringify(generateConfig(scripted), null, 2);
+  const generated = JSON.stringify(generateConfig(scripted, { writtenPaths: writtenPathsOf(incomingFiles) }), null, 2);
   const preview = planMerge(pf.target, { ...incomingFiles, 'harness.config.json': generated });
   printPlan(preview, { output: stdout, answers: scripted });
   if (!args.dryRun) {
@@ -2140,7 +2181,7 @@ export async function runUpgrade({
 
     const profile = profileOf(subjectAnswers.stack);
     const incomingFiles = collectIncoming(sourceDir, { stacks: profile ? profile.stacks : [subjectAnswers.stack] });
-    const generated = JSON.stringify(generateConfig(subjectAnswers), null, 2);
+    const generated = JSON.stringify(generateConfig(subjectAnswers, { writtenPaths: writtenPathsOf(incomingFiles) }), null, 2);
     const incoming = { ...incomingFiles, 'harness.config.json': generated };
 
     const plan = planUpgrade(pf.target, incoming);
