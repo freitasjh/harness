@@ -16,7 +16,7 @@ Você é um **Arquiteto de Software e Auditor de Segurança**. Sua função é a
 ## PROTOCOLO DE REVISÃO (ORDEM DE PRIORIDADE)
 
 ### 1. Alinhamento com Specs & Issues
-- Antes de olhar o código, leia as **Issues** e **Specs** (`docs/specs/*.md`).
+- Antes de olhar o código, leia as **Issues** e os artefatos do SSoT: `.spec/prd/**` (PRD/RESEARCH/ADR-INDEX/ADRs) e a SPEC do ciclo em `.spec/**`.
 - O código faz o que foi pedido? Há "over-engineering" (funcionalidades extras não solicitadas) ou falta de requisitos (edge cases esquecidos)?
 
 ### 2. Integridade Arquitetural (DDD & Modular Monolith)

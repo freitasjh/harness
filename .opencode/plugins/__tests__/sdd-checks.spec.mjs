@@ -642,3 +642,142 @@ describe("V17 emenda da esteira (PAP-07)", () => {
   });
 });
 
+// --- PAP-08: wiring da esteira nos 2 orquestradores --------------------------
+// As fases da esteira (PRD → RESEARCH → ADR-INDEX → loop por ADR) e a operação
+// de branch/PR sem `gh` entram nos DOIS orquestradores, apontando para
+// `.agents/rules/prd-adr-pipeline.md` (a regra), sem duplicar o contrato. Os
+// marcadores que `SDD-01`/`SDD-03` verificam precisam sobreviver à reescrita.
+const ORCH = join(REPO, ".agents", "agents", "orchestrator", "AGENT.md");
+const SDD_ORCH = join(REPO, ".agents", "agents", "sdd-orquestrador", "AGENT.md");
+
+describe("PAP-08 wiring da esteira nos 2 orquestradores", () => {
+  it("ambos apontam para a regra da esteira em vez de duplicar o contrato", () => {
+    for (const f of [ORCH, SDD_ORCH]) {
+      const text = readFileSync(f, "utf8");
+      assert.match(text, /\.agents\/rules\/prd-adr-pipeline\.md/, `${f} não cita a regra`);
+    }
+  });
+
+  it("ambos documentam as fases PRD → RESEARCH → ADR-INDEX → loop por ADR", () => {
+    for (const f of [ORCH, SDD_ORCH]) {
+      const text = readFileSync(f, "utf8");
+      for (const label of ["PRD", "RESEARCH", "ADR-INDEX"]) {
+        assert.match(text, new RegExp(label), `${f} não documenta a fase ${label}`);
+      }
+      assert.match(text, /loop por ADR|loop-por-ADR|por ADR/i, `${f} não documenta o loop por ADR`);
+    }
+  });
+
+  it("ambos documentam branch/PR sem gh: branch no padrão + URL de compare + merge humano", () => {
+    for (const f of [ORCH, SDD_ORCH]) {
+      const text = readFileSync(f, "utf8");
+      assert.match(text, /adr\/\{prd-id\}\/\{nn\}-\{slug\}/, `${f} não fixa o padrão de branch`);
+      assert.match(text, /compare/, `${f} não documenta a URL de compare`);
+      assert.match(text, /merge.{0,12}humano|humano.{0,12}merge/i, `${f} não marca o merge como humano`);
+    }
+  });
+
+  it("os rótulos da esteira NÃO introduzem valor novo de current_phase (ADR-P05)", () => {
+    for (const f of [ORCH, SDD_ORCH]) {
+      const text = readFileSync(f, "utf8");
+      assert.doesNotMatch(text, /current_phase["']?\s*[:=]\s*["']?(PRD|RESEARCH|ADR-INDEX|ADR)["']?/i);
+    }
+  });
+});
+
+// --- PAP-08 / SDD-01: preservação dos marcadores de gate ----------------------
+// A cláusula de não-bypass é o marcador que `hasNoBypassClause` exige
+// (regex de não-bypass + citação de `gate-contract.md`). A fixture negativa
+// prova que o teste cobre o defeito: removido o marcador, o check FALHA.
+describe("SDD-01 preservação do marcador de não-bypass (PAP-08)", () => {
+  it("o arquivo vivo carrega a cláusula de não-bypass", () => {
+    assert.equal(hasNoBypassClause(readFileSync(SDD_ORCH, "utf8")), true);
+  });
+
+  it("fixture negativa: removida a cláusula ⇒ hasNoBypassClause = false", () => {
+    const text = readFileSync(SDD_ORCH, "utf8");
+
+    const semMarcador = text.replace(/NÃO-BYPASS/g, "REMOVED");
+    assert.notEqual(semMarcador, text, "controle positivo: o marcador existia para remover");
+    assert.equal(hasNoBypassClause(semMarcador), false, "sem o marcador de não-bypass o check falha");
+
+    const semCitacao = text.replace(/gate-contract\.md/g, "removed.md");
+    assert.notEqual(semCitacao, text, "controle positivo: a citação de gate-contract.md existia");
+    assert.equal(hasNoBypassClause(semCitacao), false, "sem a citação de gate-contract.md o check falha");
+  });
+
+  it("os literais gates.P1_P2 / gates.P2_P3 sobrevivem (SDD-03 / hasGatesConvention)", () => {
+    const text = readFileSync(SDD_ORCH, "utf8");
+    assert.match(text, /gates\.P1_P2/);
+    assert.match(text, /gates\.P2_P3/);
+    assert.equal(hasGatesConvention(REPO), true);
+  });
+});
+
+// --- PAP-09: ausência de ponteiro morto de SSoT ------------------------------
+// Os arquivos apontavam para `GEMINI.md` / `docs/specs/` / `docs/adr/`, todos
+// INEXISTENTES no repo. O SSoT real é `.spec/prd/**` (artefatos da esteira) e,
+// quando é regra, `.agents/rules/**`. É TESTE (não um check novo): o contrato de
+// SPEC §5 continua com exatamente 3 checks.
+//
+// Iteração 1 do loop §6.2: o escopo foi EMENDADO para incluir
+// `qa-engineer/AGENT.md` — ponteiro vivo morto da mesma classe (apontava para
+// `GEMINI.md`, que não existe, e para `PROJECT_CONFIG.md`, também inexistente).
+// O SSoT de regras (inclui as regras de teste) é `.agents/rules/**`.
+const QA_AGENT = ".agents/agents/qa-engineer/AGENT.md";
+
+// `context-compressor/SKILL.md:20` cita `GEMINI.md` como EXEMPLO GENÉRICO de
+// skill ("Rules from `GEMINI.md` or `MEMORY.md` that must persist") — não é
+// ponteiro de projeto, é o ÚNICO resíduo declarado NÃO-VIVO. Fica EXCLUÍDO
+// explicitamente: o teste abaixo tolera-o e falha se surgir qualquer OUTRO
+// resíduo vivo em `.agents/**`.
+const CONTEXT_COMPRESSOR = ".agents/skills/context-compressor/SKILL.md";
+
+describe("PAP-09 ausência de ponteiro morto de SSoT", () => {
+  const PAP09_FILES = [
+    ".agents/agents/product-manager/AGENT.md",
+    ".agents/agents/architect/AGENT.md",
+    ".agents/agents/code-reviewer/PROMPT.md",
+    QA_AGENT, // emenda de escopo (iteração 1): mesma classe de defeito.
+  ];
+
+  // Subconjunto cujo SSoT primário é `.spec/prd/**` (artefatos da esteira).
+  // `qa-engineer` NÃO entra aqui: seu SSoT primário é `.agents/rules/**` (regras
+  // de teste), coberto por teste dedicado abaixo.
+  const PRD_SSoT_FILES = [
+    ".agents/agents/product-manager/AGENT.md",
+    ".agents/agents/architect/AGENT.md",
+    ".agents/agents/code-reviewer/PROMPT.md",
+  ];
+
+  it("zero referência viva a GEMINI.md / docs/specs / docs/adr", () => {
+    for (const rel of PAP09_FILES) {
+      const text = readFileSync(join(REPO, rel), "utf8");
+      assert.doesNotMatch(text, /GEMINI\.md|docs\/specs|docs\/adr/, `${rel} mantém ponteiro morto`);
+    }
+  });
+
+  it("aponta para o SSoT real .spec/prd/** (artefatos) e .agents/rules/** (regras)", () => {
+    for (const rel of PRD_SSoT_FILES) {
+      const text = readFileSync(join(REPO, rel), "utf8");
+      assert.match(text, /\.spec\/prd\//, `${rel} não aponta para .spec/prd/**`);
+    }
+  });
+
+  it("qa-engineer aponta para `.agents/rules/**` (SSoT de regras de teste), não para arquivo inventado", () => {
+    const text = readFileSync(join(REPO, QA_AGENT), "utf8");
+    assert.match(text, /\.agents\/rules\/\*\*/, "qa-engineer não aponta para .agents/rules/**");
+    // contra-prova: não pode citar o arquivo morto nem inventar outro.
+    assert.doesNotMatch(text, /GEMINI\.md|PROJECT_CONFIG\.md/, "qa-engineer mantém ponteiro morto");
+  });
+
+  it("o ÚNICO resíduo vivo em `.agents/**` é o exemplo genérico do context-compressor (declarado não-vivo)", () => {
+    const hits = findLiveRefs(REPO, ["GEMINI\\.md|docs/specs|docs/adr"]);
+    // discrimina: o resíduo tolerado existe e está sozinho — não passa por ausência.
+    assert.deepEqual(hits, [`${CONTEXT_COMPRESSOR}:20`], "o resíduo tolerado é exatamente 1 (context-compressor:20)");
+    // e qualquer resíduo fora do arquivo declarado quebra o teste.
+    const unexpected = hits.filter((h) => !h.startsWith(CONTEXT_COMPRESSOR));
+    assert.deepEqual(unexpected, [], `resíduo vivo não declarado: ${unexpected.join(", ")}`);
+  });
+});
+
