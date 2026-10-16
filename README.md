@@ -17,6 +17,7 @@
 | 7 | **Kill-switch fora do worktree** — `HARNESS_GATES=off` no processo host; config nunca desliga | ADR-009 |
 | 8 | **Memória persistente** — decisões, erros e lições no Brain (busca antes, registra depois) | skill `brain` |
 | 9 | **Instalador** — leva o harness a outro repo sem copiar domínio alheio (caso Hive) | `installer/` + skill `harness-installer` |
+| 10 | **Esteira PRD→ADR→SDD** — intenção de negócio aprovada **antes** do design; 1 ADR = 1 branch = 1 ciclo SDD; checks entram no `suiteFull`, sem deny novo no runtime | `.spec/prd/**` (bucket non-cycle) + `.agents/rules/prd-adr-pipeline.md` + `PRD-01`/`ADR-01`/`ADR-02` |
 
 ## Estrutura
 

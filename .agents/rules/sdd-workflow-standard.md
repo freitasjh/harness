@@ -32,6 +32,7 @@ O arquivo `workflow-state.json` deve residir na **raiz do projeto**. Ele é a ú
 
 ### Campos Aditivos (opcionais, nunca destrutivos):
 - `prd_adr` (SPEC §4.3): `{ prd_id, prd_status: draft|approved|archived, active_adr, adr_order[], snapshots[{adr, follow_ups_count, escalations_count, at}] }`. **Dono**: o orquestrador — escrito/atualizado no **merge de cada ADR** (mesmo dono do bloco). Estritamente aditivo: nenhum campo existente é renomeado/removido e nenhum valor novo de `current_phase` é criado (🟡 processo — sem mecanismo: o `gate.js` só compara com `Completed`, não há conjunto canônico que recuse).
+- `follow_ups[].created_at`: **todo** item de `follow_ups[]` carrega `created_at` (ISO-8601; base de derivação declarada em `follow_ups_created_at_basis`). **Dono**: o orquestrador (mesmo dono do bloco `prd_adr`). **Mecanismo**: o guard do teste `prd-checks.spec.mjs` (PAP-12/NFR-6) exige `typeof created_at === "string"` em cada item — um follow-up sem `created_at` deixa a suíte vermelha. **Nível**: 🟡 processo (é o teste que cobra; **não** é deny — o `gate.js` não lê `follow_ups`).
 
 ## 3. Registro de Progresso (`spec-developed.md`)
 

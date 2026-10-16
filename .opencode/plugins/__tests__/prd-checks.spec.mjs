@@ -1433,3 +1433,129 @@ describe("PAP-06 — regra descritiva da esteira existe e cita o mecanismo", () 
     assert.ok(lines <= 80, `regra tem ${lines} linhas (>80)`);
   });
 });
+
+// ---------------------------------------------------------------------------
+// PAP-12 / NFR-6 — the guard the review proved missing (F-1).
+//
+// Every other spec in this suite reads a FIXTURE state (see `prd-checks`'s
+// `type=bug` fixture, `sdd-checks`'s `writeFileSync(...)`, `gate`'s
+// `statePath: "/nonexistent/…"`). NONE of them reads the state on disk. So
+// renaming `current_phase` in the REAL `workflow-state.json` broke nothing
+// green — the exact hole NFR-6 (`SPEC §10`) exists to close: the gate
+// (`gate.js` `checkAnchorB`/`inferNewCycle`) reads `current_phase`/
+// `current_feature`/`harness_status`/`code_review_status` and PAP-12 added
+// `prd_adr.snapshots[]` + `follow_ups[].created_at` additively. This is the
+// ONLY test that reads the state on disk; it fails closed if the file is
+// missing/unparseable (readFileSync/JSON.parse throw at load).
+//
+// The gate's own read sites, so the guard tracks the mechanism, not a copy of
+// it: `gate.js:708-710` (checkAnchorB), `:727-733` (inferNewCycle).
+// ---------------------------------------------------------------------------
+const STATE_PATH = join(REPO, "workflow-state.json");
+
+// Fails if any field the gate compares is renamed/retyped, or if the PAP-12
+// additive instrumentation is absent. Used by the real-file test AND by the
+// discrimination test below (mutated copy ⇒ must throw).
+function assertGateReadableFields(state) {
+  assert.equal(
+    typeof state.current_phase,
+    "string",
+    "current_phase must exist and be a string (gate.js:708,727)",
+  );
+  assert.ok(
+    typeof state.current_feature === "string" && state.current_feature.length > 0,
+    "current_feature must exist, be a string and be non-empty (gate.js:733-736)",
+  );
+  assert.equal(
+    typeof state.harness_status,
+    "string",
+    "harness_status must exist and be a string (gate.js:709,728)",
+  );
+  assert.equal(
+    typeof state.code_review_status,
+    "string",
+    "code_review_status must exist and be a string (gate.js:710,729)",
+  );
+  assert.ok(Array.isArray(state.prd_adr?.snapshots), "prd_adr.snapshots must be an array (PAP-12)");
+  for (const f of state.follow_ups ?? []) {
+    assert.equal(
+      typeof f.created_at,
+      "string",
+      `follow_ups[${f.id}].created_at must be a string (PAP-12)`,
+    );
+  }
+}
+
+describe("PAP-12/NFR-6 — the REAL workflow-state.json preserves the gate-read fields", () => {
+  const state = JSON.parse(readFileSync(STATE_PATH, "utf8"));
+
+  it("the 4 gate-read keys exist with the expected type + the PAP-12 additive fields", () => {
+    assertGateReadableFields(state);
+    // Positive controls: the real file carries the instrumentation PAP-12
+    // claims (not an empty list passing vacuously).
+    assert.ok(state.follow_ups.length > 0, "control: follow_ups is populated");
+    assert.ok(Array.isArray(state.prd_adr.snapshots), "control: snapshots is an array");
+  });
+
+  it("discriminates: renaming current_phase in a COPY makes the guard fail", () => {
+    const copy = { ...state };
+    copy.current_phase_renamed = copy.current_phase;
+    delete copy.current_phase;
+    assert.notDeepEqual(copy, state, "control: the copy differs from the real state");
+    assert.throws(
+      () => assertGateReadableFields(copy),
+      /current_phase/,
+      "a renamed current_phase must fail the guard — otherwise the guard is vacuous",
+    );
+  });
+
+  it("discriminates: dropping prd_adr.snapshots makes the guard fail", () => {
+    const copy = { ...state, prd_adr: { ...state.prd_adr } };
+    delete copy.prd_adr.snapshots;
+    assert.notDeepEqual(copy, state, "control: the copy differs from the real state");
+    assert.throws(
+      () => assertGateReadableFields(copy),
+      /snapshots/,
+      "a missing prd_adr.snapshots must fail the guard",
+    );
+  });
+
+  it("discriminates: retyping harness_status/code_review_status makes the guard fail (presence ≠ mechanism)", () => {
+    const retypedHarness = { ...state, harness_status: true };
+    assert.notDeepEqual(retypedHarness, state, "control: the copy differs from the real state");
+    assert.throws(
+      () => assertGateReadableFields(retypedHarness),
+      /harness_status/,
+      "harness_status=true must fail — gate.js:709 compares === 'passed', so presence alone is not the mechanism",
+    );
+
+    const retypedReview = { ...state, code_review_status: 1 };
+    assert.notDeepEqual(retypedReview, state, "control: the copy differs from the real state");
+    assert.throws(
+      () => assertGateReadableFields(retypedReview),
+      /code_review_status/,
+      "code_review_status=1 must fail — gate.js:710 compares === 'passed'",
+    );
+  });
+
+  it("discriminates: an empty current_feature makes the guard fail (gate.js:735-736 requires length > 0)", () => {
+    const copy = { ...state, current_feature: "" };
+    assert.notDeepEqual(copy, state, "control: the copy differs from the real state");
+    assert.throws(
+      () => assertGateReadableFields(copy),
+      /current_feature/,
+      "an empty current_feature must fail the guard — gate.js:735-736 skips the pointer match when length is 0",
+    );
+  });
+
+  it("discriminates: a follow_up without created_at makes the guard fail", () => {
+    const copy = { ...state, follow_ups: state.follow_ups.map((f) => ({ ...f })) };
+    delete copy.follow_ups[0].created_at;
+    assert.notDeepEqual(copy, state, "control: the copy differs from the real state");
+    assert.throws(
+      () => assertGateReadableFields(copy),
+      /created_at/,
+      "a follow_up missing created_at must fail the guard",
+    );
+  });
+});
