@@ -47,7 +47,7 @@
     "P3_P4": "approved_auto_evidence_batches1-5 (14/14 tasks; review APPROVED 0 criticos)",
     "P4_P5": "pending_user_approval (QA P4: gate PASSA na substancia; 831/831; 0 writes nos 2 presets; transcript byte-identico; 2 P2 novos registrados em .spec/tech-debts/harness-eixos-stack-p2/)",
     "P5_P6": "approved_user_2026_10_18 (VERIFY APPROVED 3/3 dimensoes; traceability 100%; ciclo arquivado; commit ab66c40 com trailer)",
-    "P6_fim": "done_commit_ab66c40 (trailer Harness-Gate-Change aceito pelo pre-commit; push PENDENTE)",
+    "P6_fim": "done_commit_63660a7 (trailer Harness-Gate-Change aceito; bugfix harness-eixos-stack-p2; push PENDENTE — 3 commits a frente de origin/main)",
     "B1_B2": "approved_user_2026_09_29",
     "FU32": "closed_approved_decision_B"
   },
@@ -817,7 +817,7 @@
       "Desvios de escopo declarados e aprovados: menu em 2 passos (D-A), optional como metadado, AGENTS.md inexistente => nota no README.md."
     ]
   },
-  "commit": "ab66c40",
+  "commit": "63660a7",
   "remote": "git@github.com:freitasjh/harness.git (SSH; push + CI pendentes)",
   "ci_evidence": {
     "main": "GREEN confirmado na UI",
@@ -1162,6 +1162,6 @@
     "FU-56 (P3): 3 skills mobile divergem do commit pinado declarado (nomeadas no VENDOR-NOTICE); re-vendorizar muda hashes congelados — decisao do owner",
     "FU-55/57/58 (P3): incidente de processo auto-declarado (pkill -f), checkVendor nao pega edicao so-da-tabela de licenca, constante de prova do dry-run irreprodutivel no REPORT",
     "Commit do ciclo: .agents/rules/harness-config.md esta em protectedPaths => exige trailer Harness-Gate-Change / HARNESS_GATE_APPROVER (aprovacao humana no P6)",
-    "push (nada enviado — branch local 1 commit a frente de origin/main)"
+    "push (nada enviado — 3 commits locais a frente de origin/main: ab66c40, 0c95c9e, 63660a7)"
   ]
 }
