@@ -1,0 +1,147 @@
+{
+  "version": 1,
+  "demand": "harness-eixos-stack",
+  "agent": "developer-engineer",
+  "phase": "Testing",
+  "gitSha": "9631a845e124af9f3f624f5e01ba461260254e17",
+  "commands": [
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 1056,
+      "stdoutHash": "sha256:3e6a4ee103fea8a2325aee6be6f5eb31d8657d20910cb6b4e0597fa9b7f87160",
+      "capture": "stdout+stderr capturados em /tmp/opencode/b5-plugins.log"
+    },
+    {
+      "cmd": "node --test \"installer/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 6774,
+      "stdoutHash": "sha256:5ec15f6d5a9f6800feb258e9bf3c23418b3a536d282920050b6967a8c33326e1",
+      "capture": "stdout+stderr capturados em /tmp/opencode/b5-inst.log"
+    },
+    {
+      "cmd": "node scripts/static-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 137,
+      "stdoutHash": "sha256:db23ee52fda33ba181cc06ed99923879ef3e0a49765b2946be8d6f47807f4d1e",
+      "capture": "stdout+stderr capturados em /tmp/opencode/b5-static.log"
+    },
+    {
+      "cmd": "node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 90,
+      "stdoutHash": "sha256:e5e528c52d79fceaa1be828bd89116aa6e0be73294d2e99d39c4febe99e84516",
+      "capture": "stdout+stderr capturados em /tmp/opencode/b5-vendor.log"
+    }
+  ],
+  "observedCounts": {
+    "unit_plugins": {
+      "passed": 352,
+      "failed": 0,
+      "skipped": 0
+    },
+    "it_installer": {
+      "passed": 479,
+      "failed": 0,
+      "skipped": 0
+    },
+    "static_checks": {
+      "pass": 10,
+      "fail": 0
+    },
+    "vendor_check": "vendor-check OK (.agents/skills/.vendor-lock.json)",
+    "suites_total": 831
+  },
+  "stdoutExcerpt": [
+    "plugins: tests 352 pass 352 fail 0 skipped 0",
+    "installer: tests 479 pass 479 fail 0 skipped 0",
+    "static-checks: 10 PASS / 0 FAIL (V15 rede em installer/=0)",
+    "vendor-check OK (.agents/skills/.vendor-lock.json)"
+  ],
+  "e2e": {
+    "kind": "declared-repo-e2e (sem browser: harness.config.json stack backend/frontend = N/A)",
+    "dryRun": {
+      "presets": [
+        "java+vue",
+        "java+react"
+      ],
+      "cmd": "node installer/install.mjs init --target <tmp> --dry-run --answers-file <json>",
+      "exitCode": 0,
+      "writes": 0,
+      "proof": "sha256 do `find . | sort` do destino identico antes/depois (063c1ddc5e92cf28) nos dois presets",
+      "gating_observed": {
+        "java+vue": {
+          "react-components/SKILL.md": 0,
+          "rules/frontend-coding-standards.md": 1
+        },
+        "java+react": {
+          "react-components/SKILL.md": 1,
+          "rules/frontend-coding-standards.md": 0
+        }
+      },
+      "logs": [
+        "/tmp/opencode/dryrun-java+vue.log",
+        "/tmp/opencode/dryrun-java+react.log"
+      ]
+    },
+    "transcript": {
+      "cmd": "pty (python3) => node installer/install.mjs init --target <tmp> --dry-run  [expect nao instalado no host]",
+      "file": "/tmp/opencode/wizard-react-transcript.txt",
+      "bytes": 16336,
+      "choice": "W2m-1 = 4 (Aplicacao web) -> W2m-2 = 2 (React)",
+      "assertions": [
+        "[1/2] escolha [1-5] (q cancela) >",
+        "[INFO] W2m frontend — qual o frontend do seu projeto web:",
+        "[2/2] escolha [1-2] (default: 1) (q cancela) >",
+        "  [OK] stack = java+react",
+        "dry-run: NAO EXECUTADO — nenhum write"
+      ],
+      "writes": 0
+    }
+  },
+  "evaluation": {
+    "telas": "n/a-repo-sem-ui (harness.config.json declara stack backend/frontend = N/A); a \"tela\" deste batch e o TTY do wizard: menu em 2 passos com contador [i/total], (default: 1) no passo 2 e (q cancela) nos 2 prompts — legibilidade verificada no transcript",
+    "negocio": "ok-A1/A2 fechados ponta-a-ponta no dry-run: destino java+react recebe react-components e NAO recebe rules/frontend-coding-standards.md; destino java+vue o inverso (0/1 e 1/0)",
+    "logica": "ok-suiteFull 4 etapas com && (short-circuit): plugins 352/352 fail 0, installer 479/479 fail 0, static-checks 10 PASS/0 FAIL, vendor --check OK => exit 0",
+    "perf": "n/a-repo-sem-runtime-de-produto; suiteFull inteira ~8.1s (soma das 4 etapas observadas)"
+  },
+  "brainStore": [
+    "regras/projetos/projetos/harness/eixos-stack-gating-por-eixo-declarado",
+    "regras/projetos/projetos/harness/eixos-stack-guarda-de-contrato-declarado",
+    "regras/projetos/projetos/harness/chave-composta-validada-pela-metade",
+    "regras/projetos/projetos/harness/wizard-menu-2-passos-e-fixture-acoplado",
+    "regras/projetos/projetos/harness/relaxar-assert-vs-alinhar-fonte",
+    "regras/projetos/projetos/harness/vendor-origem-de-licenca-e-stamp-do-upstream"
+  ],
+  "cleanup": {
+    "ports": [],
+    "processes": [],
+    "tempdirs_removed": [
+      "/tmp/opencode/vendor-src (4 clones + stage, Batch 4)",
+      "/tmp/opencode/verify-src, /tmp/opencode/stage2 (Batch 4 iter.2)",
+      "/tmp/opencode/dryrun-java+vue, /tmp/opencode/dryrun-java+react, /tmp/opencode/wizard-react-target (Batch 5)"
+    ],
+    "note": "Nenhum servidor/porta subido (harness.config.json infra = null). O transcript e os logs de evidencia permanecem em /tmp/opencode (evidencia, nao processo)."
+  },
+  "selfReported": true,
+  "deviation": {
+    "field": "counts",
+    "action": "omitted-on-purpose",
+    "schemaRequires": true,
+    "schemaRef": ".agents/schemas/harness-report.schema.json (required: counts; unit/it/frontend com passed/failed/skipped)",
+    "why": "counts declarados sem observacao pela contraprova sao NEGADOS; o executor padrao da contraprova observa apenas exit code. As contagens OBSERVADAS estao em `observedCounts` + `stdoutExcerpt` (campos que o gate nao le).",
+    "mechanism": "gate.js:619-626 (expectedCounts && !observedCounts => DENY_CONTRAPROVE_DIVERGENT cause=counts-unverifiable) + gate.js:561-572 (defaultContraproveExec => counts:null)",
+    "conflictPointer": "workflow-state.json.conflicts[0] (id: C-1, severity: P1) — conflito registrado, nao resolvido neste batch (dono: orquestrador/owner)",
+    "declaredIn": "harness/harness-eixos-stack.json :: cleanup.note + deviation + observedCounts"
+  },
+  "notes": [
+    "commands[0].exitCode = 0 e o exit code REAL observado nesta sessao (as 4 etapas rodaram com && e todas sairam 0).",
+    "commands[].cmd concatenados com \" && \" reproduzem byte-a-byte harness.config.json:commands.suiteFull (verificado no build deste REPORT; nada foi alterado la).",
+    "stdoutHash = sha256 dos bytes exatos do stdout+stderr capturado de cada etapa.",
+    "phase=\"Testing\" (P5 Verify): o archive (Completed) e do orquestrador (P6, aprovacao humana) — este REPORT nao declara o ciclo completo.",
+    "gitSha e o HEAD base (as mudancas do ciclo estao na arvore de trabalho, nao commitadas — commit e passo humano/P6).",
+    "E2E declarado deste repo: dry-run (0 writes, prova por hash do dir) + transcript de TTY real; NAO se alega H3 de browser (mcp.required chrome-devtools existe para consumidores).",
+    "Delta Specs: o alvo `AGENTS.md` da raiz NAO existe no disco => a nota de eixo foi aplicada em README.md (documento real) e a emenda do delta foi reportada ao orquestrador (SPEC §11 a atualizar).",
+    "FU-54 fechado: .agents/skills/harness-installer/SKILL.md deixou de dizer \"`4` Projeto Java + Vue->java+vue\" e passou a descrever o menu em 2 passos (W2m-1 -> W2m-2) com o item 4 = \"Aplicacao web (backend + frontend) -> segue: frontend\"."
+  ]
+}

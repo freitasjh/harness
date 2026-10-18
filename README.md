@@ -60,6 +60,17 @@ o CLI aborta com instrução; com TTY entra no **wizard W0..W7** (detecção de
 `pubspec.yaml` + confirmação por camada). Detalhes em
 `.agents/skills/harness-installer/SKILL.md` §9.
 
+### Stack do destino — escolhida por EIXO (instalador)
+
+A configuração por destino é escolhida por **eixo**: `backend` e `frontend` são campos
+independentes no registry de perfis do instalador (`STACK_PROFILES` / `AXIS_IDS` em
+`installer/install.mjs`), e `stacks` (o que o destino aceita de skills/rules) **deriva** do eixo
+via `stacksFor(axes)` — nunca do nome do arquivo. Presets atuais (7): `node`, `node-esm`,
+`java+vue`, `java+react`, `outra`, `flutter`, `dart`. Hoje o backend disponível é **java** e o
+frontend oferecido é **vue** (padrão) ou **react** (menu `W2m` em 2 passos, ADR-004). Perfis de
+backend adicionais (**go**, **rust**) estão previstos e têm rota documentada (`ADR-005` do ciclo
+`harness-eixos-stack`, em `.spec/backend/harness-eixos-stack/`).
+
 Teste em cópia (nunca no repo real):
 
 ```sh

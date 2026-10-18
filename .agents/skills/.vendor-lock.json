@@ -6,13 +6,47 @@
       "source": "dart-lang/skills",
       "spdx": "BSD-3-Clause",
       "file": "LICENSE-dart-lang-skills",
-      "sha256": "835b0ffef5681b070c8d9c6c7d67cdd018441a7ae65b1ebd772dbdd2bd40f097"
+      "sha256": "835b0ffef5681b070c8d9c6c7d67cdd018441a7ae65b1ebd772dbdd2bd40f097",
+      "licenseOrigin": "upstream-file"
     },
     {
       "source": "flutter/skills",
       "spdx": "BSD-3-Clause",
       "file": "LICENSE-flutter-skills",
-      "sha256": "5b95696b504e162bcf775060ec416005df9969a95cda6f7d4ddb57327dd74d35"
+      "sha256": "5b95696b504e162bcf775060ec416005df9969a95cda6f7d4ddb57327dd74d35",
+      "licenseOrigin": "upstream-file"
+    },
+    {
+      "source": "google-labs-code/stitch-skills",
+      "spdx": "Apache-2.0",
+      "file": "LICENSE-stitch-skills",
+      "sha256": "b4133a55232c0996713349891dc55469d46a16ec027c033c9e4108b2149abb42",
+      "licenseOrigin": "upstream-file"
+    },
+    {
+      "source": "vercel-labs/agent-skills",
+      "spdx": "MIT",
+      "file": "LICENSE-vercel-agent-skills",
+      "sha256": "1cc9611d4fffbd0201696a5a81cc0b1d82743db847654ff4fa57d92ba7669387",
+      "licenseOrigin": "declared-evidence",
+      "evidence": [
+        {
+          "url": "https://github.com/vercel-labs/agent-skills/blob/063bee94c3f4df8453406c830b0a7df0f2860278/skills/react-best-practices/SKILL.md",
+          "section": "frontmatter: license: MIT (metadata.author: vercel)",
+          "commit": "063bee94c3f4df8453406c830b0a7df0f2860278"
+        },
+        {
+          "url": "https://github.com/vercel-labs/agent-skills/blob/063bee94c3f4df8453406c830b0a7df0f2860278/README.md",
+          "section": "## License -> MIT",
+          "commit": "063bee94c3f4df8453406c830b0a7df0f2860278"
+        },
+        {
+          "url": "https://github.com/vercel-labs/agent-skills/blob/063bee94c3f4df8453406c830b0a7df0f2860278/packages/react-best-practices-build/package.json",
+          "section": "\"license\": \"MIT\"",
+          "commit": "063bee94c3f4df8453406c830b0a7df0f2860278",
+          "note": "holder 'Vercel, Inc.' atribuido do author/organization declarados upstream (🟡 processo)"
+        }
+      ]
     }
   ],
   "skills": {
@@ -27,7 +61,9 @@
         "dart"
       ],
       "license": "BSD-3-Clause",
-      "licenseFile": "LICENSE-dart-lang-skills"
+      "licenseFile": "LICENSE-dart-lang-skills",
+      "contentRevision": "19228e842c691a5bcdb06b6603f3651953b2af2a",
+      "contentRevisionNote": "difere do pin em 1 linha de metadata (`last_modified`); os demais bytes sao identicos"
     },
     "dart-build-cli-app": {
       "source": "dart-lang/skills",
@@ -40,7 +76,9 @@
         "dart"
       ],
       "license": "BSD-3-Clause",
-      "licenseFile": "LICENSE-dart-lang-skills"
+      "licenseFile": "LICENSE-dart-lang-skills",
+      "contentRevision": "19228e842c691a5bcdb06b6603f3651953b2af2a",
+      "contentRevisionNote": "revisao anterior: `SKILL.md` difere e faltam 4 arquivos presentes no pin (`examples/multi_command_runner.dart`, `examples/single_command_tool.dart`, `references/aot_sdk_discovery.md`, `references/signals_and_terminal.md`)"
     },
     "dart-collect-coverage": {
       "source": "dart-lang/skills",
@@ -157,7 +195,9 @@
         "dart"
       ],
       "license": "BSD-3-Clause",
-      "licenseFile": "LICENSE-dart-lang-skills"
+      "licenseFile": "LICENSE-dart-lang-skills",
+      "contentRevision": "19228e842c691a5bcdb06b6603f3651953b2af2a",
+      "contentRevisionNote": "revisao anterior: `SKILL.md` difere e falta 1 arquivo presente no pin (`examples/json_patterns.dart`)"
     },
     "dart-use-primary-constructors": {
       "source": "dart-lang/skills",
@@ -301,6 +341,38 @@
       ],
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE-flutter-skills"
+    },
+    "react-components": {
+      "source": "google-labs-code/stitch-skills",
+      "sourceType": "github",
+      "sourceCommit": "0337446dadde6f8c94210444e2aa9d546126480f",
+      "skillPath": "plugins/stitch-build/skills/react-components/SKILL.md",
+      "computedHash": "e4f9aaccf174f414274873cbeeee1bb6fa8833ae50457246d670872b0c3e063a",
+      "treeHash": "3e49f53f8d51c9732d4501e6e86711dbd874868b72521297ee478cf76d34fb69",
+      "stacks": [
+        "react"
+      ],
+      "license": "Apache-2.0",
+      "licenseFile": "LICENSE-stitch-skills",
+      "optional": true,
+      "runtimeDeps": [
+        "rede em runtime: scripts/fetch-stitch.sh (curl em URL do Stitch)",
+        "@swc/core (scripts/validate.js faz parse AST)",
+        "Stitch MCP (allowed-tools stitch*:*)"
+      ]
+    },
+    "react-best-practices": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "sourceCommit": "063bee94c3f4df8453406c830b0a7df0f2860278",
+      "skillPath": "skills/react-best-practices/SKILL.md",
+      "computedHash": "3219a1944e404ffc14d1d9d6aef6dd2e3855b81387ee0a044ccbfe14d34c2357",
+      "treeHash": "dd9d1fda97727eff044b0482735ed8b08adfd31957afc8248ce19ba87732b0be",
+      "stacks": [
+        "react"
+      ],
+      "license": "MIT",
+      "licenseFile": "SKILL.md"
     }
   }
 }

@@ -8,7 +8,7 @@ import os from 'node:os';
 import path from 'node:path';
 import fs from 'node:fs';
 import { Readable, Writable } from 'node:stream';
-import { runWizard, runInit, assertCreateOnly, isAbortToken, detect, promptAnswers, runCli, InstallError, WIZARD_MENU, validateAnswer } from '../install.mjs';
+import { runWizard, runInit, assertCreateOnly, isAbortToken, detect, promptAnswers, runCli, InstallError, WIZARD_MENU, askMenuStep, sourceLineOf, W2M_MARKER, validateAnswer, QUESTIONS } from '../install.mjs';
 
 let dirs = [];
 function mkTarget(files = {}) {
@@ -53,6 +53,9 @@ function mkSource() {
   });
 }
 const WOPTS = { allowRoot: true, yes: true };
+// ADR-004: header literal do passo 1 (o menu de 2 passos substitui o antigo
+// 'W2m menu manual') — as asserções estruturais apontam para este texto.
+const W2M1_HEADER_RE = /W2m tipo de projeto/i;
 
 // ---------------------------------------------------------------------------
 describe('IM-BE-07 detect() — leitura line-based do pubspec (ADR-010/G3)', () => {
@@ -139,7 +142,7 @@ describe('IM-VAL-05 wizard W0..W7 (I11/RF-15)', () => {
       sourceDir: src,
       options: WOPTS,
     });
-    assert.match(out.text(), /W2m menu manual/i);
+    assert.match(out.text(), W2M1_HEADER_RE);
     assert.equal(res.answers.stack, 'node');
     assert.equal(res.answers.project, 'demo');
   });
@@ -338,7 +341,7 @@ describe('IM-VAL-05 costura runCli -> runWizard (should-fix review)', () => {
     });
     const text = out.text();
     assert.match(text, /W0 pre-flight/i, 'runCli liga o stdin TTY ao wizard');
-    assert.match(text, /W2m menu manual/i, 'wizard seguiu ate o W2m');
+    assert.match(text, W2M1_HEADER_RE, 'wizard seguiu ate o W2m');
     assert.match(text, /dry-run/i);
     assert.equal(JSON.stringify(fs.readdirSync(t)), '[]', 'dry-run: zero writes no target');
   });
@@ -411,11 +414,12 @@ describe('INS-07 W2m 5 itens produto (REQ-01)', () => {
       ['App Flutter', 'flutter'],
       ['Pacote Dart', 'dart'],
       ['Projeto Node\\.js', 'node'],
-      ['Projeto Java \\+ Vue', 'java\\+vue'],
       ['Outro projeto', 'outra'],
     ]) {
       assert.match(text, new RegExp(`[1-5]\\) .*${label}.*-> stack ${stack}`), `item ${label} -> ${stack}`);
     }
+    // ADR-004 §2: o item 4 deixa de mapear direto para java+vue — encadeia o passo 2.
+    assert.match(text, /4\) .*Aplica[cç][aã]o web \(backend \+ frontend\).*-> segue: frontend/);
   });
 
   it('regressao: menu nunca tem 4 itens (SPEC violada)', async () => {
@@ -429,7 +433,8 @@ describe('INS-07 W2m 5 itens produto (REQ-01)', () => {
       sourceDir: src,
       options: WOPTS,
     });
-    const items = out.text().split('\n').filter((l) => /^\s*[1-5]\)/.test(l));
+    // AT-3: escopado ao bloco W2m-1 (o filtro global casaria o W2m-2 tambem).
+    const items = w2m1Items(out.text());
     assert.equal(items.length, 5, 'exatamente 5 itens');
     assert.notEqual(items.length, 4, 'travada regressao aos 4 itens legados');
   });
@@ -460,7 +465,8 @@ describe('INS-08 mapeamento sem nova key (REQ-02)', () => {
     const src = mkSource();
     const res = await runWizard({
       target: t,
-      stdin: piped(['4', 'demo', '', 'node', '', '']),
+      // FU-49: item 4 encadeia o W2m-2; Enter reproduz o default (Vue).
+      stdin: piped(['4', '', 'demo', '', 'node', '', '']),
       stdout: capture().stream,
       sourceDir: src,
       options: WOPTS,
@@ -488,6 +494,38 @@ describe('INS-08 mapeamento sem nova key (REQ-02)', () => {
   });
 });
 
+// EX-BE-03 (RF-14/D-2): o prompt do W3 deriva de STACK_VALUES (fonte unica) e
+// nao repete a lista antiga de install.mjs:196 — que omitia java+react.
+// AT-1 (review iteracao 2): a lista esperada e LITERAL (oraculo independente);
+// `assert.match(line, /java\+vue/)` era satisfeito pelo sufixo `(default: ...)`.
+const EXPECTED_STACK_PROMPT = 'Stack do destino? (node/java+vue/java+react/outra/node-esm/flutter/dart)';
+
+describe('EX-BE-03 prompt do W3 derivado da fonte unica (RF-14)', () => {
+  it('QUESTIONS.stack.prompt e exatamente a lista derivada (falha se voltar hardcoded)', () => {
+    const q = QUESTIONS.find((x) => x.key === 'stack');
+    assert.ok(q, 'QUESTIONS tem a chave stack');
+    assert.equal(q.prompt, EXPECTED_STACK_PROMPT);
+  });
+
+  it('lista exibida no W3 = EXPECTED_STACK_PROMPT (com java+react; sem a lista antiga)', async () => {
+    const t = mkTarget({});
+    const src = mkSource();
+    const out = capture();
+    await runWizard({
+      target: t,
+      // FU-49: item 4 encadeia o W2m-2; Enter reproduz o default (Vue).
+      stdin: piped(['4', '', 'demo', '', 'node', '', '']),
+      stdout: out.stream,
+      sourceDir: src,
+      options: WOPTS,
+    });
+    const line = out.text().split('\n').find((l) => l.includes('Stack do destino'));
+    assert.ok(line, 'prompt de stack exibido no W3');
+    assert.ok(line.includes(EXPECTED_STACK_PROMPT), 'W3 exibe a lista derivada de STACK_VALUES');
+    assert.doesNotMatch(line, /flutter\/dart\/node\/java\+vue\/outra/, 'lista antiga hardcoded nao volta');
+  });
+});
+
 describe('INS-09 detect soberano (REQ-03)', () => {
   it('com pubspec flutter: W2m pulado, default W3 = flutter', async () => {
     const t = mkTarget({ 'pubspec.yaml': PUBSPEC_FLUTTER });
@@ -500,7 +538,7 @@ describe('INS-09 detect soberano (REQ-03)', () => {
       sourceDir: src,
       options: WOPTS,
     });
-    assert.doesNotMatch(out.text(), /W2m menu manual/, 'menu nao exibido com pubspec');
+    assert.doesNotMatch(out.text(), W2M1_HEADER_RE, 'menu nao exibido com pubspec');
     assert.equal(res.answers.stack, 'flutter', 'default veio do suggestedStack');
   });
 
@@ -516,7 +554,7 @@ describe('INS-09 detect soberano (REQ-03)', () => {
       options: WOPTS,
     });
     assert.equal(res.detection.suggestedStack, 'dart');
-    assert.doesNotMatch(out.text(), /W2m menu manual/);
+    assert.doesNotMatch(out.text(), W2M1_HEADER_RE);
   });
 
   it('sem pubspec: W2m exibido (INS-07)', async () => {
@@ -530,7 +568,7 @@ describe('INS-09 detect soberano (REQ-03)', () => {
       sourceDir: src,
       options: WOPTS,
     });
-    assert.match(out.text(), /W2m menu manual/);
+    assert.match(out.text(), W2M1_HEADER_RE);
   });
 });
 
@@ -769,5 +807,270 @@ describe('INS-16 contador + q (REQ-11)', () => {
     assert.equal(isAbortToken('abort'), true);
     assert.equal(isAbortToken('node'), false);
     assert.equal(isAbortToken(''), false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// EX-FE-07 / EX-FE-08 / EX-VAL-09: W2m em 2 passos (ADR-004, decisao D-A).
+// ADR_LITERAL_* transcreve BYTE-A-BYTE as 11 linhas de menu do ADR-004 §2
+// (blocos de W2m-1 e W2m-2). A comparacao e por SUBSTRING EXATA — sem regex
+// flexivel, sem trim: e o que prova que o padding do menu e o do ADR.
+// ---------------------------------------------------------------------------
+const ADR_MENU_LINES = [
+  "[INFO] W2m tipo de projeto — escolha o tipo do seu projeto:",
+  "  1) App Flutter        -> stack flutter",
+  "  2) Pacote Dart        -> stack dart",
+  "  3) Projeto Node.js    -> stack node (ESM incluso)",
+  "  4) Aplicação web (backend + frontend) -> segue: frontend",
+  "  5) Outro projeto      -> stack outra",
+  "[1/2] escolha [1-5] (q cancela) >",
+  "[INFO] W2m frontend — qual o frontend do seu projeto web:",
+  "  1) Vue (default)   -> stack java+vue",
+  "  2) React           -> stack java+react",
+  "[2/2] escolha [1-2] (default: 1) (q cancela) >",
+];
+const W2M1_HEADER = ADR_MENU_LINES[0];
+const W2M2_HEADER = ADR_MENU_LINES[7];
+
+// Itens do bloco W2m-1 (entre o cabecalho e o prompt do passo 1) — asserção
+// ESCOPADA: o filtro global `/^\s*\d\)/` casaria tambem os itens do W2m-2.
+function w2m1Items(text) {
+  const lines = text.split('\n');
+  const start = lines.findIndex((l) => l.includes(W2M1_HEADER));
+  const end = lines.findIndex((l, i) => i > start && /^\[\d+\/\d+\] escolha/.test(l));
+  return lines.slice(start + 1, end).filter((l) => /^\s*\d\)/.test(l));
+}
+function w2m2Items(text) {
+  const lines = text.split('\n');
+  const start = lines.findIndex((l) => l.includes(W2M2_HEADER));
+  if (start < 0) return [];
+  const end = lines.findIndex((l, i) => i > start && /^\[\d+\/\d+\] escolha/.test(l));
+  return lines.slice(start + 1, end).filter((l) => /^\s*\d\)/.test(l));
+}
+const globalItems = (text) => text.split('\n').filter((l) => /^\s*\d\)/.test(l));
+
+describe('EX-FE-08 W2m (ADR-004 §2): as 11 linhas do menu sao BYTE-IGUAIS ao literal', () => {
+  async function runMenu(input) {
+    const out = capture();
+    const res = await runWizard({ target: mkTarget({}), stdin: piped(input), stdout: out.stream, sourceDir: mkSource(), options: WOPTS });
+    return { text: out.text(), res };
+  }
+
+  it('as 11 linhas (W2m-1 + W2m-2) aparecem byte-a-byte no texto renderizado', async () => {
+    // fixture que percorre os DOIS passos (4 -> 2) e depois o W3
+    const { text } = await runMenu(['4', '2', 'demo', '', 'node', '', '']);
+    for (const literal of ADR_MENU_LINES) {
+      assert.ok(text.includes(literal), `linha do ADR ausente/divergente: ${JSON.stringify(literal)}`);
+    }
+  });
+
+  it('W2m-1: 5 itens na ordem 1..5 do ADR (e o item 4 encadeia o passo 2)', async () => {
+    const { text } = await runMenu(['3', 'demo', '', 'node', '', '']);
+    assert.equal(w2m1Items(text).length, 5, 'exatamente 5 itens no W2m-1');
+    for (const literal of ADR_MENU_LINES.slice(1, 6)) {
+      assert.ok(text.includes(literal), `item literal: ${JSON.stringify(literal)}`);
+    }
+    assert.ok(text.includes(ADR_MENU_LINES[4]), 'item 4 -> segue: frontend (nao mapeia direto)');
+  });
+
+  it('itens SEM encadeamento nao exibem o passo 2 (nenhum [2/2])', async () => {
+    for (const key of ['3', '5']) {
+      const { text } = await runMenu([key, 'demo', '', 'node', '', '']);
+      assert.doesNotMatch(text, /\[2\/2\]/, `item ${key}: sem passo 2`);
+      assert.ok(!text.includes(W2M2_HEADER), `item ${key}: sem cabecalho do passo 2`);
+    }
+    // Itens 1/2 (mobile) exigem `pubspec.yaml` no W3 (validateAnswer), logo o
+    // caminho end-to-end deles nao e dirigivel sem pubspec — a ausencia de
+    // encadeamento e DADO do menu (nunca inferida):
+    for (const m of WIZARD_MENU.filter((x) => x.key !== '4')) {
+      assert.ok(!m.next, `item ${m.key} nao encadeia o passo 2`);
+    }
+  });
+});
+
+describe('EX-FE-08 W2m-2 (ADR-004 §2): frontend so no item 4', () => {
+  async function runMenu(input) {
+    const out = capture();
+    const res = await runWizard({ target: mkTarget({}), stdin: piped(input), stdout: out.stream, sourceDir: mkSource(), options: WOPTS });
+    return { text: out.text(), res };
+  }
+
+  it('item 4 => Enter (default 1 = Vue) reproduz o comportamento congelado: java+vue (D-9)', async () => {
+    const { text, res } = await runMenu(['4', '', 'demo', '', 'node', '', '']);
+    const [header, vueItem, reactItem, prompt] = [ADR_MENU_LINES[7], ADR_MENU_LINES[8], ADR_MENU_LINES[9], ADR_MENU_LINES[10]];
+    for (const literal of [header, vueItem, reactItem, prompt]) {
+      assert.ok(text.includes(literal), `linha do ADR ausente/divergente: ${JSON.stringify(literal)}`);
+    }
+    assert.equal(w2m2Items(text).length, 2, 'exatamente 2 itens no W2m-2');
+    assert.equal(res.answers.stack, 'java+vue', 'Enter = default Vue (D-9)');
+  });
+
+  it('item 4 => 2 (React) => java+react', async () => {
+    const { res } = await runMenu(['4', '2', 'demo', '', 'node', '', '']);
+    assert.equal(res.answers.stack, 'java+react');
+  });
+
+  it('a escolha do W2m-2 alimenta a pergunta do W3 (prompt mostra o stack escolhido)', async () => {
+    const { text, res } = await runMenu(['4', '2', 'demo', '', 'node', '', '']);
+    assert.equal(res.answers.stack, 'java+react');
+    const line = text.split('\n').find((l) => l.includes('Stack do destino'));
+    assert.ok(line && line.includes('(default: java+react)'), `W3 exibe o stack do W2m-2: ${line}`);
+  });
+});
+
+describe('EX-VAL-09 asserção de itens ESCOPADA ao W2m-1 (regex global daria falso 7)', () => {
+  it('com os DOIS blocos no texto, escopado = 5 no passo 1 e 2 no passo 2; global != 5', async () => {
+    const out = capture();
+    await runWizard({
+      target: mkTarget({}),
+      stdin: piped(['4', '2', 'demo', '', 'node', '', '']),
+      stdout: out.stream,
+      sourceDir: mkSource(),
+      options: WOPTS,
+    });
+    const text = out.text();
+    assert.equal(w2m1Items(text).length, 5, 'exatamente 5 itens no W2m-1 (escopado)');
+    assert.equal(w2m2Items(text).length, 2, 'exatamente 2 itens no W2m-2 (escopado)');
+    assert.equal(globalItems(text).length, 7, 'global: 5 do passo 1 + 2 do passo 2');
+    assert.notEqual(globalItems(text).length, 5, 'a asserção NAO escopada falharia (prova do escopo)');
+  });
+
+  it('pubspec.yaml presente => W2m inteiro pulado (nenhum prompt do menu)', async () => {
+    const out = capture();
+    const res = await runWizard({
+      target: mkTarget({ 'pubspec.yaml': PUBSPEC_FLUTTER }),
+      stdin: piped(['', '', 'node', '', '']),
+      stdout: out.stream,
+      sourceDir: mkSource(),
+      options: WOPTS,
+    });
+    const text = out.text();
+    assert.ok(!text.includes(W2M1_HEADER), 'sem cabecalho do W2m-1');
+    assert.ok(!text.includes(W2M2_HEADER), 'sem cabecalho do W2m-2');
+    assert.doesNotMatch(text, /\[\d\/\d\] escolha \[1-\d\]/, 'nenhum prompt de menu exibido');
+    assert.equal(res.answers.stack, 'flutter', 'stack veio da deteccao');
+  });
+
+  for (const [label, input] of [['W2m-1', ['q']], ['W2m-2', ['4', 'q']]]) {
+    it(`q em ${label} => USER_ABORT com 0 writes`, async () => {
+      const t = mkTarget({});
+      const before = JSON.stringify(fs.readdirSync(t));
+      let applied = 0;
+      await assert.rejects(
+        runWizard({
+          target: t,
+          stdin: piped(input),
+          stdout: capture().stream,
+          sourceDir: mkSource(),
+          options: WOPTS,
+          apply: () => { applied++; return {}; },
+        }),
+        (e) => e instanceof InstallError && e.code === 'USER_ABORT',
+      );
+      assert.equal(applied, 0);
+      assert.equal(JSON.stringify(fs.readdirSync(t)), before, 'disco intocado');
+    });
+  }
+});
+
+describe('EX-FE-08 bloco de erro de 4 linhas por passo (ADR-004 §5)', () => {
+  it('AT-2: sourceLineOf(W2M_MARKER) aponta o BLOCO W2m em runWizard (nunca a declaracao)', () => {
+    const src = fs.readFileSync(new URL('../install.mjs', import.meta.url), 'utf8').split('\n');
+    const n = sourceLineOf(W2M_MARKER);
+    assert.equal(typeof n, 'number', 'marcador presente no arquivo');
+    const declLine = src.findIndex((l) => /^(export )?const W2M_MARKER/.test(l)) + 1;
+    assert.ok(declLine > 0, 'a declaracao do marcador existe (referencia)');
+    assert.notEqual(n, declLine, 'a ancora NAO pode apontar para a propria declaracao');
+    assert.ok(src[n - 1].includes(W2M_MARKER), 'a linha resolvida contem o marcador');
+    // ... e a linha resolvida e a do bloco, que chama o passo 1 logo abaixo:
+    assert.match(src[n - 1], /^\s*\/\/.*W2m menu manual em 2 passos/, 'linha do bloco (comentario)');
+    assert.ok(src.slice(n, n + 14).join('\n').includes('askMenuStep({'), 'o bloco chama askMenuStep abaixo da ancora');
+  });
+
+  it('AT-2: o texto renderizado no erro usa a linha do bloco (W2m-1 e W2m-2)', async () => {
+    const n = sourceLineOf(W2M_MARKER);
+    const out = capture();
+    await runWizard({
+      target: mkTarget({}),
+      stdin: piped(['7', '4', '9', '2', 'demo', '', 'node', '', '']),
+      stdout: out.stream,
+      sourceDir: mkSource(),
+      options: WOPTS,
+    });
+    const text = out.text();
+    assert.match(text, new RegExp(`onde ver: installer/install\\.mjs:${n} \\(W2m-1\\)`), 'linha 4 do erro (passo 1) = linha do bloco');
+    assert.match(text, new RegExp(`onde ver: installer/install\\.mjs:${n} \\(W2m-2\\)`), 'linha 4 do erro (passo 2) = linha do bloco');
+  });
+
+  it('W2m-1: 4 linhas; linha 3 em linguagem de produto; linha 4 com arquivo:linha', async () => {
+    const out = capture();
+    const res = await runWizard({
+      target: mkTarget({}),
+      stdin: piped(['7', '3', 'demo', '', 'node', '', '']),
+      stdout: out.stream,
+      sourceDir: mkSource(),
+      options: WOPTS,
+    });
+    const text = out.text();
+    assert.match(text, /\[ERRO\] opcao '7' invalida/);
+    assert.match(text, /porquê: BAD_ANSWER: fora de \[1,5\]/);
+    assert.match(text, /como corrigir: escolha o numero de um dos itens listados acima/);
+    assert.doesNotMatch(text, /como corrigir:[^\n]*(flutter|dart|node-esm|java\+vue|outra)/, 'linha 3 sem jargao de stack');
+    assert.match(text, /onde ver: installer\/install\.mjs:\d+ \(W2m-1\)/, 'linha 4 com arquivo:linha');
+    assert.equal(res.answers.stack, 'node', 'repetiu o MESMO passo e aceitou o valido');
+  });
+
+  it('W2m-2: 4 linhas e REPETE o passo 2 (nao reinicia o menu)', async () => {
+    const out = capture();
+    const res = await runWizard({
+      target: mkTarget({}),
+      stdin: piped(['4', '9', '2', 'demo', '', 'node', '', '']),
+      stdout: out.stream,
+      sourceDir: mkSource(),
+      options: WOPTS,
+    });
+    const text = out.text();
+    assert.match(text, /\[ERRO\] opcao '9' invalida/);
+    assert.match(text, /fora de \[1,2\]/);
+    assert.match(text, /onde ver: installer\/install\.mjs:\d+ \(W2m-2\)/, 'linha 4 com arquivo:linha');
+    assert.doesNotMatch(text, /como corrigir:[^\n]*(flutter|dart|node-esm|java\+vue|outra)/, 'linha 3 sem jargao de stack');
+    assert.equal(res.answers.stack, 'java+react', 'repetiu o passo 2 e aceitou 2');
+    assert.equal((text.match(/W2m tipo de projeto/g) || []).length, 1, 'passo 1 exibido 1x (nao reiniciou o menu)');
+    assert.equal((text.match(/W2m frontend/g) || []).length, 1, 'cabecalho do passo 2 exibido 1x');
+    assert.equal((text.match(/\[2\/2\] escolha/g) || []).length, 2, 'prompt do passo 2 REPETIDO apos o erro');
+  });
+});
+
+describe('EX-FE-07 range do menu DERIVADO de items.length (A4)', () => {
+  it('item sintetico adicional e ALCANCAVEL; prompt e erro derivam do total', async () => {
+    const lines = [];
+    const inputs = ['7', '6'];
+    const read = async (label) => { lines.push(label); return inputs.shift(); };
+    const items = [...WIZARD_MENU, { key: '6', label: 'Projeto Go', stack: 'outra' }];
+    const picked = await askMenuStep({
+      read,
+      out: (s) => lines.push(s),
+      answers: {},
+      header: W2M1_HEADER,
+      items,
+      step: 1,
+      total: 2,
+    });
+    assert.equal(picked.key, '6', 'indice novo aceito (com range literal cairia em BAD_ANSWER)');
+    const text = lines.join('\n');
+    assert.match(text, /\[1\/2\] escolha \[1-6\] \(q cancela\) > /, 'prompt deriva o range');
+    assert.match(text, /6\) Projeto Go -> stack outra/, 'item sintetico listado');
+    assert.match(text, /digite 1, 2, 3, 4, 5 ou 6/, 'mensagem de erro deriva o range');
+    assert.match(text, /fora de \[1,6\]/);
+  });
+
+  it('o menu real deriva [1-5] (5 itens)', async () => {
+    const lines = [];
+    const inputs = ['9', '3'];
+    const read = async (label) => { lines.push(label); return inputs.shift(); };
+    const picked = await askMenuStep({ read, out: (s) => lines.push(s), answers: {}, header: W2M1_HEADER, items: WIZARD_MENU, step: 1, total: 2 });
+    assert.equal(picked.stack, 'node', 'repetiu e aceitou');
+    assert.match(lines.join('\n'), /\[1\/2\] escolha \[1-5\] \(q cancela\) > /);
+    assert.match(lines.join('\n'), /fora de \[1,5\]/);
   });
 });

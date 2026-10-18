@@ -74,3 +74,100 @@ describe('IM-DOC-01 README.md — aponta o caminho mobile', () => {
     assert.match(readme, /dogfood-mobile\.mjs/, 'README cita dogfood-mobile.mjs');
   });
 });
+
+// ---------------------------------------------------------------------------
+// EX-FE-13 (RF-11 / Delta Specs do ciclo harness-eixos-stack): paridade
+// prosa <-> MECANISMO. Cada assert exige o SIMBOLO real, nao so a ideia.
+// ---------------------------------------------------------------------------
+describe('EX-FE-13 SKILL.md — registry de 7 presets, menu 2 passos e vendor por origem', () => {
+  const skill = read(SKILL);
+
+  it('FU-54 FECHADO: a lista de stacks inclui java+react (sem a string antiga do item 4)', () => {
+    assert.match(skill, /java\+react/, 'cita o preset java+react');
+    assert.match(skill, /stack: 'node',\s*\/\/[^\n]*java\+react/, 'exemplo de API lista os 7 stacks');
+    assert.match(skill, /^\| `stack` \|[^\n]*`java\+react`/m, 'tabela do Q&A cita java+react');
+    assert.ok(!/`4` Projeto Java \+ Vue/.test(skill), 'FU-54: texto antigo do item 4 removido');
+  });
+
+  it('menu W2m documentado em 2 passos, com o mecanismo do range derivado', () => {
+    assert.match(skill, /W2m-1/, 'cita o passo 1');
+    assert.match(skill, /W2m-2/, 'cita o passo 2');
+    assert.match(skill, /Aplica[cç][aã]o web \(backend \+\s+frontend\)/, 'item 4 = Aplicacao web (nao mais Java+Vue)');
+    assert.match(skill, /segue: frontend/, 'item 4 encadeia o passo 2');
+    assert.match(skill, /`2` React→`java\+react`/, 'passo 2 oferece React -> java+react');
+    assert.match(skill, /`1` Vue→`java\+vue` \(default/, 'passo 2 default Vue -> java+vue (D-9)');
+    assert.match(skill, /WIZARD_MENU\.length/, 'range derivado do mecanismo (nao literal)');
+    assert.match(skill, /`\[1\/2\]`/, 'contador do passo 1');
+    assert.match(skill, /`\[2\/2\]`/, 'contador do passo 2');
+  });
+
+  it('registry: 7 presets com axes/stacks derivados e o eixo como fonte do gating', () => {
+    for (const preset of ['node', 'node-esm', 'java+vue', 'java+react', 'outra', 'flutter', 'dart']) {
+      assert.ok(skill.includes(preset), `cita o preset ${preset}`);
+    }
+    assert.match(skill, /AXIS_IDS/, 'cita AXIS_IDS (IDs de eixo)');
+    assert.match(skill, /stacksFor\(axes\)/, 'stacks DERIVADO do eixo (mecanismo)');
+    assert.match(skill, /STACKS_FOR_EXCEPTIONS/, 'cita a tabela de excecoes declarada');
+    assert.match(skill, /RULES_BY_AXIS/, 'gating de rules pelo eixo (mecanismo)');
+    assert.match(skill, /RULES_BY_AXIS[\s\S]{0,80}nunca pelo nome do arquivo|nunca pelo nome do arquivo/, 'declara que o gating nao usa nome de arquivo');
+    assert.match(skill, /ADR-005/, 'cita a rota dos perfis go/rust');
+    assert.match(skill, /go[\s\S]{0,40}rust/, 'cita go e rust como futuros');
+  });
+
+  it('vendor: licenseOrigin por fonte e react-components como OPCIONAL (RF-08/RF-09)', () => {
+    assert.match(skill, /licenseOrigin/, 'cita licenseOrigin');
+    assert.match(skill, /upstream-file/, 'cita a origem upstream-file');
+    assert.match(skill, /declared-evidence/, 'cita a origem declared-evidence');
+    assert.match(skill, /optional/, 'cita optional');
+    assert.match(skill, /react-components/, 'cita a skill opcional');
+    assert.match(skill, /fetch-stitch\.sh/, 'cita a rede em runtime declarada');
+    assert.match(skill, /VENDOR-NOTICE/, 'aponta o NOTICE (procedencia declarada)');
+  });
+
+  it('presets web: tabela com stacks derivado e default de suite do par react', () => {
+    assert.match(skill, /\|\s*`java\+vue`\s*\|\s*`java\+react`\s*\|/, 'tabela dos presets web');
+    assert.match(skill, /\|\s*`stacks` \(derivado\)\s*\|[^|]*\|\s*`\['react'\]`\s*\|/, 'stacks do react = [react]');
+    assert.match(skill, /defaultSuiteFor\('java\+react'\)/, 'default de suite do par react');
+  });
+});
+
+describe('EX-FE-13 harness-config.md — registry real (nao so o mobile)', () => {
+  const cfg = read(new URL('../../.agents/rules/harness-config.md', import.meta.url));
+
+  it('descreve o registry com 7 presets, axes, stacks derivado e gating por eixo', () => {
+    assert.match(cfg, /## Perfis de stack do instalador/, 'secao renomeada (nao e so o mobile)');
+    for (const preset of ['node', 'node-esm', 'java+vue', 'java+react', 'outra', 'flutter', 'dart']) {
+      assert.ok(cfg.includes(preset), `cita o preset ${preset}`);
+    }
+    assert.match(cfg, /`AXIS_IDS`/, 'cita AXIS_IDS');
+    assert.match(cfg, /`stacksFor\(axes\)`/, 'stacks derivado do eixo');
+    assert.match(cfg, /`RULES_BY_AXIS`/, 'gating de rules pelo eixo');
+    assert.match(cfg, /`RULES_COMMON`/, 'cita RULES_COMMON');
+    assert.match(cfg, /validado na carga contra `AXIS_IDS`/, 'declaracao validada na carga (fail-closed)');
+    assert.match(cfg, /NUNCA do nome do arquivo/, 'proibicao explicita de inferir por nome');
+    assert.match(cfg, /go\/\*\*rust\*\*|go\*\*\/\*\*rust\*\*|\*\*go\*\*\/\*\*rust\*\*/, 'cita go/rust como futuros');
+    assert.match(cfg, /ADR-005/, 'cita a rota (ADR-005)');
+  });
+
+  it('mantem o mobile como caso especial declarado (sem perder o que ja documentava)', () => {
+    assert.match(cfg, /marionette_mcp/, 'mantem marionette_mcp');
+    assert.match(cfg, /dart analyze/, 'mantem dart analyze');
+    assert.match(cfg, /W2m/, 'cita o menu em 2 passos');
+    assert.match(cfg, /WIZARD_MENU\.length/, 'range derivado');
+  });
+});
+
+describe('EX-FE-13 nota de eixo (delta: AGENTS.md ausente -> README.md)', () => {
+  it('README traz a nota de eixo com mecanismo (AXIS_IDS/stacksFor) e a rota do ADR-005', () => {
+    const readme = read(README);
+    assert.match(readme, /escolhida por \*\*eixo\*\*|por \*\*eixo\*\*/, 'declara a escolha por eixo');
+    assert.match(readme, /`STACK_PROFILES` \/ `AXIS_IDS`/, 'cita os simbolos reais');
+    assert.match(readme, /`stacksFor\(axes\)`/, 'stacks derivado do eixo');
+    assert.match(readme, /`java\+react`/, 'cita o preset novo');
+    assert.match(readme, /ADR-005/, 'cita a rota dos perfis futuros');
+  });
+
+  it('o alvo do delta (AGENTS.md da raiz) NAO existe — a nota foi para o README (emenda)', () => {
+    assert.ok(!fs.existsSync(new URL('../../AGENTS.md', import.meta.url)), 'AGENTS.md nao existe (delta emendado para README.md)');
+  });
+});

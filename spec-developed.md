@@ -71,3 +71,12 @@ Registro cronológico de funcionalidades e refactors entregues.
 - [x] Fase 3 — Execução (12/12 Done; loop §6.2 — iteração 1: 1 🔴 F-1 + 4 🟡 fechados; iteração 2: zero 🔴)
 - [x] Fase 5 — Verify (3 dimensões ✅ APPROVED; plugins 352/0 · installer 372/0 · static-checks EXIT 0 · `sdd-checks` 8/8)
 - [x] Fase 6 — Archive (move para `.spec/archive/20261016-prd-adr-pipeline/`, `current_phase: Completed`)
+| 2026-10-18 | `harness-eixos-stack` | Refactor | Eixos backend/frontend separados na configuração do instalador: registry com `axes` (IDs de eixo) + `stacks` **derivado** por `stacksFor(axes)`, preset **`java+react`**, gating de artefato por **eixo** (skills via `stacks` declarado na origem; rules via `RULES_BY_AXIS`/`RULES_COMMON` validado na carga), menu `W2m` em **2 passos** (11/11 linhas byte-iguais ao ADR-004), vendor das 2 skills React com `licenseOrigin` (Apache-2.0 `upstream-file` / MIT `declared-evidence`). 14/14 tasks em 5 batches, reviews APPROVED (0 🔴), suite 831/831. Notas (1 linha): **C-1 aberto** (REPORT schema-inválido por decisão declarada — schema exige `counts`, contraprova nega counts não observados; QA provou empiricamente); **A-1** selo republicado pelo owner no fechamento; **FU-59/FU-60 (P2)** caminho default do menu repete `BAD_ANSWER` e skill local Vue entra no destino react — em `.spec/tech-debts/harness-eixos-stack-p2/`; **FU-56** 3 skills mobile fora do pin declarado (nomeadas no NOTICE); abertos: push (nada enviado), emenda de `gate.js`/schema para C-1. | `.spec/archive/20261018-harness-eixos-stack/` | Completed |
+
+## Etapas concluídas — harness-eixos-stack
+- [x] Fase 0/1 — Triagem + Análise (PICCO confirmado; 5 ADRs + ADR-INDEX; PROPOSAL + SPEC v2; REVIEW 19/19 aplicáveis; SECURITY Fase 1 partial 0 críticos; pareceres architect + ux-designer)
+- [x] Fase 2 — Planejamento (PLAN EX-01..14; TASKS 14 tickets / 52 cenários BDD; JIRA_BOARD 5 batches; parecer do PM com 9 defeitos, 8 corrigidos)
+- [x] Fase 3 — Execução (5 batches, 9 iterações de review no total; 2 críticos achados por mutação: guarda tautológica do D-1 e contrato de `RULES_BY_AXIS` sem validação)
+- [x] Fase 4 — Quality Gate / Harness (QA independente: 831/831, dry-run 0 writes, gating nas 2 direções, transcript byte-idêntico)
+- [x] Fase 5 — Verify (3 dimensões ✅ APPROVED; traceability 100%, 46/46 checkboxes)
+- [x] Fase 6 — Archive (move para `.spec/archive/20261018-harness-eixos-stack/`, `current_phase: Completed`, lições no Brain)

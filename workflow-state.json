@@ -1,15 +1,22 @@
 {
-  "current_feature": "prd-adr-pipeline",
+  "current_feature": "harness-eixos-stack",
   "current_phase": "Completed",
   "previous_phase": "Testing",
   "next_phase": null,
-  "type": "feature",
-  "layer": "governanca-de-agentes",
+  "type": "refactor",
+  "layer": "instalador-config",
   "repo": "harness",
   "artifacts": {
-    "archive": ".spec/archive/20261016-prd-adr-pipeline/",
-    "prd_adr": ".spec/prd/prd-adr-pipeline/",
-    "harness_report": "harness/prd-adr-pipeline.json"
+    "archive": ".spec/archive/20261018-harness-eixos-stack/",
+    "verify": ".spec/archive/20261018-harness-eixos-stack/VERIFY.md",
+    "harness_evidence": ".spec/archive/20261018-harness-eixos-stack/harness/",
+    "harness_report": "harness/harness-eixos-stack.json",
+    "tech_debt_p2": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
+    "previous_cycle": {
+      "archive": ".spec/archive/20261016-prd-adr-pipeline/",
+      "prd_adr": ".spec/prd/prd-adr-pipeline/",
+      "harness_report": "harness/prd-adr-pipeline.json"
+    }
   },
   "scope": {
     "interpretation": "esteira PRD->ADR->SDD no harness (visibilidade de intencao antes do codigo)",
@@ -32,22 +39,22 @@
   "gates": {
     "P0_P1": "approved_user_2026_10_15 (Feature prd-adr-pipeline; bloco PICCO confirmado)",
     "G2_PRD": "approved_user_2026_10_16 (PRD do dogfood aprovado sem ressalvas; .spec/prd/prd-adr-pipeline/PRD.md §16)",
-    "P1_P2": "approved_user_2026_10_15 (spec-gate 10/10; spec-review 0 criticos)",
-    "P2_P3": "pending_user_approval",
-    "P3_P4": "approved_auto_evidence_batches1-4",
-    "P4_P5": "pending_user_approval",
-    "P5_P6": "approved_user_2026_10_08",
-    "P6_fim": "done_commit_779be3f",
+    "P1_P2": "pending_user_approval (spec v2 + REVIEW (19/19 aplicaveis) + SECURITY Fase 1 partial 0 criticos)",
+    "P2_P3": "pending_user_approval (PLAN v2 + TASKS (14 tasks) validados pelo PM com 9 defeitos D-1..D-9; D-1..D-8 corrigidos; D-9 aguarda decisao do owner)",
+    "P3_P4": "approved_auto_evidence_batches1-5 (14/14 tasks; review APPROVED 0 criticos)",
+    "P4_P5": "pending_user_approval (QA P4: gate PASSA na substancia; 831/831; 0 writes nos 2 presets; transcript byte-identico; 2 P2 novos registrados em .spec/tech-debts/harness-eixos-stack-p2/)",
+    "P5_P6": "pending_user_approval (VERIFY APPROVED 3/3 dimensoes; traceability 100%; bloqueio externo A-1 para o Completed)",
+    "P6_fim": "pending_user_approval (commit exige trailer Harness-Gate-Change: .agents/rules/harness-config.md esta em protectedPaths)",
     "B1_B2": "approved_user_2026_09_29",
     "FU32": "closed_approved_decision_B"
   },
   "code_review": {
-    "last_invoked_at": "2026-10-15T00:00:00Z",
+    "last_invoked_at": "2026-10-18T00:00:00Z",
     "last_status": "passed",
     "critical_issues": 0,
     "attention_issues": 0,
     "suggestions": 2,
-    "reviewer_notes": "bugfix installer-upgrade-regression: iteracao 1 = APPROVED WITH CHANGES (1 critico D1: exitCode nao propagado nos caminhos CLI; 2 atencao D2/D3). Iteracao 2 = APPROVED, zero criticos, D1/D2/D3 fechados. Ressalvas verdes nao-bloqueantes: sem spawn end-to-end de instalacao reprovada; scan do BF-04 nao robusto a parenteses em string."
+    "reviewer_notes": "Batch 1 (EX-BE-01/EX-VAL-02/EX-BE-03) do ciclo harness-eixos-stack. Iteracao 1 = CHANGES_REQUIRED (1 critico CR-1: guarda do D-1 TAUTOLOGICA - comparava profile.stacks com stacksFor(profile.axes) sendo stacks atribuido no load; provado por sonda que registry incoerente passava verde; + 5 atencao: AT-1 assert de RF-14 satisfeito pelo sufixo do default, AT-2 dois ramos com a mesma expectativa, AT-3 STACK_VALUES lista paralela, C-2 preset react sem golden byte-congelado, D-EXC excecao keyed por eixo vs SPEC por preset; + 4 sugestoes). Iteracao 2 = APPROVED, zero must_fix. Verificado por mutacao independente (10 sondas): oraculo literal EXPECTED_STACKS sangra em 3 cenarios; PATH ignorado -> 1 fail; prompt hardcoded -> 2 fail; byte do react alterado -> 3 fail. Congelado intocado (baseline()+NON_MOBILE). Ressalvas 🟢: N-1 (AXIS_IDS e o proprio oraculo - alargar o conjunto nao e pego; sem aceite que exija congelar), N-2 (SPEC 5 dizia 'QUESTIONS inalteradas' - wording corrigido pelo orquestrador)."
   },
   "overrides": [],
   "overrides_history": [
@@ -98,18 +105,35 @@
       "depends_on": [],
       "artifacts": {},
       "created": "2026-10-15T00:00:00Z"
+    },
+    {
+      "name": "harness-eixos-stack",
+      "stage": "Archived",
+      "progress": 100,
+      "type": "refactor",
+      "depends_on": [
+        "harness-installer-mobile"
+      ],
+      "artifacts": {
+        "spec": ".spec/backend/harness-eixos-stack/SPEC.md",
+        "proposal": ".spec/backend/harness-eixos-stack/PROPOSAL.md",
+        "plan": ".spec/backend/harness-eixos-stack/PLAN.md",
+        "tasks": ".spec/backend/harness-eixos-stack/TASKS.md",
+        "jira_board": ".spec/backend/harness-eixos-stack/JIRA_BOARD.md"
+      },
+      "created": "2026-10-18T00:00:00Z"
     }
   ],
-  "last_update": "2026-10-16T00:00:00Z",
+  "last_update": "2026-10-18T00:00:00Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
-  "spec_score": 0.94,
-  "spec_status": "v1_reviewed_aprovado (spec-gate 10/10; 1 laranja + 3 amarelos corrigidos; security pass com ressalva D11)",
+  "spec_score": 1,
+  "spec_status": "v2_reviewed_aguardando_P1_P2 (conformidade aplicavel 19/19; 6 itens N/A declarados em SPEC 8; 3 gaps altos + 4 medios + 1 baixo encontrados e corrigidos na mesma rodada)",
   "plan_status": "v3 aprovado para P2->P3 pelo parecer de negocio (rodada 4): 12 tasks PAP-01..PAP-12; SDD-02 1:1 12/12; 0 bloqueadores; 3 nits cosmeticos para P3 (notacao §14.N, cross-ref sem arquivo, frase ampla em SPEC:161)",
   "validation": {
     "architect": "Fase 1: 5 ADRs propostos (P01..P05) com prova de independencia par-a-par",
-    "product-manager": "4 rodadas. R1: 14 defeitos (D1..D14) + 10 perguntas. R2: B-1..B-8 (reprovado). R3: 6 itens minimos + N-1..N-7 (reprovado; 6 fechados, 3 defeitos novos NB-1..NB-3). R4: APROVADO PARA P2->P3, lista minima vazia, 3 nits cosmeticos para P3",
+    "product-manager": "harness-eixos-stack: 9 defeitos (D-1..D-9). D-1 (axes sem consumidor real / eixo decorativo), D-2 (prompt do W3 contradiz a escolha no mesmo run), D-3 (optional inerte => leitura ambigua) = P1. D-4a/D-4b/D-5/D-6 = P2. D-7/D-8/D-9 = P3. D-1..D-8 corrigidos nos 4 artefatos + REVIEW-PM.md; D-9 = decisao pendente do owner (default Vue vs React no passo 2). Confirmados sem reabrir: D-A..D-D, caminho A do vendor, 1:1 PLAN->TASKS, suite de referencia. 0 arquivos escritos pelo PM.",
     "ux-designer": "N/A - sem tela, fluxo ou componente visual neste ciclo"
   },
   "pending_user_decisions": [],
@@ -119,10 +143,10 @@
     "U5": "c - dois ancoras",
     "U6": "b - selo de hash"
   },
-  "harness_status": "passed",
-  "harness_evidence": "bugfix installer-upgrade-regression: installer 372/372 pass 0 fail 0 skip (era 355/5); determinismo 3x = 372/372/372; plugins 216/216; static-checks EXIT 0; vendor-check OK; sdd-checks 8/8. Diff restrito a installer/install.mjs + 1 spec novo; gate.js e harness.config.json com 0 linhas alteradas; nenhuma fixture original editada.",
-  "code_review_status": "passed",
-  "sdd_stage": "prd-adr-pipeline ARQUIVADO (2026-10-16) — ciclo FECHADO. 12/12 tasks; VERIFY aprovado 3/3; archive em .spec/archive/20261016-prd-adr-pipeline/; spec-developed.md atualizado; Brain com sessao + 2 licoes. Evidencia: harness/prd-adr-pipeline.json (REPORT, exit 0 real) — a escrita de Completed passou pelo portao de ponta a ponta (REPORT + seal + contraprova por re-execucao). Suites finais: plugins 352/0, installer 372/0, static exit 0, sdd-checks 8/8, V4 1070/1705. Abertos: C-1 (conflito schema x gate no counts do REPORT, P1, exige emendar gate.js ou o schema); A-2/R-4 (CI nao barra push com suite vermelha); D4 (enum de status do ADR-INDEX nao modela 'realizada mas nao mergeada'); A-3 (orchestrator/AGENT.md cita 4 regras inexistentes); push pendente (nada enviado ao remote).",
+  "harness_status": "passed_p4_qa",
+  "harness_evidence": "Batches 1-5 do ciclo harness-eixos-stack (2026-10-18) — 14/14 tasks. Estado final: plugins 352/352, installer 479/479, static 10 PASS/0 FAIL, vendor-check OK; dry-run 0 writes nos 2 presets web; transcript do wizard (escolha React) em .spec/backend/harness-eixos-stack/harness/; REPORT em harness/harness-eixos-stack.json (com desvio declarado C-1: counts omitido). Historico dos batches 1-2: Batch 1 (EX-BE-01/EX-VAL-02/EX-BE-03): plugins 352/352, installer 398/398, static exit 0, vendor OK; mutacao axes.frontend vue->react => 1 fail. Batch 2 (EX-BE-04/EX-BE-05/EX-VAL-06): plugins 352/352, installer 439/439, static 10 PASS/0 FAIL, vendor OK; provas do orquestrador: chave 'backend=node' (valida) => 2 fail; 'backend=react' (id invalido) => BAD_DECLARATION na carga; 'backend=none' sintetica => 0 fail (matcher por par). Nao-regressao vs HEAD: node/node-esm/outra/flutter/dart/java+vue com keys+bodies byte-identicos (129/129/129/151/141/129); so java+react difere pela exclusao pretendida. Refs penduradas do destino react congeladas em 12. gate.js/harness.config.json/.vendor-lock.json/.agents/rules = 0 linhas. I9 respeitado: apenas 2 imports + assert estrutural de chaves reescopado para superconjunto.",
+  "code_review_status": "passed","code_review_status_ciclo": "harness-eixos-stack batch 4 = passed (0 criticos, 0 atencao)",
+  "sdd_stage": "harness-eixos-stack ARQUIVADO (2026-10-18) — ciclo FECHADO. 14/14 tasks; VERIFY APPROVED 3/3; traceability 100%; archive em .spec/archive/20261018-harness-eixos-stack/; spec-developed.md atualizado; Brain com sessao do ciclo. Evidencia: harness/harness-eixos-stack.json (contagens observadas) + transcript do wizard. Suites finais: plugins 352/0, installer 479/0, static 10 PASS/0 FAIL, vendor-check OK = 831/831. Abertos: C-1 (REPORT x contraprova), FU-59/FU-60 (P2 tech-debt), FU-56 (mobile fora do pin), FU-55/57/58, push pendente.",
   "backlog": {
     "total": 14,
     "todo": 0,
@@ -146,18 +170,18 @@
     ]
   },
   "next_task": "IM-DOC-01",
-  "plan_score": 0.93,
-  "tasks_score": 0.94,
+  "plan_score": 1,
+  "tasks_score": 1,
   "active_batch": {
-    "id": 4,
-    "of": 4,
+    "id": 5,
+    "of": 5,
     "agent": "developer-engineer",
     "tasks": [
-      "IM-DOC-01",
-      "IM-VAL-06"
+      "EX-FE-13",
+      "EX-VAL-14"
     ],
-    "code_review": "APPROVED (0 criticos)",
-    "status": "done"
+    "code_review": "APPROVED (0 criticos; 6 atencao, das quais 4 sao contabilidade do orquestrador antes do P6 — C transcript no ciclo, D tabela do SPEC 11, E checkboxes/TASKS, F reconciliacao do state + trailer de path protegido)",
+    "status": "done_pending_user_gate"
   },
   "active_task": "IN-05",
   "pending_remote_url": false,
@@ -489,6 +513,126 @@
       "origem": "reviewer pacote P3",
       "texto": "SKILL.md §4 nao menciona justificativa infra N/A (apontada no README); alinhar doc",
       "bloqueia": false
+    },
+    {
+      "id": "FU-46",
+      "created_at": "2026-10-18T00:00:00-03:00",
+      "origem": "orquestrador (Fase 1 harness-eixos-stack)",
+      "texto": "Explosao N x M do valor composto: o aditivo aprovado (D-B/D-A) preserva o golden mas nao cria independencia de eixo. Executar a rota do ADR-005 (pergunta dupla backend+frontend) no ciclo que criar os perfis go/rust; gatilho declarado no proprio ADR.",
+      "bloqueia": false,
+      "dono": "ciclo backend-profiles-go-rust"
+    },
+    {
+      "id": "FU-47",
+      "created_at": "2026-10-18T00:00:00-03:00",
+      "origem": "review do SPEC (G-observacao)",
+      "texto": "Skill spec-review e .agents/rules/frontend-coding-standards.md sao stack-bound a outros projetos (TaskFlow/Vuetify; Atlas ECM/shadcn). Em repo de tooling isso produz N/A em massa e regra inaplicavel. Tech-debt de governanca: tornar as rules/skills parametrizaveis por stack ou explicitar o que e N/A.",
+      "bloqueia": false,
+      "dono": "tech-debt governance-stack-bound-rules"
+    },
+    {
+      "id": "FU-48",
+      "created_at": "2026-10-18T00:00:00-03:00",
+      "origem": "review do SPEC (G2/RF-13)",
+      "texto": "Vendor exige os repos upstream clonados localmente no commit pinado (rede fora do installer). Sem esse ambiente, a task de vendor do ciclo harness-eixos-stack fica bloqueada e o gating (RF-03) perde fixture real.",
+      "bloqueia": true,
+      "dono": "task de vendor do ciclo",
+      "status": "resolvido_por_decisao_owner: developer-engineer clona os upstreams no Batch 4"
+    },
+    {
+      "id": "FU-49",
+      "created_at": "2026-10-18T00:00:00-03:00",
+      "origem": "code-reviewer Batch 1 (achado menor)",
+      "texto": "installer/__tests__/wizard.spec.mjs:496 tem stdin ['4','demo','','node','',''] acoplado ao menu W2m de 1 passo; o Batch 3 (EX-FE-08) muda para 2 passos e este teste QUEBRARA (falha ruidosa, aceitavel). Atualizar junto do Batch 3 (D-49 declarado).",
+      "bloqueia": false,
+      "dono": "Batch 3 (EX-FE-08/EX-VAL-09)"
+    },
+    {
+      "id": "FU-50",
+      "created_at": "2026-10-18T00:00:00-03:00",
+      "origem": "code-reviewer Batch 1 (N-1)",
+      "texto": "AXIS_IDS e o proprio oraculo no teste (golden.spec.mjs valida axes ∈ AXIS_IDS usando o AXIS_IDS de producao): alargar o conjunto de IDs nao e pego pela suite. Classe semelhante ao CR-1, mas D1 so exige 'conjunto fechado' (existe). Fechar congelando o vocabulario no teste se o eixo for reusado por outro consumidor.",
+      "bloqueia": false
+    },
+    {
+      "id": "FU-51",
+      "created_at": "2026-10-18T00:00:00-03:00",
+      "origem": "code-reviewer Batch 2 (N-4, achado PRE-EXISTENTE fora do diff)",
+      "texto": "runUpgrade ignorava dryRun/yes de TOPO (le options.*): com plano all-noop (sem camada de confirmacao) APLICA e grava manifesto/roda checks enquanto o chamador acredita ser dry-run. Vetor perigoso de escrita nao intencional em API. Corrigir aceitando dryRun de topo (ou rejeitar forma de topo com erro explicito).",
+      "bloqueia": false,
+      "severidade": "P2"
+    },
+    {
+      "id": "FU-52",
+      "created_at": "2026-10-18T00:00:00-03:00",
+      "origem": "code-reviewer Batch 2 (M7 + doctor D6)",
+      "texto": "Dois residuos declarados: (a) fallback de axisIdsFromAxes tem linha inerte sem guarda (fail-open de direcao, sem impacto hoje); (b) doctor D6 reporta SAUDAVEL com 12 refs penduradas no destino react (config-ref-missing cobre so evidence.schema/moduleMap). Estender o check para refs de .agents/rules/** e a classe do tech-debt A-3 (indices de rules inexistentes).",
+      "bloqueia": false,
+      "severidade": "P3"
+    },
+    {
+      "id": "FU-53",
+      "created_at": "2026-10-18T00:00:00-03:00",
+      "origem": "code-reviewer Batch 3 (AT-4, PRE-EXISTENTE no HEAD)",
+      "texto": "Itens 1 (App Flutter) e 2 (Pacote Dart) do menu W2m sao beco sem saida: o menu so aparece SEM pubspec.yaml, mas validateAnswer exige pubspec para flutter|dart => escolher 1 ou 2 cai em loop de BAD_ANSWER no W3. Confirmado no HEAD (nao e regressao deste ciclo). Dono: baseline do ADR-011 (menu de 5 itens). Corrigir: ou esconder/desabilitar 1 e 2 no menu sem pubspec, ou aceitar e instruir o usuario.",
+      "bloqueia": false,
+      "severidade": "P2"
+    },
+    {
+      "id": "FU-54",
+      "created_at": "2026-10-18T00:00:00-03:00",
+      "origem": "code-reviewer Batch 3 (AT-5)",
+      "texto": ".agents/skills/harness-installer/SKILL.md:226 ainda descreve o item 4 como 'Projeto Java + Vue -> java+vue' (o menu agora encadeia o passo 2 de frontend). Owner: EX-FE-13 (Batch 5). Nao pode ficar para depois do VERIFY.",
+      "bloqueia": true,
+      "dono": "EX-FE-13 (Batch 5)"
+    },
+    {
+      "id": "FU-55",
+      "created_at": "2026-10-18T00:00:00-03:00",
+      "origem": "code-reviewer Batch 3 (divulgacao de processo propria)",
+      "texto": "INCIDENTE DE PROCESSO (sem impacto material): o reviewer usou `pkill -f \"node --test installer/__tests__\"` dentro de /tmp, violando workflow-rules.md §5 H5.1 ('nunca pkill -f'). Matou o proprio shell; nenhum processo do repo/servico/porta afetado e nenhum orfao restou. Segundo achado de processo: o arquivo `installer/install.mjs` foi escrito no repo (mtime 11:41:01) ENQUANTO o reviewer rodava a contraprova da iteracao 1 — reviews devem pinar snapshot por hash antes de rodar contraprova (o reviewer passou a fazer isso na iteracao 2). Nenhuma acao corretiva de codigo; registrar e manter o habito de pino por hash.",
+      "bloqueia": false,
+      "severidade": "P3"
+    },
+    {
+      "id": "FU-56",
+      "created_at": "2026-10-18T00:00:00-03:00",
+      "origem": "code-reviewer Batch 4 (medido contra o upstream)",
+      "texto": "3 skills mobile vendorizadas NAO reproduzem do commit pinado declarado (0d9f1c4a): dart-add-unit-test difere em 1 linha de metadata (last_modified) e dart-build-cli-app / dart-use-pattern-matching sao REVISOES ANTERIORES (19228e842c691a5bcdb06b6603f3651953b2af2a) com 4 e 1 arquivos faltando (examples/, references/). Declarado e nomeado no VENDOR-NOTICE (nao corrigido). DECISAO DO OWNER: re-vendorizar as 3 restauraria a fidelidade mas MUDA os hashes congelados (emenda de I5) — decidir em ciclo proprio.",
+      "bloqueia": false,
+      "severidade": "P3"
+    },
+    {
+      "id": "FU-57",
+      "created_at": "2026-10-18T00:00:00-03:00",
+      "origem": "code-reviewer Batch 4 (verde herdado)",
+      "texto": "checkVendor pula a comparacao tabela<->lock para o agregado cuja skill declara `licenseFile: SKILL.md` (clausula 7 do ADR-003): com `licenseFile` apontando para o artefato, editar SO a tabela de licenca nao e pego pelo `--check` isolado (a suite pega, e o suiteFull roda os dois). Fechar comparando recorded[file] com expectedLicenseSha(table[source]) para toda entrada de licenses[].",
+      "bloqueia": false,
+      "severidade": "P3"
+    },
+    {
+      "id": "FU-58",
+      "created_at": "2026-10-18T00:00:00-03:00",
+      "origem": "code-reviewer Batch 5 (advisory A) + QA P4 (confirmado)",
+      "texto": "harness/harness-eixos-stack.json:71 declara a prova do dry-run como sha256 literal (063c1ddc5e92cf28) que NAO e reproduzivel pela receita declarada (dir vazio = eb4bd64f...). A propriedade (0 writes) foi verificada independentemente por QA e orquestrador; a prova DECLARADA e irreprodutivel. Recompor a partir da execucao ou descrever o metodo em vez da constante.",
+      "bloqueia": false,
+      "severidade": "P3"
+    },
+    {
+      "id": "FU-59",
+      "created_at": "2026-10-18T00:00:00-03:00",
+      "origem": "QA Quality Gate P4 (P2-1)",
+      "texto": "P2: o caminho DEFAULT do menu (Enter,Enter) chega ao [3/5] Comando da suite SEM default para java+vue (defaultSuiteFor('java+vue') = ''), e Enter com vazio entra em loop de BAD_ANSWER (QA observou 6 repeticoes ate NO_STDIN). O preset react ganhou candidato (npm run test:run); o vue, que E o default, nao. Pre-existente, tornado mais visivel pelo passo 2. Tech-debt: .spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
+      "bloqueia": false,
+      "severidade": "P2"
+    },
+    {
+      "id": "FU-60",
+      "created_at": "2026-10-18T00:00:00-03:00",
+      "origem": "QA Quality Gate P4 (P2-2)",
+      "texto": "P2: assimetria de gating — a RULE Vue (frontend-coding-standards.md) e excluida do destino java+react, mas a SKILL local frontend-vue-specialist (sem entrada no vendor-lock => 'comum') ENTRA no destino react. Residual declarado (SPEC RF-03:80 / RF-04 D-4b), mas e incoerencia de produto: o mesmo eixo tratado de duas formas. Tech-debt: .spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
+      "bloqueia": false,
+      "severidade": "P2"
     }
   ],
   "batches": {
@@ -639,7 +783,17 @@
       "coerencia": "pass"
     },
     "veredito": "APPROVED",
-    "traceability": "100%"
+    "traceability": "100%",
+    "ciclo": "harness-eixos-stack",
+    "evidencia": "46/46 checkboxes marcados (0 pendentes); 0 TODO real (2 hits sao prosa PT 'TODO destino'/'TODOS os'); suiteFull 831/831 (plugins 352 + installer 479 + static 10/0 + vendor OK); RF-01..RF-14 com 14/14 mapeados em task e codigo; 0 orfaos de spec e de codigo; E2E declarado (dry-run 0 writes + transcript byte-identico) em vez de H3 de browser (N/A: repo sem frontend)",
+    "observacoes": [
+      "C-1 (P1, aberto, dono owner): REPORT schema-invalido por decisao declarada — schema exige counts, contraprova nega counts nao observados (verificado empiricamente pelo QA: com counts => DENY; sem => ALLOW). Owner decidiu manter o desvio declarado.",
+      "A-1 (pre-existente, externo): HARNESS_SEAL_JSON ausente no host => current_phase 'Completed' negado fail-closed. Selo computado byte-igual ao publicado (suiteFull sha256 c904f1c5...). Owner vai republicar.",
+      "FU-59/FU-60 (P2 novos do QA P4): (a) caminho default do menu (Enter,Enter) chega ao comando da suite SEM default para java+vue e repete BAD_ANSWER; (b) assimetria de gating — a rule Vue sai do destino react mas a skill local frontend-vue-specialist entra. Registrados em .spec/tech-debts/harness-eixos-stack-p2/TASKS.md.",
+      "FU-56 (3 skills mobile divergentes do pin declarado; nomeadas no VENDOR-NOTICE).",
+      "FU-58/FU-57/FU-55 (constante de prova do dry-run irreprodutivel; checkVendor nao pega edicao so-da-tabela; incidente de processo auto-declarado no Batch 3).",
+      "Desvios de escopo declarados e aprovados: menu em 2 passos (D-A), optional como metadado, AGENTS.md inexistente => nota no README.md."
+    ]
   },
   "commit": "779be3f",
   "remote": "git@github.com:freitasjh/harness.git (SSH; push + CI pendentes)",
@@ -655,13 +809,27 @@
   },
   "security_fase1": {
     "verdict": "partial",
+    "ciclo": "harness-eixos-stack",
     "criticos": 0,
     "altos": 2,
     "medios": 1,
+    "aplicabilidade": "sem auth/endpoints/DB/web/mobile neste repo; superficie real = supply chain + integridade do artefato instalado",
     "gaps": [
-      "S1 supply-chain revisao de conteudo vendor",
-      "S2 licenca ausente skills-lock"
-    ]
+      "S1 (alto, declarado): autenticidade do upstream depende de clone TLS + pin de commit; sem verificacao de assinatura - processo",
+      "S2 (alto, declarado, pre-existente): .agents/skills/** fora do scan dos canarios e V15 varre so installer/ => rede em runtime de skill vendorizada passa no CI verde",
+      "S3 (medio): nao-repudio do vendor e processo (sem assinatura)"
+    ],
+    "recomendacao": "prosseguir para Fase 2; reavaliar na Fase 3 e no checklist de tolerancia zero (Fase 4.5)",
+    "previous_cycle": {
+      "verdict": "partial",
+      "criticos": 0,
+      "altos": 2,
+      "medios": 1,
+      "gaps": [
+        "S1 supply-chain revisao de conteudo vendor",
+        "S2 licenca ausente skills-lock"
+      ]
+    }
   },
   "ecm_install": {
     "fase": "aplicado_completo",
@@ -673,21 +841,33 @@
     "proximo": "suite + restart com projeto ECM + smoke (acao do usuario)"
   },
   "spec_review": {
-    "score": 0.9,
+    "score": 1,
+    "ciclo": "harness-eixos-stack",
+    "aplicaveis": 19,
+    "conformes": 19,
+    "na_declarados": 6,
     "critical": 0,
     "high": [
-      "G1 baseline suite nao verificado",
-      "G2 licenca skills upstream"
+      "G1 RF-04 sem mecanismo (rules nao tem lock) - CORRIGIDO: mapa RULES_BY_AXIS declarado",
+      "G2 RF-13 ausente (vendor exige clones upstream) - CORRIGIDO",
+      "G3 RF-07 aceite ambiguo - CORRIGIDO: decisao binaria"
     ],
     "medium": [
-      "G3 parse pubspec",
-      "G4 default mcp",
-      "G5 default pluginsDir"
+      "G4 RF-03 sem mecanismo de origem - CORRIGIDO",
+      "G5 RF-09 sem formato - CORRIGIDO (optional: true)",
+      "G6 politica de edicao de teste ausente - CORRIGIDO (invariante I9)",
+      "G7 invariante node-esm nao declarado - CORRIGIDO (invariante I10)"
     ],
     "low": [
-      "G6 terminal:true",
-      "G7 path governance"
-    ]
+      "G8 rastreabilidade sem linha para o RF novo - CORRIGIDO"
+    ],
+    "observacao_com_dono": "skill spec-review e .agents/rules/frontend-coding-standards.md sao stack-bound a outros projetos (TaskFlow/Vuetify, Atlas ECM/shadcn) - em repo de tooling geram N/A em massa. tech-debt de governanca, fora deste ciclo.",
+    "previous_cycle": {
+      "score": 0.9,
+      "high": ["G1 baseline suite nao verificado", "G2 licenca skills upstream"],
+      "medium": ["G3 parse pubspec", "G4 default mcp", "G5 default pluginsDir"],
+      "low": ["G6 terminal:true", "G7 path governance"]
+    }
   },
   "baseline": {
     "suite": "104/104",
@@ -778,11 +958,157 @@
       "data": "2026-10-16"
     }
   ],
+  "cycle_eixos_stack": {
+    "feature": "harness-eixos-stack",
+    "type": "refactor",
+    "picco_confirmed_at": "2026-10-18T00:00:00Z",
+    "pedido_literal": "separar backend e frontend na configuracao (hoje default java+vue), decidir frontend (vue|react) e preparar backend (java agora; go/rust futuro); react com 2 skills upstream.",
+    "decisoes_usuario_fase1": {
+      "escopo": "split dos eixos + perfil react; backend somente java nesta entrega",
+      "schema": "aditivo - manter pergunta unica `stack` com valores compostos (preserva golden I7)",
+      "restricoes": "installer rede-zero (V15); vendor offline pinado; golden verde",
+      "licencas": "(A) vendorizar as 2 skills com desvio declarado - vercel-labs/agent-skills sem arquivo LICENSE (MIT declarado em README + package.json do subpacote, commit pinado)",
+      "skills_react": "react-components opcional (rede em runtime + @swc/core + Stitch MCP); react-best-practices padrao do perfil",
+      "desempate": "rodada 2 - escolhido (A)"
+    },
+    "licencas_verificadas_2026_10_18": {
+      "google-labs-code/stitch-skills": "Apache-2.0 (arquivo LICENSE na raiz, 11273 bytes, sem NOTICE) - na allowlist",
+      "vercel-labs/agent-skills": "MIT declarado, SEM arquivo LICENSE - na allowlist por declaracao; exige desvio declarado"
+    },
+    "validacao": {
+      "architect": "5 ADRs propostos (ADR-001 registry com axes; ADR-002 perfil react + gating de skill/rules; ADR-003 vendor com licenseOrigin; ADR-004 W2m preset; ADR-005 rota de migracao para pergunta dupla). Prova de independencia par-a-par entregue. 0 arquivos escritos.",
+      "ux-designer": "parecer VINCULANTE: menu W2m vira sequencia 1-3 perguntas (tipo de projeto -> backend -> frontend); textos literais + fluxo numerado + erros 4-linhas entregues. frontend/DESIGN.md inexistente neste repo (ancora em ADR-011/SPEC 9.1). 0 arquivos escritos."
+    },
+    "achados_de_analise": [
+      {
+        "id": "A1",
+        "severidade": "P1",
+        "titulo": "Gating de skill deriva do NOME da skill, nao do perfil - skills react vazam para todo destino",
+        "evidencia": "scripts/vendor-skills.mjs:284-288 (inferStacks so conhece prefixos dart-/flutter-) + :341 (grava stacks do nome, ignora o source-lock) + installer/install.mjs:1195-1196 (stacks vazio = comum = entra sempre)",
+        "nivel": "runtime (caminho deterministico, hoje sem teste que pegue nome react-*)"
+      },
+      {
+        "id": "A2",
+        "severidade": "P2",
+        "titulo": "Filtro por stack cobre so .agents/skills/**; .agents/rules/** nao e filtrado",
+        "evidencia": "installer/install.mjs:1186-1198 (filtro) - destino react recebe .agents/rules/frontend-coding-standards.md (prosa Vue/shadcn)"
+      },
+      {
+        "id": "A3",
+        "severidade": "P3",
+        "titulo": "Correcao de higiene do PICCO: a pergunta unica do Q&A e congelada por QUESTIONS+collectAnswers+golden (install.mjs:194-200, 340-347), NAO por FU-25 (FU-25 = infra nao perguntado, install.mjs:188-193)",
+        "nivel": "processo"
+      },
+      {
+        "id": "A4",
+        "severidade": "P2",
+        "titulo": "Range [1-5] hardcoded no prompt e na mensagem de erro do W2m",
+        "evidencia": "installer/install.mjs:1646 e :1649 - item novo fica inalcancavel sem editar os dois"
+      },
+      {
+        "id": "A5",
+        "severidade": "P3",
+        "titulo": "VENDOR-NOTICE afirma byte-identidade universal ao upstream; rota de transcricao (fonte sem LICENSE) nao e representavel hoje",
+        "evidencia": "scripts/vendor-skills.mjs:398,416 + :132-137 (sha derivado do nosso texto)"
+      }
+    ],
+    "aditivo_e_fachada": "parecer do architect: valor composto entrega a capacidade enumerada mas NAO independencia de eixo (nao existe campo de identidade; compound = chave). Custo N x M; par nao enumerado falha com BAD_ANSWER.",
+    "decisoes_portao_P1": {
+      "D-A": "2 passos agora no W2m (tipo de projeto -> frontend); eixo backend entra quando go/rust existirem. Presets `java`/`vue`/`react` (eixos vazios do parecer UX de 3 passos) ficaram FORA do escopo.",
+      "D-B": "registry com `axes` (IDs de eixo) ja nesta entrega; `profileOf`/`generateConfig` inalterados",
+      "D-C": "A1 (+A2) entram no escopo: gating de skill/rules derivado do eixo",
+      "D-D": "esteira ADR-only (isencao arquitetural em prd-adr-pipeline 3) - nenhum .spec/prd/ criado"
+    },
+    "artefatos_fase1": [
+      ".spec/backend/harness-eixos-stack/PROPOSAL.md",
+      ".spec/backend/harness-eixos-stack/SPEC.md",
+      ".spec/backend/harness-eixos-stack/ADR-INDEX.md",
+      ".spec/backend/harness-eixos-stack/ADRs/ADR-001-registry-eixos-axis/ADR.md",
+      ".spec/backend/harness-eixos-stack/ADRs/ADR-002-perfil-react-gating-eixo/ADR.md",
+      ".spec/backend/harness-eixos-stack/ADRs/ADR-003-vendor-license-origin/ADR.md",
+      ".spec/backend/harness-eixos-stack/ADRs/ADR-004-menu-w2m-2-passos/ADR.md",
+      ".spec/backend/harness-eixos-stack/ADRs/ADR-005-rota-pergunta-dupla/ADR.md",
+      ".spec/backend/harness-eixos-stack/REVIEW.md",
+      ".spec/backend/harness-eixos-stack/SECURITY.md"
+    ],
+    "pending_user_decisions": [
+      "D-9 (PM): default do passo 2 do W2m permanece Vue (por nao-regressao I7). Nao foi coberto por D-A..D-D. Se o owner quiser React como default, e mudanca de aceite (nao de codigo)."
+    ],
+    "fase2_planning": {
+      "plan": ".spec/backend/harness-eixos-stack/PLAN.md (EX-01..EX-14, 5 fases, caminho critico corrigido por D-6)",
+      "tasks": ".spec/backend/harness-eixos-stack/TASKS.md (14 tickets EX-BE/FE/VAL, TDD first, 3+ cenarios BDD cada)",
+      "board": ".spec/backend/harness-eixos-stack/JIRA_BOARD.md (5 batches com pausa HITL)",
+      "pm_review": ".spec/backend/harness-eixos-stack/REVIEW-PM.md",
+      "correcoes_aplicadas": "D-1 (stacksFor + tabela de excecoes + teste de divergencia), D-2 (RF-14: fonte unica da lista de stacks), D-3 (semantica de optional declarada: as 2 skills sao instaladas), D-4a (conjunto real de .agents/rules), D-4b (teste enumera rules => nao classificada fica vermelho), D-5 (RF-12 em EX-VAL-14), D-6 (caminho critico), D-7 (rastreabilidade por arquivo), D-8 (transcript do wizard)",
+      "gate_evidencia": "suiteFull verde antes da delegacao (plugins 352/352, installer 372/372, static-checks PASS incl. V3/V15, vendor-check OK)"
+    },
+    "fase3_batches": {
+      "batch_1": {
+        "tasks": ["EX-BE-01", "EX-VAL-02", "EX-BE-03"],
+        "status": "done_pending_user_gate",
+        "iteracoes": 2,
+        "review": "iteracao 1 CHANGES_REQUIRED (1 critico CR-1: guarda tautologica do D-1 — comparava profile.stacks com stacksFor(axes) sendo stacks atribuido no load; registry incoerente passava verde; + 5 atencao + 4 sugestoes). Iteracao 2 APPROVED, zero must_fix.",
+        "fix_critico": "oraculo literal EXPECTED_STACKS por preset (deepEqual) + cobertura exata contra as chaves do registry + STACK_VALUES ≡ chaves; coherent() tautologico removido",
+        "prova_orquestrador": "mutacao axes.frontend vue->react em java+vue deixa eixos-stack.spec.mjs 1 fail; restaurado 12/12",
+        "suite": "plugins 352/352; installer 398/398; static-checks exit 0; vendor-check OK",
+        "congelado": "baseline() e NON_MOBILE 48-61 intactos; gate.js e harness.config.json 0 linhas"
+      }
+    },
+    "fase3_batches": {
+      "batch_1": {
+        "tasks": ["EX-BE-01", "EX-VAL-02", "EX-BE-03"],
+        "status": "done_pending_user_gate",
+        "iteracoes": 2,
+        "review": "iteracao 1 CHANGES_REQUIRED (1 critico CR-1: guarda tautologica do D-1). Iteracao 2 APPROVED, zero must_fix.",
+        "fix_critico": "oraculo literal EXPECTED_STACKS por preset + cobertura exata contra as chaves do registry + STACK_VALUES ≡ chaves"
+      },
+      "batch_2": {
+        "tasks": ["EX-BE-04", "EX-BE-05", "EX-VAL-06"],
+        "status": "done_pending_user_gate",
+        "iteracoes": 3,
+        "review": "iteracao 1 CHANGES_REQUIRED (1 critico CR-1: chave de RULES_BY_AXIS nao validada + ids de tags => declaracao valida virava no-op silencioso; + 5 atencao). Iteracao 2 APPROVED (CR-1 fechado por mutacao). Iteracao 3 fechou N-1 (match por PAR eixo=id), N-2 (clausula morta por precedencia) e N-3 (paridade doctor x upgrade): APPROVED, 0 must_fix.",
+        "achados_do_dev": "a lista de 12 rules do SPEC era copiada de outro projeto — .agents/rules tem 7 arquivos (SPEC corrigido); mesma classe do item aberto A-3",
+        "nao_regressao_provada": "6 stacks (node, node-esm, outra, flutter, dart, java+vue) com keys+bodies byte-identicos ao HEAD; so java+react difere pela exclusao pretendida",
+        "residual_congelado": "12 refs penduradas a frontend-coding-standards.md no destino react (PENDING_REFS_REACT, teste congela)",
+        "suite": "plugins 352/352; installer 439/439; static 10 PASS/0 FAIL; vendor-check OK"
+      },
+      "batch_3": {
+        "tasks": ["EX-FE-07", "EX-FE-08", "EX-VAL-09"],
+        "status": "done_pending_user_gate",
+        "iteracoes": 2,
+        "review": "iteracao 1 APPROVED (0 criticos) com 3 recomendados AT-1 (padding do menu divergente do ADR + teste relaxado unilateralmente), AT-2 (linha 4 do erro ancorada na propria declaracao do marcador) e AT-3 (assert legado de 5 itens fora de escopo). Iteracao 2: APPROVED, 0 criticos, 0 atencao, must_fix vazio.",
+        "entregue": "menu W2m em 2 passos com 11/11 linhas BYTE-IGUAIS ao ADR-004 §2 (padEnd com colunas declaradas; comparacao literal substituiu a regex flexivel), range/total derivados, erro 4 linhas com ancora no BLOCO (sourceLineOf -> 1925), FU-49 corrigido (fita do fixture)",
+        "divergencia_reportada_pelo_dev": "o brief do orquestrador pedia contador [1/1] nos itens sem passo 2; o ADR-004 §2 diz [1/2]. O dev seguiu o ADR e reportou o conflito (comportamento correto) — SPEC passou a declarar o total derivado",
+        "debitos_registrados": "FU-53 (AT-4 pre-existente: itens 1/2 do menu levam a W3 que exige pubspec), FU-54 (AT-5: SKILL.md:226 stale — dono EX-FE-13), FU-55 (incidente de processo: pkill -f do reviewer + escrita durante contraprova)",
+        "suite": "plugins 352/352; installer 455/455; static 10 PASS/0 FAIL; vendor-check OK"
+      },
+      "batch_4": {
+        "tasks": ["EX-BE-10", "EX-BE-11", "EX-VAL-12"],
+        "status": "done_pending_user_gate",
+        "iteracoes": 2,
+        "review": "iteracao 1 APPROVED (0 criticos) com 2 atencao (NOTICE com claim de fidelidade generico que nao valia para 3 skills mobile; caracterizacao imprecisa) + 4 verdes. Iteracao 2: APPROVED, 0 criticos, 0 atencao, must_fix vazio.",
+        "entregue": "vendor das 2 skills react com licenseOrigin (stitch upstream-file sha do LICENSE real; vercel declared-evidence sha do nosso texto + 3 evidencias reais) + optional SO em react-components + stacks:['react'] no lock e no source-lock commitado (scripts/vendor/skills-lock.json) + NOTICE declarando origem por fonte e as 3 divergencias mobile nomeadas",
+        "limites_declarados": "🟢 sha/treeHash/commit pinado; 🟡 fidelidade da transcricao MIT + holder Vercel, Inc. (upstream declara MIT sem linha de copyright); 🟠 rede em runtime da skill opcional fora do escopo do V15",
+        "achado_pre_existente": "3 skills mobile (dart-add-unit-test, dart-build-cli-app, dart-use-pattern-matching) NAO reproduzem do pin declarado 0d9f1c4a: a revisao real do conteudo e 19228e842c691a5bcdb06b6603f3651953b2af2a (2 delas sao revisoes anteriores com examples/references faltando). Declarado no NOTICE; NAO corrigido para preservar I5 (decisao do owner pendente).",
+        "suite": "plugins 352/352; installer 470/470; static 10 PASS/0 FAIL; vendor-check OK sem rede"
+      },
+      "batch_5": {
+        "tasks": ["EX-FE-13", "EX-VAL-14"],
+        "status": "done_pending_user_gate",
+        "iteracoes": 1,
+        "review": "APPROVED (0 criticos; 6 atencao, 4 delas contabilidade do orquestrador pre-P6). Evidencia reproduzida pelo reviewer: plugins 352/352, installer 479/479, static 10/0, vendor OK, sdd-checks 7/7; dry-run 0 writes (hash antes==depois) nos 2 presets web; gating invertido 0/1 vs 1/0; transcript 16.336 B byte-identico em re-run; nada commitado/pushado; paths proibidos 0 linhas.",
+        "entregue": "Delta Specs aplicado: .agents/rules/harness-config.md (registry real, 7 presets, gating por eixo, rota ADR-005), harness-installer/SKILL.md (menu 2 passos, vendor por licenseOrigin, react-components opcional) + FU-54 fechado COM GUARDA (docs.spec.mjs:89). Emenda do delta: AGENTS.md nao existe => nota no README.md, congelada por teste. REPORT de harness + transcript no ciclo (.spec/backend/harness-eixos-stack/harness/).",
+        "advisories": "A: constante de prova do dry-run no REPORT nao reproduzivel pela receita declarada (propriedade verificada independentemente) — recomputar ou reescrever; B: C-1 permanece aberto (REPORT sem `counts` = schema-invalido por decisao declarada; dono: owner)",
+        "suite": "plugins 352/352; installer 479/479; static 10 PASS/0 FAIL; vendor-check OK"
+      }
+    }
+  },
   "pending_actions": [
-    "Tech-debt P1 ABERTO: regressao do installer pos-68be417 (355/5 em main; 360/0 antes) — H2 bloqueia delegacao de prd-adr-pipeline. Ver .spec/tech-debts/installer-upgrade-regression/TASKS.md",
-    "Brain MCP down (HTTP 410): registrar licoes pendentes (FU-34/35, FU-42, timing)",
-    "FU-43 P2: specs poluem /tmp (saneamento; possivel causa do flaky do installer)",
-    "HARNESS_SEAL_JSON republicar (externo)",
+    "C-1 (P1) ABERTO: schema do REPORT exige counts; contraprova nega counts nao observados => REPORT schema-invalido por decisao declarada. Exige emendar gate.js OU o schema (paths protegidos) em ciclo proprio.",
+    "FU-59/FU-60 (P2, tech-debt): caminho default do menu repete BAD_ANSWER (java+vue sem default de suite); skill local frontend-vue-specialist entra no destino react enquanto a rule Vue sai. Ver .spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
+    "FU-56 (P3): 3 skills mobile divergem do commit pinado declarado (nomeadas no VENDOR-NOTICE); re-vendorizar muda hashes congelados — decisao do owner",
+    "FU-55/57/58 (P3): incidente de processo auto-declarado (pkill -f), checkVendor nao pega edicao so-da-tabela de licenca, constante de prova do dry-run irreprodutivel no REPORT",
+    "Commit do ciclo: .agents/rules/harness-config.md esta em protectedPaths => exige trailer Harness-Gate-Change / HARNESS_GATE_APPROVER (aprovacao humana no P6)",
     "push (nada enviado)"
   ]
 }

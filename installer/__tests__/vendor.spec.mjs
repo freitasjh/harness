@@ -21,6 +21,8 @@ import {
   SPDX_ALLOWLIST,
   isAllowedSpdx,
   aggregatedLicenseName,
+  REPO_ROOT,
+  SOURCE_LOCK_PATH,
   main,
 } from '../../scripts/vendor-skills.mjs';
 
@@ -169,6 +171,22 @@ describe('IM-VAL-02 buildVendor + writeVendor', () => {
     const built = buildVendor({ sourceDir: src, sourceLock: lock, sourceLicenses: {}, sourceCommits: {}, destDir: dest });
     assert.deepEqual(built.lock.skills['dart-x'].stacks, ['dart']);
     assert.deepEqual(built.lock.skills['flutter-y'].stacks, ['flutter']);
+  });
+
+  // EX-BE-04 (RF-03/A1): o `stacks` da skill vem da ORIGEM declarada no
+  // source-lock; `inferStacks` (prefixo conhecido) fica so como fallback.
+  it('stacks DECLARADO na origem vence o nome; sem declaracao e sem prefixo => [] comum', () => {
+    const src = tmp('harness-vendor-src-');
+    write(src, 'react-widgets/SKILL.md', '---\nname: react-widgets\n---\n# react\n');
+    write(src, 'react-widgets/LICENSE', MIT_TEXT);
+    write(src, 'react-loose/SKILL.md', '---\nname: react-loose\n---\n# react sem origem declarada\n');
+    write(src, 'react-loose/LICENSE', MIT_TEXT);
+    const lock = fakeLock(src, ['react-widgets', 'react-loose']);
+    lock.skills['react-widgets'].stacks = ['react'];
+    const dest = tmp('harness-vendor-dest-');
+    const built = buildVendor({ sourceDir: src, sourceLock: lock, sourceLicenses: {}, sourceCommits: {}, destDir: dest });
+    assert.deepEqual(built.lock.skills['react-widgets'].stacks, ['react'], 'declaracao de origem vence o nome');
+    assert.deepEqual(built.lock.skills['react-loose'].stacks, [], 'nome react-* sem declaracao NAO gate (comum)');
   });
 
   it('fonte ausente => excluída source-missing (não vendoriza às cegas)', () => {
@@ -405,11 +423,13 @@ describe('licença agregada: byte-identidade upstream + verificação por --chec
 
   it('buildVendor registra lock.licenses; writeVendor grava o arquivo byte-identico', () => {
     const { dest, built } = vendoredMobile();
+    // I9(a): `licenseOrigin` e aditivo (ADR-003) — file/spdx/sha256 intactos.
     assert.deepEqual(built.lock.licenses, [{
       source: 'dart-lang/skills',
       spdx: 'BSD-3-Clause',
       file: 'LICENSE-dart-lang-skills',
       sha256: UPSTREAM_DART_SHA,
+      licenseOrigin: 'upstream-file',
     }]);
     const onDisk = fs.readFileSync(path.join(dest, 'LICENSE-dart-lang-skills'), 'utf8');
     assert.equal(onDisk, SOURCE_LICENSES['dart-lang/skills'].licenseText, 'bytes == upstream');
@@ -492,5 +512,257 @@ describe('FU-30 lock-vs-source mismatch — 1 linha por arquivo, nao por skill',
     assert.match(mismatch[0], /lock=f{64}/, 'a linha traz o hash do lock');
     // o arquivo em disco continua valido contra a TABELA — só o lock divergiu
     assert.deepEqual(res.licenseDivergences, [], 'arquivo agregado intacto');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// EX-BE-10 / EX-BE-11 / EX-VAL-12 (ADR-003): vendor com ORIGEM de licenca
+// declarada por fonte (`licenseOrigin`), NOTICE sem claim universal e as 2
+// skills React vendorizadas (lock/NOTICE/licencas/optional).
+// ---------------------------------------------------------------------------
+const SKILLS_DIR = path.join(REPO_ROOT, '.agents', 'skills');
+const VENDOR_LOCK = JSON.parse(fs.readFileSync(path.join(SKILLS_DIR, '.vendor-lock.json'), 'utf8'));
+const NOTICE_TEXT = fs.readFileSync(path.join(SKILLS_DIR, 'VENDOR-NOTICE.md'), 'utf8');
+const SOURCE_LOCK = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, SOURCE_LOCK_PATH), 'utf8'));
+
+const REACT_SKILL_SOURCES = {
+  'react-components': 'google-labs-code/stitch-skills',
+  'react-best-practices': 'vercel-labs/agent-skills',
+};
+const STITCH_UPSTREAM_SHA = 'b4133a55232c0996713349891dc55469d46a16ec027c033c9e4108b2149abb42';
+const VERCEL_TEXT_SHA = '1cc9611d4fffbd0201696a5a81cc0b1d82743db847654ff4fa57d92ba7669387';
+const STITCH_COMMIT = '0337446dadde6f8c94210444e2aa9d546126480f';
+const VERCEL_COMMIT = '063bee94c3f4df8453406c830b0a7df0f2860278';
+
+// I5 (ORACULO INDEPENDENTE): treeHashes das 22 skills mobile no estado
+// PRE-Batch-4. Se o vendor reescrever qualquer byte de uma skill existente,
+// isto sangra.
+const MOBILE_TREE_HASHES = {
+  "dart-add-unit-test": "ca966dcf20f38b27ef6fc48a55b8c27cb7705127e03b7a5c78d36ea146fc266e",
+  "dart-build-cli-app": "9c88873c3404f2afa386ef9e9c7dd181c052ced38aa1b8e9f4814c685a49c5a5",
+  "dart-collect-coverage": "fca566d09e82d45c7acbd8c4e85a38487c0f813b7919893f4bc7066ca03a33f2",
+  "dart-fix-runtime-errors": "5e389fb7035cc36177318dfccaf047eaf222946930f0e24844ab1281a9601800",
+  "dart-generate-test-mocks": "c8a6732810c81d861aae6eacea0e02097942f752dc9f63ea318aa838253cc729",
+  "dart-migrate-to-checks-package": "601c6e0201db0ed1b92a5fb3f21e65e97dcc0b4ce420e4a2036ef46e20d60d53",
+  "dart-resolve-package-conflicts": "e21ffd909306c9d7e0d9a9a207e4383c8c372c9e080ed9b23ffdff822b8f86f4",
+  "dart-run-static-analysis": "e2a7454ac22d69d6c6ccb3d1c4c5e2da56c846d0a4c9699bbd33827936bec4f4",
+  "dart-setup-ffi-assets": "ae72ba6a8253362a100d31d471ad70e9bae0128e8150b1541dedaafb3209cb81",
+  "dart-use-ffigen": "d0f26d683f54589a6c44bf599d5c37dd4862c7d2a9befe6862167c421355fec8",
+  "dart-use-pattern-matching": "08dcca251379e52a84ec7b2206518208c563b86ab72f29056ff2c54619d6ebe1",
+  "dart-use-primary-constructors": "0f919b00d2f9b57cb27207782888feb2c9117f3b2b5466bd63a159ca4f20be78",
+  "flutter-add-integration-test": "62eb6600a25156b09012ff5c1b5897fc4e02e9dbb1a1a8d3bc80fbce0d8fb345",
+  "flutter-add-widget-preview": "d015fd19a06b7c9f42e65add3e90fd51095cd6cb11f2b57c5d6bf759483b4f9a",
+  "flutter-add-widget-test": "bc03a884d80821350ce6298b0f528e27af1fe70733f8d8717fb84129750666b6",
+  "flutter-apply-architecture-best-practices": "7d8ae28831dcf0bf1d5968e0ef79218e2994d68f2463a5ef1e96f4c51c77b489",
+  "flutter-build-responsive-layout": "f77247468631edb171477f808da95151dd19ce0164001ca57df3e38f912be6b2",
+  "flutter-fix-layout-issues": "85570f8ea12d4e1f3a2b2d6622c51b144a4df2697779633e67c2c23558f5946c",
+  "flutter-implement-json-serialization": "4a3198b5f1949c9bb5fc72466373b23ca7cf3b32ab92a44af51f2dec0348d49a",
+  "flutter-setup-declarative-routing": "7d9c8b9d144b4064886b497b62968627fab7615e441fc67d95bfec7fc50e5c4a",
+  "flutter-setup-localization": "33bfbdfb46d39c2acba559ab0b1b8d28a51c6a7ff3f6e0367f3b3cd46086cc92",
+  "flutter-use-http-package": "7400a1e1f5424fd85a99e1d57dc1946761e4768a0c3ac5accf20d2e896ba03c1",
+};
+
+describe('EX-BE-10 licenseOrigin: procedencia declarada por fonte (ADR-003)', () => {
+  it('cada fonte declara licenseOrigin valido (upstream-file | declared-evidence)', () => {
+    for (const [source, entry] of Object.entries(SOURCE_LICENSES)) {
+      assert.ok(['upstream-file', 'declared-evidence'].includes(entry.licenseOrigin), `${source}: licenseOrigin valido`);
+    }
+  });
+
+  it('upstream-file: o sha256 e o do ARQUIVO real do upstream (stitch, Apache-2.0, 11.273 bytes)', () => {
+    const s = SOURCE_LICENSES['google-labs-code/stitch-skills'];
+    assert.equal(s.spdx, 'Apache-2.0');
+    assert.equal(s.licenseOrigin, 'upstream-file');
+    assert.equal(s.sha256, STITCH_UPSTREAM_SHA);
+    assert.equal(sha256(s.licenseText), STITCH_UPSTREAM_SHA, 'texto == arquivo upstream (byte-a-byte)');
+    assert.equal(Buffer.byteLength(s.licenseText, 'utf8'), 11273, 'tamanho do LICENSE upstream');
+    assert.match(s.licenseText, /Apache License\s+Version 2\.0, January 2004/);
+  });
+
+  it('declared-evidence: sha do NOSSO texto + evidence[] com URL/secao + commit pinado (vercel, MIT)', () => {
+    const v = SOURCE_LICENSES['vercel-labs/agent-skills'];
+    assert.equal(v.spdx, 'MIT');
+    assert.equal(v.licenseOrigin, 'declared-evidence');
+    assert.equal(v.sha256, VERCEL_TEXT_SHA);
+    assert.equal(sha256(v.licenseText), VERCEL_TEXT_SHA, 'sha congela o NOSSO texto');
+    assert.match(v.licenseText, /^MIT License\n\nCopyright \(c\) Vercel, Inc\./, 'holder nomeado');
+    assert.ok(Array.isArray(v.evidence) && v.evidence.length >= 3, 'evidencia citada (>=3 itens)');
+    for (const ev of v.evidence) {
+      assert.match(ev.url, /^https:\/\/github\.com\/vercel-labs\/agent-skills\/blob\/[0-9a-f]{40}\//, 'URL com commit');
+      assert.ok(ev.section && ev.section.length > 0, 'secao citada');
+      assert.equal(ev.commit, VERCEL_COMMIT, 'commit pinado na evidencia');
+    }
+  });
+
+  it('SPLIT do assert: a exigencia "bate com o arquivo upstream" vale SO para upstream-file', () => {
+    for (const [source, entry] of Object.entries(SOURCE_LICENSES)) {
+      if (entry.licenseOrigin !== 'upstream-file') continue;
+      assert.equal(sha256(entry.licenseText), entry.sha256, `${source}: sha == upstream (verificavel)`);
+    }
+    const declared = Object.entries(SOURCE_LICENSES).filter(([, e]) => e.licenseOrigin === 'declared-evidence');
+    assert.ok(declared.length >= 1, 'existe ao menos uma fonte declared-evidence');
+    for (const [source, entry] of declared) {
+      // NAO ha arquivo upstream para comparar: o contrato POSITIVO e o sha do
+      // NOSSO texto + evidencia citada (URL/secao + commit).
+      assert.equal(sha256(entry.licenseText), entry.sha256, `${source}: sha do nosso texto`);
+      assert.ok(Array.isArray(entry.evidence) && entry.evidence.length > 0, `${source}: evidence[] presente`);
+      for (const ev of entry.evidence) {
+        assert.ok(typeof ev.url === 'string' && ev.url.length > 0, `${source}: evidencia com URL`);
+        assert.ok(typeof ev.section === 'string' && ev.section.length > 0, `${source}: evidencia com secao`);
+        assert.match(ev.commit, /^[0-9a-f]{40}$/, `${source}: evidencia com commit pinado`);
+      }
+    }
+  });
+
+  it('nome do arquivo agregado: declarado por fonte vence; mobile mantem a derivacao historica', () => {
+    assert.equal(aggregatedLicenseName('google-labs-code/stitch-skills'), 'LICENSE-stitch-skills');
+    assert.equal(aggregatedLicenseName('vercel-labs/agent-skills'), 'LICENSE-vercel-agent-skills');
+    assert.equal(aggregatedLicenseName('dart-lang/skills'), 'LICENSE-dart-lang-skills', 'I5: nome congelado');
+    assert.equal(aggregatedLicenseName('flutter/skills'), 'LICENSE-flutter-skills', 'I5: nome congelado');
+  });
+
+  it('agrega a licenca de fonte cujo artefato declara a propria licenca (declared-evidence)', () => {
+    const src = tmp('harness-vendor-src-');
+    write(src, 'declared-skill/SKILL.md', '---\nname: declared-skill\nlicense: MIT\n---\n# x\n');
+    const lock = fakeLock(src, ['declared-skill']);
+    lock.skills['declared-skill'].source = 'acme/declared';
+    const sourceLicenses = {
+      'acme/declared': {
+        spdx: 'MIT',
+        licenseOrigin: 'declared-evidence',
+        licenseFile: 'LICENSE-acme-declared',
+        licenseText: 'MIT License\n\nCopyright (c) ACME\n',
+        evidence: [{ url: 'https://example.test/blob/abc/', section: 'README §License -> MIT', commit: 'abc' }],
+      },
+    };
+    const dest = tmp('harness-vendor-dest-');
+    const built = buildVendor({ sourceDir: src, sourceLock: lock, sourceLicenses, sourceCommits: {}, destDir: dest });
+    assert.deepEqual(built.lock.skills['declared-skill'].licenseFile, 'SKILL.md', 'licenca declarada pelo artefato');
+    assert.equal(built.lock.licenses.length, 1, 'agregado escrito para a fonte referenciada');
+    assert.equal(built.lock.licenses[0].file, 'LICENSE-acme-declared');
+    assert.equal(built.lock.licenses[0].licenseOrigin, 'declared-evidence');
+    assert.equal(built.lock.licenses[0].evidence.length, 1, 'evidence[] propagada para o lock');
+    writeVendor(built, { destDir: dest });
+    assert.ok(fs.existsSync(path.join(dest, 'LICENSE-acme-declared')), 'arquivo agregado no dest');
+    assert.equal(checkVendor({ destDir: dest }).ok, true);
+  });
+});
+
+describe('EX-BE-11 vendor das 2 skills React (lock + licencas + optional)', () => {
+  it('lock: as 2 skills React presentes, com commit pinado e stacks [react]', () => {
+    for (const name of ['react-components', 'react-best-practices']) {
+      const e = VENDOR_LOCK.skills[name];
+      assert.ok(e, `${name} no lock`);
+      assert.equal(e.stacks.join(','), 'react', `${name}: stacks declarado (nao vira "comum")`);
+      assert.equal(e.sourceType, 'github');
+      assert.match(e.skillPath, /SKILL\.md$/, `${name}: skillPath`);
+      assert.match(e.computedHash, /^[0-9a-f]{64}$/, `${name}: computedHash`);
+      assert.match(e.treeHash, /^[0-9a-f]{64}$/, `${name}: treeHash`);
+    }
+    for (const [name, source] of Object.entries(REACT_SKILL_SOURCES)) {
+      assert.equal(VENDOR_LOCK.skills[name].source, source, `${name}: fonte`);
+    }
+    assert.equal(VENDOR_LOCK.skills['react-components'].sourceCommit, STITCH_COMMIT);
+    assert.equal(VENDOR_LOCK.skills['react-components'].license, 'Apache-2.0');
+    assert.equal(VENDOR_LOCK.skills['react-best-practices'].source, 'vercel-labs/agent-skills');
+    assert.equal(VENDOR_LOCK.skills['react-best-practices'].sourceCommit, VERCEL_COMMIT);
+    assert.equal(VENDOR_LOCK.skills['react-best-practices'].license, 'MIT');
+  });
+
+  // AT-1 (review iteracao 2): o artefato de procedencia NOMEIA as divergencias
+  // conhecidas (skill + revisao real + o que difere) e o `sourceCommit`
+  // declarado e declaradamente NAO descritivo para elas.
+  it('NOTICE nomeia as 3 divergencias conhecidas com a revisao real (nao limite generico)', () => {
+    const KNOWN = {
+      'dart-add-unit-test': 'last_modified',
+      'dart-build-cli-app': 'examples/multi_command_runner.dart',
+      'dart-use-pattern-matching': 'examples/json_patterns.dart',
+    };
+    const OLD_REV = '19228e842c691a5bcdb06b6603f3651953b2af2a';
+    for (const [name, detail] of Object.entries(KNOWN)) {
+      const e = VENDOR_LOCK.skills[name];
+      assert.equal(e.contentRevision, OLD_REV, `${name}: revisao real declarada no lock`);
+      assert.match(NOTICE_TEXT, new RegExp(`\\| ${name} \\| 0d9f1c4a[0-9a-f]{32} \\| ${OLD_REV} \\|`), `${name}: linha da tabela de divergencias`);
+      assert.ok(NOTICE_TEXT.includes(detail), `${name}: divergencia nomeada (${detail})`);
+    }
+    assert.match(NOTICE_TEXT, /Fidelidade byte-a-byte da COPIA DA SKILL ao commit pinado e 🟡 PROCESSO/, 'nivel 🟡 declarado');
+    assert.match(NOTICE_TEXT, /Divergencia CONHECIDA e NAO corrigida em 3 skill\(s\)/, 'contagem declarada');
+    assert.match(NOTICE_TEXT, /o `sourceCommit` declarado NAO descreve o conteudo delas/, 'sourceCommit nao descritivo');
+    assert.match(NOTICE_TEXT, /preservada para nao alterar os hashes congelados do lock \(invariante I5 do ciclo\)/, 'motivo declarado');
+    // nenhuma skill FORA das 3 carrega `contentRevision`
+    const outras = Object.entries(VENDOR_LOCK.skills).filter(([, e]) => e.contentRevision).map(([n]) => n);
+    assert.deepEqual(outras, Object.keys(KNOWN), 'so as 3 divergentes declaradas');
+  });
+
+  it('optional: true SO em react-components (RF-09/D-3)', () => {
+    assert.equal(VENDOR_LOCK.skills['react-components'].optional, true);
+    assert.ok(!VENDOR_LOCK.skills['react-best-practices'].optional, 'a padrao do perfil nao e opcional');
+    const opcionais = Object.entries(VENDOR_LOCK.skills).filter(([, e]) => e.optional === true).map(([n]) => n);
+    assert.deepEqual(opcionais, ['react-components'], 'nenhuma outra skill marcada como opcional');
+  });
+
+  it('licencas agregadas existem no dest com a origem declarada no lock', () => {
+    for (const f of ['LICENSE-stitch-skills', 'LICENSE-vercel-agent-skills']) {
+      assert.ok(fs.existsSync(path.join(SKILLS_DIR, f)), `${f} existe`);
+    }
+    const bySource = Object.fromEntries(VENDOR_LOCK.licenses.map((l) => [l.source, l]));
+    assert.equal(bySource['google-labs-code/stitch-skills'].licenseOrigin, 'upstream-file');
+    assert.equal(bySource['google-labs-code/stitch-skills'].sha256, STITCH_UPSTREAM_SHA);
+    assert.equal(bySource['vercel-labs/agent-skills'].licenseOrigin, 'declared-evidence');
+    assert.equal(bySource['vercel-labs/agent-skills'].sha256, VERCEL_TEXT_SHA);
+    assert.ok(bySource['vercel-labs/agent-skills'].evidence.length >= 3, 'evidence[] no lock');
+    assert.equal(sha256(fs.readFileSync(path.join(SKILLS_DIR, 'LICENSE-stitch-skills'), 'utf8')), STITCH_UPSTREAM_SHA);
+  });
+
+  it('copia das skills React byte-identica a fonte (nenhum patch no SKILL.md)', () => {
+    // o sha congelado do texto do SKILL.md vendoriado bate com o lock do upstream
+    // (computedHash) — patch quebraria o `--check`.
+    for (const name of ['react-components', 'react-best-practices']) {
+      const dir = path.join(SKILLS_DIR, name);
+      assert.ok(fs.existsSync(path.join(dir, 'SKILL.md')), `${name}/SKILL.md`);
+      assert.equal(folderComputedHash(dir), VENDOR_LOCK.skills[name].computedHash, `${name}: computedHash == origem`);
+      assert.equal(treeHash(dir), VENDOR_LOCK.skills[name].treeHash, `${name}: treeHash`);
+    }
+    const rbp = fs.readFileSync(path.join(SKILLS_DIR, 'react-best-practices', 'SKILL.md'), 'utf8');
+    assert.match(rbp, /^---\nname: vercel-react-best-practices/, 'frontmatter intacto (sem campo injetado)');
+  });
+
+  it('I5: treeHashes das 22 skills mobile IDENTICOS ao estado pre-Batch-4', () => {
+    for (const [name, expected] of Object.entries(MOBILE_TREE_HASHES)) {
+      assert.equal(VENDOR_LOCK.skills[name]?.treeHash, expected, `${name}: treeHash inalterado`);
+      assert.equal(treeHash(path.join(SKILLS_DIR, name)), expected, `${name}: bytes em disco inalterados`);
+    }
+    assert.equal(Object.keys(MOBILE_TREE_HASHES).length, 22, '22 skills mobile no oraculo');
+  });
+
+  it('source-lock de ENTRADA commitado declara stacks/optional das 2 skills (RF-13/A1)', () => {
+    for (const name of ['react-components', 'react-best-practices']) {
+      assert.ok(SOURCE_LOCK.skills[name], `${name} no source-lock de entrada`);
+      assert.deepEqual(SOURCE_LOCK.skills[name].stacks, ['react'], `${name}: stacks declarado na origem`);
+    }
+    assert.equal(SOURCE_LOCK.skills['react-components'].optional, true);
+    assert.ok(!SOURCE_LOCK.skills['react-best-practices'].optional);
+    assert.ok(SOURCE_LOCK.skills['react-components'].runtimeDeps.some((d) => /fetch-stitch\.sh/.test(d)), 'rede em runtime declarada');
+  });
+
+  it('NOTICE: origem por fonte, sem claim universal, com a dependencia externa do opcional', () => {
+    assert.ok(!/byte-identica? (ao|com o) (repositorio )?upstream/i.test(NOTICE_TEXT), 'sem claim universal de byte-identidade');
+    assert.match(NOTICE_TEXT, /o lock e a referencia de integridade do CI/, 'referencia de integridade declarada (o lock)');
+    assert.match(NOTICE_TEXT, /licenseOrigin/, 'NOTICE cita licenseOrigin');
+    assert.match(NOTICE_TEXT, /google-labs-code\/stitch-skills[\s\S]{0,120}upstream-file/, 'origem stitch declarada');
+    assert.match(NOTICE_TEXT, /vercel-labs\/agent-skills[\s\S]{0,120}declared-evidence/, 'origem vercel declarada');
+    assert.match(NOTICE_TEXT, /fidelidade da transcricao e 🟡 processo/i, 'limite da transcricao declarado');
+    assert.match(NOTICE_TEXT, /fetch-stitch\.sh/, 'rede em runtime declarada');
+    assert.match(NOTICE_TEXT, /@swc\/core/, '@swc/core declarado');
+    assert.match(NOTICE_TEXT, /Stitch MCP/, 'Stitch MCP declarado');
+    assert.match(NOTICE_TEXT, /Skills opcionais \(1\)/, 'secao de opcionais com 1 skill');
+    assert.match(NOTICE_TEXT, /scripts\/vendor\/skills-lock\.json/, 'source-lock de entrada documentado');
+    assert.match(NOTICE_TEXT, new RegExp(STITCH_COMMIT), 'commit pinado no NOTICE');
+  });
+
+  it('CI limpo (sem clones, sem rede): --check verde no dest real', () => {
+    const res = checkVendor({ destDir: SKILLS_DIR });
+    assert.equal(res.ok, true, JSON.stringify(res));
+    assert.equal(main(['--check']), 0);
   });
 });

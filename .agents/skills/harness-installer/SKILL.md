@@ -58,7 +58,7 @@ const out = main({
   target: '/caminho/do/destino',
   scriptedAnswers: {
     project: 'nome-do-projeto',          // obrigatório, não-vazio
-    stack: 'node',                       // node | node-esm | java+vue | outra | flutter | dart
+    stack: 'node',                       // node | node-esm | java+vue | java+react | outra | flutter | dart
     suiteCommand: 'node --test',         // precisa resolver (PATH ou arquivo)
     pluginsDir: '/caminho/do/destino',   // precisa existir dentro do target
     // deployToken: '...'                // sensível: só memória, nunca em disco
@@ -77,7 +77,7 @@ console.log(out.checks); // { passed: true, failed: [] } = instalado OK
 | Pergunta (`key`) | Validação | Segredo? |
 |---|---|---|
 | `project` | não-vazio | não |
-| `stack` | `node` \| `java+vue` \| `outra` \| `node-esm` \| `flutter` \| `dart` | não |
+| `stack` | `node` \| `node-esm` \| `java+vue` \| `java+react` \| `outra` \| `flutter` \| `dart` | não |
 | `suiteCommand` | precisa resolver via `PATH` ou existir como arquivo | não |
 | `pluginsDir` | precisa existir **dentro** do `--target` | não |
 | `deployToken` | livre, opcional | **SIM — só memória** |
@@ -182,12 +182,37 @@ node installer/dogfood.mjs --source /caminho/do/repo-real
 Para um projeto **mobile (Flutter/Dart)**, use `installer/dogfood-mobile.mjs` —
 ver §9.4.
 
-## 9. Perfil mobile (Flutter/Dart)
+## 9. Perfis de stack — registry único (e o que cada preset gera)
+
+`STACK_PROFILES` (`installer/install.mjs`) é o **registry único** das capacidades por
+preset: `axes` (`AXIS_IDS`: IDs de eixo `backend`/`frontend`), `backend`/`frontend`
+(rótulos **literais**, nunca concatenados), `commands`, `mcp`, `moduleMap` e `stacks`.
+Os **7 presets** são `node`, `node-esm`, `java+vue`, `java+react`, `outra`, `flutter`,
+`dart` — `stacks` **não** é campo independente: deriva do eixo por
+`stacksFor(axes)` (+ tabela de exceções declarada `STACKS_FOR_EXCEPTIONS`).
+
+O gating de artefato é **por eixo declarado**, nunca pelo nome do arquivo:
+skills por `stacks` do vendor-lock (RF-03) e `.agents/rules/**` por `RULES_BY_AXIS`
+(exclusão por eixo, `installer/install.mjs`) — eixo decorativo é defeito, não detalhe.
+Perfis de backend adicionais (**go**, **rust**) ainda **não** existem; a rota para
+eixos separados na pergunta está em `ADR-005` do ciclo `harness-eixos-stack`.
 
 O instalador instala em projetos mobile pela via normal (`--target` + Q&A ou
 wizard). Este perfil foi desenhado para um repo Flutter/Dart com opencode.
 
-### 9.1 Stacks e o que o perfil gera
+### 9.0 Presets web (`java+vue` / `java+react`)
+
+| Campo | `java+vue` | `java+react` |
+|---|---|---|
+| `stack.backend` / `frontend` | `java+vue backend/frontend (declared via Q&A)` | `java+react backend/frontend (declared via Q&A)` |
+| `commands` | `{}` (default de suíte no Q&A) | `{}` |
+| `mcp.required` | `['chrome-devtools']` | `['chrome-devtools']` |
+| `stacks` (derivado) | `[]` | `['react']` |
+
+`defaultSuiteFor('java+react')` sugere `npm run test:run` (1º candidato que resolve no
+`PATH`); `java+vue` mantém o comportamento anterior (lista vazia ⇒ default vazio).
+
+### 9.1 Stacks e o que o perfil mobile gera
 
 `STACK_PROFILES` é a única fonte das capacidades por stack (registry puro,
 zero I/O); `generateConfig` resolve por lookup. O `harness.config.json` gerado
@@ -220,12 +245,17 @@ W0 pre-flight → W1 inventário → W2 detecção pubspec → (W2m menu se sem 
 - **W2 detecção** (`detect()`, line-based, sem parser YAML): lê `pubspec.yaml`,
   sugere `project`←`name`, `stack`←`sdk: flutter`/deps e `suiteCommand`←
   `flutter test`→`make test`→`dart test` (1ª que resolve). A origem é exibida
-  como `(arquivo:linha)`. Sem `pubspec.yaml` ⇒ **W2m** menu manual em linguagem
-  de produto (installer-melhoria, ADR-011):
-  (`1` App Flutter→flutter · `2` Pacote Dart→dart · `3` Projeto Node.js→node
-  · `4` Projeto Java + Vue→java+vue · `5` Outro→outra).
-  `node-esm` segue digitável em W3 (sem item próprio). Inválida repete com o
-  bloco 4-linhas (§7); `q` aborta (`USER_ABORT`, 0 writes).
+  como `(arquivo:linha)`. Sem `pubspec.yaml` ⇒ **W2m** menu em **2 passos**
+  (ADR-004; o range é **derivado** de `WIZARD_MENU.length`, nunca literal):
+  - **W2m-1** (`[1/2]`, `WIZARD_MENU`) — `1` App Flutter→flutter · `2` Pacote
+    Dart→dart · `3` Projeto Node.js→node · `4` **Aplicação web (backend +
+    frontend)**→`segue: frontend` · `5` Outro→outra.
+  - **W2m-2** (`[2/2]`, `WIZARD_MENU_FRONTEND`, `(default: 1)`) — só no item `4`:
+    `1` Vue→`java+vue` (default, reproduz o baseline) · `2` React→`java+react`.
+  Todo prompt exibe contador `[i/total]` e `(q cancela)`; o passo inválido repete
+  **o mesmo passo** com o bloco 4-linhas (linha 3 em linguagem de produto, linha 4
+  com `arquivo:linha` do bloco) e `q` aborta (`USER_ABORT`, 0 writes).
+  `node-esm` segue digitável em W3 (sem item próprio).
 - **W3** valida cada resposta com `validateAnswer`; inválida = bloco 4-linhas +
   "como corrigir". Todo prompt exibe contador `[i/total]` e hint `(q cancela)`;
   `q`/`quit`/`cancel` aborta. Trocou a stack no W3 ⇒ o default
@@ -244,10 +274,20 @@ W0 pre-flight → W1 inventário → W2 detecção pubspec → (W2m menu se sem 
 `treeHash` e falha em drift). `install.mjs` é **rede-zero** (I8, check estático
 V15).
 
-No install, `collectIncoming(sourceDir, {stacks})` filtra: skill com `stacks`
+No install, `collectIncoming(sourceDir, {stacks, stack})` filtra: skill com `stacks`
 entra só se intersecta os stacks pedidos (`flutter` aceita `['flutter','dart']`);
 skill sem `stacks` (comum) sempre entra; **sem lock ⇒ nada filtrado**
 (retrocompat). O `.vendor-lock.json` **nunca** é copiado ao destino.
+
+**Procedência por origem de licença** (`licenseOrigin`, ADR-003): `upstream-file`
+(sha do arquivo de licença **real** do upstream — ex. stitch Apache-2.0) e
+`declared-evidence` (o upstream não publica arquivo; sha do **nosso** texto +
+`evidence[]` com URL/seção/commit — ex. vercel MIT). `react-components` é skill
+**opcional** do preset react (`optional: true`: rede em runtime via
+`scripts/fetch-stitch.sh`, `@swc/core` e Stitch MCP) — `optional` é **metadado de
+procedência**, não "não instalar"; `react-best-practices` é a padrão do perfil.
+O `VENDOR-NOTICE.md` declara a origem por fonte e as divergências conhecidas
+(nunca afirma byte-identidade universal ao upstream).
 
 ### 9.4 Dogfood mobile (cópia Flutter sob /tmp)
 

@@ -68,6 +68,11 @@ describe('IM-BE-02 validateAnswer stack mobile (RF-11/ADR-005)', () => {
     assert.equal(validateAnswer(t, 'stack', 'node-esm'), 'node-esm');
     assert.throws(() => validateAnswer(t, 'stack', 'ruim'), /stack/i);
   });
+
+  it('retrocompat: preset novo java+react tambem nao exige pubspec (RF-02)', () => {
+    const t = mkTarget({});
+    assert.equal(validateAnswer(t, 'stack', 'java+react'), 'java+react');
+  });
 });
 
 describe('IM-BE-03 collectIncoming filtra por stack (I10/A4)', () => {

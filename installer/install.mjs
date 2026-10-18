@@ -191,77 +191,236 @@ export function backup(target, { backupRoot, injectFailure = false } = {}) {
 // mudaria o contrato congelado do baseline golden (I7) e collectAnswers
 // (missing answer para scripted); (c) o destino edita o bloco `infra` depois
 // de instalar. O comportamento fica congelado por teste (generate.spec.mjs).
+// FONTE UNICA da lista de stacks aceitos (RF-14/D-2): alimenta o prompt do W3,
+// a mensagem de BAD_ANSWER e o `howToFix('stack')` — nenhuma lista duplicada a mao.
+export const STACK_VALUES = ['node', 'java+vue', 'java+react', 'outra', 'node-esm', 'flutter', 'dart'];
+
 export const QUESTIONS = [
   { key: 'project', prompt: 'Nome do projeto?', kind: 'name' },
-  { key: 'stack', prompt: 'Stack do destino? (flutter/dart/node/java+vue/outra)', kind: 'stack' },
+  { key: 'stack', prompt: `Stack do destino? (${STACK_VALUES.join('/')})`, kind: 'stack' },
   { key: 'suiteCommand', prompt: 'Comando da suite de testes?', kind: 'command' },
   { key: 'pluginsDir', prompt: 'Diretorio de plugins no destino?', kind: 'path' },
   { key: 'deployToken', prompt: 'Token de deploy (sensivel, opcional)?', kind: 'string', secret: true },
 ];
 
 // ---------- perfis de stack (ADR-008) ----------
-// Registry puro: UNICA fonte das capacidades por stack (backend/frontend,
-// commands, mcp, moduleMap) + `stacks` (skills que o perfil aceita, A4).
+// Registry puro: UNICA fonte das capacidades por stack (axes, backend/frontend,
+// commands, mcp, moduleMap). `stacks` (skills/rules que o perfil aceita, A4)
+// NAO e campo independente: deriva de `axes` por stacksFor (RF-01/D4).
 // generateConfig resolve por lookup e permanece puro (zero I/O). Leitura do
 // real (pubspec.yaml, PATH) vive em validateAnswer, nunca aqui.
-// As strings de backend/frontend dos perfis nao-mobile sao congeladas para
-// manter a saida byte-identica ao baseline (invariante I7 / golden).
+// As strings de backend/frontend sao literais CONGELADOS (nunca concatenados) e
+// mantem a saida byte-identica ao baseline (invariante I7 / golden).
+//
+// IDs de eixo (D1): conjunto fechado, separado dos rotulos (ADR-001).
+// Os IDs mobile (`dart`/`flutter`) valem nos dois eixos (SPEC RF-01: o preset
+// flutter carrega `flutter/flutter`) — declarado aqui, nunca inferido do nome.
+export const AXIS_IDS = {
+  backend: ['java', 'node', 'dart', 'flutter', 'other', 'none'],
+  frontend: ['vue', 'react', 'dart', 'flutter', 'other', 'none'],
+};
+
+// Tabela de EXCECOES declarada (SPEC RF-01). A SPEC lista a excecao por PRESET
+// (`flutter` -> ['flutter','dart'], o par mobile que compartilha skills); aqui a
+// chave e o PAR de eixos `backend+frontend`, que identifica o mesmo preset sem
+// ambiguidade (preset flutter = axes flutter/flutter) — nao ha heuristica por
+// nome nem por um eixo isolado.
+export const STACKS_FOR_EXCEPTIONS = {
+  'flutter+flutter': ['flutter', 'dart'],
+};
+
+// `stacks` deriva do eixo (D1 do PM): o par mobile (excecao declarada acima),
+// backend dart e frontend react produzem tags; os demais presets ficam sem
+// filtro ([] = comum, semantica preservada).
+export function stacksFor(axes) {
+  if (!axes || typeof axes !== 'object') return [];
+  const pair = `${axes.backend}+${axes.frontend}`;
+  if (Object.prototype.hasOwnProperty.call(STACKS_FOR_EXCEPTIONS, pair)) {
+    return [...STACKS_FOR_EXCEPTIONS[pair]];
+  }
+  const out = [];
+  if (axes.backend === 'dart') out.push('dart');
+  if (axes.frontend === 'react') out.push('react');
+  return out;
+}
+
 export const STACK_PROFILES = {
   'node-esm': {
+    axes: { backend: 'node', frontend: 'none' },
     backend: 'N/A — no Java/Maven backend declared by destination Q&A; Node-only stack',
     frontend: 'N/A — no Vue/Vite frontend declared by destination Q&A; Node-only stack',
     commands: { suiteFull: 'node --test', unit: 'node --test' },
     mcp: ['chrome-devtools'],
     moduleMap: {},
-    stacks: [],
   },
   node: {
+    axes: { backend: 'node', frontend: 'none' },
     backend: 'N/A — no Java/Maven backend declared by destination Q&A; Node-only stack',
     frontend: 'N/A — no Vue/Vite frontend declared by destination Q&A; Node-only stack',
     commands: { suiteFull: 'node --test', unit: 'node --test' },
     mcp: ['chrome-devtools'],
     moduleMap: {},
-    stacks: [],
   },
   'java+vue': {
+    axes: { backend: 'java', frontend: 'vue' },
     backend: 'java+vue backend (declared via Q&A)',
     frontend: 'java+vue frontend (declared via Q&A)',
     commands: {},
     mcp: ['chrome-devtools'],
     moduleMap: {},
-    stacks: [],
+  },
+  'java+react': {
+    axes: { backend: 'java', frontend: 'react' },
+    backend: 'java+react backend (declared via Q&A)',
+    frontend: 'java+react frontend (declared via Q&A)',
+    commands: {},
+    mcp: ['chrome-devtools'],
+    moduleMap: {},
   },
   outra: {
+    axes: { backend: 'other', frontend: 'other' },
     backend: 'outra backend (declared via Q&A)',
     frontend: 'outra frontend (declared via Q&A)',
     commands: {},
     mcp: ['chrome-devtools'],
     moduleMap: {},
-    stacks: [],
   },
   flutter: {
+    axes: { backend: 'flutter', frontend: 'flutter' },
     backend: 'flutter/dart mobile (Q&A)',
     frontend: 'flutter/dart mobile (Q&A)',
     commands: { suiteFull: 'flutter test', unit: 'flutter test', analyze: 'dart analyze' },
     mcp: ['marionette_mcp', 'dart'],
     moduleMap: { lib: 'lib', test: 'test' },
-    stacks: ['flutter', 'dart'],
   },
   dart: {
+    axes: { backend: 'dart', frontend: 'none' },
     backend: 'dart package (Q&A)',
     frontend: 'dart package (Q&A)',
     commands: { suiteFull: 'dart test', unit: 'dart test', analyze: 'dart analyze' },
     mcp: ['dart'],
     moduleMap: { lib: 'lib', test: 'test' },
-    stacks: ['dart'],
   },
 };
+
+// RF-01/D4: `stacks` deixa de ser campo independente — derivado do eixo.
+for (const name of Object.keys(STACK_PROFILES)) {
+  STACK_PROFILES[name].stacks = stacksFor(STACK_PROFILES[name].axes);
+}
+
+// ---------- gating de artefato por EIXO DECLARADO (RF-03/RF-04, ADR-002) ----
+// A1/A2: o eixo que decide a entrada de um artefato vem de DADO DECLARADO,
+// nunca do nome do arquivo. Skills: `stacks` do vendor-lock (declarados na
+// origem — `scripts/vendor-skills.mjs`, RF-03). Rules: as 2 estruturas abaixo.
+
+// Mapa de EXCLUSAO por eixo. Chave `<eixo>=<id>` — VALIDADA contra AXIS_IDS na
+// carga (CR-1: declaracao invalida nunca vira no-op silencioso, SPEC §5/§6);
+// valor = artefatos de `.agents/rules/**` (caminho relativo sob `.agents/rules/`,
+// com `/` quando em subdiretorio) que NAO entram em destino cujo eixo casa com a
+// chave. O match exige o PAR `{eixo, id}` completo (N-1): `AXIS_IDS` compartilha
+// ids entre eixos (`dart`, `flutter`, `other`, `none`), entao casar so o id
+// over-matchearia (`'backend=none'` atingiria `node`/`node-esm`/`dart`, que tem
+// `none` no eixo FRONTEND). Nao e allowlist de inclusao: um artefato citado aqui
+// continua entrando em TODO destino que nao case (residual declarado do RF-04/D-4b).
+export const RULES_BY_AXIS = {
+  'frontend=react': ['frontend-coding-standards.md'],
+};
+
+// Artefatos de rule COMUNS: entram em todo destino. Toda rule de
+// `.agents/rules/**` tem de estar aqui OU em uma chave de RULES_BY_AXIS — a
+// cobertura total e checada por ENUMERACAO (recursiva e bidirecional) em
+// `installer/__tests__/eixos-stack.spec.mjs` (rule nova nao classificada, ou
+// nome fantasma aqui, deixa a suite vermelha; D5).
+export const RULES_COMMON = [
+  'brain-context.md',
+  'gate-contract.md',
+  'harness-config.md',
+  'prd-adr-pipeline.md',
+  'sdd-workflow-standard.md',
+  'workflow-rules.md',
+];
+
+// CR-1: a declaracao de RULES_BY_AXIS e validada NA CARGA (fail-closed, mesmo
+// padrao de RF-01/RF-02). Chave fora do formato `<eixo>=<id>`, eixo desconhecido
+// em AXIS_IDS, id fora do conjunto fechado do eixo, ou valor que nao seja array
+// de strings nao-vazias => erro na carga. Sem isto, `'backend=react'` (eixo
+// errado), `'frontend=blazor'` (id fora do conjunto) e `'backend=node'` num
+// destino sem esse eixo passariam VERDE como no-op silencioso.
+export function validateRulesByAxis(rulesByAxis = RULES_BY_AXIS) {
+  for (const [key, artifacts] of Object.entries(rulesByAxis)) {
+    const eq = key.indexOf('=');
+    const axis = eq < 0 ? null : key.slice(0, eq);
+    const id = eq < 0 ? null : key.slice(eq + 1);
+    if (!axis || !id) {
+      throw new InstallError(`RULES_BY_AXIS: chave invalida '${key}' (esperado '<eixo>=<id>')`, 'BAD_DECLARATION');
+    }
+    if (!Object.prototype.hasOwnProperty.call(AXIS_IDS, axis)) {
+      throw new InstallError(`RULES_BY_AXIS: eixo desconhecido '${axis}' em '${key}' (AXIS_IDS: ${Object.keys(AXIS_IDS).join(', ')})`, 'BAD_DECLARATION');
+    }
+    if (!AXIS_IDS[axis].includes(id)) {
+      throw new InstallError(`RULES_BY_AXIS: id '${id}' fora de AXIS_IDS.${axis} em '${key}'`, 'BAD_DECLARATION');
+    }
+    if (!Array.isArray(artifacts) || artifacts.length === 0 || artifacts.some((a) => typeof a !== 'string' || a === '')) {
+      throw new InstallError(`RULES_BY_AXIS: valor de '${key}' tem de ser array de strings nao-vazias`, 'BAD_DECLARATION');
+    }
+  }
+}
+validateRulesByAxis();
+
+// Chaves de eixo do destino a partir de um `axes`: PAReS `<eixo>=<id>` (mesma
+// forma das chaves de RULES_BY_AXIS), restritos aos eixos declarados em AXIS_IDS.
+// O par — e nao o id solto — e o que torna o match exato entre eixos que
+// compartilham id (`dart`/`flutter`/`other`/`none`).
+export function axisIdsFromAxes(axes) {
+  const keys = new Set();
+  if (axes && typeof axes === 'object') {
+    for (const axis of Object.keys(AXIS_IDS)) {
+      const id = axes[axis];
+      if (typeof id === 'string' && id) keys.add(`${axis}=${id}`);
+    }
+  }
+  return keys;
+}
+
+// Chaves de eixo do DESTINO. Fonte primaria (CR-1): o PRESET —
+// `profileOf(stack).axes` —, porque para 5 dos 7 presets as tags de `stacks` sao
+// vazias (qualquer chave seria inerte/∅). FALLBACK DOCUMENTADO: sem preset
+// conhecido, um valor de `stacks` que seja NOME de preset e expandido pelos seus
+// eixos. TAGS isoladas ('react') NAO formam par `{eixo,id}` e por isso NAO
+// gateiam — casar por tag exigiria adivinhar o eixo, que e exatamente o
+// over-match corrigido em N-1 (fail-open, nunca fail-wide).
+function axisIdsForDestination({ stack, stacks } = {}) {
+  const profile = profileOf(stack);
+  if (profile) return axisIdsFromAxes(profile.axes);
+  const keys = new Set();
+  for (const value of Array.isArray(stacks) ? stacks : []) {
+    const byPreset = STACK_PROFILES[value];
+    if (byPreset) for (const key of axisIdsFromAxes(byPreset.axes)) keys.add(key);
+  }
+  return keys;
+}
+
+// Rule barrada para este destino? So o mapa DECLARADO decide — o nome do
+// arquivo nunca e consultado. Sem entrada no mapa => comum (entra). O match e o
+// PAR exato `{eixo, id}` (N-1): `axisKeys` ja vem como `<eixo>=<id>` e a chave da
+// declaracao tem a mesma forma, logo `has(key)` compara eixo E id. `rel` e o
+// caminho relativo ao repo (ex.: `.agents/rules/x/y.md`): a classificacao usa o
+// caminho COMPLETO sob `.agents/rules/`, logo rule em subdiretorio tambem e
+// classificavel (SPEC §5 — enumeracao recursiva).
+export function ruleAllowedForAxes(rel, axisKeys, rulesByAxis = RULES_BY_AXIS) {
+  const prefix = '.agents/rules/';
+  if (!rel.startsWith(prefix)) return true;
+  const name = rel.slice(prefix.length);
+  if (!name) return true;
+  for (const [key, artifacts] of Object.entries(rulesByAxis)) {
+    if (axisKeys.has(key) && artifacts.includes(name)) return false;
+  }
+  return true;
+}
 
 export function profileOf(stack) {
   return STACK_PROFILES[stack] || null;
 }
-
-const STACK_VALUES = ['node', 'java+vue', 'outra', 'node-esm', 'flutter', 'dart'];
 
 function commandResolves(cmd) {
   if (!cmd || typeof cmd !== 'string') return false;
@@ -296,7 +455,7 @@ export function validateAnswer(target, key, value) {
     case 'stack': {
       const v = String(value);
       if (!STACK_VALUES.includes(v)) {
-        throw new InstallError('stack must be one of node|java+vue|outra|node-esm|flutter|dart', 'BAD_ANSWER');
+        throw new InstallError(`stack must be one of ${STACK_VALUES.join('|')}`, 'BAD_ANSWER');
       }
       if (v === 'flutter' || v === 'dart') {
         const pub = path.join(t, 'pubspec.yaml');
@@ -856,6 +1015,20 @@ export function runChecks(target, { manifest = null, answers = {} } = {}) {
 }
 
 // ---------- doctor brownfield read-only D0-D6 (INS-11/INS-12) ----------
+
+// Stack do destino a partir do estado GRAVADO pelo init (manifesto). Leitura
+// pura: e o dado que faz o doctor sem `--answers-file` ser previa fiel do
+// `upgrade` (que le `manifest.answers`) — SPEC §6.
+function destinationStack(target) {
+  try {
+    const parsed = JSON.parse(fs.readFileSync(path.join(target, MANIFEST_NAME), 'utf8'));
+    const s = parsed && parsed.answers && parsed.answers.stack;
+    return typeof s === 'string' && s ? s : null;
+  } catch {
+    return null;
+  }
+}
+
 export function runDoctor({ target, sourceDir = null, answersFile = null, backupDir = null, allowRoot = false, output = null } = {}) {
   const srcRoot = sourceDir || INSTALLER_ROOT;
   const say = (s) => {
@@ -870,6 +1043,13 @@ export function runDoctor({ target, sourceDir = null, answersFile = null, backup
   if (answersFile) {
     const loaded = loadAnswersFile(answersFile);
     redacting = { ...(loaded || {}) };
+  }
+  // SPEC §6: sem `--answers-file` o doctor NAO pode ser no-op (fail-open) — o
+  // stack do destino esta no manifesto do init. Sem isto o D3 proporia `create`
+  // de um artefato que o `init` excluiu de proposito (o eixo nao seria aplicado).
+  if (!redacting.stack) {
+    const fromTarget = destinationStack(pf.target);
+    if (fromTarget) redacting = { ...redacting, stack: fromTarget };
   }
   say(`[OK] D0 pre-flight: target=${pf.target}`);
   say('[INFO] D1 inventario do destino (somente leitura).');
@@ -888,8 +1068,8 @@ export function runDoctor({ target, sourceDir = null, answersFile = null, backup
   for (const w of det.warnings || []) say(`  [AVISO] D2 ${w}`);
   say('[INFO] D3 plano seco (classifica sem gravar).');
   const prof = redacting.stack ? profileOf(redacting.stack) : null;
-  const stacks = prof ? prof.stacks : (redacting.stack ? [redacting.stack] : undefined);
-  const incomingFiles = collectIncoming(srcRoot, stacks ? { stacks } : undefined);
+  const stacks = prof ? prof.stacks : (redacting.stack ? [redacting.stack] : []);
+  const incomingFiles = collectIncoming(srcRoot, { stacks, stack: redacting.stack ?? null });
   const plan = planMerge(pf.target, { ...incomingFiles, 'harness.config.json': '' });
   const counts = {};
   for (const p of plan) counts[p.action] = (counts[p.action] || 0) + 1;
@@ -1197,11 +1377,15 @@ function skillAllowedForStacks(rel, lock, wanted) {
   return stacks.some((s) => wanted.has(s));
 }
 
-export function collectIncoming(sourceDir, { stacks } = {}) {
+export function collectIncoming(sourceDir, { stacks, stack } = {}) {
   const src = path.resolve(sourceDir);
   const incoming = {};
   const lock = readVendorLock(src);
   const wanted = new Set(Array.isArray(stacks) ? stacks : []);
+  // RF-04/A2: gating de `.agents/rules/**` pela MESMA mecanica das skills —
+  // eixo declarado (RULES_BY_AXIS validado na carga), nunca nome do arquivo.
+  // O eixo do destino deriva do PRESET (`stack`); `stacks` e fallback (CR-1).
+  const axisIds = axisIdsForDestination({ stack, stacks });
   const excluded = (rel) =>
     rel.split(path.sep).some((seg) => INCOMING_EXCLUDE.has(seg))
     || rel === 'scripts' || rel.startsWith('scripts/')
@@ -1213,7 +1397,9 @@ export function collectIncoming(sourceDir, { stacks } = {}) {
     if (st.isDirectory()) {
       for (const e of fs.readdirSync(abs)) walk(path.join(abs, e), rel ? `${rel}/${e}` : e);
     } else if (st.isFile()) {
-      if (!excluded(rel) && skillAllowedForStacks(rel, lock, wanted)) incoming[rel] = fs.readFileSync(abs, 'utf8');
+      if (!excluded(rel) && skillAllowedForStacks(rel, lock, wanted) && ruleAllowedForAxes(rel, axisIds)) {
+        incoming[rel] = fs.readFileSync(abs, 'utf8');
+      }
     }
   };
   for (const root of INCOMING_ROOTS) {
@@ -1489,16 +1675,113 @@ export function confirmByLayer(plan, { input, output, yes = false, reader } = {}
 
 const ABORT_TOKENS = new Set(['q', 'quit', 'cancel', 'cancelar', 'abort', 'abortar']);
 
+// Menu do W2m-1 (ADR-004 §2): ordem e numeracao 1..5 IDENTICAS ao menu legado —
+// nao renumerar (o teste le os itens por string). O item 4 nao mapeia mais
+// direto para `java+vue`: encadeia o passo 2 (`next`) e seu `stack` e o PRESET
+// que o Enter do passo 2 reproduz (default de produto, D-9).
 export const WIZARD_MENU = [
   { key: '1', label: 'App Flutter', stack: 'flutter' },
   { key: '2', label: 'Pacote Dart', stack: 'dart' },
   { key: '3', label: 'Projeto Node.js', stack: 'node', note: 'ESM incluso' },
-  { key: '4', label: 'Projeto Java + Vue', stack: 'java+vue' },
+  { key: '4', label: 'Aplicação web (backend + frontend)', stack: 'java+vue', next: 'frontend' },
   { key: '5', label: 'Outro projeto', stack: 'outra' },
 ];
 
+// Menu do W2m-2 (ADR-004, adaptado por D-A): frontend do projeto web. Default =
+// item 1 (Vue) por decisao do owner (D-9): `java+vue` e o unico valor web
+// congelado no baseline, entao Enter reproduz o comportamento atual. NAO existe
+// detector de Vue/React (o detector so le `pubspec.yaml`): e default de PRODUTO
+// estatico, declarado como tal — nunca inferido.
+export const WIZARD_MENU_FRONTEND = [
+  { key: '1', label: 'Vue (default)', stack: 'java+vue' },
+  { key: '2', label: 'React', stack: 'java+react' },
+];
+export const WIZARD_MENU_FRONTEND_DEFAULT = '1';
+
 export function isAbortToken(s) {
   return ABORT_TOKENS.has(String(s).trim().toLowerCase());
+}
+
+// Colunas de alinhamento do rotulo por bloco, LITERAIS do ADR-004 §2 (fonte
+// congelada do parecer UX): o separador ` -> ` soma 1 espaco, entao a coluna do
+// `->` e `5 + width + 1`. No bloco 1 a coluna acomoda os rotulos curtos e o
+// rotulo longo do item 4 TRANSBORDA com um espaco (padEnd nunca trunca); no
+// bloco 2 a coluna acomoda `Vue (default)`. E layout de produto, nao constante
+// derivavel do conteudo — por isso vem declarado, nunca inferido.
+export const WIZARD_MENU_WIDTH = 18;
+export const WIZARD_MENU_FRONTEND_WIDTH = 15;
+
+// Linha de um item do menu: `  <key>) <label> -> stack <preset>`, com o rotulo
+// alinhado na coluna do bloco (`padEnd`); o item que encadeia o passo seguinte
+// mostra `-> segue: <passo>` (ADR-004 §2).
+export function menuItemLine(item, width = 0) {
+  const extra = item.note ? ` (${item.note})` : '';
+  const anchor = item.next ? `segue: ${item.next}` : `stack ${item.stack}`;
+  return `  ${item.key}) ${String(item.label).padEnd(width)} -> ${anchor}${extra}`;
+}
+
+// Numeros aceitos por um menu de N itens (`1, 2, 3, 4 ou 5`) para a mensagem de
+// erro — DERIVADO do total (A4/RF-05), nunca literal.
+export function menuChoices(count) {
+  const keys = Array.from({ length: count }, (_, i) => String(i + 1));
+  if (keys.length === 0) return '';
+  if (keys.length === 1) return keys[0];
+  return `${keys.slice(0, -1).join(', ')} ou ${keys[keys.length - 1]}`;
+}
+
+// Marcador do BLOCO W2m (o texto tambem aparece no comentario do bloco em
+// `runWizard`): a 4a linha do bloco de erro aponta `arquivo:linha` DESSE bloco
+// (ADR-004 §5). A declaracao da constante carrega o literal apenas como dado de
+// busca — `sourceLineOf` resolve para a ULTIMA ocorrencia, isto e, para o bloco.
+export const W2M_MARKER = 'W2m menu manual em 2 passos (ADR-004/D-A)';
+
+export function sourceLineOf(marker, file = import.meta.url) {
+  try {
+    const text = fs.readFileSync(new URL(file), 'utf8');
+    // findLastIndex: a ocorrencia UTIL e a do bloco em runWizard, nunca a da
+    // declaracao desta constante (uma ancora que aponta para a propria
+    // declaracao nao ancora nada).
+    const idx = text.split('\n').findLastIndex((l) => l.includes(marker));
+    return idx >= 0 ? idx + 1 : null;
+  } catch {
+    return null;
+  }
+}
+
+function w2mErrorWhere(step) {
+  const line = sourceLineOf(W2M_MARKER);
+  return line ? `installer/install.mjs:${line} (W2m-${step})` : `installer/install.mjs (W2m-${step})`;
+}
+
+// Um passo do menu W2m (ADR-004 §2/§5): cabecalho, itens (range DERIVADO de
+// `items.length`), prompt com contador `[passo/total]`, `(default: N)` quando ha
+// default e `(q cancela)`. Entrada invalida => bloco de 4 linhas e REPETE o
+// MESMO passo; `q`/sinonimos abortam dentro do `read` (0 writes). Exportado para
+// o teste do item sintetico (EX-FE-07 Scenario 2) sem tocar no menu real.
+export async function askMenuStep({ read, out, answers = {}, header, items, step, total, defaultKey = null, width = 0 }) {
+  out(header);
+  for (const item of items) out(menuItemLine(item, width));
+  const range = `1-${items.length}`;
+  const shownDefault = defaultKey ? ` (default: ${defaultKey})` : '';
+  const prompt = `[${step}/${total}] escolha [${range}]${shownDefault} (q cancela) > `;
+  for (;;) {
+    const raw = (await read(prompt)).trim();
+    if (raw === '' && defaultKey) {
+      const fallback = items.find((i) => i.key === defaultKey);
+      if (fallback) return fallback;
+    }
+    const hit = items.find((i) => i.key === raw);
+    if (hit) return hit;
+    out(formatError({
+      what: `opcao '${raw}' invalida — digite ${menuChoices(items.length)} (ou 'q' para cancelar).`,
+      code: 'BAD_ANSWER',
+      why: `fora de [${range.replace('-', ',')}]`,
+      // Linha 3 em LINGUAGEM DE PRODUTO (nunca `howToFix('stack')`, que vazava
+      // `flutter|dart|node|java+vue|outra`) — parecer UX, defeito 4 (ADR-004 §5).
+      fix: 'escolha o numero de um dos itens listados acima (ou q para cancelar).',
+      where: w2mErrorWhere(step),
+    }, answers));
+  }
 }
 
 // W2: deteccao line-based do pubspec.yaml (sem lib YAML, G3). Sugere
@@ -1557,14 +1840,21 @@ export function detect(target) {
   return result;
 }
 
-function defaultSuiteFor(stack) {
+// Candidatos por eixo (RF-07): o par react precisa de default — sem ele o
+// usuario digita o comando sem sugestao (default ''). Nunca retorna '' quando
+// ha candidatos; o primeiro vence se nenhum resolver no PATH.
+export function defaultSuiteFor(stack) {
+  const profile = profileOf(stack);
+  const frontendAxis = profile ? profile.axes.frontend : null;
   const candidates = stack === 'flutter'
     ? ['flutter test', 'make test', 'dart test']
     : stack === 'dart'
       ? ['dart test', 'make test']
       : stack === 'node' || stack === 'node-esm'
         ? ['node --test']
-        : [];
+        : frontendAxis === 'react'
+          ? ['npm run test:run', 'npm test']
+          : [];
   for (const c of candidates) if (commandResolves(c)) return c;
   return candidates.length > 0 ? candidates[0] : '';
 }
@@ -1572,7 +1862,7 @@ function defaultSuiteFor(stack) {
 export function howToFix(key) {
   switch (key) {
     case 'project': return 'informe um nome nao-vazio.';
-    case 'stack': return 'use flutter|dart|node|java+vue|outra; flutter/dart exigem pubspec.yaml.';
+    case 'stack': return `use ${STACK_VALUES.join('|')}; flutter/dart exigem pubspec.yaml.`;
     case 'suiteCommand': return 'use um comando no PATH ou caminho de arquivo absoluto (ex: node).';
     case 'pluginsDir': return 'informe um diretorio existente DENTRO do target.';
     default: return 'revise o valor informado.';
@@ -1632,21 +1922,41 @@ export async function runWizard({
     }
     for (const w of det.warnings || []) out(`  [AVISO] ${w}`);
 
-    // W2m menu manual (apenas sem pubspec). 5 itens produto (SPEC §9.1);
-    // cada item aponta para stack existente (I-01: sem nova key).
-    // node-esm segue digitavel em W3/validateAnswer, sem item proprio.
+    // W2m menu manual em 2 passos (ADR-004/D-A), apenas sem pubspec:
+    //   passo 1 = tipo de projeto (WIZARD_MENU, ordem/numeracao 1..5 intactas);
+    //   passo 2 = frontend (WIZARD_MENU_FRONTEND), SOMENTE quando o item
+    //   escolhido encadeia (`next`) — dado declarado, nunca nome inferido.
+    // Range DERIVADO de `items.length` no prompt e no erro (A4/RF-05); o total e
+    // derivado do menu (ha passo 2 quando algum item encadeia). node-esm segue
+    // digitavel em W3/validateAnswer, sem item proprio (I10).
     let menuStack = null;
     if (!det.hasPubspec) {
-      out('[INFO] W2m menu manual — escolha o tipo do seu projeto:');
-      for (const m of WIZARD_MENU) {
-        const extra = m.note ? ` (${m.note})` : '';
-        out(`  ${m.key}) ${m.label} -> stack ${m.stack}${extra}`);
-      }
-      for (;;) {
-        const raw = await read('escolha [1-5] (q cancela) > ');
-        const choice = WIZARD_MENU.find((m) => m.key === raw.trim());
-        if (choice) { menuStack = choice.stack; break; }
-        out(formatError({ what: `opcao '${raw.trim()}' invalida — digite 1, 2, 3, 4 ou 5 (ou 'q' para cancelar).`, code: 'BAD_ANSWER', why: 'fora de [1,5]', fix: howToFix('stack'), where: 'installer/install.mjs (runWizard W2m)' }, answers));
+      const menuTotal = WIZARD_MENU.some((m) => m.next) ? 2 : 1;
+      const picked = await askMenuStep({
+        read,
+        out,
+        answers,
+        step: 1,
+        total: menuTotal,
+        header: '[INFO] W2m tipo de projeto — escolha o tipo do seu projeto:',
+        items: WIZARD_MENU,
+        width: WIZARD_MENU_WIDTH,
+      });
+      if (picked.next) {
+        const front = await askMenuStep({
+          read,
+          out,
+          answers,
+          step: 2,
+          total: menuTotal,
+          header: '[INFO] W2m frontend — qual o frontend do seu projeto web:',
+          items: WIZARD_MENU_FRONTEND,
+          defaultKey: WIZARD_MENU_FRONTEND_DEFAULT,
+          width: WIZARD_MENU_FRONTEND_WIDTH,
+        });
+        menuStack = front.stack;
+      } else {
+        menuStack = picked.stack;
       }
     }
 
@@ -1702,7 +2012,7 @@ export async function runWizard({
     // conteudo) — assim o wizard NAO chama generateConfig.
     const profile = profileOf(answers.stack);
     const stacks = profile ? profile.stacks : [answers.stack];
-    const incomingFiles = collectIncoming(sourceDir, { stacks });
+    const incomingFiles = collectIncoming(sourceDir, { stacks, stack: answers.stack ?? null });
     const plan = planMerge(pf.target, { ...incomingFiles, 'harness.config.json': '' });
     out('[INFO] W4 resumo das respostas (segredos omitidos):');
     out(`  ${JSON.stringify(serializeAnswers(answers))}`);
@@ -1836,7 +2146,7 @@ export async function runInit({
       Object.assign(answers, scripted);
       // W4 previa + gate create-only (antes de qualquer write).
       const profile = profileOf(scripted.stack);
-      const incomingFiles = collectIncoming(sourceDir, { stacks: profile ? profile.stacks : [scripted.stack] });
+      const incomingFiles = collectIncoming(sourceDir, { stacks: profile ? profile.stacks : [scripted.stack], stack: scripted.stack ?? null });
       const generated = JSON.stringify(generateConfig(scripted, { writtenPaths: writtenPathsOf(incomingFiles) }), null, 2);
       const plan = planMerge(pf.target, { ...incomingFiles, 'harness.config.json': generated });
       say('[INFO] W4 previa do plano (init create-only):');
@@ -1886,7 +2196,7 @@ export async function runInit({
       options: { allowRoot, yes: options.yes === true, dryRun: options.dryRun === true, createOnly: true },
       apply: ({ answers: wa, target: wt }) => {
         const prof = profileOf(wa.stack);
-        const files = collectIncoming(sourceDir, { stacks: prof ? prof.stacks : [wa.stack] });
+        const files = collectIncoming(sourceDir, { stacks: prof ? prof.stacks : [wa.stack], stack: wa.stack ?? null });
         return main({ target: wt, scriptedAnswers: wa, incomingFiles: files, options: { allowRoot, dryRun: false, backupRoot } });
       },
     });
@@ -1981,7 +2291,7 @@ export async function runCli({ argv = [], stdin = process.stdin, stdout = proces
   if (!args.answersFile && stdin && stdin.isTTY) {
     const incomingOf = (stack) => {
       const profile = profileOf(stack);
-      return collectIncoming(sourceDir, { stacks: profile ? profile.stacks : [stack] });
+      return collectIncoming(sourceDir, { stacks: profile ? profile.stacks : [stack], stack });
     };
     const w = await runWizard({
       target: pf.target,
@@ -2030,7 +2340,7 @@ export async function runCli({ argv = [], stdin = process.stdin, stdout = proces
   currentAnswers = scripted || {};
   lastCliAnswers = currentAnswers;
   const profile = profileOf(scripted.stack);
-  const incomingFiles = collectIncoming(sourceDir, { stacks: profile ? profile.stacks : [scripted.stack] });
+  const incomingFiles = collectIncoming(sourceDir, { stacks: profile ? profile.stacks : [scripted.stack], stack: scripted.stack ?? null });
   const generated = JSON.stringify(generateConfig(scripted, { writtenPaths: writtenPathsOf(incomingFiles) }), null, 2);
   const preview = planMerge(pf.target, { ...incomingFiles, 'harness.config.json': generated });
   printPlan(preview, { output: stdout, answers: scripted });
@@ -2180,7 +2490,7 @@ export async function runUpgrade({
     Object.assign(answers, subjectAnswers);
 
     const profile = profileOf(subjectAnswers.stack);
-    const incomingFiles = collectIncoming(sourceDir, { stacks: profile ? profile.stacks : [subjectAnswers.stack] });
+    const incomingFiles = collectIncoming(sourceDir, { stacks: profile ? profile.stacks : [subjectAnswers.stack], stack: subjectAnswers.stack ?? null });
     const generated = JSON.stringify(generateConfig(subjectAnswers, { writtenPaths: writtenPathsOf(incomingFiles) }), null, 2);
     const incoming = { ...incomingFiles, 'harness.config.json': generated };
 

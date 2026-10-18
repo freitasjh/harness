@@ -1,7 +1,9 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { generateConfig, STACK_PROFILES, profileOf } from '../install.mjs';
+import os from 'node:os';
+import path from 'node:path';
+import { generateConfig, STACK_PROFILES, profileOf, defaultSuiteFor } from '../install.mjs';
 
 describe('IN-03 S1: answers validos => config valido', () => {
   it('gera chaves do SPEC §5.1 / config do repo', () => {
@@ -68,5 +70,72 @@ describe('IN-03 S3: sem funcao de copia no codigo', () => {
     const src = fs.readFileSync(new URL('../install.mjs', import.meta.url), 'utf8');
     const fn = src.slice(src.indexOf('export function generateConfig'));
     assert.ok(!/readFileSync|writeFileSync|copyFileSync/.test(fn.split('export function')[0] || fn.slice(0, 2000)), 'gerador sem I/O');
+  });
+});
+
+// EX-BE-03 (RF-02): preset novo do par react — ADICAO pura ao registry.
+describe('EX-BE-03 preset java+react (RF-02)', () => {
+  it('generateConfig: rotulos proprios java/react + mcp chrome-devtools', () => {
+    const cfg = generateConfig({ project: 'demo', stack: 'java+react' });
+    assert.equal(cfg.stack.backend, 'java+react backend (declared via Q&A)');
+    assert.equal(cfg.stack.frontend, 'java+react frontend (declared via Q&A)');
+    assert.deepEqual(cfg.mcp.required, ['chrome-devtools']);
+  });
+
+  it('rotulos do par react sao distintos do par vue', () => {
+    const react = generateConfig({ project: 'demo', stack: 'java+react' });
+    const vue = generateConfig({ project: 'demo', stack: 'java+vue' });
+    assert.notEqual(react.stack.backend, vue.stack.backend);
+    assert.notEqual(react.stack.frontend, vue.stack.frontend);
+  });
+
+  it('moduleMap sem chave de stack (nao criaria ref ausente em config-ref-missing)', () => {
+    const cfg = generateConfig({ project: 'demo', stack: 'java+react' });
+    assert.deepEqual(Object.keys(cfg.moduleMap), ['plugins', 'rules', 'schemas']);
+  });
+});
+
+// EX-BE-03 (RF-07): default de suiteCommand do eixo react nunca e ''.
+// AT-2 (review iteracao 2): a expectativa do par react e a MESMA com ou sem npm
+// (primeiro candidato); estes dois casos provam apenas NAO-VAZIO — a selecao
+// "primeiro candidato que resolve no PATH" e provada no describe seguinte
+// (candidatos multiplos distinguiveis).
+describe('EX-BE-03 defaultSuiteFor par react — nao-vazio (RF-07)', () => {
+  it('com npm disponivel: valor nao-vazio e igual ao primeiro candidato', () => {
+    assert.equal(defaultSuiteFor('java+react'), 'npm run test:run');
+  });
+
+  it('sem npm no PATH: continua nao-vazio (primeiro candidato, nunca "")', () => {
+    const saved = process.env.PATH;
+    try {
+      process.env.PATH = '';
+      assert.equal(defaultSuiteFor('java+react'), 'npm run test:run');
+    } finally {
+      process.env.PATH = saved;
+    }
+  });
+
+  it('nao-regressao explicitada: java+vue continua "" (lista vazia)', () => {
+    assert.equal(defaultSuiteFor('java+vue'), '');
+  });
+});
+
+// AT-2: prova da REGRA (nao da constante) — com candidatos multiplos, o vencedor
+// e o primeiro que resolve no PATH. Usa `dart` (['dart test','make test']) porque
+// os 2 candidatos do par react compartilham o binario `npm` e seriam
+// indistinguiveis; a regra testada e o loop compartilhado de defaultSuiteFor.
+describe('EX-BE-03 defaultSuiteFor seleciona o 1o candidato que resolve (RF-07)', () => {
+  it('PATH so com `make`: pula `dart test` e devolve `make test`', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'harness-path-'));
+    const saved = process.env.PATH;
+    try {
+      fs.writeFileSync(path.join(dir, 'make'), '#!/bin/sh\n');
+      process.env.PATH = dir;
+      assert.equal(defaultSuiteFor('dart'), 'make test', 'segundo candidato vence quando o primeiro nao resolve');
+      assert.notEqual(defaultSuiteFor('dart'), 'dart test', 'nao devolve o primeiro as cegas');
+    } finally {
+      process.env.PATH = saved;
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
   });
 });

@@ -5,7 +5,7 @@
 // este teste (regressao bloqueia merge).
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { generateConfig, STACK_PROFILES, profileOf } from '../install.mjs';
+import { generateConfig, STACK_PROFILES, profileOf, AXIS_IDS } from '../install.mjs';
 
 const NODE_BE = 'N/A — no Java/Maven backend declared by destination Q&A; Node-only stack';
 const NODE_FE = 'N/A — no Vue/Vite frontend declared by destination Q&A; Node-only stack';
@@ -60,16 +60,27 @@ describe('IM-VAL-01 golden: stacks nao-mobile byte-identicos ao baseline (I7)', 
   }
 });
 
+// Perfis legados que o registry DEVE preservar: assertado como SUPERCONJUNTO
+// (EX-VAL-02/I9), nunca como igualdade — presets novos sao adicoes (D3).
+const LEGACY_PROFILES = ['dart', 'flutter', 'java+vue', 'node', 'node-esm', 'outra'];
+
 describe('IM-BE-01 registry puro (ADR-008)', () => {
-  it('STACK_PROFILES contem os 6 perfis', () => {
-    assert.deepEqual(
-      Object.keys(STACK_PROFILES).sort(),
-      ['dart', 'flutter', 'java+vue', 'node', 'node-esm', 'outra'],
-    );
+  it('STACK_PROFILES e SUPERCONJUNTO dos 6 perfis legados (D3/EX-VAL-02)', () => {
+    const keys = Object.keys(STACK_PROFILES);
+    for (const legacy of LEGACY_PROFILES) {
+      assert.ok(keys.includes(legacy), `perfil legado ${legacy} preservado`);
+    }
   });
   it('profileOf resolve por lookup; desconhecido => null', () => {
     assert.equal(profileOf('flutter'), STACK_PROFILES.flutter);
     assert.equal(profileOf('nope'), null);
+  });
+  it('todo perfil expoe axes { backend, frontend } validos (RF-01/D1)', () => {
+    for (const [name, p] of Object.entries(STACK_PROFILES)) {
+      assert.ok(p.axes && typeof p.axes === 'object', `${name}: axes presente`);
+      assert.ok(AXIS_IDS.backend.includes(p.axes.backend), `${name}: backend id no conjunto fechado`);
+      assert.ok(AXIS_IDS.frontend.includes(p.axes.frontend), `${name}: frontend id no conjunto fechado`);
+    }
   });
 });
 
@@ -99,5 +110,33 @@ describe('IM-BE-01 perfil mobile (RF-12)', () => {
     const cfg = generateConfig({ project: 'app', stack: 'flutter', suiteCommand: 'fvm flutter test' });
     assert.equal(cfg.commands.suiteFull, 'fvm flutter test');
     assert.equal(cfg.commands.analyze, 'dart analyze', 'analyze continua do perfil');
+  });
+});
+
+// C-2 (review Batch 1): o preset novo tambem ganha baseline byte-congelado —
+// o builder `baseline()` acima e REUSADO (nenhum assert existente e tocado).
+describe('C-2 golden: preset java+react byte-identico ao builder congelado', () => {
+  it('stack=java+react: suiteCommand explicito => byte-equal', () => {
+    const actual = JSON.stringify(
+      generateConfig({ project: 'demo', stack: 'java+react', suiteCommand: 'npm run test:run' }),
+    );
+    assert.equal(actual, JSON.stringify(baseline('java+react', 'npm run test:run')));
+  });
+
+  it('stack=java+react: sem suiteCommand => default congelado byte-equal', () => {
+    const actual = JSON.stringify(generateConfig({ project: 'demo', stack: 'java+react' }));
+    assert.equal(actual, JSON.stringify(baseline('java+react', undefined)));
+  });
+
+  it('java+react congela commands/infra/gates/mcp explicitamente', () => {
+    const cfg = generateConfig({ project: 'demo', stack: 'java+react' });
+    assert.deepEqual(cfg.commands, { suiteFull: 'node --test', unit: 'node --test' });
+    assert.deepEqual(cfg.infra, { composeFile: null, ports: { backend: null, frontend: null } });
+    assert.deepEqual(cfg.gates, { picco: 'enforce', evidence: 'enforce', hitlBatch: 'enforce', e2eGreenfield: 'warn' });
+    assert.deepEqual(cfg.mcp.required, ['chrome-devtools']);
+    assert.deepEqual(cfg.stack, {
+      backend: 'java+react backend (declared via Q&A)',
+      frontend: 'java+react frontend (declared via Q&A)',
+    });
   });
 });
