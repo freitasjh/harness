@@ -192,8 +192,10 @@ Os **7 presets** são `node`, `node-esm`, `java+vue`, `java+react`, `outra`, `fl
 `stacksFor(axes)` (+ tabela de exceções declarada `STACKS_FOR_EXCEPTIONS`).
 
 O gating de artefato é **por eixo declarado**, nunca pelo nome do arquivo:
-skills por `stacks` do vendor-lock (RF-03) e `.agents/rules/**` por `RULES_BY_AXIS`
-(exclusão por eixo, `installer/install.mjs`) — eixo decorativo é defeito, não detalhe.
+skills vendorizadas por `stacks` do vendor-lock (RF-03); skills **locais**
+(sem entrada no lock) por `SKILLS_BY_AXIS` + `SKILLS_COMMON`; e
+`.agents/rules/**` por `RULES_BY_AXIS` + `RULES_COMMON` (exclusão por eixo,
+`installer/install.mjs`) — eixo decorativo é defeito, não detalhe.
 Perfis de backend adicionais (**go**, **rust**) ainda **não** existem; a rota para
 eixos separados na pergunta está em `ADR-005` do ciclo `harness-eixos-stack`.
 
@@ -209,8 +211,10 @@ wizard). Este perfil foi desenhado para um repo Flutter/Dart com opencode.
 | `mcp.required` | `['chrome-devtools']` | `['chrome-devtools']` |
 | `stacks` (derivado) | `[]` | `['react']` |
 
-`defaultSuiteFor('java+react')` sugere `npm run test:run` (1º candidato que resolve no
-`PATH`); `java+vue` mantém o comportamento anterior (lista vazia ⇒ default vazio).
+`defaultSuiteFor('java+react')` e `defaultSuiteFor('java+vue')` sugerem
+`npm run test:run` (1º candidato que resolve no `PATH`; se nenhum resolver,
+retorna o 1º candidato) — o **eixo web inteiro** tem default de suíte, nunca
+vazio (BUG-1 do ciclo `harness-eixos-stack-p2`).
 
 ### 9.1 Stacks e o que o perfil mobile gera
 

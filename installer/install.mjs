@@ -340,32 +340,85 @@ export const RULES_COMMON = [
   'workflow-rules.md',
 ];
 
+// Skills LOCAIS (sem entrada no `.vendor-lock.json`) — MESMO mecanismo das
+// rules (p2/BUG-2): mapa de EXCLUSAO por eixo + lista explicita de comuns, com
+// o eixo declarado decidindo, nunca o nome do arquivo. A chave e o PAR
+// `<eixo>=<id>` do DESTINO que NAO recebe o artefato (mesma semantica de
+// RULES_BY_AXIS): `frontend=react` exclui a skill de prosa Vue do destino
+// React, exatamente como exclui a rule Vue. Skill vendorizada (com entrada no
+// lock) e gateada por `stacks` (RF-03) e NAO passa por este mapa.
+export const SKILLS_BY_AXIS = {
+  'frontend=react': ['frontend-vue-specialist'],
+};
+
+// Skills LOCAIS COMUNS: entram em todo destino. Toda skill local de
+// `.agents/skills/**` (diretorio sem entrada no vendor-lock) tem de estar aqui
+// OU em uma chave de SKILLS_BY_AXIS — a cobertura total e checada por
+// ENUMERACAO (recursiva e bidirecional) em
+// `installer/__tests__/eixos-stack.spec.mjs` (skill local nova nao
+// classificada, ou nome fantasma aqui, deixa a suite vermelha).
+export const SKILLS_COMMON = [
+  'context-compressor',
+  'dev-planner',
+  'feature-status-dashboard',
+  'frontend-design',
+  'harness-installer',
+  'harness-report',
+  'java-architecture-specialist',
+  'jira-microtask-breaker',
+  'prd-adr-pipeline',
+  'prompt-optimizer',
+  'sdd-architecture-board',
+  'sdd-compiler',
+  'sdd-feedback',
+  'security-review',
+  'spec-review',
+  'ui-ux-pro-max',
+];
+
 // CR-1: a declaracao de RULES_BY_AXIS e validada NA CARGA (fail-closed, mesmo
 // padrao de RF-01/RF-02). Chave fora do formato `<eixo>=<id>`, eixo desconhecido
 // em AXIS_IDS, id fora do conjunto fechado do eixo, ou valor que nao seja array
 // de strings nao-vazias => erro na carga. Sem isto, `'backend=react'` (eixo
 // errado), `'frontend=blazor'` (id fora do conjunto) e `'backend=node'` num
 // destino sem esse eixo passariam VERDE como no-op silencioso.
-export function validateRulesByAxis(rulesByAxis = RULES_BY_AXIS) {
-  for (const [key, artifacts] of Object.entries(rulesByAxis)) {
+//
+// O validador e COMPARTILHADO com SKILLS_BY_AXIS (p2/BUG-2): declaracao sem
+// validacao na carga e no-op silencioso (licao do ciclo anterior) — a mesma
+// regra vale para os dois mapas.
+function validateAxisExclusionMap(label, map) {
+  for (const [key, artifacts] of Object.entries(map)) {
     const eq = key.indexOf('=');
     const axis = eq < 0 ? null : key.slice(0, eq);
     const id = eq < 0 ? null : key.slice(eq + 1);
     if (!axis || !id) {
-      throw new InstallError(`RULES_BY_AXIS: chave invalida '${key}' (esperado '<eixo>=<id>')`, 'BAD_DECLARATION');
+      throw new InstallError(`${label}: chave invalida '${key}' (esperado '<eixo>=<id>')`, 'BAD_DECLARATION');
     }
     if (!Object.prototype.hasOwnProperty.call(AXIS_IDS, axis)) {
-      throw new InstallError(`RULES_BY_AXIS: eixo desconhecido '${axis}' em '${key}' (AXIS_IDS: ${Object.keys(AXIS_IDS).join(', ')})`, 'BAD_DECLARATION');
+      throw new InstallError(`${label}: eixo desconhecido '${axis}' em '${key}' (AXIS_IDS: ${Object.keys(AXIS_IDS).join(', ')})`, 'BAD_DECLARATION');
     }
     if (!AXIS_IDS[axis].includes(id)) {
-      throw new InstallError(`RULES_BY_AXIS: id '${id}' fora de AXIS_IDS.${axis} em '${key}'`, 'BAD_DECLARATION');
+      throw new InstallError(`${label}: id '${id}' fora de AXIS_IDS.${axis} em '${key}'`, 'BAD_DECLARATION');
     }
     if (!Array.isArray(artifacts) || artifacts.length === 0 || artifacts.some((a) => typeof a !== 'string' || a === '')) {
-      throw new InstallError(`RULES_BY_AXIS: valor de '${key}' tem de ser array de strings nao-vazias`, 'BAD_DECLARATION');
+      throw new InstallError(`${label}: valor de '${key}' tem de ser array de strings nao-vazias`, 'BAD_DECLARATION');
     }
   }
 }
+
+export function validateRulesByAxis(rulesByAxis = RULES_BY_AXIS) {
+  validateAxisExclusionMap('RULES_BY_AXIS', rulesByAxis);
+}
 validateRulesByAxis();
+
+// CR-1 espelhado (p2/BUG-2): a declaracao de SKILLS_BY_AXIS e validada NA
+// CARGA com a MESMA regra de RULES_BY_AXIS — eixo desconhecido, id fora do
+// conjunto fechado do eixo ou valor invalido derrubam a carga, nunca viram
+// no-op silencioso.
+export function validateSkillsByAxis(skillsByAxis = SKILLS_BY_AXIS) {
+  validateAxisExclusionMap('SKILLS_BY_AXIS', skillsByAxis);
+}
+validateSkillsByAxis();
 
 // Chaves de eixo do destino a partir de um `axes`: PAReS `<eixo>=<id>` (mesma
 // forma das chaves de RULES_BY_AXIS), restritos aos eixos declarados em AXIS_IDS.
@@ -414,6 +467,25 @@ export function ruleAllowedForAxes(rel, axisKeys, rulesByAxis = RULES_BY_AXIS) {
   if (!name) return true;
   for (const [key, artifacts] of Object.entries(rulesByAxis)) {
     if (axisKeys.has(key) && artifacts.includes(name)) return false;
+  }
+  return true;
+}
+
+// Skill LOCAL (sem entrada no vendor-lock) barrada para este destino? Mesmo
+// mecanismo das rules (p2/BUG-2): so o mapa DECLARADO decide — o nome do
+// arquivo nunca e consultado. Skill com entrada no lock e vendorizada =>
+// gateada por `stacks` (`skillAllowedForStacks`), nunca por este mapa; sem
+// entrada no mapa declarado => comum (entra). `name` e o diretorio sob
+// `.agents/skills/` (skill = `<name>/SKILL.md`); o match e o PAR exato
+// `{eixo, id}` (`axisKeys` ja vem como `<eixo>=<id>`), logo eixo E id contam.
+export function skillAllowedForLocalAxes(rel, lock, axisKeys, skillsByAxis = SKILLS_BY_AXIS) {
+  const prefix = '.agents/skills/';
+  if (!rel.startsWith(prefix)) return true;
+  const name = rel.slice(prefix.length).split('/')[0];
+  if (!name) return true;
+  if (lock && lock.skills && lock.skills[name]) return true;
+  for (const [key, names] of Object.entries(skillsByAxis)) {
+    if (axisKeys.has(key) && names.includes(name)) return false;
   }
   return true;
 }
@@ -1397,7 +1469,7 @@ export function collectIncoming(sourceDir, { stacks, stack } = {}) {
     if (st.isDirectory()) {
       for (const e of fs.readdirSync(abs)) walk(path.join(abs, e), rel ? `${rel}/${e}` : e);
     } else if (st.isFile()) {
-      if (!excluded(rel) && skillAllowedForStacks(rel, lock, wanted) && ruleAllowedForAxes(rel, axisIds)) {
+      if (!excluded(rel) && skillAllowedForStacks(rel, lock, wanted) && skillAllowedForLocalAxes(rel, lock, axisIds) && ruleAllowedForAxes(rel, axisIds)) {
         incoming[rel] = fs.readFileSync(abs, 'utf8');
       }
     }
@@ -1840,19 +1912,32 @@ export function detect(target) {
   return result;
 }
 
-// Candidatos por eixo (RF-07): o par react precisa de default — sem ele o
-// usuario digita o comando sem sugestao (default ''). Nunca retorna '' quando
-// ha candidatos; o primeiro vence se nenhum resolver no PATH.
+// Candidatos por eixo (RF-07, criterio p2/BUG-1): o eixo web INTEIRO (vue e
+// react) passa a ter candidatos — antes o par vue retornava '' e o caminho
+// "defaults + Enter" terminava em BAD_ANSWER (prompt sem default). Nunca
+// retorna '' quando ha candidatos: o primeiro que resolve no PATH vence e, se
+// nenhum resolver, retorna o primeiro candidato.
+//
+// RESIDUAL DECLARADO (p2, achado 🟡-1 do review — DECISAO, nao TODO): o preset
+// `outra` fica DELIBERADAMENTE sem default de suite (`''`) — nao ha comando
+// inferivel para uma stack generica; o usuario informa o comando e o W3 mostra
+// a mensagem de como corrigir (`howToFix('suiteCommand')`). Efeito observado: o
+// caminho "so Enter" nesse item repete BAD_ANSWER ate o usuario digitar algo —
+// MESMO sintoma do BUG-1, mas em escopo NAO autorizado (o owner autorizou apenas
+// o eixo web inteiro). Follow-up (exige decisao do owner, nao muda o
+// comportamento aqui): dar candidato ao eixo `other` ou tornar o comando
+// explicitamente obrigatorio no prompt.
 export function defaultSuiteFor(stack) {
   const profile = profileOf(stack);
   const frontendAxis = profile ? profile.axes.frontend : null;
+  const web = frontendAxis === 'vue' || frontendAxis === 'react';
   const candidates = stack === 'flutter'
     ? ['flutter test', 'make test', 'dart test']
     : stack === 'dart'
       ? ['dart test', 'make test']
       : stack === 'node' || stack === 'node-esm'
         ? ['node --test']
-        : frontendAxis === 'react'
+        : web
           ? ['npm run test:run', 'npm test']
           : [];
   for (const c of candidates) if (commandResolves(c)) return c;

@@ -95,34 +95,43 @@ describe('EX-BE-03 preset java+react (RF-02)', () => {
   });
 });
 
-// EX-BE-03 (RF-07): default de suiteCommand do eixo react nunca e ''.
-// AT-2 (review iteracao 2): a expectativa do par react e a MESMA com ou sem npm
-// (primeiro candidato); estes dois casos provam apenas NAO-VAZIO — a selecao
-// "primeiro candidato que resolve no PATH" e provada no describe seguinte
-// (candidatos multiplos distinguiveis).
-describe('EX-BE-03 defaultSuiteFor par react — nao-vazio (RF-07)', () => {
-  it('com npm disponivel: valor nao-vazio e igual ao primeiro candidato', () => {
+// EX-BE-03 (RF-07) + BUG-1 (harness-eixos-stack-p2): default de suiteCommand do
+// eixo web nunca e ''. AT-2 (review iteracao 2): a expectativa e o PRIMEIRO
+// candidato; estes casos provam NAO-VAZIO — a selecao "primeiro candidato que
+// resolve no PATH" e provada no describe seguinte (candidatos distinguiveis).
+//
+// BUG-1 (criterio autorizado pelo owner): o eixo web INTEIRO (vue e react)
+// passa a ter candidatos. Antes o par vue retornava '' e o caminho
+// "defaults + Enter" do wizard terminava em BAD_ANSWER (prompt sem default).
+// A assert de valor congelado 'java+vue continua ""' foi SUBSTITUIDA pela
+// assert do novo criterio — mudanca de criterio autorizada, nao regressao
+// silenciosa (declarada em .spec/bugs/harness-eixos-stack-p2/TASKS.md).
+describe('EX-BE-03 defaultSuiteFor eixo web — nao-vazio (RF-07 + BUG-1)', () => {
+  it('react: valor nao-vazio e igual ao primeiro candidato', () => {
     assert.equal(defaultSuiteFor('java+react'), 'npm run test:run');
   });
 
-  it('sem npm no PATH: continua nao-vazio (primeiro candidato, nunca "")', () => {
+  it('vue (BUG-1): passa a ter candidato — nao e mais ""', () => {
+    assert.notEqual(defaultSuiteFor('java+vue'), '');
+    assert.equal(defaultSuiteFor('java+vue'), 'npm run test:run');
+  });
+
+  it('sem npm no PATH: continua nao-vazio nos DOIS pares web (primeiro candidato)', () => {
     const saved = process.env.PATH;
     try {
       process.env.PATH = '';
-      assert.equal(defaultSuiteFor('java+react'), 'npm run test:run');
+      for (const stack of ['java+vue', 'java+react']) {
+        assert.equal(defaultSuiteFor(stack), 'npm run test:run', `${stack}: primeiro candidato, nunca ""`);
+      }
     } finally {
       process.env.PATH = saved;
     }
-  });
-
-  it('nao-regressao explicitada: java+vue continua "" (lista vazia)', () => {
-    assert.equal(defaultSuiteFor('java+vue'), '');
   });
 });
 
 // AT-2: prova da REGRA (nao da constante) — com candidatos multiplos, o vencedor
 // e o primeiro que resolve no PATH. Usa `dart` (['dart test','make test']) porque
-// os 2 candidatos do par react compartilham o binario `npm` e seriam
+// os 2 candidatos do par web compartilham o binario `npm` e seriam
 // indistinguiveis; a regra testada e o loop compartilhado de defaultSuiteFor.
 describe('EX-BE-03 defaultSuiteFor seleciona o 1o candidato que resolve (RF-07)', () => {
   it('PATH so com `make`: pula `dart test` e devolve `make test`', () => {
@@ -133,6 +142,25 @@ describe('EX-BE-03 defaultSuiteFor seleciona o 1o candidato que resolve (RF-07)'
       process.env.PATH = dir;
       assert.equal(defaultSuiteFor('dart'), 'make test', 'segundo candidato vence quando o primeiro nao resolve');
       assert.notEqual(defaultSuiteFor('dart'), 'dart test', 'nao devolve o primeiro as cegas');
+    } finally {
+      process.env.PATH = saved;
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  // BUG-1: a regra do loop vale para o eixo web (PATH controlado). Os dois
+  // candidatos compartilham o binario `npm`, logo o vencedor e SEMPRE o primeiro
+  // — com npm resolvendo (loop) e sem npm (fallback): nunca ''.
+  it('BUG-1 eixo web: PATH com npm => primeiro candidato; PATH vazio => primeiro candidato (nunca "")', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'harness-path-'));
+    const saved = process.env.PATH;
+    try {
+      fs.writeFileSync(path.join(dir, 'npm'), '#!/bin/sh\n');
+      process.env.PATH = dir;
+      assert.equal(defaultSuiteFor('java+vue'), 'npm run test:run', 'npm resolve: primeiro candidato vence');
+      assert.equal(defaultSuiteFor('java+react'), 'npm run test:run', 'react: mesmo criterio');
+      process.env.PATH = '';
+      assert.equal(defaultSuiteFor('java+vue'), 'npm run test:run', 'nada resolve: primeiro candidato, nunca ""');
     } finally {
       process.env.PATH = saved;
       fs.rmSync(dir, { recursive: true, force: true });

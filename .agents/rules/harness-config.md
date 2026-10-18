@@ -72,11 +72,13 @@ git remote exists — that is the declared state, not a masked one.
 **`java+react`**, `outra`, `flutter`, `dart`. `stacks` **não** é campo independente: deriva do eixo
 por `stacksFor(axes)` (+ `STACKS_FOR_EXCEPTIONS` declarada — o par mobile `flutter` → `['flutter','dart']`).
 
-O gating de artefato deriva do **eixo declarado**, NUNCA do nome do arquivo (ADR-002): skills pelo
-`stacks` do `.vendor-lock.json` (declarado na origem do vendor, `scripts/vendor-skills.mjs`) e
-`.agents/rules/**` pelo mapa de **exclusão** `RULES_BY_AXIS` + `RULES_COMMON`
-(`installer/install.mjs`, validado na carga contra `AXIS_IDS` — declaração inválida é falha de
-carga, nunca no-op silencioso). Perfis de backend **go**/**rust** ainda não existem; a rota para
+O gating de artefato deriva do **eixo declarado**, NUNCA do nome do arquivo (ADR-002): skills
+**vendorizadas** pelo `stacks` do `.vendor-lock.json` (declarado na origem do vendor,
+`scripts/vendor-skills.mjs`) e skills **locais** (sem entrada no lock) pelo mapa de **exclusão**
+`SKILLS_BY_AXIS` + `SKILLS_COMMON`; `.agents/rules/**` pelo mapa de **exclusão** `RULES_BY_AXIS` +
+`RULES_COMMON` (`installer/install.mjs:350-421`, validado na carga contra `AXIS_IDS` — declaração
+inválida é falha de carga, nunca no-op silencioso; os dois mapas usam a mesma semântica de exclusão
+por par `{eixo,id}` do destino). Perfis de backend **go**/**rust** ainda não existem; a rota para
 eixos separados na pergunta está em `ADR-005` do ciclo `harness-eixos-stack`.
 
 O perfil mobile `flutter`/`dart` continua sendo o caso especial declarado: `generateConfig` resolve

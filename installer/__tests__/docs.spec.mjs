@@ -143,6 +143,8 @@ describe('EX-FE-13 harness-config.md — registry real (nao so o mobile)', () =>
     assert.match(cfg, /`stacksFor\(axes\)`/, 'stacks derivado do eixo');
     assert.match(cfg, /`RULES_BY_AXIS`/, 'gating de rules pelo eixo');
     assert.match(cfg, /`RULES_COMMON`/, 'cita RULES_COMMON');
+    assert.match(cfg, /`SKILLS_BY_AXIS`/, 'gating de skills LOCAIS pelo eixo (via local nova)');
+    assert.match(cfg, /`SKILLS_COMMON`/, 'cita SKILLS_COMMON');
     assert.match(cfg, /validado na carga contra `AXIS_IDS`/, 'declaracao validada na carga (fail-closed)');
     assert.match(cfg, /NUNCA do nome do arquivo/, 'proibicao explicita de inferir por nome');
     assert.match(cfg, /go\/\*\*rust\*\*|go\*\*\/\*\*rust\*\*|\*\*go\*\*\/\*\*rust\*\*/, 'cita go/rust como futuros');

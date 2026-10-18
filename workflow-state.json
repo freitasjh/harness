@@ -1,13 +1,16 @@
 {
-  "current_feature": "harness-eixos-stack",
+  "current_feature": "harness-eixos-stack-p2",
   "current_phase": "Completed",
-  "previous_phase": "Testing",
+  "previous_phase": "BugFix",
   "next_phase": null,
-  "type": "refactor",
+  "type": "bugfix",
   "layer": "instalador-config",
   "repo": "harness",
   "artifacts": {
-    "archive": ".spec/archive/20261018-harness-eixos-stack/",
+    "bug_tasks": ".spec/bugs/harness-eixos-stack-p2/TASKS.md",
+    "bug_report": "harness/harness-eixos-stack-p2.json",
+    "source_tech_debt": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
+    "previous_archive": ".spec/archive/20261018-harness-eixos-stack/",
     "verify": ".spec/archive/20261018-harness-eixos-stack/VERIFY.md",
     "harness_evidence": ".spec/archive/20261018-harness-eixos-stack/harness/",
     "harness_report": "harness/harness-eixos-stack.json",
@@ -143,10 +146,11 @@
     "U5": "c - dois ancoras",
     "U6": "b - selo de hash"
   },
-  "harness_status": "passed_p4_qa",
+  "harness_status": "passed_b4_qa",
   "harness_evidence": "Batches 1-5 do ciclo harness-eixos-stack (2026-10-18) — 14/14 tasks. Estado final: plugins 352/352, installer 479/479, static 10 PASS/0 FAIL, vendor-check OK; dry-run 0 writes nos 2 presets web; transcript do wizard (escolha React) em .spec/backend/harness-eixos-stack/harness/; REPORT em harness/harness-eixos-stack.json (com desvio declarado C-1: counts omitido). Historico dos batches 1-2: Batch 1 (EX-BE-01/EX-VAL-02/EX-BE-03): plugins 352/352, installer 398/398, static exit 0, vendor OK; mutacao axes.frontend vue->react => 1 fail. Batch 2 (EX-BE-04/EX-BE-05/EX-VAL-06): plugins 352/352, installer 439/439, static 10 PASS/0 FAIL, vendor OK; provas do orquestrador: chave 'backend=node' (valida) => 2 fail; 'backend=react' (id invalido) => BAD_DECLARATION na carga; 'backend=none' sintetica => 0 fail (matcher por par). Nao-regressao vs HEAD: node/node-esm/outra/flutter/dart/java+vue com keys+bodies byte-identicos (129/129/129/151/141/129); so java+react difere pela exclusao pretendida. Refs penduradas do destino react congeladas em 12. gate.js/harness.config.json/.vendor-lock.json/.agents/rules = 0 linhas. I9 respeitado: apenas 2 imports + assert estrutural de chaves reescopado para superconjunto.",
-  "code_review_status": "passed","code_review_status_ciclo": "harness-eixos-stack batch 4 = passed (0 criticos, 0 atencao)",
-  "sdd_stage": "harness-eixos-stack ARQUIVADO (2026-10-18) — ciclo FECHADO. 14/14 tasks; VERIFY APPROVED 3/3; traceability 100%; archive em .spec/archive/20261018-harness-eixos-stack/; spec-developed.md atualizado; Brain com sessao do ciclo. Evidencia: harness/harness-eixos-stack.json (contagens observadas) + transcript do wizard. Suites finais: plugins 352/0, installer 479/0, static 10 PASS/0 FAIL, vendor-check OK = 831/831. Abertos: C-1 (REPORT x contraprova), FU-59/FU-60 (P2 tech-debt), FU-56 (mobile fora do pin), FU-55/57/58, push pendente.",
+  "code_review_status": "passed",
+  "code_review_status_ciclo": "harness-eixos-stack batch 4 = passed (0 criticos, 0 atencao)",
+  "sdd_stage": "harness-eixos-stack-p2 (bugfix) FECHADO (2026-10-18). BUG-1 (default do comando da suite no eixo web) e BUG-2 (gating de skills locais por eixo declarado) reproduzidos ANTES e fechados DEPOIS (QA em pty real + dry-run nas 2 direcoes). Suites: plugins 352/0, installer 502/0, static 10 PASS/0 FAIL, vendor OK. Artefato: .spec/bugs/harness-eixos-stack-p2/TASKS.md. REPORT: harness/harness-eixos-stack-p2.json (counts omitido por C-1 declarado). Residual declarado: o item 5 (outra) sem default de suite (FU-61).",
   "backlog": {
     "total": 14,
     "todo": 0,
@@ -619,20 +623,38 @@
       "severidade": "P3"
     },
     {
-      "id": "FU-59",
-      "created_at": "2026-10-18T00:00:00-03:00",
-      "origem": "QA Quality Gate P4 (P2-1)",
-      "texto": "P2: o caminho DEFAULT do menu (Enter,Enter) chega ao [3/5] Comando da suite SEM default para java+vue (defaultSuiteFor('java+vue') = ''), e Enter com vazio entra em loop de BAD_ANSWER (QA observou 6 repeticoes ate NO_STDIN). O preset react ganhou candidato (npm run test:run); o vue, que E o default, nao. Pre-existente, tornado mais visivel pelo passo 2. Tech-debt: .spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
-      "bloqueia": false,
-      "severidade": "P2"
-    },
-    {
       "id": "FU-60",
       "created_at": "2026-10-18T00:00:00-03:00",
       "origem": "QA Quality Gate P4 (P2-2)",
       "texto": "P2: assimetria de gating — a RULE Vue (frontend-coding-standards.md) e excluida do destino java+react, mas a SKILL local frontend-vue-specialist (sem entrada no vendor-lock => 'comum') ENTRA no destino react. Residual declarado (SPEC RF-03:80 / RF-04 D-4b), mas e incoerencia de produto: o mesmo eixo tratado de duas formas. Tech-debt: .spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
       "bloqueia": false,
+      "severidade": "P2",
+      "status": "closed_bugfix_harness-eixos-stack-p2 (SKILLS_BY_AXIS + SKILLS_COMMON, validado na carga; QA provou as 2 direcoes em dry-run)"
+    },
+    {
+      "id": "FU-59",
+      "created_at": "2026-10-18T00:00:00-03:00",
+      "origem": "QA Quality Gate P4 (P2-1)",
+      "texto": "P2: o caminho DEFAULT do menu (Enter,Enter) chega ao [3/5] Comando da suite SEM default para java+vue (defaultSuiteFor('java+vue') = ''), e Enter com vazio entra em loop de BAD_ANSWER (QA observou 6 repeticoes ate NO_STDIN). O preset react ganhou candidato (npm run test:run); o vue, que E o default, nao. Pre-existente, tornado mais visivel pelo passo 2. Tech-debt: .spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
+      "bloqueia": false,
+      "severidade": "P2",
+      "status": "closed_bugfix_harness-eixos-stack-p2 (eixo web inteiro com candidatos; QA provou antes/depois em pty: 4 prompts/3 BAD_ANSWER -> 1 prompt com default)"
+    },
+    {
+      "id": "FU-61",
+      "created_at": "2026-10-18T00:00:00-03:00",
+      "origem": "code-reviewer + QA do bugfix p2 (residual declarado)",
+      "texto": "RESIDUAL DECLARADO (decisao, nao bug): o item 5 (`outra`) fica deliberadamente sem default de suite — nao ha comando inferivel para stack generica. O sintoma e o MESMO do BUG-1 (Enter cego repete BAD_ANSWER ate EOF). Comentario em installer/install.mjs:1921-1929. Decisao do owner: manter declarado, ou dar candidato/aviso proprio, ou travar por teste (P3: hoje so ha comentario).",
+      "bloqueia": false,
       "severidade": "P2"
+    },
+    {
+      "id": "FU-62",
+      "created_at": "2026-10-18T00:00:00-03:00",
+      "origem": "QA B4 do bugfix p2 (P3)",
+      "texto": "P3: (a) o residual de `outra` nao e travado por teste (so comentario) — um teste que congele `defaultSuiteFor('outra') === ''` converteria decisao em guarda; (b) a nao-regressao do incoming INTEIRO (skills+rules nos 7 presets) foi medida ad-hoc pelo QA/reviewer, nao pela suite — a suite cobre so skills locais.",
+      "bloqueia": false,
+      "severidade": "P3"
     }
   ],
   "batches": {
@@ -864,9 +886,19 @@
     "observacao_com_dono": "skill spec-review e .agents/rules/frontend-coding-standards.md sao stack-bound a outros projetos (TaskFlow/Vuetify, Atlas ECM/shadcn) - em repo de tooling geram N/A em massa. tech-debt de governanca, fora deste ciclo.",
     "previous_cycle": {
       "score": 0.9,
-      "high": ["G1 baseline suite nao verificado", "G2 licenca skills upstream"],
-      "medium": ["G3 parse pubspec", "G4 default mcp", "G5 default pluginsDir"],
-      "low": ["G6 terminal:true", "G7 path governance"]
+      "high": [
+        "G1 baseline suite nao verificado",
+        "G2 licenca skills upstream"
+      ],
+      "medium": [
+        "G3 parse pubspec",
+        "G4 default mcp",
+        "G5 default pluginsDir"
+      ],
+      "low": [
+        "G6 terminal:true",
+        "G7 path governance"
+      ]
     }
   },
   "baseline": {
@@ -927,21 +959,35 @@
   "post_gate_edits": [
     {
       "date": "2026-10-15",
-      "artifacts": ["PROPOSAL.md", "SPEC.md", "PLAN.md", "TASKS.md"],
+      "artifacts": [
+        "PROPOSAL.md",
+        "SPEC.md",
+        "PLAN.md",
+        "TASKS.md"
+      ],
       "motivo": "Review do PAP-08/PAP-09: o RF-08/PAP-09 nomeava 3 arquivos, mas o defeito (ponteiro vivo para GEMINI.md/docs/specs/docs/adr) existe em 4 — .agents/agents/qa-engineer/AGENT.md:11 tambem. Escopo corrigido nos 4 artefatos. Declarado que 'referencia viva' = ponteiro de projeto; exemplo generico em skill (context-compressor) nao conta.",
       "visibilidade": "Registrado aqui porque a SPEC ja havia passado o P1->P2 e o PLAN/TASKS o P2->P3. Foi o proprio subagente que recusou sair do escopo autorizado e reportou o conflito — comportamento correto.",
       "efeito": "Amplia o escopo de PAP-09 em 1 arquivo (mesma classe de defeito, mesmo fix). Nenhuma mudanca de criterio de aceite."
     },
     {
       "date": "2026-10-15",
-      "artifacts": ["SPEC.md", "PLAN.md", "TASKS.md"],
+      "artifacts": [
+        "SPEC.md",
+        "PLAN.md",
+        "TASKS.md"
+      ],
       "motivo": "Review do PAP-07: SPEC/PLAN/TASKS afirmavam que 'o gate.js I2 recusa fase fora do canonico' — FALSO. O gate.js nao tem conjunto canonico de current_phase (so compara com Completed) e o V17 prova apenas o MARCADOR da tabela, nao o conteudo das linhas. Corrigida a premissa nos 3 artefatos e trocado o rotulo ADR-DECOMP por ADR-INDEX (ADR-P05), alinhando com o §13.",
       "visibilidade": "Registrado aqui (edicao pos-portao).",
       "efeito": "Correcao de premissa falsa sobre o mecanismo; nenhuma mudanca de escopo."
     },
     {
       "date": "2026-10-15",
-      "artifacts": ["PROPOSAL.md", "SPEC.md", "PLAN.md", "TASKS.md"],
+      "artifacts": [
+        "PROPOSAL.md",
+        "SPEC.md",
+        "PLAN.md",
+        "TASKS.md"
+      ],
       "motivo": "Review do PAP-01 (D1): ancoras de linha em criterio envelheceram quando o comentario empurrou SPEC_NON_CYCLE de :146 para :150. Trocadas por referencia a simbolo em 10 pontos (SPEC §14.4, ADR-P01, PROPOSAL §2/§4/§6, PLAN §3, TASKS PAP-01). Mesma classe em V4/R-NODENY.",
       "visibilidade": "Registrado aqui porque a SPEC ja havia passado o P1->P2 e o PLAN/TASKS o P2->P3 — edicao pos-portao nao pode ser silenciosa (exigencia do code-reviewer).",
       "efeito": "Nenhuma mudanca de escopo, decisao ou criterio; apenas a forma da referencia. SDD-02 continua 12/12."
@@ -1044,26 +1090,22 @@
     },
     "fase3_batches": {
       "batch_1": {
-        "tasks": ["EX-BE-01", "EX-VAL-02", "EX-BE-03"],
-        "status": "done_pending_user_gate",
-        "iteracoes": 2,
-        "review": "iteracao 1 CHANGES_REQUIRED (1 critico CR-1: guarda tautologica do D-1 — comparava profile.stacks com stacksFor(axes) sendo stacks atribuido no load; registry incoerente passava verde; + 5 atencao + 4 sugestoes). Iteracao 2 APPROVED, zero must_fix.",
-        "fix_critico": "oraculo literal EXPECTED_STACKS por preset (deepEqual) + cobertura exata contra as chaves do registry + STACK_VALUES ≡ chaves; coherent() tautologico removido",
-        "prova_orquestrador": "mutacao axes.frontend vue->react em java+vue deixa eixos-stack.spec.mjs 1 fail; restaurado 12/12",
-        "suite": "plugins 352/352; installer 398/398; static-checks exit 0; vendor-check OK",
-        "congelado": "baseline() e NON_MOBILE 48-61 intactos; gate.js e harness.config.json 0 linhas"
-      }
-    },
-    "fase3_batches": {
-      "batch_1": {
-        "tasks": ["EX-BE-01", "EX-VAL-02", "EX-BE-03"],
+        "tasks": [
+          "EX-BE-01",
+          "EX-VAL-02",
+          "EX-BE-03"
+        ],
         "status": "done_pending_user_gate",
         "iteracoes": 2,
         "review": "iteracao 1 CHANGES_REQUIRED (1 critico CR-1: guarda tautologica do D-1). Iteracao 2 APPROVED, zero must_fix.",
         "fix_critico": "oraculo literal EXPECTED_STACKS por preset + cobertura exata contra as chaves do registry + STACK_VALUES ≡ chaves"
       },
       "batch_2": {
-        "tasks": ["EX-BE-04", "EX-BE-05", "EX-VAL-06"],
+        "tasks": [
+          "EX-BE-04",
+          "EX-BE-05",
+          "EX-VAL-06"
+        ],
         "status": "done_pending_user_gate",
         "iteracoes": 3,
         "review": "iteracao 1 CHANGES_REQUIRED (1 critico CR-1: chave de RULES_BY_AXIS nao validada + ids de tags => declaracao valida virava no-op silencioso; + 5 atencao). Iteracao 2 APPROVED (CR-1 fechado por mutacao). Iteracao 3 fechou N-1 (match por PAR eixo=id), N-2 (clausula morta por precedencia) e N-3 (paridade doctor x upgrade): APPROVED, 0 must_fix.",
@@ -1073,7 +1115,11 @@
         "suite": "plugins 352/352; installer 439/439; static 10 PASS/0 FAIL; vendor-check OK"
       },
       "batch_3": {
-        "tasks": ["EX-FE-07", "EX-FE-08", "EX-VAL-09"],
+        "tasks": [
+          "EX-FE-07",
+          "EX-FE-08",
+          "EX-VAL-09"
+        ],
         "status": "done_pending_user_gate",
         "iteracoes": 2,
         "review": "iteracao 1 APPROVED (0 criticos) com 3 recomendados AT-1 (padding do menu divergente do ADR + teste relaxado unilateralmente), AT-2 (linha 4 do erro ancorada na propria declaracao do marcador) e AT-3 (assert legado de 5 itens fora de escopo). Iteracao 2: APPROVED, 0 criticos, 0 atencao, must_fix vazio.",
@@ -1083,7 +1129,11 @@
         "suite": "plugins 352/352; installer 455/455; static 10 PASS/0 FAIL; vendor-check OK"
       },
       "batch_4": {
-        "tasks": ["EX-BE-10", "EX-BE-11", "EX-VAL-12"],
+        "tasks": [
+          "EX-BE-10",
+          "EX-BE-11",
+          "EX-VAL-12"
+        ],
         "status": "done_pending_user_gate",
         "iteracoes": 2,
         "review": "iteracao 1 APPROVED (0 criticos) com 2 atencao (NOTICE com claim de fidelidade generico que nao valia para 3 skills mobile; caracterizacao imprecisa) + 4 verdes. Iteracao 2: APPROVED, 0 criticos, 0 atencao, must_fix vazio.",
@@ -1093,7 +1143,10 @@
         "suite": "plugins 352/352; installer 470/470; static 10 PASS/0 FAIL; vendor-check OK sem rede"
       },
       "batch_5": {
-        "tasks": ["EX-FE-13", "EX-VAL-14"],
+        "tasks": [
+          "EX-FE-13",
+          "EX-VAL-14"
+        ],
         "status": "done_pending_user_gate",
         "iteracoes": 1,
         "review": "APPROVED (0 criticos; 6 atencao, 4 delas contabilidade do orquestrador pre-P6). Evidencia reproduzida pelo reviewer: plugins 352/352, installer 479/479, static 10/0, vendor OK, sdd-checks 7/7; dry-run 0 writes (hash antes==depois) nos 2 presets web; gating invertido 0/1 vs 1/0; transcript 16.336 B byte-identico em re-run; nada commitado/pushado; paths proibidos 0 linhas.",

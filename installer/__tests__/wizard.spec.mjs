@@ -918,6 +918,35 @@ describe('EX-FE-08 W2m-2 (ADR-004 §2): frontend so no item 4', () => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// BUG-1 (harness-eixos-stack-p2): o caminho DEFAULT do menu (Enter no passo 1
+// => item 4, Enter no passo 2 => Vue) nao pode terminar em loop de BAD_ANSWER no
+// comando da suite. Antes o par vue nao tinha default (''), o prompt saia sem
+// `(default: ...)` e o Enter vazio repetia o passo ate o EOF.
+// ---------------------------------------------------------------------------
+describe('BUG-1 o caminho default (Enter,Enter) chega ao W3 com default de comando', () => {
+  it('item 4 + Enter (Vue) + Enter no comando => UM prompt com default visivel, sem repeticao', async () => {
+    const out = capture();
+    const res = await runWizard({
+      target: mkTarget({}),
+      // 4 = web; Enter = Vue (default do passo 2); demo = projeto; Enter = stack
+      // (java+vue); Enter = comando (default do eixo web); Enter = plugins;
+      // Enter = token.
+      stdin: piped(['4', '', 'demo', '', '', '', '']),
+      stdout: out.stream,
+      sourceDir: mkSource(),
+      options: WOPTS,
+    });
+    const text = out.text();
+    assert.equal(res.answers.stack, 'java+vue', 'Enter no passo 2 reproduz Vue (D-9)');
+    assert.equal(res.answers.suiteCommand, 'npm run test:run', 'Enter no comando aceita o default nao-vazio');
+    const prompts = text.match(/\[3\/5\] Comando da suite de testes\?/g) || [];
+    assert.equal(prompts.length, 1, `um unico prompt de comando (sem repeticao por vazio): ${prompts.length}`);
+    assert.match(text, /\[3\/5\] Comando da suite de testes\? \(default: npm run test:run\)/, 'default visivel no prompt');
+    assert.doesNotMatch(text, /resposta invalida para 'suiteCommand'/, 'sem BAD_ANSWER por vazio');
+  });
+});
+
 describe('EX-VAL-09 asserção de itens ESCOPADA ao W2m-1 (regex global daria falso 7)', () => {
   it('com os DOIS blocos no texto, escopado = 5 no passo 1 e 2 no passo 2; global != 5', async () => {
     const out = capture();

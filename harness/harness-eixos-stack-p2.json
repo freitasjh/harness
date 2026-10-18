@@ -1,0 +1,297 @@
+{
+  "version": 1,
+  "demand": "harness-eixos-stack-p2",
+  "agent": "qa-engineer",
+  "phase": "BugFix",
+  "gitSha": "0c95c9eb9d09b868fa2e2fc368c47ff11f0ce378",
+  "commands": [
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 918,
+      "stdoutHash": "sha256:e2994c8f16022dc1b7e55009261b4fb4fb6568561e6981e33700803dcf73f3dd",
+      "capture": "stdout+stderr capturados em /tmp/opencode/p2-plugins.log"
+    },
+    {
+      "cmd": "node --test \"installer/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 6260,
+      "stdoutHash": "sha256:cb08e8e47c8703d7c5f2ee668b23bc0bf18efb35cf524c9708415f9a8cd826fe",
+      "capture": "stdout+stderr capturados em /tmp/opencode/p2-installer.log"
+    },
+    {
+      "cmd": "node scripts/static-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 138,
+      "stdoutHash": "sha256:db23ee52fda33ba181cc06ed99923879ef3e0a49765b2946be8d6f47807f4d1e",
+      "capture": "stdout+stderr capturados em /tmp/opencode/p2-static.log"
+    },
+    {
+      "cmd": "node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 82,
+      "stdoutHash": "sha256:e5e528c52d79fceaa1be828bd89116aa6e0be73294d2e99d39c4febe99e84516",
+      "capture": "stdout+stderr capturados em /tmp/opencode/p2-vendor.log"
+    }
+  ],
+  "verbatimRun": {
+    "cmd": "harness.config.json :: commands.suiteFull (resolvido do config, nao de literal de prosa)",
+    "exitCode": 0,
+    "durationMs": 6563,
+    "stdoutHash": "sha256:f4970c3c52c37d42f5b8b72db7e26eb99e197409f2d5ef07dc735747ea1da2e2",
+    "capture": "/tmp/opencode/p2-suitefull.log",
+    "note": "Execucao unica, verbatim, com && (short-circuit). As 4 etapas de commands[] concatenadas com ' && ' reproduzem byte-a-byte a string selada (verificado nesta sessao: concat === suiteFull = true)."
+  },
+  "observedCounts": {
+    "unit_plugins": { "tests": 352, "passed": 352, "failed": 0, "skipped": 0 },
+    "it_installer": { "tests": 502, "passed": 502, "failed": 0, "skipped": 0 },
+    "static_checks": { "pass": 10, "fail": 0, "info": 2 },
+    "vendor_check": "vendor-check OK (.agents/skills/.vendor-lock.json)",
+    "suites_total": 854
+  },
+  "stdoutExcerpt": [
+    "plugins: tests 352 / pass 352 / fail 0 / skipped 0 (suites 88)",
+    "installer: tests 502 / pass 502 / fail 0 / skipped 0 (suites 168) — era 479 no ciclo anterior",
+    "static-checks: 10 PASS / 0 FAIL / 2 INFO (V15 rede em installer/=0)",
+    "vendor-check OK (.agents/skills/.vendor-lock.json)"
+  ],
+  "e2e": {
+    "kind": "declared-repo-e2e (SEM browser: harness.config.json stack.backend/stack.frontend = N/A, infra = null, mcp.required chrome-devtools existe para CONSUMIDORES). NAO se alega H3 de browser/Chrome DevTools. O E2E deste repo e o fluxo de TTY do wizard (pty real) + dry-run com 0 writes.",
+    "wizardDefaultPath": {
+      "cmd": "python3 /tmp/opencode/p2-pty.py <repo> /tmp/opencode/p2-wizard-after.txt init --target /tmp/opencode/p2-target-after --dry-run  [pty real, respostas por marcador]",
+      "file": "/tmp/opencode/p2-wizard-after.txt",
+      "bytes": 9712,
+      "exitCode": 0,
+      "choice": "W2m-1 = 4 (Aplicacao web) -> W2m-2 = Enter (Vue default) -> stack = java+vue",
+      "assertions": [
+        "[1/2] escolha [1-5] (q cancela) >",
+        "[INFO] W2m frontend — qual o frontend do seu projeto web:",
+        "[2/2] escolha [1-2] (default: 1) (q cancela) >",
+        "[2/5] Stack do destino? (...) (default: java+vue) (q cancela)",
+        "  [OK] stack = java+vue",
+        "[3/5] Comando da suite de testes? (default: npm run test:run) (q cancela)",
+        "  [OK] suiteCommand = npm run test:run",
+        "[INFO] dry-run: NÃO EXECUTADO — nenhum write (plano + relatório apenas)"
+      ],
+      "suitePrompts": 1,
+      "badAnswerRepetitions": 0,
+      "defaultVisible": true,
+      "writes": 0
+    },
+    "wizardDefaultPathReact": {
+      "cmd": "python3 /tmp/opencode/p2-pty.py <repo> /tmp/opencode/p2-wizard-react.txt init --target /tmp/opencode/p2-target-react --dry-run  [W2M2=2]",
+      "file": "/tmp/opencode/p2-wizard-react.txt",
+      "exitCode": 0,
+      "choice": "W2m-1 = 4 -> W2m-2 = 2 (React) -> stack = java+react",
+      "assertions": [
+        "[2/5] Stack do destino? (...) (default: java+react) (q cancela)",
+        "  [OK] stack = java+react",
+        "[3/5] Comando da suite de testes? (default: npm run test:run) (q cancela)",
+        "  [OK] suiteCommand = npm run test:run",
+        "frontend-vue-specialist/SKILL.md no plano: 0 ocorrencias"
+      ],
+      "suitePrompts": 1,
+      "badAnswerRepetitions": 0,
+      "writes": 0
+    },
+    "wizardResidualOutra": {
+      "cmd": "python3 /tmp/opencode/p2-pty-outra.py <repo> /tmp/opencode/p2-wizard-outra.txt init --target /tmp/opencode/p2-target-outra --dry-run  [item 5 + Enter no comando, 2x]",
+      "file": "/tmp/opencode/p2-wizard-outra.txt",
+      "exitCode": 0,
+      "assertions": [
+        "[2/5] Stack do destino? (...) (default: outra) (q cancela)",
+        "  [OK] stack = outra",
+        "[3/5] Comando da suite de testes? (q cancela)   <-- SEM default",
+        "[ERRO] resposta invalida para 'suiteCommand': command does not resolve:  (x2)"
+      ],
+      "suitePrompts": 3,
+      "badAnswerRepetitions": 2,
+      "defaultVisible": false,
+      "status": "residual DECLARADO e INALTERADO (decisao, nao bug): comportamento identico ao HEAD; documentado em installer/install.mjs:1921-1929"
+    },
+    "dryRun": {
+      "cmd": "node installer/install.mjs init --target <tmp> --dry-run --answers-file <json>",
+      "writes": 0,
+      "proof": "sha256 do `find <target> | sort` identico antes/depois em TODOS os cenarios: java+vue 89c2b2e4..., java+react 97a6685e..., wizard vue/react/outra tambem (targets vazios: 1 entrada = o proprio dir)",
+      "logs": [
+        "/tmp/opencode/p2-dr-java+vue.log",
+        "/tmp/opencode/p2-dr-java+react.log"
+      ],
+      "gating_observed": {
+        "java+vue": { ".agents/skills/frontend-vue-specialist/SKILL.md": 1, ".agents/rules/frontend-coding-standards.md": 1, ".agents/skills/react-components/SKILL.md": 0 },
+        "java+react": { ".agents/skills/frontend-vue-specialist/SKILL.md": 0, ".agents/rules/frontend-coding-standards.md": 0, ".agents/skills/react-components/SKILL.md": 1 }
+      }
+    }
+  },
+  "bugReproduction": {
+    "BUG-1": {
+      "scenario": "W2m-1 = item 4 (web) -> W2m-2 = Enter (Vue) -> Enter no comando da suite; pty real, mesma sequencia nos DOIS codigos",
+      "before": {
+        "code": "git archive HEAD -> /tmp/opencode/p2-before (copia limpa, sem tocar a arvore de trabalho)",
+        "file": "/tmp/opencode/p2-wizard-before.txt",
+        "prompt": "[3/5] Comando da suite de testes? (q cancela)   <-- SEM (default: ...)",
+        "suitePrompts": 4,
+        "badAnswerRepetitions": 3,
+        "errorLine": "[ERRO] resposta invalida para 'suiteCommand': command does not resolve: / porquê: BAD_ANSWER",
+        "finalState": "EOF no stdin -> NO_STDIN (mesmo sintoma relatado pelo QA: repeticao ate o EOF)",
+        "defaultSuiteFor_java_vue": ""
+      },
+      "after": {
+        "file": "/tmp/opencode/p2-wizard-after.txt",
+        "prompt": "[3/5] Comando da suite de testes? (default: npm run test:run) (q cancela)",
+        "suitePrompts": 1,
+        "badAnswerRepetitions": 0,
+        "accepted": "[OK] suiteCommand = npm run test:run",
+        "defaultSuiteFor_java_vue": "npm run test:run"
+      },
+      "verdict": "REPRODUZIDO antes / CORRIGIDO depois (observacao direta, nao numero declarado)"
+    },
+    "BUG-2": {
+      "scenario": "dry-run de destino real, 0 writes, nos DOIS presets; contagem de ocorrencias no plano",
+      "before_java_react": { "frontend-vue-specialist/SKILL.md": 1, "rules/frontend-coding-standards.md": 0 },
+      "after_java_react": { "frontend-vue-specialist/SKILL.md": 0, "rules/frontend-coding-standards.md": 0 },
+      "after_java_vue": { "frontend-vue-specialist/SKILL.md": 1, "rules/frontend-coding-standards.md": 1 },
+      "verdict": "ASSIMETRIA REPRODUZIDA antes / FECHADA depois; a direcao positiva (java+vue continua recebendo) e a rule (segue excluida de react, presente em vue) NAO regrediram",
+      "before_logs": ["/tmp/opencode/p2-drb-java+react.log", "/tmp/opencode/p2-drb-java+vue.log"]
+    }
+  },
+  "nonRegression": {
+    "method": "collectIncoming(sourceDir, {stacks, stack}) importado dos DOIS install.mjs (HEAD em /tmp/opencode/p2-before e a arvore de trabalho), lista de `.agents/skills/**` ordenada e comparada por preset",
+    "identical_presets": ["node", "node-esm", "outra", "flutter", "dart", "java+vue"],
+    "identical": true,
+    "counts": { "node": 97, "node-esm": 97, "outra": 97, "flutter": 119, "dart": 109, "java+vue": 97 },
+    "changed_presets": {
+      "java+react": { "before": 184, "after": 183, "removed": [".agents/skills/frontend-vue-specialist/SKILL.md"], "added": [] }
+    },
+    "verdict": "Nenhum destino legitimo perdeu ou ganhou nada; a UNICA diferenca de todo o conjunto e a remocao exata do artefato do BUG-2 no destino react"
+  },
+  "mutationProbes": {
+    "method": "copia da arvore de trabalho em /tmp/opencode/p2-mut (a arvore real NUNCA foi editada; numstat de installer/install.mjs conferido depois = 96/11, inalterado)",
+    "baseline_copy": { "eixos-stack.spec.mjs": "68/68 pass", "generate+wizard": "77/77 pass" },
+    "probes": [
+      { "mutation": "SKILLS_BY_AXIS['frontend=react'] removido", "spec": "eixos-stack.spec.mjs", "result": "63 pass / 5 FAIL" },
+      { "mutation": "gating por NOME de arquivo (/vue/.test(name))", "spec": "eixos-stack.spec.mjs", "result": "60 pass / 8 FAIL" },
+      { "mutation": "defaultSuiteFor volta a react-only (sem o eixo web)", "spec": "generate.spec.mjs + wizard.spec.mjs", "result": "73 pass / 4 FAIL" }
+    ],
+    "restored": "145/145 pass apos restaurar a copia"
+  },
+  "integrity": {
+    "protectedPathsNumstat": {
+      "gate.js": 0,
+      "harness.config.json": 0,
+      ".opencode/plugins/**": 0,
+      "opencode.json": 0,
+      ".github/workflows/**": 0,
+      ".githooks/**": 0,
+      ".agents/schemas/**": 0,
+      ".agents/agents/**": 0,
+      "verdict": "ZERO linhas nos paths protegidos de codigo (gate.js / config / plugins / CI)"
+    },
+    "suiteFullByteIdentical": {
+      "head": "sha256:c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2",
+      "worktree": "sha256:c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2",
+      "verdict": "byte-igual"
+    },
+    "installerNetworkZero": "PASS V15 (rede em installer/=0) — observado na etapa static-checks",
+    "mobileVendorSkillsIntact": {
+      "dirs": 22,
+      "files": 22,
+      "contentHashBefore": "51f8e795d614cf92fe26f5f7bea67f90",
+      "contentHashAfter": "51f8e795d614cf92fe26f5f7bea67f90",
+      "verdict": "intactos (hash normalizado por caminho relativo)"
+    },
+    "archiveUntouched": {
+      "numstat": 0,
+      "porcelain": 0,
+      "dirHashVsHead": "identico",
+      "verdict": ".spec/archive/** intocado"
+    },
+    "finding": {
+      "id": "INT-1",
+      "severity": "P2 (processo)",
+      "what": ".agents/rules/harness-config.md — PATH PROTEGIDO (harness.config.json :: protectedPaths = '.agents/rules/**') — foi MODIFICADO neste ciclo (7+/5-): descreve SKILLS_BY_AXIS/SKILLS_COMMON e cita installer/install.mjs:350-421.",
+      "why_legit": "A mudanca e exigida pelo proprio teste do ciclo (installer/__tests__/docs.spec.mjs:146-147 passou a assertar `SKILLS_BY_AXIS`/`SKILLS_COMMON` no doc) e a regra e descritiva, nao enforcement.",
+      "risk": "gate-contract I9 / SPEC ADR-007: merge de path protegido exige trailer `Harness-Gate-Change` no commit (pre-commit + CI harness-integrity.yml). Sem o trailer, o commit e revertido/reprovado no CI.",
+      "action_for_orchestrator": "incluir `Harness-Gate-Change` no commit do ciclo (nao e defeito de codigo; e passo de commit)"
+    }
+  },
+  "evaluation": {
+    "telas": "n/a-repo-sem-UI (harness.config.json stack = N/A). A 'tela' deste batch e o TTY do wizard e ela MELHOROU de forma observavel: o caminho default (item 4 -> Enter -> Enter) passa de 4 prompts/3 BAD_ANSWER para 1 prompt com `(default: npm run test:run)` visivel, nos DOIS presets web (transcripts pty reais). Menu em 2 passos com contador [i/total], `(default: 1)` no passo 2 e `(q cancela)` nos dois prompts; legibilidade conferida no transcript.",
+    "negocio": "ok-BUG-1 e BUG-2 fechados ponta-a-ponta em destino REAL (dry-run, 0 writes): o caminho default e utilizavel; o eixo react perde a prosa Vue e MANTEM a rule Vue excluida; o eixo vue mantem skill E rule. Gating coerente: skill local e rule do mesmo eixo recebem o MESMO tratamento (par `{eixo,id}` do destino).",
+    "logica": "ok-suiteFull 4 etapas com && (short-circuit), exit 0: plugins 352/352, installer 502/502 (era 479), static 10 PASS/0 FAIL, vendor OK. Provas de mutacao INDEPENDENTES em copia: 3 sondas sangram (5/8/4 FAIL). Nao-regressao medida em 6 presets identica; unica diferenca = remocao exata do artefato do BUG-2.",
+    "perf": "n/a-repo-sem-runtime-de-produto. suiteFull verbatim ~6.6s (6563ms observados); a copia do HEAD e as sondas de mutacao nao entram no caminho selado."
+  },
+  "improvements": [
+    {
+      "id": "IMP-1",
+      "priority": "P2",
+      "title": "Residual DECLARADO: preset `outra` segue sem default de suite => o caminho 'so Enter' repete BAD_ANSWER",
+      "where": "installer/install.mjs:1930-1945 (defaultSuiteFor) + comentario 1921-1929 (RESIDUAL DECLARADO)",
+      "evidence": "pty do item 5: `[3/5] Comando da suite de testes? (q cancela)` SEM default; 2 repeticoes de BAD_ANSWER observadas; comportamento IDENTICO ao HEAD (defaultSuiteFor('outra') = '' nos dois)",
+      "classification": "decisao declarada (achado 🟡-1 do review), FORA do escopo autorizado (o owner autorizou apenas o eixo web)",
+      "route": "follow-up que exige decisao do owner: dar candidato ao eixo `other` OU tornar o comando explicitamente obrigatorio no prompt (nao e bugfix deste ciclo)",
+      "status": "reportado, nao corrigido (proibido editar codigo nesta fase)"
+    },
+    {
+      "id": "IMP-2",
+      "priority": "P3",
+      "title": "O residual `outra` nao esta travado por teste — so por comentario de codigo",
+      "where": "installer/__tests__/generate.spec.mjs:109-168 (describe EX-BE-03)",
+      "evidence": "nenhuma assert cobre defaultSuiteFor('outra'); um futuro ramo que devolva candidato para `outra` (ou que apague o fallback `''`) passaria verde em silencio",
+      "classification": "endurecimento de teste (nao ha defeito observado hoje)",
+      "route": ".spec/tech-debts (P3)"
+    },
+    {
+      "id": "IMP-3",
+      "priority": "P3",
+      "title": "Cobertura de teste do incoming COMPLETO (nao so skills locais) nao existe para os 5 presets de nao-regressao",
+      "where": "installer/__tests__/eixos-stack.spec.mjs (describe 'BUG-2 gating de skill LOCAL', it 'nao-regressao <dest>')",
+      "evidence": "o teste chama collectIncoming com apenas `{ stack: dest }` (sem `stacks`), logo cobre so as skills LOCAIS; a nao-regressao do incoming INTEIRO (vendorizadas incluidas) foi provada por MIM, fora da suite (node p2-incoming.mjs: node 97, node-esm 97, outra 97, flutter 119, dart 109 — identicos)",
+      "classification": "sugestao: promover a medicao ad-hoc a teste permanente (tabela literal de contagens por preset)",
+      "route": ".spec/tech-debts (P3)"
+    }
+  ],
+  "brainStore": [
+    "regras/projetos/projetos/harness/p2-qa-independente-pty-e-antes-depois-por-copia",
+    "sessoes/projetos/harness/2026-10-18-harness-eixos-stack-p2-b4-qa"
+  ],
+  "cleanup": {
+    "ports": [],
+    "processes": [],
+    "evidenceKept": [
+      "/tmp/opencode/p2-suitefull.log, p2-plugins.log, p2-installer.log, p2-static.log, p2-vendor.log",
+      "/tmp/opencode/p2-wizard-after.txt, p2-wizard-react.txt, p2-wizard-before.txt, p2-wizard-outra.txt",
+      "/tmp/opencode/p2-dr-java+vue.log, p2-dr-java+react.log, p2-drb-*.log",
+      "/tmp/opencode/p2-incoming-before.json, p2-incoming-after.json"
+    ],
+    "tempdirs_removed": [
+      "/tmp/opencode/p2-mut (copia mutada, restaurada antes de remover)",
+      "/tmp/opencode/p2-target-after, p2-target-react, p2-target-outra, p2-target-before",
+      "/tmp/opencode/p2-dr-java+vue, p2-dr-java+react, p2-drb-java+vue, p2-drb-java+react",
+      "/tmp/opencode/p2-before (copia do HEAD usada no antes/depois)"
+    ],
+    "note": "Nenhum servidor/porta subido (harness.config.json infra = null; stack = N/A). Portas em LISTEN no host pertencem a outros aplicativos (opencode desktop, kiro, postgres) — NADA foi encerrado. Zero `pkill -f` (workflow-rules.md §5 H5.1); nenhum PID do projeto ficou orfao (ps por 'install.mjs|p2-pty' = vazio)."
+  },
+  "selfReported": true,
+  "deviation": {
+    "field": "counts",
+    "action": "omitted-on-purpose",
+    "schemaRequires": true,
+    "schemaRef": ".agents/schemas/harness-report.schema.json (required: counts; unit/it/frontend com passed/failed/skipped)",
+    "why": "counts declarados sem observacao pela contraprova sao NEGADOS; o executor padrao da contraprova observa apenas exit code. As contagens OBSERVADAS estao em `observedCounts` + `stdoutExcerpt` (campos que o gate nao le).",
+    "mechanism": "gate.js:619-625 (expectedCounts && !observedCounts => DENY_CONTRAPROVE_DIVERGENT cause=counts-unverifiable) + gate.js:561-569 (defaultContraproveExec => counts:null) + gate.js:610-618 (commands[0].exitCode comparado) — linhas CONFERIDAS nesta sessao",
+    "conflictPointer": "workflow-state.json.conflicts[0] (id: C-1, severity: P1) — conflito registrado, nao resolvido neste batch (dono: orquestrador/owner)",
+    "declaredIn": "harness/harness-eixos-stack-p2.json :: observedCounts + deviation + cleanup.note"
+  },
+  "notes": [
+    "Independente: TODOS os numeros deste REPORT foram re-observados nesta sessao (suite verbatim, pty real, dry-run, comparacao com copia do HEAD em /tmp/opencode/p2-before). Nenhum numero do developer foi repetido sem reproducao.",
+    "commands[].cmd concatenados com ' && ' reproduzem byte-a-byte harness.config.json:commands.suiteFull (verificado: concat === suiteFull = true). commands[0].exitCode = 0 e o exit code REAL da etapa de plugins.",
+    "stdoutHash = sha256 dos bytes exatos de stdout+stderr de cada etapa. `verbatimRun` guarda a execucao unica da string selada (exit 0, 6563ms).",
+    "phase = valor OBSERVADO em workflow-state.json no momento da execucao (current_phase = 'BugFix'). A fase B4 e a finalizacao do bugfix; a transicao para BugCompleted e do orquestrador/humano.",
+    "gitSha e o HEAD base (0c95c9e) — as mudancas do ciclo estao na ARVORE DE TRABALHO, nao commitadas (commit e passo humano/P6, com o trailer exigido pelo INT-1).",
+    "H3 DECLARADO: este repo nao tem browser (stack = N/A). O E2E e o TTY do wizard via pty real + dry-run com 0 writes; NAO se alega H3 de Chrome DevTools (mcp.required chrome-devtools e para consumidores).",
+    "Nao sobrescrevi harness/harness-eixos-stack.json (REPORT do ciclo arquivado): este e um arquivo novo, harness/harness-eixos-stack-p2.json, que e o path que o gate resolve (gate.js:764 -> <evidence.path>/<current_feature>.json).",
+    "Nenhum codigo, .spec/**, gate.js ou harness.config.json foi editado nesta fase (verificado: numstat de installer/install.mjs continua 96/11 e os paths protegidos somam 0 linhas).",
+    "Desvio do RF-07 (criterio 'java+vue continua \"\"' -> 'eixo web tem candidato') e mudanca de CRITERIO autorizada pelo owner e declarada em .spec/bugs/harness-eixos-stack-p2/TASKS.md:20-23; a assert antiga foi substituida (installer/__tests__/generate.spec.mjs:114-117). Confirmei que a substituicao e a unica alteracao de expectativa congelada no diff (docs.spec.mjs apenas ACRESCENTA asserts de doc)."
+  ]
+}

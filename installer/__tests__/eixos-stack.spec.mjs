@@ -25,6 +25,10 @@ import {
   validateRulesByAxis,
   RULES_BY_AXIS,
   RULES_COMMON,
+  skillAllowedForLocalAxes,
+  validateSkillsByAxis,
+  SKILLS_BY_AXIS,
+  SKILLS_COMMON,
   InstallError,
 } from '../install.mjs';
 import { buildVendor, REPO_ROOT } from '../../scripts/vendor-skills.mjs';
@@ -405,5 +409,143 @@ describe('EX-VAL-06 residual: refs penduradas no destino java+react (SPEC §6)',
       PENDING_REFS_REACT,
       `refs penduradas mudaram (agora ${refs.length}) — decisao do dono A-3: ${refs.join(', ')}`,
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// BUG-2 (harness-eixos-stack-p2): gating de SKILL LOCAL pelo eixo declarado.
+// Espelho de EX-BE-05 para `.agents/skills/**` SEM entrada no vendor-lock:
+// mapa de exclusao por eixo (SKILLS_BY_AXIS) + lista explicita de comuns
+// (SKILLS_COMMON), validado na carga (fail-closed) e com enumeracao total.
+// ORAculo INDEPENDENTE: a classificacao e TABELA LITERAL + o disco real, nunca
+// derivada da funcao sob teste (licao do ciclo anterior: guarda que nao guarda
+// passou verde duas vezes).
+// ---------------------------------------------------------------------------
+const VUE_SKILL = 'frontend-vue-specialist';
+
+function realSkillDirs() {
+  const root = path.join(REPO_ROOT, '.agents', 'skills');
+  return fs.readdirSync(root, { withFileTypes: true })
+    .filter((e) => e.isDirectory())
+    .map((e) => e.name)
+    .sort();
+}
+function vendorSkillNames() {
+  const lockPath = path.join(REPO_ROOT, '.agents', 'skills', '.vendor-lock.json');
+  const lock = JSON.parse(fs.readFileSync(lockPath, 'utf8'));
+  return new Set(Object.keys(lock.skills || {}));
+}
+function realLocalSkills() {
+  const vendor = vendorSkillNames();
+  return realSkillDirs().filter((n) => !vendor.has(n));
+}
+function mkLocalSkillsSource(extra = {}) {
+  const src = tmp('harness-eixos-localskills-');
+  for (const name of realLocalSkills()) writeIn(src, `${SKILLS_PREFIX}${name}/SKILL.md`, `# ${name}\n`);
+  for (const [name, body] of Object.entries(extra)) writeIn(src, `${SKILLS_PREFIX}${name}/SKILL.md`, body);
+  return src;
+}
+function skillNamesIn(inc) {
+  return [...new Set(Object.keys(inc)
+    .filter((k) => k.startsWith(SKILLS_PREFIX))
+    .map((k) => k.slice(SKILLS_PREFIX.length).split('/')[0]))].sort();
+}
+
+describe('BUG-2 gating de skill LOCAL pelo eixo declarado (espelho de RF-04)', () => {
+  it('java+react NAO recebe a skill local Vue; as demais entram', () => {
+    const names = skillNamesIn(collectIncoming(mkLocalSkillsSource(), { stack: 'java+react' }));
+    assert.ok(!names.includes(VUE_SKILL), 'frontend-vue-specialist fora do destino react');
+    assert.deepEqual(names, realLocalSkills().filter((n) => n !== VUE_SKILL), 'todas as outras entram');
+  });
+
+  it('java+vue CONTINUA recebendo a skill local Vue (direcao positiva)', () => {
+    const names = skillNamesIn(collectIncoming(mkLocalSkillsSource(), { stack: 'java+vue' }));
+    assert.ok(names.includes(VUE_SKILL), 'frontend-vue-specialist entra no destino vue');
+  });
+
+  it('NAO infere eixo por nome de arquivo: skill com "vue"/"react" no nome nao declarada e comum', () => {
+    const src = mkLocalSkillsSource({
+      'vue-extra-notes': '# prosa vue NAO declarada\n',
+      'react-extra-notes': '# prosa react NAO declarada\n',
+    });
+    for (const stack of ['java+vue', 'java+react', 'node']) {
+      const names = skillNamesIn(collectIncoming(src, { stack }));
+      assert.ok(names.includes('vue-extra-notes'), `nome vue nao gate sozinho (${stack})`);
+      assert.ok(names.includes('react-extra-notes'), `nome react nao gate sozinho (${stack})`);
+    }
+  });
+
+  it('skill VENDORIZADA (entrada no lock) nao passa pelo mapa local', () => {
+    const rel = `${SKILLS_PREFIX}${VUE_SKILL}/SKILL.md`;
+    const lock = { skills: { [VUE_SKILL]: { stacks: ['vue'] } } };
+    assert.equal(skillAllowedForLocalAxes(rel, lock, ES_IDS('java+react')), true, 'vendor: gateada por stacks, nao pelo mapa local');
+  });
+
+  for (const dest of ['node', 'node-esm', 'outra', 'flutter', 'dart']) {
+    it(`nao-regressao ${dest}: incoming de skills locais identico ao de hoje`, () => {
+      const names = skillNamesIn(collectIncoming(mkLocalSkillsSource(), { stack: dest }));
+      assert.deepEqual(names, realLocalSkills());
+    });
+  }
+});
+
+describe('BUG-2 CR-1 espelhado: SKILLS_BY_AXIS validado na carga e nunca inerte', () => {
+  it('a declaracao real passa na validacao de carga (nao lanca)', () => {
+    assert.doesNotThrow(() => validateSkillsByAxis());
+  });
+
+  it('a declaracao real exclui a skill local exatamente no par frontend=react', () => {
+    const rel = `${SKILLS_PREFIX}${VUE_SKILL}/SKILL.md`;
+    assert.equal(skillAllowedForLocalAxes(rel, null, ES_IDS('java+react')), false, 'java+react: excluido');
+    for (const dest of ['java+vue', 'node', 'node-esm', 'outra', 'flutter', 'dart']) {
+      assert.equal(skillAllowedForLocalAxes(rel, null, ES_IDS(dest)), true, `${dest}: intacto`);
+    }
+  });
+
+  for (const [label, bad] of [
+    ['eixo errado p/ o id (backend=react)', { 'backend=react': ['frontend-vue-specialist'] }],
+    ['id fora do conjunto fechado (frontend=blazor)', { 'frontend=blazor': ['frontend-vue-specialist'] }],
+    ['chave sem separador (frontendreact)', { frontendreact: ['frontend-vue-specialist'] }],
+    ['valor nao-array', { 'frontend=react': 'frontend-vue-specialist' }],
+    ['valor array vazio', { 'frontend=react': [] }],
+  ]) {
+    it(`declaracao invalida derruba a carga (fail-closed): ${label}`, () => {
+      assert.throws(() => validateSkillsByAxis(bad), (e) => e instanceof InstallError && e.code === 'BAD_DECLARATION');
+    });
+  }
+});
+
+describe('BUG-2 enumera .agents/skills/** local: cobertura total e bidirecional', () => {
+  const LOCAL_CLASSIFIED = new Set([...SKILLS_COMMON, ...Object.values(SKILLS_BY_AXIS).flat()]);
+  const unclassified = (names) => names.filter((n) => !LOCAL_CLASSIFIED.has(n));
+  const phantoms = (classified = LOCAL_CLASSIFIED) => [...classified].filter((n) => !realLocalSkills().includes(n));
+
+  it('disco -> lista: toda skill LOCAL esta em SKILLS_COMMON ou em SKILLS_BY_AXIS', () => {
+    assert.deepEqual(unclassified(realLocalSkills()), []);
+  });
+
+  it('lista -> disco: nenhum nome classificado e fantasma (bidirecional)', () => {
+    assert.deepEqual(phantoms(), []);
+  });
+
+  it('SANGRA: skill local nova nao classificada e reportada (guarda nao-vacuosa)', () => {
+    assert.deepEqual(
+      unclassified([...realLocalSkills(), 'skill-nova-nao-classificada']),
+      ['skill-nova-nao-classificada'],
+    );
+  });
+
+  it('SANGRA: fantasma em SKILLS_COMMON e reportado (guarda nao-vacuosa)', () => {
+    assert.deepEqual(phantoms(new Set([...LOCAL_CLASSIFIED, 'skill-fantasma'])), ['skill-fantasma']);
+  });
+
+  it('o mapa de exclusao e declarado por eixo, com id valido e skill existente no disco', () => {
+    validateSkillsByAxis();
+    for (const [key, names] of Object.entries(SKILLS_BY_AXIS)) {
+      const [axis, id] = key.split('=');
+      assert.ok(AXIS_IDS[axis].includes(id), `id de eixo valido em '${key}'`);
+      for (const n of names) assert.ok(realLocalSkills().includes(n), `'${n}' existe como skill local`);
+    }
+    assert.ok(Object.values(SKILLS_BY_AXIS).flat().includes(VUE_SKILL));
   });
 });
