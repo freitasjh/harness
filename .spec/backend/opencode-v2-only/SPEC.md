@@ -47,9 +47,16 @@ Cada um dos 3 plugins (`gate.js`, `harness-validator.js`, `hitl-guardrail.js`) p
   - **Guarda pendente**: o teste (`config-dual-parity.spec.mjs:133-141`) ainda só asserta `edit: deny` para `orchestrator`/`code-reviewer`/`ux-designer` — a reversão dos 5 agentes está **sem guarda** (aceite sem mecanismo). Enfileirado em `workflow-state.json.pending_dev_queue` (`D13-guard`, P2).
 
 ### RF-04 — Merge do instalador deixa o destino **v2-only** 🟢 P0 (produto)
-- **Aceite**: merge de `opencode.json` **substitui** o bloco gerenciado e **remove** chave obsoleta (`agents`, `permissions`, `plugin` com caminho local).
+> **Semântica corrigida pelo review do Batch 2 (2026-10-19, C1/A1/A2)** — remoção **por forma/conteúdo**, NUNCA por nome de chave.
+- **Aceite**: merge de `opencode.json` **substitui** o bloco que o harness gerencia (`agent`, `permission`) e **remove só o que o próprio harness produziu**:
+  - chaves não-nativas: `system`/`server` (medido: ausentes do schema instalado) e as **formas v1** — o mapa `agents` que carrega o marcador v1 `tools` e o `permissions` que **não** é array. Shape **nativo** bem-formado (`permissions` = `{action,resource,effect}[]`; `agents` = mapa de agente nativo sem `tools`) **sobrevive** (o schema instalado `@opencode/schema@2.0.29` os declara nativos);
+  - `plugin`/`plugins`: removidas **apenas** as entradas cujo path está sob `.opencode/plugins/` (string-path v1 e `{id,path}` do dual). **Preservados**: npm/specifier, `{package,options}` e path local **alheio** (ex.: `./plugins/caveman/plugin.js`) — em v2 `plugin` é a lista de **pacotes npm**, logo não é chave gerada pelo harness (evidência: array misto real em `~/.config/opencode/v1-backup-20261015/opencode.json.original`).
 - **Aceite**: teste com destino que **já tinha** o shape v1/dual ⇒ resultado é **v2-only**.
 - **Aceite**: destino **sem** `opencode.json` continua recebendo o template (propagação preservada).
+- **Aceite**: chaves do **usuário** preservadas (`mcp` extra + união de `required`; `instructions` próprias).
+- **Aceite (A2)**: idempotência por **efeito** — `planMerge` devolve `noop` quando `canon(merge(existing,incoming)) === canon(existing)`, inclusive com chaves do usuário presentes; `conflict` é checado **antes** do `noop` (não engole divergência de `mcp`).
+- **Aceite (N3 — precedência declarada)**: o runtime **funde** `agent` (singular) com `agents` (plural) e, **em colisão de nome, o PLURAL vence** (medido: `agents.orch` sobrepõe `agent.orch`). Consequência: num destino que tenha o plural nativo, a config do usuário **pode sobrepor** o bloco gerenciado do harness (inclusive `permissions` do agente). Isso é aceitável (config do usuário é dele; o boundary real é o `gate.js`), mas a frase "bloco gerenciado é autoritativo" seria **falsa** em colisão — declarado aqui para não over-claimar.
+- **Aceite (A4)**: o ramo `mcp.required` é **defensivo e declarado** — o template propagado **não** declara `mcp`, logo ele só roda em destino que já tenha a chave; o shape do runtime é `mcp.servers` (o `required` é chave do `harness.config.json`). Rastreado em `TD-08`.
 
 ### RF-05 — Verificação de instalação nova 🟢 P1
 - **Aceite**: `init` em dir temporário gera `opencode.json` v2-only que o runtime aceita **sem WARN** de `conflict`/`malformed` (checado via `opencode debug config`/log).

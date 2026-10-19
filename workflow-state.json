@@ -58,12 +58,12 @@
     "FU32": "closed_approved_decision_B"
   },
   "code_review": {
-    "last_invoked_at": "2026-10-19T11:16:45.312Z",
-    "last_status": "pending",
-    "session": "ses_eac1f5816ffe3Ss2dSdOAxMFlT",
-    "critical_issues": null,
-    "attention_issues": null,
-    "reviewer_notes": "code review do Batch 1 em andamento (background)"
+    "last_invoked_at": "2026-10-19T13:00:26.528Z",
+    "last_status": "passed",
+    "critical_issues": 0,
+    "attention_issues": 2,
+    "reviewer_notes": "Batch 2 APPROVED no re-review. Residuos: N1 (agents por entrada -> TD-10), N2 (id nao inspecionado -> TD-11), N3 (plural vence na colisao -> declarado no RF-04), N4/F-02 refinado (gate casa token sem resolver cwd -> TD-12).",
+    "session": "ses_eabc822b0ffemsFtZ4N9e7SW13"
   },
   "overrides": [
     {
@@ -143,7 +143,7 @@
       "created": "2026-10-18T00:00:00Z"
     }
   ],
-  "last_update": "2026-10-19T11:56:06.069Z",
+  "last_update": "2026-10-19T13:00:26.528Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -679,7 +679,7 @@
     {
       "id": "opencode-v2-only/batch-1",
       "escopo": "Adapter v2 do gate.js + aposentadoria dos testes v1/dual + spec novo de contrato + REPORT Anexo B",
-      "status": "code_complete_c1_closed_awaiting_review",
+      "status": "CLOSED_committed",
       "evidencia": {
         "report": "harness/opencode-v2-only.json (agora schema-valido)",
         "suiteFull": "exit 0 (plugins 368/0, installer 502/0, static 10 PASS/0 FAIL/2 INFO, vendor OK)",
@@ -699,7 +699,68 @@
         "C1": "ABERTO (dono orquestrador): REPORT omite `counts` (schema exige; contraprova nega counts nao observados) — decisao vigente e manter o desvio declarado; fechar exige emendar gate.js OU o schema",
         "residuo": "opencode.json.rt02.bak (untracked, desestagiado) — backup do pre-RT-02, mantido como rede de seguranca"
       },
-      "aposentados": "43 `it` + 7 `describe` removidos (contrato v1/dual extinto), 50 adicionados; 352 -> 368"
+      "aposentados": "43 `it` + 7 `describe` removidos (contrato v1/dual extinto), 50 adicionados; 352 -> 368",
+      "commits": [
+        "cfc3e3a",
+        "b7b736f"
+      ],
+      "review": "APPROVED (0 🔴; re-review 2026-10-19)"
+    },
+    {
+      "id": "opencode-v2-only/batch-2",
+      "escopo": "RF-04 — merge do instalador deixa o destino v2-only (instalacao nova + upgrade)",
+      "status": "CLOSED_committed",
+      "session": "ses_eabe31dabffeUnzT6MLuNFcMvd",
+      "gaps_alvo": 3,
+      "testes_previstos": 4,
+      "decisao_owner": "chaves gerenciadas pelo harness (plugin/agent/permission/instructions) sao SUBSTITUIDAS; o do usuario (mcp/instructions proprias) continua only-add",
+      "pendencia_review": "pergunta central ao reviewer: a chave `plugin` e realmente gerenciada pelo harness? No v2 ela e a lista de PACOTES NPM de plugin — um destino pode ter os seus proprios. Substituir por [] destruiria config do usuario; a regra correta pode ser remover apenas as entradas de CAMINHO LOCAL do harness e preservar o resto (npm/specifier). Idem para `plugins` ({id,path} do shape dual).",
+      "review": "APPROVED (re-review 2026-10-19, 0 🔴; N1->TD-10, N2->TD-11, N3 declarado, N4->TD-12)",
+      "achados": {
+        "C1": "🔴 plugin/plugins substituidos pelo incoming => apaga plugin NPM do destino em silencio; testes travavam a perda. Prova: `~/.config/opencode/v1-backup-20261015/opencode.json.original` = array misto; `~/.config/opencode/opencode.json:31` = npm vivo",
+        "A1": "🟡 schema instalado @opencode/schema@2.0.29 declara `agents`/`permissions` como NATIVAS (plural) => delete cego e mais amplo que o defeito",
+        "A2": "🟡 noop so sem chave extra do usuario (com extras = ponto fixo, nao noop); re-rodar init em destino convergido aborta flagged-open",
+        "A3": "🟡 prosa falsa/invertida: SKILL.md:97, docs/INSTALACAO.md:268 e :384 (checklist V1 MANDA conferir o path do gate = estado errado agora), install.mjs:1418",
+        "A4": "🟡 ramo mcp.required inalcancavel em producao (template nao tem `mcp`); shape do runtime e mcp.servers",
+        "B1": "🟢 rationale do `server` errado (descreve o campo do modulo, nao chave de config)",
+        "B2": "🟢 assercao por regex na mensagem e fragil"
+      },
+      "correcao_sessao": "ses_eabd3a8cbffetatLQTf01avh0s",
+      "correcao": {
+        "C1": "mergePluginList + isHarnessLocalPluginEntry (regex ^\\.?\\/?\\.opencode\\/plugins\\/): remove so o path do harness; npm/{package,options}/path alheio preservados; testes reescritos para assertar a PRESENCA do npm",
+        "A1": "stripObsoleteConfigKeys: remocao por FORMA (permissions so cai se nao for array; agents so o mapa com marcador v1 `tools`)",
+        "A2": "planMerge: noop por EFEITO (canon(merged)===canon(parsed)); conflict checado antes",
+        "A3": "prosa: SKILL.md:97, docs/INSTALACAO.md:268 e :384 (checklist V1 invertido), comentario do install.mjs; guard estendido a docs/INSTALACAO.md em docs.spec.mjs",
+        "A4": "ramo mcp documentado como defensivo + TD-08 (decisao do owner)",
+        "B1": "rationale do `server` corrigido",
+        "B2": "T5 asserta err.code + plano (sem regex)"
+      },
+      "evidencia_pos_correcao": {
+        "installer": "516/516 (+8)",
+        "plugins": "379/379",
+        "static": "10 PASS/0 FAIL/2 INFO",
+        "suiteFull": "exit 0",
+        "selo": "intacto",
+        "numstat_config": 0,
+        "mutacoes": [
+          "(a) substituir plugin => sangra 9/11",
+          "(b) delete agents por nome => sangra 10/11",
+          "(c) noop por texto => sangra 9/11"
+        ]
+      },
+      "evidencia": {
+        "installer": "516/516 (+8)",
+        "plugins": "379/379",
+        "static": "10 PASS/0 FAIL/2 INFO",
+        "suiteFull": "exit 0",
+        "selo": "intacto",
+        "numstat_config": 0,
+        "mutacoes": [
+          "(a) substituir plugin => sangra 9/11",
+          "(b) delete agents por nome => sangra 10/11",
+          "(c) noop por texto => sangra 9/11"
+        ]
+      }
     }
   ],
   "scope_additions": [
@@ -1317,6 +1378,15 @@
       "titulo": "isOrchAllowlisted nao normaliza caminho absoluto => deny falso-positivo",
       "evidencia": ".opencode/plugins/gate.js:391-398 — compara normalized.startsWith('.spec/'); um filePath ABSOLUTO dentro do workspace nao casa => DENY orch-write-outside-allowlist em path legitimo",
       "correcao_proposta": "normalizar contra a raiz do workspace antes da comparacao"
+    },
+    {
+      "id": "F-02",
+      "ciclo": "opencode-v2-only",
+      "severidade": "P3",
+      "titulo": "reviewer relatou que o gate negou (`protected-path-write`) uma escrita de probe com o nome `opencode.json` — verificar se o match e por NOME (falso-positivo em /tmp) ou por path do repo",
+      "evidencia": "Reproduzido pelo reviewer (probe-cfg) + meu teste com path absoluto (passou). Fix: resolver/normalizar contra a raiz do workspace (mesma classe do F-01) -> TD-12.",
+      "status": "REFINADO (review Batch 2, N4)",
+      "mecanismo": "`bashProtectedWrites` (gate.js:966-985) casa o TOKEN LITERAL do redirect contra `^opencode\\.json$` SEM resolver o cwd. `cat > opencode.json` relativo (cwd /tmp/...) => DENY `protected-path-write`; path ABSOLUTO => passa. Nao e cego por nome, e cego por diretorio."
     }
   ],
   "decisions": [
@@ -1374,7 +1444,8 @@
     "at": "2026-10-19T11:30:16.660Z",
     "arquivo": ".spec/backend/opencode-v2-only/SPEC.md",
     "mudancas": "§0 (linha Plugins -> contrato MEDIDO; fatos medidos expandidos: payload `input`, subscribe async-iterable, 3 nomes confirmados, throw do handler aborta a tool, Plugin.define identity shim), RF-01 (objeto + setup->undefined + teste pela entrada real), RF-03 (+autoridade dos 5), T2 (objeto/undefined/envelope), §3 (+raio do throw, +mutacao in-place)",
-    "backup": "/tmp/opencode/SPEC.pre.md"
+    "backup": "/tmp/opencode/SPEC.pre.md",
+    "rf04": "aceite reescrito (remocao por forma; plugin preserva npm; idempotencia por efeito; mcp defensivo) — review Batch 2 C1/A1/A2/A4"
   },
   "open_items": [
     {
