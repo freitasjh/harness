@@ -2,7 +2,8 @@
 
 > **Tipo**: Bugfix do próprio harness (fast-track B1..B4 de `.agents/rules/workflow-rules.md` §4)
 > **Origem**: conflito **C-1** registrado em `workflow-state.json.conflicts[0]` (aberto desde o ciclo `prd-adr-pipeline`, 2026-10-16; confirmado empiricamente pelo QA no P4 de `harness-eixos-stack`)
-> **Decisões do owner**: via **executor observa counts** · aceite **par ALLOW+DENY** · restrição **manter o gate forte + selo intacto**
+> **Decisões do owner (2026-10-16)**: via **(b) executor observa counts** · aceite **par ALLOW+DENY** · restrição **manter o gate forte + selo intacto**
+> **⚠️ REVISÃO (2026-10-19, D-15)**: a via foi **trocada para (a)** — *counts de executor não-observável ⇒ **não-comparável** (nunca "divergente")*. Motivo: o code review do Batch 1 do ciclo `opencode-v2-only` provou que a via (b) deixava o ramo de counts como **código morto** (REPORT com `counts` ⇒ deny; sem ⇒ allow) e que **nada** validava `harness/*.json` contra o schema. A descrição de (b) abaixo fica como **opção futura** (o ramo de comparação já está pronto e testado — implementar (b) depois não exige refazer nada).
 
 ---
 
@@ -45,3 +46,19 @@ O executor da contraprova passa a **OBSERVAR** os counts do comando selado e o g
 
 ## Fora do escopo
 Tornar `counts` opcional · retro-consertar os REPORTs antigos · mudar a cadeia selada · `installer/` · go/rust.
+
+---
+
+## ✅ Resolução (2026-10-19) — via (a), implementada
+
+| Item | Entrega |
+|---|---|
+| **Semântica** | `expectedCounts && !observedCounts` ⇒ `{ verdict:"allow", via:"counts-unverifiable" }` — **nota declarada**, não deny. O `DenyError(contraprove-divergent, cause: counts-unverifiable)` foi **removido**. |
+| **Divergência real** | `expectedCounts && observedCounts` diferentes ⇒ **DENY `contraprove-divergent`** (inalterado — não afrouxado). |
+| **Validação de evidência** | `gate.js` exporta `validateAgainstSchema` (subconjunto declarado: `$ref/type/required/properties/items/minItems/minimum`), `reportSchemaViolations`, `isDeclaredDeviation`. `report-schema.spec.mjs` valida os **17 arquivos reais** `harness/*.json` (antes: só um `validReport()` sintético ⇒ violação invisível ao CI). |
+| **REPORT do Batch 1** | `harness/opencode-v2-only.json` reescrito: `counts` (unit 379 / it 502 / frontend 0), números frescos, bloco `deviation` **removido** ⇒ agora **schema-válido** e passa a contraprova. |
+| **Evidência** | Suíte **379/0** (era 372); `commands.suiteFull` exit 0; selo `c904f1c5…49a2` idêntico ao HEAD; I1 12/12; reload limpo, 19 agentes. |
+| **Provas de mutação** | `M-DIVERGENT` (comparação → sempre-allow) ⇒ 378/1 · `M-UNVERIFIABLE` (ramo não-observável → deny) ⇒ 378/1 · `M-SCHEMA` (remover `counts` do REPORT real) ⇒ 378/1. |
+
+**Limites declarados**: o validador cobre só o subconjunto de keywords que o schema usa (teste trava isso: keyword nova ⇒ suíte vermelha); o validador **não** está no caminho de deny do runtime (o wiring em `gateCompletionAnchorA` quebraria ~10 fixtures de report parcial) — a validação real de evidência é o spec sobre `harness/*.json`.
+**Item aberto relacionado (A-1)**: com `HARNESS_SEAL_JSON` ausente, um `Completed` real ainda nega `sealed-command-mismatch {cause:'empty-seal'}` — não é C-1; registrado em `workflow-state.json`.

@@ -58,14 +58,24 @@
     "FU32": "closed_approved_decision_B"
   },
   "code_review": {
-    "last_invoked_at": "2026-10-18T00:00:00Z",
-    "last_status": "passed",
-    "critical_issues": 0,
-    "attention_issues": 0,
-    "suggestions": 2,
-    "reviewer_notes": "Batch 1 (EX-BE-01/EX-VAL-02/EX-BE-03) do ciclo harness-eixos-stack. Iteracao 1 = CHANGES_REQUIRED (1 critico CR-1: guarda do D-1 TAUTOLOGICA - comparava profile.stacks com stacksFor(profile.axes) sendo stacks atribuido no load; provado por sonda que registry incoerente passava verde; + 5 atencao: AT-1 assert de RF-14 satisfeito pelo sufixo do default, AT-2 dois ramos com a mesma expectativa, AT-3 STACK_VALUES lista paralela, C-2 preset react sem golden byte-congelado, D-EXC excecao keyed por eixo vs SPEC por preset; + 4 sugestoes). Iteracao 2 = APPROVED, zero must_fix. Verificado por mutacao independente (10 sondas): oraculo literal EXPECTED_STACKS sangra em 3 cenarios; PATH ignorado -> 1 fail; prompt hardcoded -> 2 fail; byte do react alterado -> 3 fail. Congelado intocado (baseline()+NON_MOBILE). Ressalvas 🟢: N-1 (AXIS_IDS e o proprio oraculo - alargar o conjunto nao e pego; sem aceite que exija congelar), N-2 (SPEC 5 dizia 'QUESTIONS inalteradas' - wording corrigido pelo orquestrador)."
+    "last_invoked_at": "2026-10-19T11:16:45.312Z",
+    "last_status": "pending",
+    "session": "ses_eac1f5816ffe3Ss2dSdOAxMFlT",
+    "critical_issues": null,
+    "attention_issues": null,
+    "reviewer_notes": "code review do Batch 1 em andamento (background)"
   },
-  "overrides": [],
+  "overrides": [
+    {
+      "portao": "role-separation",
+      "ciclo": "opencode-v2-only",
+      "regra": "workflow-rules.md §0.1 — orchestrator NAO desenvolve (delega a developer-engineer)",
+      "motivo": "Bloqueio ovo-e-galinha: o runtime estava SEM agentes por causa do proprio defeito (setup() dos 2 plugins no-op retornava objeto => TypeError => reload falha => registry de agentes cai). Sem agentes, nao havia como delegar. O fix e mecanico e SEM mudanca de comportamento (os 2 plugins sao no-op declarados; o unico efeito do codigo anterior era o TypeError).",
+      "escopo_da_excecao": "somente .opencode/plugins/harness-validator.js e .opencode/plugins/hitl-guardrail.js: remover o retorno truthy de setup() e o branch v1/Plugin.define (decisao v2-only do owner).",
+      "data": "2026-10-18",
+      "aprovado_por": "owner (excecao explicita)"
+    }
+  ],
   "overrides_history": [
     {
       "portao": "code_review",
@@ -133,7 +143,7 @@
       "created": "2026-10-18T00:00:00Z"
     }
   ],
-  "last_update": "2026-10-18T00:00:00Z",
+  "last_update": "2026-10-19T11:56:06.069Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -665,16 +675,33 @@
       "severidade": "P3"
     }
   ],
-  "batches": {
-    "1": "code_done_pending_remote",
-    "2": "done",
-    "3": "done",
-    "4": "done",
-    "5": "todo",
-    "6": "todo",
-    "7": "todo",
-    "8": "todo"
-  },
+  "batches": [
+    {
+      "id": "opencode-v2-only/batch-1",
+      "escopo": "Adapter v2 do gate.js + aposentadoria dos testes v1/dual + spec novo de contrato + REPORT Anexo B",
+      "status": "code_complete_c1_closed_awaiting_review",
+      "evidencia": {
+        "report": "harness/opencode-v2-only.json (agora schema-valido)",
+        "suiteFull": "exit 0 (plugins 368/0, installer 502/0, static 10 PASS/0 FAIL/2 INFO, vendor OK)",
+        "selo": "sha256(suiteFull) identico ao HEAD",
+        "mutacoes": "m1 setup()->objeto => 340/28; m2 decide fail-open => 321/47 + detector I1; m3 assercao invertida => 367/1; todas revertidas byte-igual",
+        "i1": "12/12 nucleos puros byte-identicos ao HEAD",
+        "zero_linhas": [
+          "harness.config.json",
+          ".opencode/plugins/lib/**"
+        ],
+        "runtime": "reload limpo pos-touch, 19 agentes, 0 fatais novos",
+        "diff_stat": "13 arquivos, 739 insertions / 722 deletions",
+        "suite": "379/0 (pos C-1)"
+      },
+      "ressalvas": {
+        "baseline_divergente": "brief dizia 311/41; medido hoje 300/24 (324 registrados) — specs seguiram sendo editadas apos a morte da sessao anterior; numeros do REPORT, nenhum inventado",
+        "C1": "ABERTO (dono orquestrador): REPORT omite `counts` (schema exige; contraprova nega counts nao observados) — decisao vigente e manter o desvio declarado; fechar exige emendar gate.js OU o schema",
+        "residuo": "opencode.json.rt02.bak (untracked, desestagiado) — backup do pre-RT-02, mantido como rede de seguranca"
+      },
+      "aposentados": "43 `it` + 7 `describe` removidos (contrato v1/dual extinto), 50 adicionados; 352 -> 368"
+    }
+  ],
   "scope_additions": [
     "U10 - SDD sob o harness (SDD-01/02/03, Batch 7)",
     "U11 - rename reviewer para code-reviewer (Batch 7)"
@@ -1009,7 +1036,10 @@
       "evidencia": "gate.js:653-678 (gateCompletionAnchorA exige REPORT+seal); .agents/schemas/harness-report.schema.json (counts obrigatorio, unit/it/frontend com passed/failed/skipped); gate.js:624-626 (DENY_CONTRAPROVE_DIVERGENT cause=counts-unverifiable); teste FU-09 em gate.spec.mjs:897,917 ('stated counts + unobserved counts => deny, both modes'); defaultContraproveExec retorna counts:null (gate.js:561-572)",
       "consequencia": "Um REPORT conforme o schema NAO passa na contraprova: o executor padrao so observa exit code. Logo escrever current_phase=Completed exige um REPORT SEM counts — que o gate aceita (nao valida schema) e o schema proibe. O ciclo foi arquivado por decisao explicita do owner nessa condicao, com o desvio declarado no proprio REPORT.",
       "nao_resolvido_aqui": "Corrigir o conflito exige emendar gate.js OU o schema (paths protegidos) — ciclo proprio. Opcoes: (a) gate ignora counts quando o executor nao os observa (trata como nao-comparavel, nao como divergente); (b) executor passa a observar counts; (c) schema torna counts opcional.",
-      "data": "2026-10-16"
+      "data": "2026-10-16",
+      "status": "RESOLVED",
+      "resolved_at": "2026-10-19T11:43:00.949Z",
+      "resolucao": "Via (a) decidida pelo owner (D-15) e implementada: counts nao-observavel => NAO-COMPARAVEL (allow com nota `counts-unverifiable`), nunca `contraprove-divergent`; divergencia real segue DENY. Somado: validador real de `harness/*.json` contra o schema (17/17) — antes invisivel ao CI. Evidencia: 379/0, suiteFull exit 0, M-DIVERGENT/M-UNVERIFIABLE/M-SCHEMA sangram. Regra: `regras/projetos/harness/contraprova-counts-nao-observavel-e-nao-comparavel`."
     }
   ],
   "cycle_eixos_stack": {
@@ -1233,12 +1263,174 @@
     "correcao_do_experimento": "O experimento (C) foi INVALIDO por premissa errada: remover as entradas de `plugin` do opencode.json NAO desliga os plugins locais — eles sao auto-carregados do diretorio .opencode/plugins/. Para desligar de fato seria preciso MOVER os arquivos do diretorio.",
     "estado_final_esperado": "opencode.json: `plugin` vazio (local auto-carrega; a chave e npm-only) + agentes com description + mapa agents/system removido. Proximo: opencode service restart => debug agents deve listar os 9; se ainda nao listar, mover os 3 plugins para fora de .opencode/plugins/ (elimina a falha de load) e testar de novo.",
     "migracao_pendente": "Ciclo opencode-v2-plugin-migration precisa ser RE-APONTADO: o alvo era Plugin.define (1.18.30), inexistente no v2.0.32. Nova forma: export const HarnessGate = async (ctx) => ({ 'tool.execute.before': ..., event: ... }), preservando os nucleos puros. A SPEC desse ciclo deve ser corrigida antes de executar.",
-    "desfecho_final": "AGENTES RESTAURADOS (2026-10-18): description obrigatoria + remocao do mapa agents/system + permission no lugar de tools => opencode debug agents lista os 9 do harness (verificado). Plugins seguem OFF (ciclo opencode-v2-only). Hipotese anterior (servico velho segurando config) REFUTADA: o runtime re-le o config a quente."
+    "desfecho_final": "AGENTES RESTAURADOS (2026-10-18): description obrigatoria + remocao do mapa agents/system + permission no lugar de tools => opencode debug agents lista os 9 do harness (verificado). Plugins seguem OFF (ciclo opencode-v2-only). Hipotese anterior (servico velho segurando config) REFUTADA: o runtime re-le o config a quente.",
+    "causa_raiz_definitiva": {
+      "achado": "Um GIT WORKTREE VELHO do proprio repo (~/.local/share/opencode/worktree/cd0632/nimble-meadow, branch feat/prd-adr-pipeline, commit b7d5578, 2026-10-15) era lido pelo runtime como FONTE DE CONFIG.",
+      "porque_quebrava": [
+        "o opencode.json DELE ainda tinha o shape v1/dual (plugin com caminhos locais + plugins {id,path} + agents/system + permissions) => o normalizador aplicava esse shape invalido e os agentes do harness sumiam do registry",
+        "o .opencode/plugins/gate.js DELE (15/10) tinha setup() retornando OBJETO (inclusive no ramo alreadyRegistered) => o runtime CHAMA o retorno => TypeError: t is not a function => failed to reload plugins => registry de agentes cai"
+      ],
+      "gatilho": "qualquer reload de config/plugin (mudanca de arquivo, ajuste de opencode.json pelo owner) reaplicava o worktree velho => oscilacao dos agentes (iam e voltavam)",
+      "conserto_aplicado": "neutralizacao CIRURGICA e REVERSIVEL do que o runtime le: opencode.json -> opencode.json.stale-disabled e .opencode/plugins -> .opencode/plugins.stale-disabled dentro do worktree velho. O worktree tinha ZERO trabalho nao commitado antes.",
+      "verificacao": "2 reloads consecutivos: 0 failed to reload plugins, 19 agentes (9 do harness + 3 cavecrew + 7 built-in) em ambos",
+      "limpeza_definitiva_pendente": "decisao do owner: git worktree remove /home/joao/.local/share/opencode/worktree/cd0632/nimble-meadow + git worktree prune, e remover o workspace da UI do app (a branch feat/prd-adr-pipeline ja foi concluida/arquivada)"
+    },
+    "terceira_causa_medida": {
+      "achado": "Mutacao IN-PLACE de um plugin carregado mata o registry global",
+      "evidencia": "log 2026-10-18T23:24:31.487: o developer-engineer rodou a PROVA DE MUTACAO (`cp gate.js /tmp/... && sed -i` pondo `setup()` a retornar `{}`); o watcher de `.opencode/plugins/` recarregou o arquivo mutado as 23:24:32.245 e o runtime morreu com `TypeError: t is not a function` -> `failed to reload plugins` (23:24:32.321) -> `Session.AgentNotFoundError: developer-engineer` (23:24:36) => a PROPRIA sessao do dev morreu no meio da prova",
+      "regra": "prova de mutacao de plugin NUNCA pode ser feita escrevendo em `.opencode/plugins/**` (o watcher recarrega na hora e o registry cai globalmente). Fazer sobre COPIA em /tmp ou com HARNESS_GATES=off no processo de teste; nunca in-place com o runtime vivo.",
+      "estado_pos_incidente": "arquivo restaurado (diff gate.js x /tmp/opencode/gate.orig.js = IDENTICO); 2 reloads limpos, 0 fatais, 19 agentes"
+    },
+    "fontes_de_config_mapeadas": {
+      "carregados_de_fato": [
+        "~/.config/opencode/plugins/{brain-session.js,caveman.js,rtk.ts,toon.js} (globais, usam `Plugin.define` — que NAO existe no v2.0.32)",
+        "/home/joao/fusionlf/wsProjeto/harness/.opencode/plugins/{gate.js,harness-validator.js,hitl-guardrail.js}"
+      ],
+      "normalizados_mas_skipados": "os 11 projetos irmaos (atlas-ecm, atlas-admin, taskflow, medflow, ...) tem `opencode.json` com shape v1/dual + `.opencode/plugins/` de 15/10; o normalizador marca as chaves invalidas como `skipped malformed` (NAO fatal) — ruido, nao causa do flap",
+      "neutralizado": "worktree velho `~/.local/share/opencode/worktree/cd0632/nimble-meadow` (opencode.json + .opencode/plugins renomeados para *.stale-disabled)"
+    },
+    "limpeza_definitiva": {
+      "feito_em": "2026-10-18",
+      "comando": "git worktree remove --force /home/joao/.local/share/opencode/worktree/cd0632/nimble-meadow && git worktree prune",
+      "seguranca": "branch `feat/prd-adr-pipeline` PRESERVADA; `git log origin/main..feat/prd-adr-pipeline` = VAZIO (zero commits nao pushados); zero trabalho nao commitado antes",
+      "resultado": "git worktree list => so o repo principal (98f2e81 [main]); diretorio do worktree inexistente",
+      "config_v2_only_confirmada": {
+        "plugin": [],
+        "plugins": [],
+        "root_permission": {
+          "task": "ask"
+        }
+      },
+      "pendente_ui": "remover o workspace 'nimble-meadow' da UI do app (o runtime nao tem mais o dir para ler)"
+    }
   },
   "enforcement_status": {
-    "estado": "OFF",
-    "motivo": "os 3 plugins locais falham ao carregar no runtime v2.0.32 (export objeto onde o loader chama funcao) — NAO e kill-switch (HARNESS_GATES ausente/nao usado)",
-    "evidencia": "log: 'failed to reload plugins' + 'TypeError: t is not a function' (58x desde 2026-10-15)",
-    "corrige_em": "EX2-BE-01/02 + EX2-VAL-04 (ciclo opencode-v2-only)"
-  }
+    "estado": "ON (plugin carrega e o gate NEGOU uma escrita de teste)",
+    "evidencia": "log sem failed to reload plugins apos a neutralizacao + DENY orch-write-outside-allowlist observado",
+    "pendente": "DECISAO AINDA ABERTA (A/B/C) sobre `orchestrator.permission.edit`: config segue com `edit: deny` (mtime 19:40, nao alterada). Enquanto isso o orquestrador escreve APENAS os artefatos de governanca (`.spec/**`, `workflow-state.json`) via `bash` — evasao DECLARADA (o gate nao cobre `bash`); a intencao do allowlist autoriza. Opcao A = trocar 1 linha para `permission.edit: \"allow\"`."
+  },
+  "findings": [
+    {
+      "id": "F-01",
+      "ciclo": "opencode-v2-only",
+      "severidade": "P2",
+      "titulo": "isOrchAllowlisted nao normaliza caminho absoluto => deny falso-positivo",
+      "evidencia": ".opencode/plugins/gate.js:391-398 — compara normalized.startsWith('.spec/'); um filePath ABSOLUTO dentro do workspace nao casa => DENY orch-write-outside-allowlist em path legitimo",
+      "correcao_proposta": "normalizar contra a raiz do workspace antes da comparacao"
+    }
+  ],
+  "decisions": [
+    {
+      "at": "2026-10-19T11:30:16.660Z",
+      "id": "D-13",
+      "ciclo": "opencode-v2-only",
+      "tema": "autoridade dos 5 agentes",
+      "decisao": "REVERTER a ampliacao v1->v2: `edit: deny` em codebase-analyzer, qa-engineer, product-manager, architect, security-engineer; `write: deny` tambem em codebase-analyzer e qa-engineer (read-only, alinha com as descriptions 'nao escreve'/'nao corrige'). product-manager/architect mantem `write` (prd-adr-pipeline §5 exige criar .spec/prd/**).",
+      "aplicado_em": "opencode.json",
+      "evidencia": "reload limpo pos-edicao, 19 agentes; backup pre-edicao em /tmp/opencode/opencode.pre-edit.json"
+    },
+    {
+      "at": "2026-10-19T11:30:16.660Z",
+      "id": "D-14",
+      "ciclo": "opencode-v2-only",
+      "tema": "raio de explosao do throw no setup()",
+      "decisao": "MANTER o throw (fail-closed) e DECLARAR o raio: falha de load derruba o registry global de agentes (RT-02) => harness degradado = app indisponivel. Custo aceito e escrito na SPEC §3.",
+      "aplicado_em": ".spec/backend/opencode-v2-only/SPEC.md §3"
+    },
+    {
+      "at": "2026-10-19T11:30:16.660Z",
+      "id": "D-15",
+      "ciclo": "opencode-v2-only",
+      "tema": "C-1 (counts na contraprova)",
+      "decisao": "FECHAR C-1 agora pela opcao (a): executor nao-observavel => counts NAO-COMPARAVEL (nao divergente). Emenda em gate.js => o ramo de counts deixa de ser codigo morto. Tambem falta validacao de harness/*.json contra o schema (invisivel ao CI) — incluir teste.",
+      "status": "enfileirado para o developer-engineer (continuacao do loop de correcao do Batch 1)"
+    },
+    {
+      "at": "2026-10-19T11:30:16.660Z",
+      "id": "D-16",
+      "ciclo": "opencode-v2-only",
+      "tema": "escopo pos-correcao",
+      "decisao": "FECHAR O BATCH 1 primeiro: re-review (zero 🔴) -> commit com trailer Harness-Gate-Change -> so entao decidir Batch 2 (instalador) e Batch 3 (prosa/supersession)."
+    }
+  ],
+  "pending_dev_queue": [
+    {
+      "id": "C-1-fix",
+      "prioridade": "P1",
+      "escopo": "gate.js: counts de executor nao-observavel => nao-comparavel (nao divergente); destravar o ramo de counts da contraprova",
+      "extra": "teste que valida harness/*.json contra .agents/schemas/harness-report.schema.json (hoje nada valida; violacao invisivel ao CI)",
+      "nota": "rodar como CONTINUACAO do loop de correcao do Batch 1 (mesma sessao), nao como batch novo"
+    },
+    {
+      "id": "D13-guard",
+      "prioridade": "P2",
+      "ciclo": "opencode-v2-only",
+      "escopo": "estender  para assertar  nos 5 agentes revertidos (codebase-analyzer, qa-engineer, product-manager, architect, security-engineer) — hoje so os 3 do I5 tem guarda",
+      "origem": "🟡-N1 do re-review (aceite de SPEC sem mecanismo)",
+      "nota": "nao usar  como garantia separada: o runtime mapeia write -> acao edit"
+    }
+  ],
+  "spec_sync": {
+    "at": "2026-10-19T11:30:16.660Z",
+    "arquivo": ".spec/backend/opencode-v2-only/SPEC.md",
+    "mudancas": "§0 (linha Plugins -> contrato MEDIDO; fatos medidos expandidos: payload `input`, subscribe async-iterable, 3 nomes confirmados, throw do handler aborta a tool, Plugin.define identity shim), RF-01 (objeto + setup->undefined + teste pela entrada real), RF-03 (+autoridade dos 5), T2 (objeto/undefined/envelope), §3 (+raio do throw, +mutacao in-place)",
+    "backup": "/tmp/opencode/SPEC.pre.md"
+  },
+  "open_items": [
+    {
+      "id": "A-1",
+      "prioridade": "P2",
+      "ciclo": "opencode-v2-only",
+      "titulo": "`Completed` real nega `sealed-command-mismatch {cause:'empty-seal'}` quando `HARNESS_SEAL_JSON` esta ausente",
+      "declarado_em": "harness/opencode-v2-only.json",
+      "nota": "Nao e C-1; declarado pelo dev no fecho do C-1. Decidir: fornecer o env do selo OU aceitar/declarar o bloqueio do `Completed`.",
+      "status": "RESOLVED_POR_INVESTIGACAO",
+      "resolved_at": "2026-10-19T11:45:20.015Z",
+      "diagnostico": "NAO e defeito de codigo: e PROSA ORFA (DOC-01). A regra `.agents/rules/harness-config.md:46` afirma que o `gate.js` 'embeds the published seal', mas o codigo NAO embute (grep de literal sha256 em gate.js = 0). `loadPublishedSeal` (gate.js:752-760) le `ctx.publishedSeal` -> `HARNESS_SEAL_JSON` (env) -> senao `null` => `verifySealOrDeny` nega `sealed-command-mismatch {cause:'empty-seal'}` (fail-closed declarado no proprio comentario: 'the trust root is rollout step 1, NOT the worktree' — U6=b).",
+      "resolucao": {
+        "operacional": "O trust root e o rollout passo 1: o host DEVE exportar HARNESS_SEAL_JSON no processo do runtime. Valor exato (verificado com verifySeal => {ok:true}): {\"suiteFull\":\"c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2\",\"unit\":\"daba8c5465bffe061738235b274c497a4e8e761e41c5e79d4c671a72231cffc7\"}",
+        "prosa": "Batch 3 (RF-06): corrigir `.agents/rules/harness-config.md:46` — 'embeds the published seal' -> 'reads the published seal from HARNESS_SEAL_JSON (rollout step 1 = trust root); absent => fail-closed empty-seal'. Sem isso a regra promete um mecanismo que o codigo nao tem.",
+        "regenerar": "Se `commands.suiteFull` mudar, o selo muda: `node --input-type=module -e \"import {sealCommands} from './.opencode/plugins/lib/seal.mjs'; ...\"` (mesmo comando usado aqui)."
+      }
+    }
+  ],
+  "batch3_scope": {
+    "prosa": [
+      ".agents/rules/gate-contract.md I5: `tools.write/edit` -> `permission.edit` (RF-06)",
+      ".agents/rules/harness-config.md:46: 'embeds the published seal' -> leitura de HARNESS_SEAL_JSON (A-1)",
+      ".agents/rules/gate-contract.md I5: nota de que `codebase-analyzer`/`qa-engineer` passaram a `write:deny` (D-13)"
+    ],
+    "supersession": "declarar `opencode-v2-plugin-migration` superseded (SPEC/PROPOSAL novo + state), SEM editar os artefatos dele (RF-06)"
+  },
+  "batch2_scope": {
+    "objetivo": "RF-04 — o merge do instalador deixa o destino **v2-only** (e nao preserva o shape v1/dual).",
+    "funcao_alvo": "installer/install.mjs :: mergeOpencodeJson (linha 702) + planMerge (761-781) + applyMerge (838-840)",
+    "gaps_medidos_no_codigo_atual": [
+      "`plugin`: faz UNIAO (`[...existing.plugin, ...incoming.plugin]`) => com o incoming v2-only (`plugin: []`) o destino MANTEM os caminhos locais antigos. RF-04 exige REMOCAO.",
+      "chaves obsoletas NAO sao removidas: o laco `for (const [k,v] of Object.entries(incoming))` so ADICIONA quando `merged[k] === undefined`, e `agents`/`system`/`permissions`/`server` nunca sao tocados => destino fica com shape dual (nao v2-only).",
+      "`agent`/`permission` divergentes => `conflict = true` => vira `action: 'flag'` => o init (create-only, assertCreateOnly) ABORTA com `flagged-open`. Preciso decidir: bloco gerenciado do harness SUBSTITUI (nao conflita) as chaves que ele proprio gera."
+    ],
+    "testes_a_escrever": [
+      "destino com shape v1/dual COMPLETO (plugin local + plugins[] + agents/system + permissions) => resultado v2-only (sem `agents`, sem `permissions`, `plugin` vazio, `agent` com description+permission)",
+      "destino sem opencode.json => recebe o template (propagacao preservada)",
+      "destino com chaves do USUARIO nao gerenciadas (ex.: `mcp` extra, `instructions` proprias) => preservadas (nao regride o 'only-add' do mcp)",
+      "idempotencia: rodar 2x => 2a vez `noop`"
+    ],
+    "restricao": "NAO tocar `commands.suiteFull`/selo; manter o comportamento `only-add` do `mcp`; `installer/` continua com rede-zero (checkV15).",
+    "risco_ambiente": "TD-01/TD-01b: atlas-ecm e taskflow tem a receita exata do fatal (config antiga + gate.js com setup->objeto). O merge corrigido resolve instalacoes NOVAS; os projetos existentes precisam de migracao (rota a decidir)."
+  },
+  "advisories": [
+    {
+      "at": "2026-10-19T11:56:06.069Z",
+      "origem": "re-review 2026-10-19",
+      "itens": [
+        "🟡-N1 (write alias + guarda D-13 ausente)",
+        "🟢-N2 runGatesShim ramo redundante (gate.js:1221-1224)",
+        "🟢-N3 nota perdida no cache (gate.js:635-639)",
+        "🟢-N4 counts sensivel a ordem de chaves (fail-closed)",
+        "🟢-N5 validador e codigo morto em producao (mover p/ lib/)",
+        "🟢-N6 residuos"
+      ]
+    }
+  ]
 }

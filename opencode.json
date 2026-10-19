@@ -1,6 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "$comment": "Dual-runtime config (opencode v1+v2 migration, PL-05): v2 keys (plugins, permissions, agents system) win when both shapes are present; v1 keys (plugin, permission task, agent prompt) are the fallback. Removal of v1 keys is out of scope. Plugins and config load at boot — restart the runtime to reload.",
+  "$comment": "v2-only config (opencode v2.0.32). Shape unico: chave `agent` (singular) com `description` OBRIGATORIA + `permission`; `plugin`/`plugins` VAZIOS (plugin local e auto-carregado de `.opencode/plugins/`). O shape v1/dual (`server`, mapa `agents`/`system`, chave `permissions`, `plugin` com caminhos locais) foi REMOVIDO — ver ciclo `.spec/backend/opencode-v2-only/`. Contrato de plugin MEDIDO: `export default { id, setup }` com `setup(ctx)` retornando `undefined` (retorno truthy e CHAMADO pelo runtime => `TypeError` => `failed to reload plugins` => registry global de agentes cai).",
   "plugin": [],
   "plugins": [],
   "instructions": [
@@ -33,8 +33,9 @@
       "prompt": "{file:./.agents/agents/codebase-analyzer/AGENT.md}",
       "description": "Analise estatica de codigo e arquitetura; nao escreve.",
       "permission": {
-        "edit": "allow",
-        "bash": "allow"
+        "edit": "deny",
+        "bash": "allow",
+        "write": "deny"
       }
     },
     "product-manager": {
@@ -42,7 +43,7 @@
       "prompt": "{file:./.agents/agents/product-manager/AGENT.md}",
       "description": "Validacao de negocio: escopo, aceite e riscos de produto.",
       "permission": {
-        "edit": "allow",
+        "edit": "deny",
         "bash": "allow"
       }
     },
@@ -51,8 +52,9 @@
       "prompt": "{file:./.agents/agents/qa-engineer/AGENT.md}",
       "description": "Execucao do harness/qualidade e verificacao independente (nao corrige).",
       "permission": {
-        "edit": "allow",
-        "bash": "allow"
+        "edit": "deny",
+        "bash": "allow",
+        "write": "deny"
       }
     },
     "architect": {
@@ -60,7 +62,7 @@
       "prompt": "{file:./.agents/agents/architect/AGENT.md}",
       "description": "Decisoes arquiteturais, ADRs e integridade estrutural.",
       "permission": {
-        "edit": "allow",
+        "edit": "deny",
         "bash": "allow"
       }
     },
@@ -69,7 +71,7 @@
       "prompt": "{file:./.agents/agents/security-engineer/AGENT.md}",
       "description": "Auditoria de seguranca (OWASP/ASVS) por fase do SDD.",
       "permission": {
-        "edit": "allow",
+        "edit": "deny",
         "bash": "allow"
       }
     },
