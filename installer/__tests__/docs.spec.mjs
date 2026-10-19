@@ -173,3 +173,25 @@ describe('EX-FE-13 nota de eixo (delta: AGENTS.md ausente -> README.md)', () => 
     assert.ok(!fs.existsSync(new URL('../../AGENTS.md', import.meta.url)), 'AGENTS.md nao existe (delta emendado para README.md)');
   });
 });
+
+// ---------------------------------------------------------------------------
+// RF-04 (ciclo opencode-v2-only, review Batch 2): a prosa de instalacao tem de
+// refletir o merge v2-only — `plugin`/`plugins` sao PACOTES npm (o plugin local
+// e auto-carregado), nunca um array que DEVE conter o path do gate.
+// ---------------------------------------------------------------------------
+describe('RF-04 INSTALACAO.md / SKILL.md — prosa do merge v2-only (anti-inversao)', () => {
+  const inst = read(new URL('../../docs/INSTALACAO.md', import.meta.url));
+  const skill = read(SKILL);
+
+  it('INSTALACAO.md V1: `plugin` SEM path local (contrato antigo invertido)', () => {
+    assert.ok(!/array contém path do gate/.test(inst), 'contrato antigo (path do gate no array) removido');
+    assert.match(inst, /auto-carregado/, 'declara o plugin local como auto-carregado');
+    assert.match(inst, /pacotes npm/, 'declara `plugin` como lista de pacotes npm');
+  });
+
+  it('SKILL.md: regra de merge nao promete uniao de `plugin` nem preserva o bloco do harness', () => {
+    assert.ok(!/merge aditivo \(`plugin` união/.test(skill), 'texto antigo do merge aditivo removido');
+    assert.match(skill, /substituídos/, 'agent/permission substituidos pelo incoming');
+    assert.match(skill, /pacotes npm/, 'plugin/plugins = pacotes npm (preservados)');
+  });
+});

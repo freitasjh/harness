@@ -265,7 +265,7 @@ Após `init` com `checks: PASS`, valide os 5 itens. Todos binários.
 
 | # | Item | Comando | Esperado ✅ |
 |---|------|---------|-------------|
-| V1 | Plugin gate.js registrado | `node -e "const o=require('/tmp/meu-destino/opencode.json'); console.log(o.plugin)"` | array contém path do gate (`gate.js`) — merge aditivo origem: `installer/install.mjs:434-467` |
+| V1 | `plugin`/`plugins` **sem** path local do harness | `node -e "const o=require('/tmp/meu-destino/opencode.json'); console.log(o.plugin, o.plugins)"` | **nenhuma** entrada sob `.opencode/plugins/` — o plugin local é **auto-carregado** pelo runtime e a chave é a lista de **pacotes npm** (merge v2-only, `mergeOpencodeJson`) |
 | V2 | `harness.config.json` válido | `node -e "const c=require('/tmp/meu-destino/harness.config.json'); console.log(c.version, c.project, JSON.stringify(c.mcp))"` | `version: 1`, `project` = Q&A, `mcp.required` contém `chrome-devtools` (node) ou `marionette_mcp,dart` / `dart` (mobile) — origem: `generateConfig` em `installer/install.mjs:363-403` |
 | V3 | Schema do relatório existe | `ls /tmp/meu-destino/.agents/schemas/harness-report.schema.json` | arquivo presente (path declarado no config: `evidence.schema` — origem: `installer/install.mjs:401`) |
 | V4 | Manifesto válido | `node -e "const m=require('/tmp/meu-destino/.harness-install.json'); console.log(m.manifestSchemaVersion, m.backupDir, 'checks.passed='+m.checks.passed)"` | `manifestSchemaVersion: 1`, `backupDir` fora do target, `checks.passed=true` — origem: `buildManifest` em `installer/install.mjs:593-619`, `MANIFEST_NAME` em `installer/install.mjs:16` |
@@ -381,7 +381,7 @@ node -e "const h=require('./harness/fase4-harness-medflow.json'); console.log(h.
 [ ] INIT sujo → exit 1 + bloco flagged-open citando doctor (0 writes)
 [ ] DOCTOR → marcadores D0..D6 em ordem + veredito + exit (0 SAUDÁVEL / 1 ATENÇÃO|QUEBRADO)
 [ ] DOCTOR → 0 writes (manifesto ausente antes => ausente depois)
-[ ] V1 opencode.json contém plugin gate.js (presente)
+[ ] V1 opencode.json `plugin`/`plugins` SEM path local (o plugin local é auto-carregado)
 [ ] V2 harness.config.json version=1 + project=Q&A + mcp.required correto (presente)
 [ ] V3 .agents/schemas/harness-report.schema.json (presente)
 [ ] V4 .harness-install.json manifestSchemaVersion=1 + backupDir fora do target (presente)

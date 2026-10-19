@@ -94,7 +94,7 @@ discriminador, ou `dart` com ele) = `BAD_ANSWER` (fail-closed).
 
 | Camada | Existe diferente → |
 |---|---|
-| `opencode.json` | merge aditivo (`plugin` união, `instructions` append; `permission`/`agent` preservam o destino; conflito real = flag) |
+| `opencode.json` | merge **v2-only**: `agent`/`permission` são o bloco do harness ⇒ **substituídos** pelo incoming; `plugin`/`plugins` são a lista de **pacotes npm** do destino ⇒ preservados (união) e só perdem entradas sob `.opencode/plugins/` (o plugin local é auto-carregado); chave v1/dual (`agents`/`system`/`permissions`/`server`) removida **por forma**; `instructions` append; conflito real = flag |
 | `.agents/agents/*` | anexa seção `Harness v7` se ausente; senão flag |
 | `.agents/rules/*`, `.agents/skills/*`, `.opencode/plugins/*` | **flag** (nunca auto-merge de prosa/código) |
 | `harness.config.json` | **sempre gerado** do Q&A (com backup do anterior) |

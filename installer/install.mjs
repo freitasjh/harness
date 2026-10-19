@@ -699,37 +699,123 @@ function layerOf(rel) {
   return 'other';
 }
 
+// Bloco gerenciado pelo PROPRIO harness (decisao do owner, 2026-10-19):
+// SUBSTITUIDO pelo incoming — nunca uniao, nunca only-add. Garante `agent` com
+// `description` + `permission` no shape v2-only (o bloco do harness nao e dado
+// do usuario). `plugin`/`plugins` NAO entram aqui: sao a lista de PACOTES npm
+// do usuario (SPEC §0) — ver mergePluginList.
+const HARNESS_MANAGED_CONFIG_KEYS = ['agent', 'permission'];
+
+// Marcador do shape v1/dual dentro de um mapa `agents` (o campo `tools` nao
+// existe no schema nativo do runtime — medicao abaixo).
+const HARNESS_AGENT_V1_MARKER = 'tools';
+
+function isPlainObject(v) {
+  return !!v && typeof v === 'object' && !Array.isArray(v);
+}
+
+// `agents` nativo = mapa de `ConfigAgent.Info` (sem `tools`). O harness gerou
+// um mapa cujas entradas carregam `tools` => e ESSE mapa que cai.
+function isHarnessV1AgentsMap(v) {
+  if (!isPlainObject(v)) return true; // nao e mapa => nao e o shape nativo
+  return Object.values(v).some(
+    (e) => isPlainObject(e) && Object.prototype.hasOwnProperty.call(e, HARNESS_AGENT_V1_MARKER),
+  );
+}
+
+// Chaves do shape v1/dual que o merge NAO carrega ao destino (RF-04). Remocao
+// SEMPRE por FORMA do que o HARNESS gerou — nunca por nome de chave cego.
+// Medicao 2026-10-19 (`opencode debug config`, runtime v2.0.32 +
+// `@opencode/schema` 2.0.29, sonda em /tmp):
+//   - `permissions` e chave NATIVA (array de `{action,resource,effect}`); o
+//     harness gerou um MAPA (`{subagent, shell}`) => cai so a forma nao-array.
+//   - `agents` e chave NATIVA (mapa de `ConfigAgent.Info`); o harness gerou um
+//     mapa com `tools` => cai so o mapa com marcador v1 (mapa nativo sobrevive).
+//   - `system`/`server` NAO existem no schema do runtime (medido) e o harness
+//     nunca os emitiu como chave de config (`git log -S '"server"'` em
+//     opencode.json = vazio; `server` e campo do export do MODULO de plugin
+//     `{id, server, setup}`, nao chave de `opencode.json`) => remocao defensiva
+//     limitada a forma objeto; escalar do usuario nunca cai.
+// Vale tambem na via de UPGRADE — destino que ja tinha o shape antigo sai
+// v2-only.
+function stripObsoleteConfigKeys(cfg) {
+  if (!Array.isArray(cfg.permissions)) delete cfg.permissions;
+  if (isHarnessV1AgentsMap(cfg.agents)) delete cfg.agents;
+  if (isPlainObject(cfg.system)) delete cfg.system;
+  if (isPlainObject(cfg.server)) delete cfg.server;
+}
+
+// Path LOCAL do harness: a UNICA forma removida de `plugin`/`plugins`. Nao casa
+// `./plugins/caveman/plugin.js` (plugin local do USUARIO — sobrevive).
+const HARNESS_LOCAL_PLUGIN_RE = /^\.?\/?\.opencode\/plugins\//;
+
+export function isHarnessLocalPluginEntry(entry) {
+  if (typeof entry === 'string') return HARNESS_LOCAL_PLUGIN_RE.test(entry);
+  if (isPlainObject(entry)) {
+    for (const key of ['path', 'source', 'file']) {
+      if (typeof entry[key] === 'string' && HARNESS_LOCAL_PLUGIN_RE.test(entry[key])) return true;
+    }
+  }
+  return false;
+}
+
+// `plugin`/`plugins` = lista de PACOTES npm (SPEC §0/`$comment` do template).
+// Only-add + remocao do path local do harness: npm/specifier, `{package,
+// options}` e path alheio sobrevivem.
+function mergePluginList(existing, incoming) {
+  const out = [];
+  const has = (e) => out.some((o) => JSON.stringify(sortDeep(o)) === JSON.stringify(sortDeep(e)));
+  for (const e of [...(Array.isArray(existing) ? existing : []), ...(Array.isArray(incoming) ? incoming : [])]) {
+    if (isHarnessLocalPluginEntry(e)) continue;
+    if (!has(e)) out.push(e);
+  }
+  return out;
+}
+
 export function mergeOpencodeJson(existing, incoming) {
+  const inc = incoming || {};
   const merged = { ...(existing || {}) };
   let conflict = false;
-  const plugins = new Set([...(existing?.plugin || []), ...(incoming?.plugin || [])]);
-  merged.plugin = [...plugins];
-  const instr = [...(existing?.instructions || [])];
-  for (const i of incoming?.instructions || []) if (!instr.includes(i)) instr.push(i);
+  // 1) v2-only (RF-04): chave obsoleta do shape v1/dual nunca sobrevive —
+  //    remocao por FORMA (ver stripObsoleteConfigKeys).
+  stripObsoleteConfigKeys(merged);
+  // 2) bloco gerenciado: substituido pelo incoming (normaliza `agent`/
+  //    `permission` no shape v2-only).
+  for (const k of HARNESS_MANAGED_CONFIG_KEYS) {
+    if (inc[k] !== undefined) merged[k] = inc[k];
+  }
+  // 3) `plugin`/`plugins`: lista de PACOTES npm do usuario — NUNCA substituida.
+  //    O merge so remove entradas sob `.opencode/plugins/` (o local do harness,
+  //    auto-carregado) e une o resto.
+  for (const k of ['plugin', 'plugins']) {
+    if (Array.isArray(merged[k]) || Array.isArray(inc[k])) merged[k] = mergePluginList(merged[k], inc[k]);
+  }
+  // 4) instructions: append — o harness so ADICIONA as suas; as proprias do
+  //    destino ficam (I5/RF-16: o que e do usuario nao se perde).
+  const instr = [...(merged.instructions || [])];
+  for (const i of inc.instructions || []) if (!instr.includes(i)) instr.push(i);
   if (instr.length) merged.instructions = instr;
-  // mcp: only-add (A3/RF-16). Host ausente => adota incoming; presente =>
-  // preserva host, une `required`, divergencia => flag (nunca remove server).
-  if (incoming && incoming.mcp !== undefined) {
+  // 5) mcp: only-add (A3/RF-16). DEFENSIVO (review A4): o template propagado
+  //    NAO tem chave `mcp` (medido), logo este ramo so roda em teste sintetico;
+  //    o shape real do runtime e `mcp.servers` (nao `mcp.required`). Host
+  //    ausente => adota incoming; presente => preserva host, une `required`,
+  //    divergencia => flag (nunca remove server).
+  if (inc.mcp !== undefined) {
     if (merged.mcp === undefined) {
-      merged.mcp = incoming.mcp;
+      merged.mcp = inc.mcp;
     } else {
       const hostReq = Array.isArray(merged.mcp && merged.mcp.required) ? merged.mcp.required : [];
-      const incReq = Array.isArray(incoming.mcp && incoming.mcp.required) ? incoming.mcp.required : [];
+      const incReq = Array.isArray(inc.mcp && inc.mcp.required) ? inc.mcp.required : [];
       const union = [...hostReq];
       for (const r of incReq) if (!union.includes(r)) union.push(r);
-      if (JSON.stringify(sortDeep(merged.mcp)) !== JSON.stringify(sortDeep(incoming.mcp))) conflict = true;
+      if (JSON.stringify(sortDeep(merged.mcp)) !== JSON.stringify(sortDeep(inc.mcp))) conflict = true;
       merged.mcp = { ...merged.mcp, required: union };
     }
   }
-  for (const [k, v] of Object.entries(incoming || {})) {
-    if (k === 'plugin' || k === 'instructions' || k === 'permission' || k === 'agent' || k === 'mcp') continue;
+  // 6) demais chaves (do usuario, ex. `$schema`/`$comment`): only-add.
+  for (const [k, v] of Object.entries(inc)) {
+    if (k === 'plugin' || k === 'plugins' || k === 'instructions' || k === 'permission' || k === 'agent' || k === 'mcp') continue;
     if (merged[k] === undefined) merged[k] = v;
-  }
-  // permission/agent so-adiciona: preserva destino, flag se divergir.
-  for (const k of ['permission', 'agent']) {
-    if (incoming?.[k] === undefined) continue;
-    if (merged[k] === undefined) { merged[k] = incoming[k]; continue; }
-    if (JSON.stringify(merged[k]) !== JSON.stringify(incoming[k])) conflict = true;
   }
   return { merged, conflict };
 }
@@ -773,11 +859,17 @@ export function planMerge(target, incomingFiles, _opts = {}) {
       }
       // deep-compare normalizado (whitespace-insensitive): stringify canonico recursivo.
       const canon = (o) => JSON.stringify(sortDeep(o));
-      if (canon(parsed) === canon(inc)) { plan.push({ path: rel, layer, action: 'noop' }); continue; }
-      const { conflict } = mergeOpencodeJson(parsed, inc);
-      plan.push(conflict
-        ? { path: rel, layer, action: 'flag', reason: 'permission/agent conflict: human must resolve' }
-        : { path: rel, layer, action: 'merge', reason: 'additive merge: plugin union, instructions append' });
+      const { merged, conflict } = mergeOpencodeJson(parsed, inc);
+      if (conflict) {
+        plan.push({ path: rel, layer, action: 'flag', reason: 'mcp divergence: human must resolve (only-add)' });
+        continue;
+      }
+      // A2 (review): `noop` pelo EFEITO do merge (ponto fixo), nunca pelo texto
+      // do incoming. Destino ja convergido com chave PROPRIA do usuario jamais
+      // casa `canon(parsed) === canon(inc)`, mas tambem nao muda — re-rodar
+      // `init` ali nao pode abortar `flagged-open` por um merge que nao escreve.
+      if (canon(merged) === canon(parsed)) { plan.push({ path: rel, layer, action: 'noop' }); continue; }
+      plan.push({ path: rel, layer, action: 'merge', reason: 'v2-only merge: bloco gerenciado substituido, plugin/plugins so perdem o path local do harness, chave v1 removida por forma, instructions append' });
       continue;
     }
     if (layer === '.agents/agents/*') {
@@ -1400,7 +1492,8 @@ export function main({ target, scriptedAnswers = {}, incomingFiles = {}, options
 // partir do Q&A (ADR-002, nunca copia config alheio) e usa como incoming o
 // conteudo versionado destas raizes do repo harness:
 //   - dirs que entram: .agents/agents, .agents/rules, .agents/schemas,
-//     .agents/skills, .opencode/plugins (+ o arquivo opencode.json, merge aditivo)
+//     .agents/skills, .opencode/plugins (+ o arquivo opencode.json, merge v2-only:
+//     bloco do harness substituido; plugin/plugins so perdem o path local)
 //   - o que exclui: segmentos node_modules e .git em qualquer nivel, o
 //     manifesto .harness-install.json (estado, nunca conteudo), o vendor-lock,
 //     e o tooling de CONSUMIDOR que nao e runtime: .opencode/plugins/__tests__
