@@ -1,13 +1,13 @@
 {
-  "current_feature": "harness-eixos-stack-p2",
-  "current_phase": "Completed",
-  "previous_phase": "BugFix",
-  "next_phase": null,
-  "type": "bugfix",
+  "current_feature": "opencode-v2-only",
+  "current_phase": "Execution",
+  "previous_phase": "Completed",
+  "next_phase": "Testing",
+  "type": "refactor",
   "layer": "instalador-config",
   "repo": "harness",
   "artifacts": {
-    "bug_tasks": ".spec/bugs/harness-eixos-stack-p2/TASKS.md",
+    "bug_tasks": ".spec/bugs/gate-counts-observation/TASKS.md",
     "bug_report": "harness/harness-eixos-stack-p2.json",
     "source_tech_debt": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
     "previous_archive": ".spec/archive/20261018-harness-eixos-stack/",
@@ -19,7 +19,13 @@
       "archive": ".spec/archive/20261016-prd-adr-pipeline/",
       "prd_adr": ".spec/prd/prd-adr-pipeline/",
       "harness_report": "harness/prd-adr-pipeline.json"
-    }
+    },
+    "c1_previous_bug": ".spec/bugs/harness-eixos-stack-p2/TASKS.md",
+    "proposal": ".spec/backend/opencode-v2-only/PROPOSAL.md",
+    "spec": ".spec/backend/opencode-v2-only/SPEC.md",
+    "plan": ".spec/backend/opencode-v2-only/PLAN.md",
+    "tasks": ".spec/backend/opencode-v2-only/TASKS.md",
+    "superseded_cycle": ".spec/backend/opencode-v2-plugin-migration/ (superseded: SPEC prescrevia Plugin.define, inexistente no runtime v2.0.32)"
   },
   "scope": {
     "interpretation": "esteira PRD->ADR->SDD no harness (visibilidade de intencao antes do codigo)",
@@ -177,15 +183,17 @@
   "plan_score": 1,
   "tasks_score": 1,
   "active_batch": {
-    "id": 5,
-    "of": 5,
+    "id": 1,
+    "of": 3,
     "agent": "developer-engineer",
     "tasks": [
-      "EX-FE-13",
-      "EX-VAL-14"
+      "EX2-BE-01",
+      "EX2-BE-02",
+      "EX2-VAL-03",
+      "EX2-VAL-04"
     ],
-    "code_review": "APPROVED (0 criticos; 6 atencao, das quais 4 sao contabilidade do orquestrador antes do P6 — C transcript no ciclo, D tabela do SPEC 11, E checkboxes/TASKS, F reconciliacao do state + trailer de path protegido)",
-    "status": "done_pending_user_gate"
+    "code_review": "pending",
+    "status": "in_progress"
   },
   "active_task": "IN-05",
   "pending_remote_url": false,
@@ -1163,5 +1171,74 @@
     "FU-55/57/58 (P3): incidente de processo auto-declarado (pkill -f), checkVendor nao pega edicao so-da-tabela de licenca, constante de prova do dry-run irreprodutivel no REPORT",
     "Commit do ciclo: .agents/rules/harness-config.md esta em protectedPaths => exige trailer Harness-Gate-Change / HARNESS_GATE_APPROVER (aprovacao humana no P6)",
     "push (nada enviado — 3 commits locais a frente de origin/main: ab66c40, 0c95c9e, 63660a7)"
-  ]
+  ],
+  "runtime_incident": {
+    "id": "RT-01",
+    "data": "2026-10-18T18:49:01-03:00",
+    "resumo": "O runtime desta sessao perdeu os agentes e skills do harness apos reinicio do app (instalacao refeita). Os ARQUIVOS estao intactos; o que se perdeu foi a ligacao runtime -> config do projeto.",
+    "evidencia": [
+      "~/.config/opencode/ modificado 2026-10-18T18:46",
+      "OpenCode Desktop reiniciado 2026-10-18T18:49:01 (PID 2824690); opencode serve --service de 2026-10-17T23:56",
+      "opencode.json do projeto INALTERADO (mtime 2026-10-15) e registra 9 agentes; .agents/agents com 10 dirs; .agents/skills com 46 entradas",
+      "git HEAD 98f2e81 (4 commits do dia intactos); working tree com apenas gate.js modificado + artefato B1 + workflow-state",
+      "tool task passou a responder Agent not found: developer-engineer; catalogo de skills encolheu (aviso do sistema: Previously loaded instructions no longer apply)"
+    ],
+    "efeito_no_ciclo": "B2 do bugfix gate-counts-observation ficou MEIO-FEITO: gate.js implementado (70+/3-, escrito 18:48:34) SEM os testes em gate.spec.mjs. Suite de plugins segue 352/352 (sem regressao, mas sem cobertura nova do par ALLOW+DENY).",
+    "risco": "o enforcement (gate.js) esta modificado e NAO testado, e o Desktop reiniciou DEPOIS da escrita (18:49 > 18:48) => o runtime pode estar aplicando a versao nao testada. Com a config do projeto nao carregada, os gates podem nao estar sendo aplicados.",
+    "acao": "owner vai restaurar o runtime (reabrir o projeto harness). Retomada: escrever os testes do B2 via developer-engineer, revisar via code-reviewer, provar o par ALLOW+DENY e as mutacoes, e so entao commitar (path protegido exige trailer Harness-Gate-Change)."
+  },
+  "resume_point": {
+    "ciclo": "gate-counts-observation",
+    "fase": "B2 (parcial)",
+    "feito": [
+      "B1 artefato .spec/bugs/gate-counts-observation/TASKS.md",
+      "B2 implementacao em .opencode/plugins/gate.js (observeCounts/sealedTestSegments/parseTestSummaryBlocks + defaultContraproveExec observando counts, fail-closed)"
+    ],
+    "falta": [
+      "testes do B2 em .opencode/plugins/__tests__/gate.spec.mjs (par ALLOW+DENY + FU-09 preservada + fail-closed da observacao)",
+      "provas de mutacao dos dois lados",
+      "B3 code review",
+      "B4 testes finais + REPORT",
+      "commit com trailer (gate.js e path protegido)"
+    ],
+    "bloqueio": "runtime sem os agentes do harness (RT-01)"
+  },
+  "runtime_incident_2": {
+    "id": "RT-02",
+    "data": "2026-10-18",
+    "titulo": "Runtime instalado (opencode v2.0.32) incompativel com os plugins do harness (escritos para a linha 1.18.x com Plugin.define)",
+    "causa_raiz": "O loader do v2.0.32 chama o export do plugin como FUNCAO; o harness exporta um OBJETO {id,server,setup} (o ternary cai no fallback porque Plugin.define NAO existe no binario instalado: grep -c = 0). Resultado: TypeError t is not a function => failed to reload plugins => o registry de agentes nao e montado => AgentNotFound (developer-engineer/orchestrator).",
+    "evidencia": [
+      "runtime: opencode v2.0.32; Plugin.define ausente (0); presentes: tool.hook(4), session.hook(12), event.subscribe(16), migrate-v1(3)",
+      "log: 58 ocorrencias de failed to reload plugins desde 2026-10-15T17:22Z (cronico, nao novo)",
+      "correlacao: reload falho -> 3s depois AgentNotFound (15/10 17:22Z e 18/10 18:48:34 local)",
+      "diagnosticos de config 97x: $.plugins.0/1/2 e $.permissions skipped malformed; $.agents.* retained native over legacy",
+      "o ciclo .spec/backend/opencode-v2-plugin-migration mira Plugin.define com alvo 1.18.30, e a aceitacao INV-01 pede load v2 sem o erro de export nao-funcao"
+    ],
+    "consequencia": "Neste runtime os gates do harness NAO estao carregados (enforcement OFF — nao por kill-switch, por falha de load) e os agentes/skills do harness nao resolvem.",
+    "experimento_em_curso": "RT-02/C: removidos os 3 plugins de opencode.json (plugin: [] e plugins: []) com backup opencode.json.rt02.bak; chaves agent/agents preservadas intactas (9/9). Objetivo: provar a causalidade (se os agentes voltarem apos restart, o plugin morto derrubava o registry) e desbloquear o trabalho. Como os plugins ja nao carregavam, remover NAO custa enforcement.",
+    "reverter": "cp opencode.json.rt02.bak opencode.json",
+    "proximo": "apos restart do app: (a) se os agentes voltarem => causalidade provada; migrar os 3 plugins para a API real do v2.0.32 (tool.hook/session.hook/event.subscribe + doc migrate-v1) re-apontando o ciclo opencode-v2-plugin-migration; (b) se NAO voltarem => investigar tambem o shape dos agentes (agents.*.system com referencia de arquivo) e as chaves marcadas malformed.",
+    "desfecho_experimento_C": "REFUTADO como causa unica: com os plugins removidos, o app reiniciou (19:24) e a config foi relida, mas os agentes NAO voltaram. Causa adicional encontrada: o SHAPE dos agentes.",
+    "causa_agentes": "Doc oficial v2 (opencode.ai/docs/agents, atualizada 17/10/2026): a chave e `agent` (singular) e `description` e OBRIGATORIA; `tools` esta DEPRECATED (usar `permission`); markdown vai em `.opencode/agents/` (PLURAL). O opencode.json do harness tem as DUAS formas e o normalizador do runtime escolheu a NATIVA (mapa `agents` com `system`) — forma que o v2 nao traduz em agente — e descartou o shape v1 (`agent`/`prompt`). Resultado: ZERO agentes do harness (debug agents so lista build/plan/explore/general/summary/compaction/title). Nenhum dos 9 agentes tinha `description` (obrigatoria).",
+    "evidencia_agentes": [
+      "opencode debug config: o runtime LE o projeto (/home/joao/fusionlf/wsProjeto/harness/opencode.json) - nao e problema de leitura",
+      "opencode debug agents: apenas os 7 agentes nativos; nenhum do harness",
+      "log: $.agents.* kind=conflict action=retained native value over legacy value (97x)",
+      "sondas descartaveis: .opencode/agent/*.md (singular) e .opencode/agents/*.md (plural) NAO registraram - provavelmente porque o registry vive no SERVICO de fundo, que roda desde 2026-10-17T23:56 (opencode serve --service PID 1752499) e nao foi reiniciado"
+    ],
+    "fix_aplicado": "opencode.json: `description` adicionada aos 9 agentes (obrigatoria no v2) + removido o mapa `agents`/`system` (shape invalido que vencia o conflito). Plugins seguem removidos (nao carregam no v2.0.32 de qualquer forma). Backup: opencode.json.rt02.bak. Validado: JSON ok, 9/9 com description.",
+    "passo_pendente": "opencode service restart (o SERVICO de fundo e quem detem a config/registry; reiniciar so o Desktop nao basta) e depois `opencode debug agents` deve listar os 9 agentes do harness.",
+    "plugin_api_v2": "CONFIRMADO pela doc oficial (opencode.ai/docs/plugins, 17/10/2026): plugin v2 = modulo que exporta FUNCAO(S); cada funcao recebe ctx {project, client, $, directory, worktree} e retorna um OBJETO DE HOOKS (tool.execute.before/after, event, shell.env, permission.*, ...). NAO existe Plugin.define. Local plugins em .opencode/plugins/ sao AUTO-CARREGADOS no startup; a chave `plugin` do config e para PACOTES NPM (o harness listava caminhos locais ali = interpretacao errada).",
+    "correcao_do_experimento": "O experimento (C) foi INVALIDO por premissa errada: remover as entradas de `plugin` do opencode.json NAO desliga os plugins locais — eles sao auto-carregados do diretorio .opencode/plugins/. Para desligar de fato seria preciso MOVER os arquivos do diretorio.",
+    "estado_final_esperado": "opencode.json: `plugin` vazio (local auto-carrega; a chave e npm-only) + agentes com description + mapa agents/system removido. Proximo: opencode service restart => debug agents deve listar os 9; se ainda nao listar, mover os 3 plugins para fora de .opencode/plugins/ (elimina a falha de load) e testar de novo.",
+    "migracao_pendente": "Ciclo opencode-v2-plugin-migration precisa ser RE-APONTADO: o alvo era Plugin.define (1.18.30), inexistente no v2.0.32. Nova forma: export const HarnessGate = async (ctx) => ({ 'tool.execute.before': ..., event: ... }), preservando os nucleos puros. A SPEC desse ciclo deve ser corrigida antes de executar.",
+    "desfecho_final": "AGENTES RESTAURADOS (2026-10-18): description obrigatoria + remocao do mapa agents/system + permission no lugar de tools => opencode debug agents lista os 9 do harness (verificado). Plugins seguem OFF (ciclo opencode-v2-only). Hipotese anterior (servico velho segurando config) REFUTADA: o runtime re-le o config a quente."
+  },
+  "enforcement_status": {
+    "estado": "OFF",
+    "motivo": "os 3 plugins locais falham ao carregar no runtime v2.0.32 (export objeto onde o loader chama funcao) — NAO e kill-switch (HARNESS_GATES ausente/nao usado)",
+    "evidencia": "log: 'failed to reload plugins' + 'TypeError: t is not a function' (58x desde 2026-10-15)",
+    "corrige_em": "EX2-BE-01/02 + EX2-VAL-04 (ciclo opencode-v2-only)"
+  }
 }

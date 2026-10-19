@@ -1,0 +1,292 @@
+{
+  "version": 1,
+  "demand": "opencode-v2-only",
+  "agent": "developer-engineer",
+  "phase": "Execution",
+  "batch": "1/3 — EX2-BE-01 (gate.js adapter) + EX2-BE-02 (2 satellites) + EX2-VAL-03 (contrato/matriz) + EX2-VAL-04 (runtime). Pós-review: 2 🔴 + 5 🟡/🟢 (fix loop 1) + C-1/D-15 (fix loop 2)",
+  "gitSha": "98f2e8189552e0c55111176b86072dd4ac6358a9",
+  "commands": [
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 781,
+      "stdoutHash": "sha256:d17dfecbb63b9bc9216647ac1d45d5170fcb4a693a3f04e898c9630a76188e57",
+      "capture": "/tmp/opencode/b1fix/c1/plugins.log"
+    },
+    {
+      "cmd": "node --test \"installer/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 5633,
+      "stdoutHash": "sha256:41bd872afb235a13a1def4733580864f5e5ea3549467fbf7ff74fee02d7e0846",
+      "capture": "/tmp/opencode/b1fix/c1/installer.log"
+    },
+    {
+      "cmd": "node scripts/static-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 147,
+      "stdoutHash": "sha256:db23ee52fda33ba181cc06ed99923879ef3e0a49765b2946be8d6f47807f4d1e",
+      "capture": "/tmp/opencode/b1fix/c1/static.log"
+    },
+    {
+      "cmd": "node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 94,
+      "stdoutHash": "sha256:e5e528c52d79fceaa1be828bd89116aa6e0be73294d2e99d39c4febe99e84516",
+      "capture": "/tmp/opencode/b1fix/c1/vendor.log"
+    }
+  ],
+  "verbatimRun": {
+    "cmd": "harness.config.json :: commands.suiteFull (resolvido do config, nao de literal de prosa)",
+    "exitCode": 0,
+    "durationMs": 6721,
+    "stdoutHash": "sha256:753bb7c75613cdf5d43387e99f0b1a2da8d761540f27dba5219a050e85edd5dd",
+    "capture": "/tmp/opencode/b1fix/c1/suitefull.log",
+    "note": "Execucao unica, verbatim, com && (short-circuit). As 4 etapas de commands[] concatenadas com ' && ' reproduzem byte-a-byte a string selada.",
+    "seal": {
+      "sha256_suiteFull": "c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2",
+      "same_as_head": true,
+      "evidence": "git diff --numstat harness.config.json = vazio (0 linhas); sha256(suiteFull) identico ao HEAD 98f2e81 e ao reportado nos ciclos anteriores"
+    }
+  },
+  "counts": {
+    "unit": { "passed": 379, "failed": 0, "skipped": 0 },
+    "it": { "passed": 502, "failed": 0, "skipped": 0 },
+    "frontend": { "passed": 0, "failed": 0, "skipped": 0 }
+  },
+  "countsNote": "C-1/D-15: counts agora DECLARADOS (schema exige). O executor padrao da contraprova observa apenas exit code (defaultContraproveExec => counts: null), logo a contraprova devolve allow com a nota declarada `counts-unverifiable` (nunca `contraprove-divergent`). Divergencia REAL (counts observaveis e diferentes) continua DENY.",
+  "observedCounts": {
+    "unit_plugins": { "tests": 379, "passed": 379, "failed": 0, "skipped": 0, "suites": 94 },
+    "it_installer": { "tests": 502, "passed": 502, "failed": 0, "skipped": 0, "suites": 168 },
+    "static_checks": { "pass": 10, "fail": 0, "info": 2 },
+    "vendor_check": "vendor-check OK (.agents/skills/.vendor-lock.json)",
+    "suites_total": 881
+  },
+  "stdoutExcerpt": [
+    "plugins: tests 379 / pass 379 / fail 0 / skipped 0 (suites 94) — era 372 no fix loop 1 e 352 no HEAD",
+    "installer: tests 502 / pass 502 / fail 0 / skipped 0 (suites 168)",
+    "static-checks: 10 PASS / 0 FAIL / 2 INFO (V15 rede em installer/=0)",
+    "vendor-check OK (.agents/skills/.vendor-lock.json)"
+  ],
+  "h1": {
+    "command": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
+    "exitCode": 0,
+    "tests": 379,
+    "passed": 379,
+    "failed": 0,
+    "suites": 94,
+    "verdict": "GREEN — 379 pass / 0 fail (suite de plugins do Batch 1 apos fix loop 1 + C-1)"
+  },
+  "h2": {
+    "referenceBaseline": {
+      "what": "HEAD (codigo + specs do HEAD) — a suite de referencia antes de qualquer dev",
+      "command": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" (em /tmp/opencode/ex2-b1-head, git archive HEAD)",
+      "tests": 352,
+      "passed": 352,
+      "failed": 0,
+      "capture": "/tmp/opencode/ex2-b1-head-plugins.log",
+      "verdict": "0 falhas pre-existentes na suite de referencia (H2 satisfeito no HEAD)"
+    },
+    "fixLoop1Baseline": {
+      "what": "estado entregue pelo Batch 1 antes do fix loop 1 (pos-review)",
+      "tests": 372,
+      "passed": 372,
+      "failed": 0,
+      "verdict": "0 falhas; o fix loop 1 acrescentou os 7 testes dos 2 🔴 (372)"
+    },
+    "action": "as 24 falhas do baseline do ciclo eram o PROPRIO escopo do Batch 1 (contrato v1/dual -> v2-only). No fix loop 1, a fixture FU-09 foi REESCRITA para a semantica C-1/D-15 (allow com nota `counts-unverifiable` + DENY de divergencia real) — nao afrouxada, apenas corrigida para o contrato decidido pelo owner. Nenhum @Disabled/@Ignore/skip: 0 skipped nas 4 etapas."
+  },
+  "h3": {
+    "declared": "N/A browser — harness.config.json stack.backend/stack.frontend = N/A, infra = null (repo de tooling Node ESM). O E2E deste repo e a VERIFICACAO DE RUNTIME do plugin (o defeito era de load).",
+    "cleanLoadAfterFix": [
+      "2026-10-18T23:29:28.025Z msg=\"loading plugin\" id=.../.opencode/plugins/gate.js",
+      "2026-10-18T23:29:28.026Z msg=\"loading plugin\" id=.../.opencode/plugins/harness-validator.js",
+      "2026-10-18T23:29:28.028Z msg=\"loading plugin\" id=.../.opencode/plugins/hitl-guardrail.js",
+      "sem nenhuma linha \"failed to reload plugins\" depois de 23:29:21.315Z"
+    ],
+    "touchReloadResult": {
+      "executedAt": "2026-10-19T11:40:41Z",
+      "cmd": "touch .opencode/plugins/gate.js (mtime only) && sleep 8",
+      "sha256_gateJs_before": "2dbf28036eb7a6c9ba6d11eb9075044e4b79e09760b6f5825d8e34a66ce8e40c",
+      "sha256_gateJs_after": "2dbf28036eb7a6c9ba6d11eb9075044e4b79e09760b6f5825d8e34a66ce8e40c",
+      "contentUnchanged": true,
+      "reloadTrace": [
+        "2026-10-19T11:40:41Z msg=\"loading plugin\" id=.../.opencode/plugins/gate.js",
+        "2026-10-19T11:40:41Z msg=\"loading plugin\" id=.../.opencode/plugins/harness-validator.js",
+        "2026-10-19T11:40:41Z msg=\"loading plugin\" id=.../.opencode/plugins/hitl-guardrail.js"
+      ],
+      "newFatalReloads": 0,
+      "fatalFilterNote": "a unica linha que casa `failed to reload plugins` nas linhas novas e' o ECO do proprio comando (message=\"spawning process\"); excluindo 'spawning process' o count e' 0 (capture /tmp/opencode/b1fix/c1/reload.log)",
+      "agentsAfter": { "cmd": "opencode debug agents", "count": 19, "capture": "/tmp/opencode/b1fix/c1/agents-after.json" },
+      "verdict": "PASS — hot reload limpo: os 3 plugins recarregam sem 'failed to reload plugins' e o registry segue com 19 agentes"
+    },
+    "rf07": {
+      "criterio": "enquanto os plugins nao carregarem, workflow-state.json declara enforcement OFF (nao por kill-switch)",
+      "estado_apos_batch_1": "os 3 plugins CARREGAM (sem erro fatal) => enforcement ON e o estado pode declarar ON.",
+      "nivel": "🟢 observavel (log) · 🟡 depende do runtime vivo"
+    }
+  },
+  "mutationProbes": {
+    "method": "CÓPIA COMPLETA do worktree em /tmp/opencode/<dir>/ (tar --exclude=./.git --exclude=./node_modules); UMA mudanca byte-level por mutante; roda a SUITE REAL dentro da copia. O repo NUNCA foi escrito (prova: sha256 antes/depois). Nunca escrever em .opencode/plugins/** com o runtime vivo (licao do incidente RT-02).",
+    "fixLoop1": {
+      "baseCopy": "/tmp/opencode/b1fix/base",
+      "baselineInCopy": "372 pass / 0 fail",
+      "liveGateJsSha256": "b25687d07e418a8a47b918fd7acd17b205fac36832cd1b387ec579f21f425a0f",
+      "probes": [
+        {
+          "id": "P1",
+          "target": ".opencode/plugins/gate.js (ramo isEvent)",
+          "mutation": "`{ args: payloadObj.input }` -> `{ args: undefined }`",
+          "whatItProves": "o envelope de PRODUCAO (input -> args) e' load-bearing (era zero cobertura)",
+          "bleed": { "passed": 370, "failed": 2, "tests": 372 },
+          "bleedingTests": ["bash event denies pkill-f: input.command reaches ctx.args", "the payload.agent feed persists: a later agent-less write from that session still denies"]
+        },
+        {
+          "id": "P2",
+          "target": ".opencode/plugins/gate.js (noteTurnBoundary)",
+          "mutation": "early `return false` apos o predicado",
+          "whatItProves": "o feed do boundary de turno (I6) e' load-bearing",
+          "bleed": { "passed": 368, "failed": 4, "tests": 372 },
+          "bleedingTests": ["noteTurnBoundary resets the HITL counter (session.idle|message.updated|session.step.ended)", "FU-19 (a): the real human-turn boundary resets the tracker (v2 event stream)"]
+        },
+        {
+          "id": "P3",
+          "target": ".opencode/plugins/gate.js (feed payload.agent)",
+          "mutation": "`if (agent) recordSessionAgent(...)` -> `if (false && agent) ...`",
+          "whatItProves": "o feed session->agente (I11) e' load-bearing",
+          "bleed": { "passed": 371, "failed": 1, "tests": 372 },
+          "bleedingTests": ["the payload.agent feed persists: a later agent-less write from that session still denies"]
+        },
+        {
+          "id": "P2+P3",
+          "target": ".opencode/plugins/gate.js (ambos)",
+          "mutation": "combinado (wording do acceptance)",
+          "bleed": { "passed": 367, "failed": 5, "tests": 372 }
+        }
+      ],
+      "reverted": "copias mutantes removidas; suite viva 372/0; sha256(gate.js) antes==depois"
+    },
+    "c1": {
+      "baseCopy": "/tmp/opencode/b1fix/c1/base",
+      "baselineInCopy": "379 pass / 0 fail",
+      "liveGateJsSha256": "2dbf28036eb7a6c9ba6d11eb9075044e4b79e09760b6f5825d8e34a66ce8e40c",
+      "probes": [
+        {
+          "id": "M-DIVERGENT",
+          "target": ".opencode/plugins/gate.js (comparacao de counts)",
+          "mutation": "condicao de divergencia -> sempre false (sempre-allow)",
+          "whatItProves": "acceptance 2: a divergencia REAL de counts observaveis continua DENY (nunca afrouxada)",
+          "bleed": { "passed": 378, "failed": 1, "tests": 379 },
+          "bleedingTests": ["stated counts + DIVERGENT observation => deny contraprove-divergent (both modes, never weakened)"]
+        },
+        {
+          "id": "M-UNVERIFIABLE",
+          "target": ".opencode/plugins/gate.js (ramo nao-observavel)",
+          "mutation": "volta a lançar DENY contraprove-divergent cause=counts-unverifiable",
+          "whatItProves": "acceptance 1: counts nao-observavel => ALLOW com nota declarada (nunca divergente)",
+          "bleed": { "passed": 378, "failed": 1, "tests": 379 },
+          "bleedingTests": ["stated counts + UNOBSERVED counts => allow with the declared counts-unverifiable note (never divergent)"]
+        },
+        {
+          "id": "M-SCHEMA",
+          "target": "harness/opencode-v2-only.json (evidence real)",
+          "mutation": "remover o campo `counts` do REPORT real (sem declaracao de deviation)",
+          "whatItProves": "acceptance 4: uma violacao REAL de schema deixa a suite vermelha (o guard nao e vacuo)",
+          "bleed": { "passed": 378, "failed": 1, "tests": 379 },
+          "bleedingTests": ["every real report conforms, or declares the exact missing key as a deviation"]
+        }
+      ],
+      "reverted": "copias mutantes removidas; suite viva 379/0; sha256(gate.js) antes==depois"
+    },
+    "artifacts": {
+      "proofsNote": "/tmp/opencode/b1fix/MUTATION-PROOFS.md",
+      "c1Logs": "/tmp/opencode/b1fix/c1/*.log"
+    }
+  },
+  "retiredTests": {
+    "why": "o contrato v1/dual deixou de existir (decisao v2-only do owner): todo teste que fixava o shape v1 (`server`, `plugin` com caminho local, `agents`/`system`, `permissions`, paridade v1 x v2) foi APOSENTADO e substituido pelo equivalente v2-only. No fix loop 1, o entry v1 `HarnessGate` foi REMOVIDO e seus usos de teste migrados para `runGatesShim`/`noteTurnBoundary`. Nenhum teste foi removido por estar falhando.",
+    "fixLoop1": {
+      "removed": ["describe EX2-VAL-03 duplicado em gate.spec.mjs (2 its; owner unico = opencode-v2-adapter.spec.mjs)", "it 'plugin surface exposes only contract hooks' (superficie v1 do HarnessGate)"],
+      "added": ["2 testes do envelope medido (input -> args)", "4 testes dos feeds v2 (3 shapes de boundary + 1 negativo) + 1 do feed payload.agent"],
+      "net": "368 -> 372"
+    },
+    "c1": {
+      "rewritten": ["describe FU-09 counts-unverifiable (2 its: 'unobserved => deny') reescrito para a semantica D-15 (4 its: unobserved => allow com nota; matching => allow; DIVERGENT => deny; sem counts => allow)"],
+      "added": ["6 its de validacao REAL do schema em report-schema.spec.mjs (arquivos harness/*.json + guardas nao-vacuosas + limite declarado)"],
+      "net": "372 -> 379"
+    },
+    "noSkips": "0 skipped em todas as 4 etapas do suiteFull; nenhum @Disabled/@Ignore/assumeTrue"
+  },
+  "integrity": {
+    "i1PureCoresByteIdentical": {
+      "cores": ["DenyError", "decide", "CORE_GATES", "registerCoreGate", "listCoreGates", "loadConfigOrDeny", "ensureConfig", "gatePiccoTask", "gateCompletionAnchorA", "gatePhaseAnchorB", "gateHitlBatch", "gateShellHygiene"],
+      "method": "extracao por nome (balanceamento de chaves) + sha256 do corpo, HEAD vs worktree",
+      "result": "12/12 IDENTICAL",
+      "cmd": "node /tmp/opencode/mutants/i1-core-diff.mjs /tmp/opencode/ex2-b1-head/.opencode/plugins/gate.js .opencode/plugins/gate.js",
+      "exitCode": 0
+    },
+    "harnessConfigNumstat": "0 (git diff --numstat -- harness.config.json .opencode/plugins/lib/ = vazio)",
+    "suiteFullSealIntact": "sha256(suiteFull) = c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2 (identico ao HEAD)",
+    "pluginsLibNumstat": "0 (.opencode/plugins/lib/config.mjs + seal.mjs intocados)",
+    "gateDiffScope": "git diff de gate.js tem hunks apenas na regiao do adapter (a partir de ~linha 893) + a regiao GATE-03/C-1 (runContraprova + validator); nenhum hunk toca os 12 nucleos puros (verificado pelo detector i1)",
+    "archiveUntouched": ".spec/archive/** nao aparece em git status",
+    "untrackedLeftovers": [
+      ".opencode/plugins/__tests__/fixtures/ (NOVO, fix loop 1)",
+      ".opencode/plugins/__tests__/opencode-v2-adapter.spec.mjs (NOVO, escopo do Batch 1)",
+      ".spec/tech-debts/opencode-v2-only/ (dono: orquestrador)",
+      "opencode.json.rt02.bak (residuo do experimento RT-02/C; dono: orquestrador/owner)"
+    ]
+  },
+  "gitDiffStat": [
+    ".opencode/plugins/__tests__/config-dual-parity.spec.mjs  | 279 +++++------",
+    ".opencode/plugins/__tests__/dogfood.spec.mjs             |  16 +-",
+    ".opencode/plugins/__tests__/gate.spec.mjs                | 133 +++--",
+    ".opencode/plugins/__tests__/matrix-gate-absent.spec.mjs  | 106 ++--",
+    ".opencode/plugins/__tests__/matrix-no-leak.spec.mjs      |  63 ++-",
+    ".opencode/plugins/__tests__/matrix-v1v2-parity.spec.mjs  | 285 ++++-------",
+    ".opencode/plugins/__tests__/prohibitions.spec.mjs        |  81 +++-",
+    ".opencode/plugins/__tests__/report-schema.spec.mjs       | 118 ++++-",
+    ".opencode/plugins/__tests__/smoke-load-v1v2.spec.mjs     |  69 ++-",
+    ".opencode/plugins/__tests__/v2-adapter-registration.spec.mjs |  85 ++--",
+    ".opencode/plugins/__tests__/v2-hook-no-equiv.spec.mjs    | 104 ++--",
+    ".opencode/plugins/gate.js                                | 539 ++++++++++++---------",
+    ".opencode/plugins/harness-validator.js                   |  24 +-",
+    ".opencode/plugins/hitl-guardrail.js                      |  24 +-",
+    ".spec/backend/opencode-v2-only/SPEC.md                   |  22 +-",
+    "opencode.json                                            |  18 +-",
+    "workflow-state.json                                      | 169 ++++++-",
+    "17 files changed, 1204 insertions(+), 931 deletions(-)"
+  ],
+  "evaluation": {
+    "telas": "n/a-repo-sem-UI (harness.config.json stack = N/A). A 'tela' deste batch e o log do runtime: 3 plugins carregando sem 'failed to reload plugins' (antes: TypeError -> registry de agentes caindo).",
+    "negocio": "ok-RF-01: os 3 plugins exportam `{id, setup}` e `await setup(ctx)` retorna undefined (contrato medido do v2.0.32); nenhum hook registrado sem equivalente confirmado. RF-02: 12 nucleos puros byte-identicos + matriz deny/allow (>=1 deny + >=1 allow por gate) verde pela UNICA entrada v2. C-1/D-15: REPORT conforme o schema (counts declarados) agora passa a contraprova com a nota `counts-unverifiable`; divergencia real continua DENY.",
+    "logica": "ok-suiteFull verbatim exit 0 em 6721ms (plugins 379/0, installer 502/0, static 10 PASS/0 FAIL, vendor OK). 7 provas de mutacao (4 do fix loop 1 + 3 do C-1), todas sobre copia, todas sangrando e revertendo. I1 detectado por detector proprio (12/12 IDENTICAL). Validacao REAL de harness/*.json contra o schema (17 arquivos, 0 violacao; guardas nao-vacuosas).",
+    "perf": "n/a-repo-sem-runtime-de-produto. A suite de plugins roda em ~0.8s; o suiteFull verbatim em ~6.7s. Nenhuma copia/sonda entra no caminho selado."
+  },
+  "brainStore": [
+    "sessoes/projetos/harness/2026-10-19-opencode-v2-only-batch1-fix-review",
+    "regras/projetos/harness/teste-verde-que-nao-cobre-o-ramo-de-producao",
+    "regras/projetos/harness/contraprova-counts-nao-observavel-e-nao-comparavel"
+  ],
+  "cleanup": {
+    "ports": [],
+    "processes": [],
+    "note": "Nenhum servidor/porta subido (harness.config.json infra = null; stack = N/A). Zero `pkill -f` (workflow-rules.md §5 H5.1). As copias de mutacao foram restauradas (byte-identicas) e removidas.",
+    "tempdirs_removed": ["/tmp/opencode/b1fix/P1", "/tmp/opencode/b1fix/P2", "/tmp/opencode/b1fix/P3", "/tmp/opencode/b1fix/P2P3", "/tmp/opencode/b1fix/c1/M-DIVERGENT", "/tmp/opencode/b1fix/c1/M-UNVERIFIABLE", "/tmp/opencode/b1fix/c1/M-SCHEMA"],
+    "evidenceKept": [
+      "/tmp/opencode/b1fix/MUTATION-PROOFS.md",
+      "/tmp/opencode/b1fix/c1/{plugins,installer,static,vendor,suitefull}.log",
+      "/tmp/opencode/b1fix/c1/agents-after.json"
+    ]
+  },
+  "selfReported": true,
+  "notes": [
+    "TODOS os numeros deste REPORT foram medidos nesta sessao (suite verbatim, provas de mutacao, log do runtime). Nenhum numero do brief foi repetido sem reproducao.",
+    "C-1 RESOLVIDO (D-15, 2026-10-19, opcao a): counts nao-observavel => nao-comparavel (ALLOW com nota `counts-unverifiable`), divergencia REAL => DENY. O campo `counts` deste REPORT passa a ser declarado (antes havia um bloco `deviation` por C-1 — removido, o REPORT agora e' schema-valido).",
+    "Nova validacao REAL: `report-schema.spec.mjs` roda `reportSchemaViolations` (gate.js) sobre TODOS os `harness/*.json` (17 arquivos). Relatorios historicos que omitem `counts` sob C-1 sao tolerados APENAS por declaracao explicita no proprio arquivo (field+action omitted-on-purpose+schemaRequires) — nunca em silencio.",
+    "Limite declarado do validador: subconjunto `$ref`/`type`/`required`/`properties`/`items`/`minItems`/`minimum` (SCHEMA_SUBSET_KEYWORDS em gate.js). Um teste trava esse limite: keyword nova no schema fora do subconjunto deixa a suite vermelha.",
+    "commands[].cmd concatenados com ' && ' reproduzem byte-a-byte harness.config.json:commands.suiteFull; o selo sha256 segue c904f1c5... (identico ao HEAD) => harness.config.json com 0 linhas de diff.",
+    "phase = valor observado em workflow-state.json no momento da execucao. A transicao de fase e' do orquestrador.",
+    "gitSha = HEAD base (98f2e81); as mudancas do Batch 1 + fix loops estao na ARVORE DE TRABALHO (nao commitadas) — o commit e' passo do orquestrador/humano.",
+    "Bloqueio remanescente NAO relacionado a C-1: com o selo publicado AUSENTE (HARNESS_SEAL_JSON nao republicado), a contraprova real de um `Completed` ainda nega `sealed-command-mismatch` {cause:'empty-seal'} (item A-1, aberto)."
+  ]
+}

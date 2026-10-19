@@ -12,13 +12,14 @@ import {
   resolveMode,
   verifySealOrDeny,
   decide,
-  HarnessGate,
+  runGatesShim,
   loadConfigOrDeny,
   ensureConfig,
   recordSessionAgent,
   resolveSessionAgent,
   clearSessionAgents,
   noteChatParams,
+  noteTurnBoundary,
   isHumanMessage,
   checkPicco,
   extractPromptText,
@@ -218,19 +219,20 @@ describe("gate.js runtime contract — no hook outside RUNTIME-CONTRACT §2/H1-H
     }
   });
 
-  it("plugin surface exposes only contract hooks", async () => {
-    // Allowlist built by concatenation (same self-match avoidance as above).
-    // FU-04: the dead bus event is NOT a contract hook — removed.
-    const CONTRACT_HOOKS = ["tool.execute.before", "chat.message", "chat.params"];
-    const hooks = await HarnessGate({});
-    const keys = Object.keys(hooks);
-    assert.ok(keys.includes("tool.execute.before"), "deny primitive hook missing");
-    for (const key of keys) {
-      assert.ok(CONTRACT_HOOKS.includes(key), `hook outside contract: ${key}`);
-    }
-    assert.ok(!keys.includes(ASK_HOOK));
-  });
+  // (Retired in opencode-v2-only: the v1 `HarnessGate` doc-contract entry was
+  // removed — the v2 loader never registered it, so its "chat.params" /
+  // "chat.message" keys were a registered-but-dead surface. The v2 registration
+  // surface is asserted in opencode-v2-adapter.spec.mjs and
+  // v2-adapter-registration.spec.mjs, through the captured `setup` handler.)
 });
+
+// ---------------------------------------------------------------------------
+// EX2-VAL-03 (opencode-v2-only) — the v2-only export contract lives in
+// opencode-v2-adapter.spec.mjs (its dedicated spec: default shape for all three
+// plugins, `await setup(ctx) === undefined`, the registration surface and the
+// deny/allow matrix). The duplicate block that lived here was removed in the
+// Batch 1 review (🟢-15) to keep a single owner for the contract.
+// ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
 // Batch 4/7 — GATE-02..05 fixtures (SPEC §7.3 + v4). Every deny fixture runs
@@ -739,19 +741,30 @@ describe("GATE-04 HITL pause + correction-loop exemption (I6)", () => {
     resetHitlTracker();
   });
 
-  it("FU-19 (a): real chat.message shape resets via output role", async () => {
-    // Official @opencode-ai/plugin shape: input {sessionID,agent,model,...}
-    // carries NO role; role lives in output.message.role. Handler must
-    // reset the session tracker for this shape (S6/S6b lockout otherwise).
+  it("FU-19 (a): the real human-turn boundary resets the tracker (v2 event stream)", async () => {
+    // FU-19 (a): the official v1 chat.message input {sessionID,agent,model,...}
+    // carries NO role; role lived in output.message.role. v2 has no chat.message
+    // hook — the boundary arrives on the confirmed event stream, so the reset is
+    // driven by noteTurnBoundary (the feed `setup` actually wires), not by a
+    // dead handler. The pure predicate is still asserted on the legacy shape.
     const session = `fu19-a-${Date.now()}`;
     const realInput = { sessionID: session, agent: "orchestrator" };
     const realOutput = { message: { role: "user" }, parts: [] };
-    assert.equal(isHumanMessage(realInput, realOutput), true);
-    const hooks = await HarnessGate({});
+    assert.equal(
+      isHumanMessage(realInput, realOutput),
+      true,
+      "the pure predicate still reads output.message.role",
+    );
     hitlTrackerFor(session).onTask("developer-engineer");
     hitlTrackerFor(session).onTask("code-reviewer");
     assert.equal(hitlTrackerFor(session).pending(), 2);
-    await hooks["chat.message"](realInput, realOutput);
+    const boundary = {
+      id: "fu19-evt",
+      created: Date.now(),
+      type: "message.updated",
+      data: { sessionID: session, info: { role: "user" } },
+    };
+    assert.equal(noteTurnBoundary(boundary), true, "the measured boundary event resets");
     assert.equal(hitlTrackerFor(session).pending(), 0);
     resetHitlTracker();
   });
@@ -894,7 +907,7 @@ describe("FU-08 state file: only absent => allow, corrupt => deny", () => {
   });
 });
 
-describe("FU-09 counts-unverifiable: stated counts with no observation => deny", () => {
+describe("C-1 (D-15) counts: unobservable => allow (declared note); observable divergence => deny", () => {
   const reported = {
     demand: "harness-v7-hardening",
     commands: [{ cmd: TEST_COMMANDS.suiteFull, exitCode: 0 }],
@@ -914,12 +927,41 @@ describe("FU-09 counts-unverifiable: stated counts with no observation => deny",
     logger: makeLogger(),
   });
 
-  it("stated counts + unobserved counts => deny contraprove-divergent (cause counts-unverifiable), both modes", async () => {
+  it("stated counts + UNOBSERVED counts => allow with the declared counts-unverifiable note (never divergent)", async () => {
     clearContraproveCache();
     const noCountsExec = async () => ({ exitCode: 0, counts: null });
+    const outcome = await runContraprova({
+      demand: reported.demand,
+      report: reported,
+      commands: TEST_COMMANDS,
+      seal: testSeal(),
+      execFn: noCountsExec,
+      treeHash: "tree-c1-unverifiable",
+    });
+    assert.equal(outcome.verdict, "allow");
+    assert.equal(outcome.via, "counts-unverifiable", "the allow declares WHY counts were not compared");
+    clearContraproveCache();
+    await allowsBothModes(
+      gateCompletionAnchorA,
+      completionCtx(reported, noCountsExec, "tree-c1-unverifiable-both"),
+    );
+  });
+
+  it("stated counts + matching observation => allow (both modes)", async () => {
+    clearContraproveCache();
+    const matchingExec = async () => ({ exitCode: 0, counts: { unit: { passed: 31, failed: 0, skipped: 0 } } });
+    await allowsBothModes(
+      gateCompletionAnchorA,
+      completionCtx(reported, matchingExec, "tree-c1-matching"),
+    );
+  });
+
+  it("stated counts + DIVERGENT observation => deny contraprove-divergent (both modes, never weakened)", async () => {
+    clearContraproveCache();
+    const divergentExec = async () => ({ exitCode: 0, counts: { unit: { passed: 30, failed: 0, skipped: 0 } } });
     await deniesBothModes(
       gateCompletionAnchorA,
-      completionCtx(reported, noCountsExec, "tree-fu09-negative"),
+      completionCtx(reported, divergentExec, "tree-c1-divergent"),
       "contraprove-divergent",
     );
     clearContraproveCache();
@@ -930,20 +972,30 @@ describe("FU-09 counts-unverifiable: stated counts with no observation => deny",
           report: reported,
           commands: TEST_COMMANDS,
           seal: testSeal(),
-          execFn: noCountsExec,
-          treeHash: "tree-fu09-cause",
+          execFn: divergentExec,
+          treeHash: "tree-c1-divergent-direct",
         }),
-      (err) => err instanceof DenyError && err.reason === "contraprove-divergent" && err.details?.cause === "counts-unverifiable",
+      (err) =>
+        err instanceof DenyError &&
+        err.reason === "contraprove-divergent" &&
+        err.details?.observedCounts?.unit?.passed === 30,
     );
   });
 
-  it("stated counts + matching observation => allow (both modes)", async () => {
+  it("no stated counts => allow (nothing to compare; the branch is not entered)", async () => {
     clearContraproveCache();
-    const matchingExec = async () => ({ exitCode: 0, counts: { unit: { passed: 31, failed: 0, skipped: 0 } } });
-    await allowsBothModes(
-      gateCompletionAnchorA,
-      completionCtx(reported, matchingExec, "tree-fu09-positive"),
-    );
+    const { counts, ...reportWithoutCounts } = reported;
+    const countsOnlyExec = async () => ({ exitCode: 0, counts: { unit: { passed: 999, failed: 0, skipped: 0 } } });
+    const outcome = await runContraprova({
+      demand: reported.demand,
+      report: reportWithoutCounts,
+      commands: TEST_COMMANDS,
+      seal: testSeal(),
+      execFn: countsOnlyExec,
+      treeHash: "tree-c1-nostated",
+    });
+    assert.equal(outcome.verdict, "allow");
+    assert.equal(outcome.via, undefined, "no note when there was nothing to compare");
   });
 });
 
@@ -1020,27 +1072,26 @@ describe("FU-11 lazy state: corrupt workflow-state routes via decide (warn-allow
     return join(dir, "workflow-state.json");
   }
 
-  it("HarnessGate in warn allows on corrupt state (warn-allows preserved)", async () => {
+  it("v2 entry in warn allows on corrupt state (warn-allows preserved)", async () => {
     const statePath = corruptStatePath();
-    const hooks = await HarnessGate({ client: undefined });
-    const runGates = hooks["tool.execute.before"];
-    assert.ok(typeof runGates === "function");
     const warnConfig = { ...TEST_CONFIG, gates: { picco: "warn", evidence: "warn", hitlBatch: "warn" } };
     // Valid PICCO so the run reaches anchor B; corrupt state must allow-via-warn, not throw raw.
-    await runGates(
+    // Two-arg envelope shape (contract H6), routed through the same runGatesShim.
+    const outcome = await runGatesShim(
       { tool: "task", sessionID: `fu11-warn-${Date.now()}`, statePath, config: warnConfig },
       { args: { prompt: REAL_DELEGATION } },
     );
+    assert.equal(outcome.verdict, "allow");
+    assert.equal(outcome.via, "warn");
+    assert.equal(outcome.reason, "state-corrupt");
   });
 
-  it("HarnessGate in enforce denies on corrupt state with state-corrupt", async () => {
+  it("v2 entry in enforce denies on corrupt state with state-corrupt", async () => {
     const statePath = corruptStatePath();
-    const hooks = await HarnessGate({});
-    const runGates = hooks["tool.execute.before"];
     const enforceConfig = { ...TEST_CONFIG, gates: { picco: "enforce", evidence: "enforce", hitlBatch: "enforce" } };
     await assert.rejects(
       () =>
-        runGates(
+        runGatesShim(
           { tool: "task", sessionID: `fu11-enforce-${Date.now()}`, statePath, config: enforceConfig },
           { args: { prompt: REAL_DELEGATION } },
         ),

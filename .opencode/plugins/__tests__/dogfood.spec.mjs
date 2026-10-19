@@ -184,10 +184,22 @@ describe("DOG-01 S4 (regression): consumer suite is this repo's suite", () => {
     assert.equal(verifySealOrDeny(config.commands, sealCommands(config.commands)), true);
   });
 
-  it("gate.js is registered in opencode.json plugin list (flip consistency)", async () => {
+  it("local plugins auto-load: `plugin` stays EMPTY and gate.js lives in .opencode/plugins/ (v2-only)", async () => {
     const raw = readFileSync(join(REPO_ROOT, "opencode.json"), "utf8");
     const parsed = JSON.parse(raw);
     assert.ok(Array.isArray(parsed.plugin), "opencode.json plugin must be an array");
-    assert.ok(parsed.plugin.some((entry) => String(entry).includes("gate.js")), "gate.js must be registered");
+    assert.equal(
+      parsed.plugin.length,
+      0,
+      "v2-only: the `plugin` key is for npm packages; local plugins are AUTO-LOADED from .opencode/plugins/",
+    );
+    assert.ok(
+      !parsed.plugin.some((entry) => String(entry).includes("gate.js")),
+      "gate.js must NOT be listed as a local path (auto-load)",
+    );
+    assert.ok(
+      existsSync(join(REPO_ROOT, ".opencode", "plugins", "gate.js")),
+      "gate.js is present in the auto-loaded directory",
+    );
   });
 });

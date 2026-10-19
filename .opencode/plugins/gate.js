@@ -618,12 +618,13 @@ export async function runContraprova({
   }
   const expectedCounts = report?.counts ?? null;
   const observedCounts = observed?.counts ?? null;
-  // Partial by declaration: the default executor observes exit codes only.
-  // Counts are compared whenever both sides state them; a stated-but-
-  // unobservable count is divergent (unverifiable claim, not proof).
-  if (expectedCounts && !observedCounts) {
-    throw new DenyError(DENY_CONTRAPROVE_DIVERGENT, { demand, cause: "counts-unverifiable" });
-  }
+  // C-1 / D-15 (owner decision, option a): a count the executor CANNOT observe
+  // is NON-COMPARABLE, never "divergent". The default executor observes exit
+  // codes only (defaultContraproveExec => counts: null), while the REPORT schema
+  // REQUIRES counts — denying a schema-valid report for declaring them made this
+  // branch dead code and left H1 counts never contraproved.
+  // Real divergence is preserved: when BOTH sides state counts and they differ,
+  // the claim is refuted => DENY (never weakened).
   if (
     expectedCounts &&
     observedCounts &&
@@ -632,7 +633,119 @@ export async function runContraprova({
     throw new DenyError(DENY_CONTRAPROVE_DIVERGENT, { demand, expectedCounts, observedCounts });
   }
   if (cacheable) contraproveCache.set(key, { ok: true });
+  if (expectedCounts && !observedCounts) {
+    // Declared, not silent: the allow records WHY the counts were not checked.
+    return { verdict: "allow", via: "counts-unverifiable", key };
+  }
   return { verdict: "allow", key };
+}
+
+// ---------------------------------------------------------------------------
+// Minimal JSON-Schema validator (declared limit: only the subset the report
+// schema actually uses — `$ref` to `#/$defs/*`, `type`, `required`,
+// `properties`, `items`, `minItems`, `minimum`). Keywords outside the subset
+// (oneOf/anyOf/pattern/format/enum/...) are NOT evaluated: they are absent from
+// `.agents/schemas/harness-report.schema.json`, and this function never claims
+// more than it checks. The authoritative report check for real files is the
+// spec that runs this over `harness/*.json` (report-schema.spec.mjs) — nothing
+// else validated the real evidence before C-1.
+// ---------------------------------------------------------------------------
+
+const JSON_TYPE_CHECKS = {
+  object: (value) => value !== null && typeof value === "object" && !Array.isArray(value),
+  array: (value) => Array.isArray(value),
+  string: (value) => typeof value === "string",
+  number: (value) => typeof value === "number" && Number.isFinite(value),
+  integer: (value) => Number.isInteger(value),
+  boolean: (value) => typeof value === "boolean",
+  null: (value) => value === null,
+};
+
+export const SCHEMA_SUBSET_KEYWORDS = [
+  "$ref",
+  "type",
+  "required",
+  "properties",
+  "items",
+  "minItems",
+  "minimum",
+];
+
+export function resolveSchemaRef(ref, root) {
+  if (typeof ref !== "string" || !ref.startsWith("#/")) return null;
+  let node = root;
+  for (const key of ref.slice(2).split("/")) {
+    if (node === null || typeof node !== "object") return null;
+    node = node[key];
+  }
+  return node ?? null;
+}
+
+export function validateAgainstSchema(value, schema, root = schema, path = "$") {
+  const violations = [];
+  if (!schema || typeof schema !== "object") return violations;
+  if (schema.$ref) {
+    const target = resolveSchemaRef(schema.$ref, root);
+    if (target) violations.push(...validateAgainstSchema(value, target, root, path));
+    return violations;
+  }
+  if (typeof schema.type === "string") {
+    const check = JSON_TYPE_CHECKS[schema.type];
+    if (check && !check(value)) {
+      violations.push({ path, keyword: "type", expected: schema.type, message: `${path}: expected ${schema.type}` });
+    }
+  }
+  const isObject = value !== null && typeof value === "object" && !Array.isArray(value);
+  if (Array.isArray(schema.required) && isObject) {
+    for (const key of schema.required) {
+      if (!(key in value)) {
+        violations.push({ path: `${path}.${key}`, keyword: "required", missing: key, message: `${path}: missing required "${key}"` });
+      }
+    }
+  }
+  if (schema.properties && isObject) {
+    for (const [key, sub] of Object.entries(schema.properties)) {
+      if (key in value) violations.push(...validateAgainstSchema(value[key], sub, root, `${path}.${key}`));
+    }
+  }
+  if (schema.items && Array.isArray(value)) {
+    value.forEach((item, index) => {
+      violations.push(...validateAgainstSchema(item, schema.items, root, `${path}[${index}]`));
+    });
+  }
+  if (typeof schema.minItems === "number" && Array.isArray(value) && value.length < schema.minItems) {
+    violations.push({ path, keyword: "minItems", expected: schema.minItems, message: `${path}: minItems ${schema.minItems}` });
+  }
+  if (typeof schema.minimum === "number" && typeof value === "number" && value < schema.minimum) {
+    violations.push({ path, keyword: "minimum", expected: schema.minimum, message: `${path}: minimum ${schema.minimum}` });
+  }
+  return violations;
+}
+
+// A missing `required` key is tolerated ONLY when the report itself DECLARES the
+// deviation for that exact key (field + action "omitted-on-purpose" +
+// schemaRequires true) — declared, never silent. Every other violation (type,
+// nested shape, minimum, ...) always counts. Historical reports that omitted
+// `counts` under conflict C-1 carry that declaration; a NEW omission without it
+// is a violation and leaves the spec red.
+export function isDeclaredDeviation(report, key) {
+  const dev = report?.deviation;
+  if (!dev || typeof dev !== "object") return false;
+  const entries = Array.isArray(dev.fields) ? dev.fields : [dev];
+  return entries.some(
+    (entry) =>
+      entry &&
+      entry.field === key &&
+      entry.action === "omitted-on-purpose" &&
+      entry.schemaRequires === true,
+  );
+}
+
+export function reportSchemaViolations(report, schema) {
+  return validateAgainstSchema(report, schema).filter(
+    (violation) =>
+      !(violation.keyword === "required" && isDeclaredDeviation(report, violation.missing)),
+  );
 }
 
 // Published seal (U6=b): the trust root is rollout step 1, not the worktree.
@@ -891,8 +1004,8 @@ export async function gateShellHygiene(ctx = {}) {
 }
 
 // Gate registration (Batch 4/7). GATE-03 contributes both anchors.
-// FU-06: each gate carries a gateName so HarnessGate can resolve its mode
-// via modeForGate(config, gateFn). Hygiene has no gates.* key on purpose:
+// FU-06: each gate carries a gateName so modeForGate(config, gateFn) can
+// resolve its mode. Hygiene has no gates.* key on purpose:
 // it falls back to DEFAULT_MODE (declared in modeForGate).
 registerCoreGate(gatePiccoTask);
 registerCoreGate(gateCompletionAnchorA);
@@ -904,189 +1017,156 @@ gateCompletionAnchorA.gateName = "evidence";
 gatePhaseAnchorB.gateName = "evidence";
 gateHitlBatch.gateName = "hitlBatch";
 
-function toLogger(client) {
-  const appLog = client?.app?.log;
-  if (typeof appLog !== "function") return console;
-  const send = (level, message) => {
-    try {
-      appLog({ body: { service: "harness-gate", level, message: String(message) } });
-    } catch {
-      // Best-effort; never breaks the tool call.
-    }
-  };
-  return { warn: (message) => send("warn", message), error: (message) => send("error", message) };
-}
-
-// Runtime plugin entry. Only confirmed hooks are wired (contract §2):
-// the deny primitive on the before hook, the session→agent map on
-// chat.params, and the human-turn boundary on chat.message. No prose
-// injection, no bus-event filtering, no ask hook.
-export const HarnessGate = async (input = {}) => {
-  const logger = toLogger(input?.client);
-  const runGates = async (toolInput, toolOutput) => {
-    const sessionID = toolInput?.sessionID;
-    const base = {
-      tool: toolInput?.tool,
-      sessionID,
-      callID: toolInput?.callID,
-      args: toolOutput?.args,
-      defaultMode: DEFAULT_MODE,
-      logger,
-      // Test/consumer seam: injected config wins; otherwise the file config.
-      // A missing config stays null here — each gate denies config-unavailable
-      // from INSIDE decide() (FU-05), never as a raw throw here.
-      statePath: toolInput?.statePath,
-      configPath: toolInput?.configPath,
-      // Kill-switch boundary (ADR-009). The ambient HARNESS_GATES=off belongs
-      // to the host process and is honored when the plugin loads its own file
-      // config. An explicitly injected config marks a hermetic evaluation
-      // (test/consumer seam): the caller owns the environment, so the ambient
-      // kill-switch must not silently short-circuit a gate before it runs.
-      env: toolInput?.env ?? (toolInput?.config ? {} : process.env),
-    };
-    let config = toolInput?.config ?? null;
-    if (!config) {
-      try {
-        config = loadConfigOrDeny(base.configPath);
-      } catch {
-        config = null;
-      }
-    }
-    const ctx = {
-      ...base,
-      config: config ?? undefined,
-      sessionAgent: sessionID ? sessionAgentMap.get(sessionID) : undefined,
-      // FU-11: workflowState is NEVER loaded here. The eager
-      // loadWorkflowState() used to throw DenyError outside decide(),
-      // bypassing warn-allows (fail-open on crash would allow, raw throw
-      // would crash). Gates load lazily inside decide() via
-      // ctx.workflowState ?? loadWorkflowState(ctx.statePath).
-      workflowState: undefined,
-      publishedSeal: loadPublishedSeal(),
-    };
-    // Safe eagerly: readEvidenceReport catches every failure (missing or
-    // corrupt state/config) and returns null, which anchor A denies
-    // fail-closed from inside decide() (fixture completed-no-evidence).
-    ctx.report = toolInput?.report ?? readEvidenceReport(ctx);
-    for (const gateFn of CORE_GATES) {
-      // FU-06: mode per gate, not one global constant. A gate without a
-      // gates.* key (hygiene) or without config resolves to DEFAULT_MODE.
-      await decide({ gateFn, mode: config ? modeForGate(gateFn, config) : DEFAULT_MODE, ctx, env: base.env, logger });
-    }
-  };
-  return {
-    "tool.execute.before": runGates,
-    "chat.params": async (chatInput) => {
-      try {
-        noteChatParams(chatInput);
-      } catch {
-        // Map maintenance never denies.
-      }
-    },
-    "chat.message": async (messageInput, output) => {
-      try {
-        if (isHumanMessage(messageInput, output)) {
-          resetHitlTracker(messageInput?.sessionID ?? messageInput?.params?.sessionID);
-        }
-      } catch {
-        // Counter maintenance never denies.
-      }
-    },
-  };
-};
-
-// V1 plugin module (LOADER-01): the runtime resolves mod.default as an
-// { id, server } record BEFORE the legacy Object.values() sweep, which
-// throws "Plugin export is not a function" on the string/array unit-test
-// exports above and drops the whole plugin. Named exports (incl.
-// HarnessGate) stay untouched for the suite. The v2 entry `setup` rides on
-// the same default record (dual-export, ADR-001): v1 loaders read `server`,
-// v2 runtimes read `setup`. When the v2 host exposes the Plugin global, the
-// record is wrapped via Plugin.define (identity with types since 1.18.29+,
-// target 1.18.30); otherwise the plain record is exported. `setup` is a
-// hoisted function declaration defined in the V2 adapter block below.
-export default (typeof globalThis.Plugin?.define === "function"
-  ? globalThis.Plugin.define({ id: "harness-gate", server: HarnessGate, setup })
-  : { id: "harness-gate", server: HarnessGate, setup });
+// ---------------------------------------------------------------------------
+// The v1 doc-contract entry `HarnessGate` (returned "tool.execute.before" +
+// "chat.params" + "chat.message") was REMOVED in opencode-v2-only (Batch 1
+// review, 🟡-4): the v2 loader never registers it, so the two session keys it
+// returned were a registered-but-dead surface and the old comment claiming
+// they were "confirmed hooks" was false. chat.params/chat.message are NOT v2
+// hooks. The v2 surfaces that replace them are the single ctx.tool.hook below
+// (agent identity from the payload) and the confirmed event stream
+// (turn boundary). The envelope shims kept further down (runGatesShim,
+// noteChatParamsShim, humanBoundaryShim) are test/consumer helpers over the
+// SAME pure cores — never a second registered entry.
+// ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
-// V2 adapter — dual-export v1+v2 (opencode-v2-plugin-migration, PL-02).
+// V2 adapter — opencode v2.0.32 (opencode-v2-only, EX2-BE-01/EX2-BE-02).
 //
-// SPEC: .spec/backend/opencode-v2-plugin-migration/SPEC.md (§5 H1-H6, §5.1
-// shims, ADR-001/002/004). Adapter discipline (a defect is any violation):
-//   - Thin adapter, zero deny logic. Every verdict flows through the same
-//     `decide` + `CORE_GATES` loop as the v1 `HarnessGate` entry above. Only
-//     `throw new DenyError` denies; any other error fail-opens via decide
-//     (ADR-006). No new catch converts a generic error into a deny.
-//   - Kill-switch unchanged: only host env HARNESS_GATES=off disables
-//     (ADR-009); the hermetic-config rule below mirrors HarnessGate exactly.
-//   - Confirmed hooks only (PLAN §1.1.1: gate.js:22-24,854-919 plus
-//     gate-contract.md plus migrate-v1). Golden rule: a v1 hook with no
-//     confirmed v2 equivalent raises a VISIBLE HOOK-NO-EQUIV error at load,
-//     never silence. This module never registers the permission prompt hook
-//     (H1), never assigns a system-transform scalar (H2), never subscribes a
-//     dead bus event (H3), and never claims prose blocking (H5).
-//   - H6 normalization reuses the same pure helpers (extractPromptText,
-//     extractWriteTargets, extractBashCommand, normalizePath/matchGlob).
-//     Shims never log raw args (I10): warnings carry hook names only.
-//   - setup() is idempotent per ctx object (second call reports
-//     alreadyRegistered without re-registering).
+// The contract below is MEASURED against the installed binary (v2.0.32) and the
+// official source (packages/core/src/plugin/module.ts + plugin/promise/adapter.ts)
+// — not against the prose of the docs page, which prescribes "a function that
+// returns a hooks object" and does NOT match the installed loader:
+//   - The module default export MUST be an OBJECT { id, setup | effect }. A bare
+//     function default is rejected by the loader schema ("Expected object at
+//     [\"default\"]") — measured with a probe plugin, not theorised.
+//   - `setup(ctx)` registers hooks through the v2 ctx API and MUST return
+//     `undefined` (or a cleanup function). The runtime hands the return value to
+//     Effect.acquireRelease, so a truthy object is CALLED as a function — that is
+//     exactly the `TypeError: t is not a function (In 't()', ... is an instance
+//     of Object)` that kept enforcement OFF (58x since 2026-10-15).
+//   - Confirmed v2 APIs used here (measured in the binary):
+//       ctx.tool.hook("execute.before", handler) — handler receives
+//         {tool, sessionID, agent, messageID, id, input}; a throw denies the call.
+//       ctx.event.subscribe() — AsyncIterable of {id, created, type, [durable],
+//         location, data} bus events.
+//   - chat.params / chat.message are NOT v2 hooks (absent from the runtime ctx
+//     and from the binary). The two v1 feeds are replaced by CONFIRMED v2
+//     sources, never by a registered-but-dead hook (golden rule): the
+//     session→agent map from the tool-hook payload (`event.agent`) and the
+//     human-turn boundary from the event stream. Nothing v1 is dropped silently.
+//   - Only the hooks confirmed above are registered: never the forbidden ask hook
+//     (H1), never a scalar system-transform (H2), never a dead bus event (H3),
+//     never prose blocking (H5).
 // ---------------------------------------------------------------------------
 
-// Every tool with a gate. `task` covers the PICCO gate, anchor B and the
-// HITL pause; write-shaped tools cover completion anchor A; both shell
-// literals cover hygiene (H4: the v2 `shell` literal maps into SHELL_TOOLS,
-// `bash` stays for v1 parity).
+// Confirmed v2 tool hook name. A single registration covers every gate-bearing
+// tool; the per-gate filter lives in the pure cores (ctx.tool === "task" |
+// write-shaped | shell).
+export const V2_TOOL_HOOK = "execute.before";
+
+// Tools covered by the single execute.before hook (documentation + test matrix).
 export const V2_TOOL_KEYS = ["task", "write", "edit", "apply_patch", "patch", "bash", "shell"];
 
-// Hooks that must never be registered by this adapter (H1).
-// Intentionally narrow: H1 names the single hook; H2 (scalar transform
-// output), H3 (dead bus event) and H5 (prose blocking) are not hook names
-// and cannot appear in this list — they are enforced structurally instead:
-// H2/H3 by static greps (scalar-assign, bus-filter) + the reserved
-// ctx.event.subscribe row with name null in V2_HOOK_TABLE below (never
-// subscribed this batch), H5 by the no-prose-injection discipline of both
-// entries. Widening this list with non-hook strings would give false
-// confidence; the table + greps are the enforcement.
+// Hooks this adapter must never register (H1). Kept narrow on purpose: H2
+// (scalar transform output), H3 (dead bus event) and H5 (prose blocking) are not
+// hook names and are enforced structurally (static greps + the table below).
 export const V2_FORBIDDEN_HOOKS = ["ask"];
 
-// v1 → v2-confirmed table (gap 1 evidence). Sources: RUNTIME-CONTRACT §2
-// where present, else PLAN §1.1.1 substitute (gate.js:22-24,854-919 plus
-// gate-contract.md plus migrate-v1). ctx.event.subscribe stays reserved:
-// the after-observer lands on a confirmed name only, in a later phase (H3).
+// v1 → v2 mapping (gap-1 evidence). Sources: the installed binary (ctx shape and
+// the execute.before payload) plus the official source (module.ts schema,
+// promise/adapter.ts ctx). Rows with api "no-hook" are v1 feeds whose confirmed
+// v2 source is not a hook at all.
 export const V2_HOOK_TABLE = [
-  { v1: "tool.execute.before", v2: { api: "ctx.tool.hook", tool: "task", timing: "before" }, core: "gatePiccoTask, gatePhaseAnchorB, gateHitlBatch via decide", note: "delegation gate, anchor B, HITL pause" },
-  { v1: "tool.execute.before", v2: { api: "ctx.tool.hook", tool: "write", timing: "before" }, core: "gateCompletionAnchorA via decide", note: "anchor A path check, both write arg shapes" },
-  { v1: "tool.execute.before", v2: { api: "ctx.tool.hook", tool: "edit", timing: "before" }, core: "gateCompletionAnchorA via decide", note: "anchor A path check, both write arg shapes" },
-  { v1: "tool.execute.before", v2: { api: "ctx.tool.hook", tool: "apply_patch", timing: "before" }, core: "gateCompletionAnchorA via decide", note: "anchor A patch-text targets" },
-  { v1: "tool.execute.before", v2: { api: "ctx.tool.hook", tool: "patch", timing: "before" }, core: "gateCompletionAnchorA via decide", note: "anchor A patch-text targets" },
-  { v1: "tool.execute.before", v2: { api: "ctx.tool.hook", tool: "bash", timing: "before" }, core: "gateShellHygiene via decide", note: "H4 parse-based, declared partial, CI backstop" },
-  { v1: "tool.execute.before", v2: { api: "ctx.tool.hook", tool: "shell", timing: "before" }, core: "gateShellHygiene via decide", note: "H4 v2 tool literal mapped into SHELL_TOOLS" },
-  { v1: "chat.params", v2: { api: "ctx.session.hook", event: "params" }, core: "noteChatParams + recordSessionAgent", note: "session to agent map" },
-  { v1: "chat.message", v2: { api: "ctx.session.hook", event: "message" }, core: "isHumanMessage + resetHitlTracker", note: "human-turn boundary" },
-  { v1: "tool.execute.after observer (future)", v2: { api: "ctx.event.subscribe", name: null }, core: "none this batch", note: "reserved, subscribe on a confirmed name only" },
+  {
+    v1: "tool.execute.before",
+    v2: { api: "ctx.tool.hook", name: "execute.before" },
+    core: "all CORE_GATES via decide (GATE-01..05)",
+    note: "one registration; gates filter by event.tool",
+  },
+  {
+    v1: "chat.params",
+    v2: { api: "no-hook", field: "event.agent" },
+    core: "recordSessionAgent via resolveSessionAgent",
+    note: "v2 has no chat.params hook; the execute.before payload carries agent",
+  },
+  {
+    v1: "chat.message",
+    v2: { api: "ctx.event.subscribe", name: "session.idle|message.updated|session.step.ended" },
+    core: "resetHitlTracker on the turn boundary",
+    note: "v2 has no chat.message hook; the event stream carries the boundary",
+  },
 ];
 
-// v2 tool-hook shim (SPEC §5.1). Normalizes the v2 payload — string vs
-// object args (H6), (input, output) pair or single envelope — into the same
-// base/ctx shape HarnessGate builds, then runs the identical decide loop.
-// Returns { verdict: "allow" }; deny escapes as DenyError via decide.
+// Turn-boundary events — the confirmed v2 replacement for the v1 chat.message
+// human turn: session.idle = the turn finished; message.updated(role user) = a
+// human message; session.step.ended(finish stop) = the assistant step that ends
+// the turn. Any one of them resets the per-session HITL counter.
+export const V2_TURN_BOUNDARY_TYPES = ["session.idle", "message.updated", "session.step.ended"];
+
+export function isTurnBoundaryEvent(event = {}) {
+  const type = event?.type;
+  if (type === "session.idle") return true;
+  if (type === "message.updated") {
+    const role = event?.data?.info?.role ?? event?.properties?.info?.role ?? event?.info?.role;
+    return role === "user" || role === "human";
+  }
+  if (type === "session.step.ended") {
+    const finish = event?.data?.finish ?? event?.data?.rawFinish ?? event?.properties?.finish;
+    return finish === "stop";
+  }
+  return false;
+}
+
+// Feeds the HITL counter from a bus event. Counter maintenance never denies and
+// never logs raw event content (I10).
+export function noteTurnBoundary(event = {}) {
+  try {
+    if (!isTurnBoundaryEvent(event)) return false;
+    const sessionID = event?.data?.sessionID ?? event?.properties?.sessionID ?? event?.sessionID;
+    resetHitlTracker(sessionID);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// v2 tool-hook handler. Normalizes the confirmed v2 event shape
+// ({tool, sessionID, agent, messageID, id, input}) plus the legacy envelope and
+// two-arg shapes (H6), then runs the identical decide + CORE_GATES loop as the
+// doc-contract entry above. Deny escapes as DenyError via decide; the runtime
+// turns a throw into a failed tool call.
 export async function runGatesShim(v2Payload = {}, v2Output) {
   const twoArgs = v2Output !== undefined;
-  const rawInput = twoArgs ? v2Payload : (v2Payload?.toolInput ?? v2Payload?.input ?? v2Payload);
-  const rawOutput = twoArgs ? v2Output : (v2Payload?.toolOutput ?? v2Payload?.output ?? v2Payload);
-  const toolInput = rawInput && typeof rawInput === "object" ? rawInput : {};
-  const toolOutput = rawOutput && typeof rawOutput === "object" ? rawOutput : {};
-  const payloadObj = v2Payload && typeof v2Payload === "object" ? v2Payload : {};
+  let toolInput = {};
+  let toolOutput = {};
+  let payloadObj = {};
+  if (typeof v2Payload === "string") {
+    toolOutput = { args: v2Payload };
+  } else {
+    payloadObj = v2Payload && typeof v2Payload === "object" ? v2Payload : {};
+    if (twoArgs) {
+      toolInput = payloadObj;
+      toolOutput = v2Output && typeof v2Output === "object" ? v2Output : {};
+    } else {
+      const isEvent =
+        typeof payloadObj.tool === "string" &&
+        "input" in payloadObj &&
+        !("args" in payloadObj) &&
+        !("toolInput" in payloadObj) &&
+        !("toolOutput" in payloadObj);
+      toolInput = isEvent ? payloadObj : (payloadObj.toolInput ?? payloadObj);
+      toolOutput = isEvent ? { args: payloadObj.input } : (payloadObj.toolOutput ?? payloadObj);
+    }
+  }
   const sessionID = toolInput.sessionID ?? payloadObj.sessionID;
+  const agent = toolInput.agent ?? payloadObj.agent;
   const logger = toolInput.logger ?? payloadObj.logger ?? console;
   const base = {
     tool: toolInput.tool ?? payloadObj.tool,
     sessionID,
-    callID: toolInput.callID ?? payloadObj.callID,
-    args:
-      toolOutput.args ?? toolInput.args ?? payloadObj.args ??
-      (typeof v2Payload === "string" ? v2Payload : undefined),
+    callID: toolInput.callID ?? toolInput.id ?? payloadObj.callID ?? payloadObj.id,
+    args: toolOutput.args ?? toolInput.args ?? payloadObj.args,
     defaultMode: DEFAULT_MODE,
     logger,
     statePath: toolInput.statePath ?? payloadObj.statePath,
@@ -1096,6 +1176,9 @@ export async function runGatesShim(v2Payload = {}, v2Output) {
       payloadObj.env ??
       (toolInput.config ?? payloadObj.config ? {} : process.env),
   };
+  // The v2 tool-hook payload carries the agent identity (I11): the session→agent
+  // map is fed here instead of the removed chat.params hook.
+  if (agent) recordSessionAgent(sessionID, agent);
   let config = toolInput.config ?? payloadObj.config ?? null;
   if (!config) {
     try {
@@ -1110,16 +1193,13 @@ export async function runGatesShim(v2Payload = {}, v2Output) {
     sessionAgent:
       toolInput.sessionAgent ??
       payloadObj.sessionAgent ??
-      (sessionID ? sessionAgentMap.get(sessionID) : undefined),
-    // Optional explicit seams (test/consumer injection only — prod callers
-    // leave every one undefined and fall through to the same lazy defaults
-    // the v1 HarnessGate uses: workflowState via loadWorkflowState,
+      (agent ?? (sessionID ? sessionAgentMap.get(sessionID) : undefined)),
+    // Optional explicit seams (test/consumer injection only — prod callers leave
+    // every one undefined and fall through to the same lazy defaults the
+    // doc-contract entry uses: workflowState via loadWorkflowState,
     // startsNewCycle via inferNewCycle, hitlTracker via hitlTrackerFor,
     // contraproveExec via defaultContraproveExec, timeoutMs via
-    // config.contraproveTimeoutMs, treeHash "unknown" = cache bypass. The
-    // seam exists so decide() + CORE_GATES stay pure and unit-testable
-    // without MCP/network; narrowing to undefined in prod is the default
-    // path, not a separate branch.
+    // config.contraproveTimeoutMs, treeHash "unknown" = cache bypass.
     workflowState: toolInput.workflowState ?? payloadObj.workflowState ?? undefined,
     startsNewCycle: toolInput.startsNewCycle ?? payloadObj.startsNewCycle ?? undefined,
     hitlTracker: toolInput.hitlTracker ?? payloadObj.hitlTracker ?? undefined,
@@ -1131,7 +1211,13 @@ export async function runGatesShim(v2Payload = {}, v2Output) {
   ctx.report = toolInput.report ?? payloadObj.report ?? readEvidenceReport(ctx);
   let outcome = { verdict: "allow" };
   for (const gateFn of CORE_GATES) {
-    const result = await decide({ gateFn, mode: config ? modeForGate(gateFn, config) : DEFAULT_MODE, ctx, env: base.env, logger });
+    const result = await decide({
+      gateFn,
+      mode: config ? modeForGate(gateFn, config) : DEFAULT_MODE,
+      ctx,
+      env: base.env,
+      logger,
+    });
     if (result && typeof result === "object") {
       if (result.via && !outcome.via) outcome = result;
       else if (!outcome.via) outcome = result;
@@ -1140,8 +1226,8 @@ export async function runGatesShim(v2Payload = {}, v2Output) {
   return outcome;
 }
 
-// v2 session shim for chat.params (SPEC §5.1): same map write as v1.
-// Map maintenance never denies.
+// Legacy session shim kept for the pure-core tests: feeds the same
+// session→agent map the v2 tool hook now feeds. Map maintenance never denies.
 export function noteChatParamsShim(input = {}) {
   try {
     noteChatParams(input);
@@ -1150,8 +1236,8 @@ export function noteChatParamsShim(input = {}) {
   }
 }
 
-// v2 session shim for the human-turn boundary (SPEC §5.1): same reset as
-// the v1 chat.message handler. Counter maintenance never denies.
+// Legacy human-turn shim kept for the pure-core tests: same reset the v2 event
+// stream triggers via noteTurnBoundary. Counter maintenance never denies.
 export function humanBoundaryShim(messageInput = {}, output) {
   try {
     if (isHumanMessage(messageInput, output)) {
@@ -1164,59 +1250,54 @@ export function humanBoundaryShim(messageInput = {}, output) {
 
 const v2SetupSeen = new WeakSet();
 
-// v2 plugin entry (ADR-001): registers runGatesShim per gate-bearing tool
-// plus the two session shims. Hook without a confirmed equivalent raises a
-// visible HOOK-NO-EQUIV error, never silence. A rejected gate-bearing tool
-// hook throws GATE-ABSENT:<tool> (fail-closed, never warnings+success: a
-// half-registered adapter must not bless an unverified run). A stub
-// exposing only tool.hook registers that subset with an explicit session
-// warning; zero registrations raise SETUP-REGISTER-FAIL.
-// Idempotency note: the WeakSet short-circuit reports alreadyRegistered
-// without re-validating host hooks. Documented limitation: hosts retain
-// hooks for the ctx lifetime; a host-side reset needs a fresh ctx object
-// (no revalidation this batch by design — re-registering on the same ctx
-// would double-deny).
+// v2 plugin entry (the module default's `setup`). Registers the single confirmed
+// tool hook plus the turn-boundary subscription and returns `undefined` — the
+// runtime hands the return value to acquireRelease, so anything truthy would be
+// invoked as a cleanup function (the TypeError this cycle fixes). A missing
+// ctx.tool.hook raises a VISIBLE error, never silence; a rejected registration
+// throws GATE-ABSENT (fail-closed — a half-registered adapter must not bless an
+// unverified run). Idempotent per ctx object (second call registers nothing and
+// still returns undefined).
 export async function setup(ctx = {}) {
-  if (v2SetupSeen.has(ctx)) {
-    return { id: "harness-gate", registered: [], warnings: [], alreadyRegistered: true };
-  }
-  const registered = [];
-  const warnings = [];
+  if (v2SetupSeen.has(ctx)) return undefined;
   const toolHook = ctx?.tool?.hook;
   if (typeof toolHook !== "function") {
     throw new Error("HOOK-NO-EQUIV:ctx.tool.hook");
   }
-  for (const tool of V2_TOOL_KEYS) {
-    try {
-      await toolHook(tool, "before", runGatesShim);
-      registered.push(`tool:${tool}:before`);
-    } catch {
-      throw new Error(`GATE-ABSENT:${tool}`);
-    }
+  try {
+    await toolHook(V2_TOOL_HOOK, runGatesShim);
+  } catch {
+    throw new Error(`GATE-ABSENT:${V2_TOOL_HOOK}`);
   }
-  const sessionHook = ctx?.session?.hook;
-  if (typeof sessionHook === "function") {
-    for (const [event, handler] of [["params", noteChatParamsShim], ["message", humanBoundaryShim]]) {
-      try {
-        await sessionHook(event, handler);
-        registered.push(`session:${event}`);
-      } catch {
-        warnings.push(`HOOK-NO-EQUIV:session:${event}`);
+  const subscribe = ctx?.event?.subscribe;
+  if (typeof subscribe === "function") {
+    try {
+      const stream = subscribe();
+      if (stream && typeof stream[Symbol.asyncIterator] === "function") {
+        // Detached on purpose: the subscription lives for the plugin scope and
+        // must not block activation. A dropped stream only loses the HITL reset.
+        void (async () => {
+          try {
+            for await (const event of stream) noteTurnBoundary(event);
+          } catch {
+            // Best-effort; never denies.
+          }
+        })();
+      } else {
+        console.error("[harness-gate] HOOK-NO-EQUIV:ctx.event.subscribe(not-async-iterable)");
       }
+    } catch {
+      console.error("[harness-gate] HOOK-NO-EQUIV:ctx.event.subscribe");
     }
   } else {
-    warnings.push("HOOK-NO-EQUIV:session(params,message)");
-  }
-  if (registered.length === 0) {
-    throw new Error("SETUP-REGISTER-FAIL:GATE-ABSENT:all");
-  }
-  for (const warning of warnings) {
-    try {
-      console.error(`[harness-gate] ${warning}`);
-    } catch {
-      // Best-effort; never changes registration.
-    }
+    console.error("[harness-gate] HOOK-NO-EQUIV:ctx.event.subscribe(turn-boundary)");
   }
   v2SetupSeen.add(ctx);
-  return { id: "harness-gate", registered, warnings };
+  return undefined;
 }
+
+// v2 plugin module default export. The installed loader requires an OBJECT
+// {id, setup}; a bare function default is rejected ("Expected object at
+// [\"default\"]"). No `Plugin.define` (absent from the runtime) and no `server`
+// key — this repo is v2-only.
+export default { id: "harness-gate", setup };

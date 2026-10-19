@@ -1,10 +1,15 @@
-// matrix-v1v2-parity.spec.mjs — PL-07 V2-VAL-10 (TDD FIRST).
+// matrix-v1v2-parity.spec.mjs — PL-07 V2-VAL-10, UPDATED to the measured
+// v2-only contract (opencode-v2-only, EX2-VAL-03).
 //
-// Full deny/allow matrix executed through BOTH entries with identical
-// outcomes: the v1 `server` entry (HarnessGate → "tool.execute.before")
-// and the v2 `setup` entry (setup(ctx) → captured runGatesShim).
-// Parity = same outcome + same deny reason per row. Any divergence is a
-// release-blocking defect (rollback, never advance to PL-08).
+// HISTORY: this file ran the deny/allow matrix through BOTH entries — the v1
+// `server` entry (HarnessGate → "tool.execute.before") and the v2 `setup`
+// entry — and asserted parity. The owner decided v2-only: the `server` key is
+// gone from every default export. There is nothing left to compare against, so
+// the matrix now runs through the SINGLE v2 entry (setup → runGatesShim) and
+// pins the SAME verdicts (same deny reasons) the pre-migration matrix pinned.
+//
+// Retired: every "v1 × v2 parity" comparison (the v1 leg no longer exists).
+// Preserved: every row's verdict + reason (RF-02 "mesmo veredito").
 //
 // Gate map (GATE-01..GATE-05, gate.js header):
 //   GATE-01 dispatcher/DenyError/kill-switch/fail-open — rows KILL, FAILOPEN
@@ -20,15 +25,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import {
-  HarnessGate,
-  setup,
-  runGatesShim,
-  noteChatParamsShim,
-  resetHitlTracker,
-  DenyError,
-  V2_TOOL_KEYS,
-} from "../gate.js";
+import { setup, runGatesShim, resetHitlTracker, DenyError } from "../gate.js";
 
 const VALID_PICCO =
   "<role>dev</role><task>fix widget</task><context>repo</context>" +
@@ -76,53 +73,34 @@ function v2Stub() {
   const calls = [];
   const ctx = {
     tool: {
-      hook: async (tool, timing, handler) => {
-        calls.push({ api: "tool.hook", tool, timing, handler });
+      hook: async (tool, handler) => {
+        calls.push({ api: "tool.hook", tool, handler });
       },
     },
-    session: {
-      hook: async (event, handler) => {
-        calls.push({ api: "session.hook", event, handler });
+    event: {
+      subscribe: () => {
+        calls.push({ api: "event.subscribe" });
+        return { [Symbol.asyncIterator]: async function* () {} };
       },
     },
-    event: { subscribe: async () => {} },
   };
   return { ctx, calls };
 }
 
-// Capture the handler the v2 entry actually registered (proves the call
-// goes through `setup`, not a direct import bypass).
-async function v2HookFor(tool) {
+// Capture the handler the v2 entry actually registered (proves the call goes
+// through `setup`, not a direct import bypass).
+async function v2Handler() {
   const { ctx, calls } = v2Stub();
   const result = await setup(ctx);
-  assert.ok(result.registered.length > 0, "setup registers hooks");
-  for (const key of V2_TOOL_KEYS) {
-    const hit = calls.find((c) => c.api === "tool.hook" && c.tool === key);
-    assert.ok(hit, `setup registered tool hook: ${key}`);
-    assert.equal(hit.handler, runGatesShim, `handler for ${key} is runGatesShim`);
-  }
-  const hit = calls.find((c) => c.api === "tool.hook" && c.tool === tool);
-  assert.ok(hit, `setup registered requested tool hook: ${tool}`);
+  assert.equal(result, undefined, "setup returns undefined (acquireRelease contract)");
+  const hit = calls.find((c) => c.api === "tool.hook");
+  assert.ok(hit, "setup registered the execute.before hook");
+  assert.equal(hit.handler, runGatesShim, "handler is runGatesShim");
   return hit.handler;
 }
 
-async function runV1(toolInput, toolOutput) {
-  const hooks = await HarnessGate({});
-  const handler = hooks["tool.execute.before"];
-  assert.equal(typeof handler, "function", "v1 server exposes tool.execute.before");
-  try {
-    await handler(toolInput, toolOutput);
-    return { outcome: "allow" };
-  } catch (err) {
-    if (err instanceof DenyError) {
-      return { outcome: "deny", reason: err.reason, details: err.details };
-    }
-    throw err;
-  }
-}
-
-async function runV2(tool, envelope) {
-  const handler = await v2HookFor(tool);
+async function runV2(envelope) {
+  const handler = await v2Handler();
   try {
     const verdict = await handler(envelope);
     return { outcome: "allow", via: verdict?.via ?? null };
@@ -134,208 +112,145 @@ async function runV2(tool, envelope) {
   }
 }
 
-function assertParity(v1, v2, row) {
-  assert.equal(v1.outcome, v2.outcome, `${row}: v1×v2 outcome parity (${JSON.stringify(v1)} vs ${JSON.stringify(v2)})`);
-  if (v1.outcome === "deny") {
-    assert.equal(v2.reason, v1.reason, `${row}: v1×v2 deny reason parity`);
-  }
-}
-
-describe("PL-07 V2-VAL-10 — matrix deny/allow v1(server)×v2(setup)", () => {
-  it("PICCO-DENY (GATE-02): task without tag denies identically", async () => {
+describe("PL-07 V2-VAL-10 — matrix deny/allow through the v2 entry (setup → runGatesShim)", () => {
+  it("PICCO-DENY (GATE-02): task without tag denies", async () => {
     const closed = tempStatePath(CLOSED);
-    const v1 = await runV1(
-      { tool: "task", sessionID: freshSid("v1-picco-deny"), config: ENFORCE, statePath: closed },
-      { args: { prompt: "do the thing with no picco block at all" } },
-    );
-    const v2 = await runV2("task", {
+    const row = await runV2({
       tool: "task",
       sessionID: freshSid("v2-picco-deny"),
       args: { prompt: "do the thing with no picco block at all" },
       config: ENFORCE,
       statePath: closed,
     });
-    assert.equal(v1.outcome, "deny");
-    assert.equal(v1.reason, "picco-tag-absent");
-    assertParity(v1, v2, "PICCO-DENY");
+    assert.equal(row.outcome, "deny");
+    assert.equal(row.reason, "picco-tag-absent");
   });
 
-  it("PICCO-ALLOW (GATE-02): valid PICCO allows identically", async () => {
+  it("PICCO-ALLOW (GATE-02): valid PICCO allows", async () => {
     const closed = tempStatePath(CLOSED);
-    const v1 = await runV1(
-      { tool: "task", sessionID: freshSid("v1-picco-allow"), config: ENFORCE, statePath: closed },
-      { args: { prompt: VALID_PICCO } },
-    );
-    const v2 = await runV2("task", {
+    const row = await runV2({
       tool: "task",
       sessionID: freshSid("v2-picco-allow"),
       args: { prompt: VALID_PICCO },
       config: ENFORCE,
       statePath: closed,
     });
-    assert.equal(v1.outcome, "allow");
-    assertParity(v1, v2, "PICCO-ALLOW");
+    assert.equal(row.outcome, "allow");
   });
 
-  it("PKILL-DENY (GATE-05): pkill -f denies identically", async () => {
-    const v1 = await runV1(
-      { tool: "bash", sessionID: freshSid("v1-pkill"), config: ENFORCE },
-      { args: { command: "pkill -f worker" } },
-    );
-    const v2 = await runV2("bash", {
+  it("PKILL-DENY (GATE-05): pkill -f denies", async () => {
+    const row = await runV2({
       tool: "bash",
       sessionID: freshSid("v2-pkill"),
       args: { command: "pkill -f worker" },
       config: ENFORCE,
     });
-    assert.equal(v1.outcome, "deny");
-    assert.equal(v1.reason, "pkill-f");
-    assertParity(v1, v2, "PKILL-DENY");
+    assert.equal(row.outcome, "deny");
+    assert.equal(row.reason, "pkill-f");
   });
 
-  it("BASH-ALLOW (GATE-05): clean bash allows identically", async () => {
-    const v1 = await runV1(
-      { tool: "bash", sessionID: freshSid("v1-bash-ok"), config: ENFORCE },
-      { args: { command: "echo hello" } },
-    );
-    const v2 = await runV2("bash", {
+  it("BASH-ALLOW (GATE-05): clean bash allows", async () => {
+    const row = await runV2({
       tool: "bash",
       sessionID: freshSid("v2-bash-ok"),
       args: { command: "echo hello" },
       config: ENFORCE,
     });
-    assert.equal(v1.outcome, "allow");
-    assertParity(v1, v2, "BASH-ALLOW");
+    assert.equal(row.outcome, "allow");
   });
 
-  it("FAILOPEN (GATE-01/ADR-006): generic Error inside a gate allows identically, never denies", async () => {
+  it("FAILOPEN (GATE-01/ADR-006): generic Error inside a gate allows, never denies", async () => {
     // Invalid protectedPaths type makes isProtectedPath throw a generic
     // TypeError inside gateShellHygiene on a redirect target — decide()
-    // fail-opens (allow + error log) in both entries.
-    const badConfig = { protectedPaths: 123, gates: { picco: "enforce", evidence: "enforce", hitlBatch: "enforce" } };
+    // fail-opens (allow + error log).
+    const badConfig = {
+      protectedPaths: 123,
+      gates: { picco: "enforce", evidence: "enforce", hitlBatch: "enforce" },
+    };
     const errors = [];
-    const origError = console.error;
-    console.error = (...a) => { errors.push(a.map(String).join(" ")); };
-    let v1;
-    let v2;
-    try {
-      v1 = await runV1(
-        { tool: "bash", sessionID: freshSid("v1-failopen"), config: badConfig },
-        { args: { command: "echo hi > out.txt" } },
-      );
-      v2 = await runV2("bash", {
-        tool: "bash",
-        sessionID: freshSid("v2-failopen"),
-        args: { command: "echo hi > out.txt" },
-        config: badConfig,
-        logger: { warn() {}, error(e) { errors.push(String(e?.message ?? e)); } },
-      });
-    } finally {
-      console.error = origError;
-    }
-    assert.equal(v1.outcome, "allow", "v1 fail-open allows on generic error");
-    assertParity(v1, v2, "FAILOPEN");
-    assert.equal(v2.via, "plugin-error-fail-open", "v2 shim surfaces the fail-open via");
+    const row = await runV2({
+      tool: "bash",
+      sessionID: freshSid("v2-failopen"),
+      args: { command: "echo hi > out.txt" },
+      config: badConfig,
+      logger: { warn() {}, error(e) { errors.push(String(e?.message ?? e)); } },
+    });
+    assert.equal(row.outcome, "allow", "fail-open on a generic error");
+    assert.equal(row.via, "plugin-error-fail-open", "the shim surfaces the fail-open via");
     assert.ok(errors.length > 0, "fail-open logs at error level");
   });
 
-  it("KILL (GATE-01/ADR-009): HARNESS_GATES=off allows a denying input identically", async () => {
+  it("KILL (GATE-01/ADR-009): HARNESS_GATES=off allows a denying input", async () => {
     const closed = tempStatePath(CLOSED);
-    const killEnv = { HARNESS_GATES: "off" };
-    const v1 = await runV1(
-      { tool: "task", sessionID: freshSid("v1-kill"), config: ENFORCE, statePath: closed, env: killEnv },
-      { args: { prompt: "no tags at all, would deny without kill-switch" } },
-    );
-    const v2 = await runV2("task", {
+    const row = await runV2({
       tool: "task",
       sessionID: freshSid("v2-kill"),
       args: { prompt: "no tags at all, would deny without kill-switch" },
       config: ENFORCE,
       statePath: closed,
-      env: killEnv,
+      env: { HARNESS_GATES: "off" },
     });
-    assert.equal(v1.outcome, "allow");
-    assertParity(v1, v2, "KILL");
-    assert.equal(v2.via, "kill-switch");
+    assert.equal(row.outcome, "allow");
+    assert.equal(row.via, "kill-switch");
   });
 
-  it("GATES-OFF (GATE-01/ADR-009): gates.*=off never disables — hygiene still denies identically", async () => {
-    // gateShellHygiene carries no gates.* key by design, so modeForGate
-    // falls back to DEFAULT_MODE (enforce) even when every gates.* is off.
-    const v1 = await runV1(
-      { tool: "bash", sessionID: freshSid("v1-gates-off"), config: GATES_OFF },
-      { args: { command: "pkill -f worker" } },
-    );
-    const v2 = await runV2("bash", {
+  it("GATES-OFF (GATE-01/ADR-009): gates.*=off never disables — hygiene still denies", async () => {
+    // gateShellHygiene carries no gates.* key by design, so modeForGate falls
+    // back to DEFAULT_MODE (enforce) even when every gates.* is off.
+    const row = await runV2({
       tool: "bash",
       sessionID: freshSid("v2-gates-off"),
       args: { command: "pkill -f worker" },
       config: GATES_OFF,
     });
-    assert.equal(v1.outcome, "deny", "gates.*=off must still deny (hygiene enforce fallback)");
-    assert.equal(v1.reason, "pkill-f");
-    assertParity(v1, v2, "GATES-OFF");
+    assert.equal(row.outcome, "deny", "gates.*=off must still deny (hygiene enforce fallback)");
+    assert.equal(row.reason, "pkill-f");
   });
 
-  it("ANCHOR-A (GATE-03A): orchestrator write outside allowlist denies identically", async () => {
-    const s1 = freshSid("v1-anchor-a");
-    const s2 = freshSid("v2-anchor-a");
-    const hooks = await HarnessGate({});
-    await hooks["chat.params"]({ sessionID: s1, params: { agent: "orchestrator" } });
-    noteChatParamsShim({ sessionID: s2, params: { agent: "orchestrator" } });
-    const args = { filePath: "src/app.js", content: "console.log(1)" };
-    const v1 = await runV1({ tool: "write", sessionID: s1, config: ENFORCE }, { args });
-    const v2 = await runV2("write", { tool: "write", sessionID: s2, args, config: ENFORCE });
-    assert.equal(v1.outcome, "deny");
-    assert.equal(v1.reason, "orch-write-outside-allowlist");
-    assertParity(v1, v2, "ANCHOR-A");
+  it("ANCHOR-A (GATE-03A): orchestrator write outside allowlist denies", async () => {
+    const row = await runV2({
+      tool: "write",
+      sessionID: freshSid("v2-anchor-a"),
+      args: { filePath: "src/app.js", content: "console.log(1)" },
+      sessionAgent: "orchestrator",
+      config: ENFORCE,
+    });
+    assert.equal(row.outcome, "deny");
+    assert.equal(row.reason, "orch-write-outside-allowlist");
   });
 
-  it("ANCHOR-B (GATE-03B): new cycle on open state denies identically", async () => {
-    // Valid PICCO (passes GATE-02) that never mentions the open fixture
-    // feature ⇒ inferNewCycle=true ⇒ prev-cycle-not-completed.
+  it("ANCHOR-B (GATE-03B): new cycle on open state denies", async () => {
+    // Valid PICCO (passes GATE-02) that never mentions the open fixture feature
+    // ⇒ inferNewCycle=true ⇒ prev-cycle-not-completed.
     const open = tempStatePath(OPEN);
-    const v1 = await runV1(
-      { tool: "task", sessionID: freshSid("v1-anchor-b"), config: ENFORCE, statePath: open },
-      { args: { prompt: VALID_PICCO } },
-    );
-    const v2 = await runV2("task", {
+    const row = await runV2({
       tool: "task",
       sessionID: freshSid("v2-anchor-b"),
       args: { prompt: VALID_PICCO },
       config: ENFORCE,
       statePath: open,
     });
-    assert.equal(v1.outcome, "deny");
-    assert.equal(v1.reason, "prev-cycle-not-completed");
-    assertParity(v1, v2, "ANCHOR-B");
+    assert.equal(row.outcome, "deny");
+    assert.equal(row.reason, "prev-cycle-not-completed");
   });
 
-  it("HITL (GATE-04): 3rd consecutive task denies identically (allow, allow, deny)", async () => {
+  it("HITL (GATE-04): 3rd consecutive task denies (allow, allow, deny)", async () => {
     const closed = tempStatePath(CLOSED);
-    async function sequence(entry) {
-      const sid = freshSid(entry === "v1" ? "v1-hitl" : "v2-hitl");
-      const out = [];
-      for (let i = 0; i < 3; i++) {
-        if (entry === "v1") {
-          out.push(await runV1(
-            { tool: "task", sessionID: sid, config: ENFORCE, statePath: closed },
-            { args: { prompt: VALID_PICCO } },
-          ));
-        } else {
-          out.push(await runV2("task", {
-            tool: "task", sessionID: sid, args: { prompt: VALID_PICCO }, config: ENFORCE, statePath: closed,
-          }));
-        }
-      }
-      resetHitlTracker(sid);
-      return out;
+    const sid = freshSid("v2-hitl");
+    const out = [];
+    for (let i = 0; i < 3; i++) {
+      out.push(
+        await runV2({
+          tool: "task",
+          sessionID: sid,
+          args: { prompt: VALID_PICCO },
+          config: ENFORCE,
+          statePath: closed,
+        }),
+      );
     }
-    const s1 = await sequence("v1");
-    const s2 = await sequence("v2");
-    assert.deepEqual(s1.map((r) => r.outcome), ["allow", "allow", "deny"]);
-    assert.equal(s1[2].reason, "hitl-pause-required");
-    assert.deepEqual(s2.map((r) => r.outcome), ["allow", "allow", "deny"]);
-    assert.equal(s2[2].reason, s1[2].reason, "HITL deny reason parity");
+    resetHitlTracker(sid);
+    assert.deepEqual(out.map((r) => r.outcome), ["allow", "allow", "deny"]);
+    assert.equal(out[2].reason, "hitl-pause-required");
   });
 });

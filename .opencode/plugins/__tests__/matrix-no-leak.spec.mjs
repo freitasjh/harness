@@ -2,15 +2,18 @@
 //
 // A deny with a secret / absolute path inside `args` must carry ONLY the
 // actionable `reason` + registry metadata in DenyError.details — the secret
-// itself must be absent in BOTH entries. Shims additionally never log raw
-// args: captured warn/error output must not contain the secret either.
+// itself must be absent in BOTH entries. Both entries are envelope shapes of the
+// SAME v2 handler (runGatesShim): the measured single-arg payload and the legacy
+// two-arg (input, output) shape (contract H6). The retired v1 `HarnessGate`
+// entry is gone (Batch 1 review, 🟡-4), so there is no second registration to
+// compare against. Shims additionally never log raw args: captured warn/error
+// output must not contain the secret either.
 import { describe, it, after } from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
-  HarnessGate,
   runGatesShim,
   noteChatParamsShim,
   humanBoundaryShim,
@@ -82,22 +85,21 @@ function assertNoLeak(err, entry) {
 }
 
 describe("PL-07 V2-VAL-12 — 🟡 deny details carry only reason+metadata (no secret leak)", () => {
-  it("v1 server: PICCO deny with secret/path in args leaks nothing", async () => {
+  it("two-arg envelope: PICCO deny with secret/path in args leaks nothing", async () => {
     const closed = tempStatePath(CLOSED);
-    const hooks = await HarnessGate({});
     const prompt = `rotate ${SECRET} stored at ${ABS_PATH} with no picco block`;
     let caught = null;
     try {
-      await hooks["tool.execute.before"](
-        { tool: "task", sessionID: freshSid("v1-noleak"), config: ENFORCE, statePath: closed },
+      await runGatesShim(
+        { tool: "task", sessionID: freshSid("two-arg-noleak"), config: ENFORCE, statePath: closed },
         { args: { prompt } },
       );
     } catch (err) {
       caught = err;
     }
-    assert.ok(caught, "v1 denies");
+    assert.ok(caught, "the two-arg envelope denies");
     assert.equal(caught.reason, "picco-tag-absent");
-    assertNoLeak(caught, "v1");
+    assertNoLeak(caught, "two-arg");
   });
 
   it("v2 setup: PICCO deny with secret/path in args leaks nothing", async () => {
@@ -121,16 +123,15 @@ describe("PL-07 V2-VAL-12 — 🟡 deny details carry only reason+metadata (no s
     assertNoLeak(caught, "v2");
   });
 
-  it("both entries: pkill deny embedding a secret leaks nothing", async () => {
+  it("both envelope shapes: pkill deny embedding a secret leaks nothing", async () => {
     const results = {};
-    const hooks = await HarnessGate({});
     try {
-      await hooks["tool.execute.before"](
-        { tool: "bash", sessionID: freshSid("v1-noleak-pkill"), config: ENFORCE },
+      await runGatesShim(
+        { tool: "bash", sessionID: freshSid("two-arg-noleak-pkill"), config: ENFORCE },
         { args: { command: `pkill -f worker # ${SECRET} ${ABS_PATH}` } },
       );
     } catch (err) {
-      results.v1 = err;
+      results.twoArg = err;
     }
     try {
       await runGatesShim({
@@ -143,13 +144,13 @@ describe("PL-07 V2-VAL-12 — 🟡 deny details carry only reason+metadata (no s
     } catch (err) {
       results.v2 = err;
     }
-    assert.equal(results.v1?.reason, "pkill-f");
-    assert.equal(results.v2?.reason, results.v1.reason, "pkill deny reason parity");
-    assertNoLeak(results.v1, "v1-pkill");
+    assert.equal(results.twoArg?.reason, "pkill-f");
+    assert.equal(results.v2?.reason, results.twoArg.reason, "pkill deny reason parity across envelope shapes");
+    assertNoLeak(results.twoArg, "two-arg-pkill");
     assertNoLeak(results.v2, "v2-pkill");
   });
 
-  it("both entries: write to protected path holding SECRET leaks nothing (basename-only details)", async () => {
+  it("both envelope shapes: write to protected path holding SECRET leaks nothing (basename-only details)", async () => {
     const protectedConfig = {
       ...ENFORCE,
       protectedPaths: [".opencode/plugins/**"],
@@ -158,14 +159,13 @@ describe("PL-07 V2-VAL-12 — 🟡 deny details carry only reason+metadata (no s
     // must never round-trip into DenyError.details.
     const evilPath = `.opencode/plugins/dir-${SECRET}/gate.js`;
     const results = {};
-    const hooks = await HarnessGate({});
     try {
-      await hooks["tool.execute.before"](
-        { tool: "write", sessionID: freshSid("v1-noleak-write"), config: protectedConfig },
+      await runGatesShim(
+        { tool: "write", sessionID: freshSid("two-arg-noleak-write"), config: protectedConfig },
         { args: { filePath: evilPath, content: `x ${SECRET} ${ABS_PATH}` } },
       );
     } catch (err) {
-      results.v1 = err;
+      results.twoArg = err;
     }
     try {
       await runGatesShim({
@@ -178,11 +178,11 @@ describe("PL-07 V2-VAL-12 — 🟡 deny details carry only reason+metadata (no s
     } catch (err) {
       results.v2 = err;
     }
-    assert.equal(results.v1?.reason, "protected-path-write");
-    assert.equal(results.v2?.reason, results.v1.reason, "write deny reason parity");
-    assertNoLeak(results.v1, "v1-write");
+    assert.equal(results.twoArg?.reason, "protected-path-write");
+    assert.equal(results.v2?.reason, results.twoArg.reason, "write deny reason parity across envelope shapes");
+    assertNoLeak(results.twoArg, "two-arg-write");
     assertNoLeak(results.v2, "v2-write");
-    assert.equal(results.v1.details?.path, "gate.js", "protected detail carries basename only");
+    assert.equal(results.twoArg.details?.path, "gate.js", "protected detail carries basename only");
     assert.equal(results.v2.details?.path, "gate.js", "protected detail carries basename only");
   });
 
@@ -217,7 +217,7 @@ describe("PL-07 V2-VAL-12 — 🟡 deny details carry only reason+metadata (no s
     }
   });
 
-  it("v1 console output on secret-bearing deny contains no secret", async () => {
+  it("two-arg envelope console output on secret-bearing deny contains no secret", async () => {
     const captured = [];
     const origError = console.error;
     const origWarn = console.warn;
@@ -225,9 +225,8 @@ describe("PL-07 V2-VAL-12 — 🟡 deny details carry only reason+metadata (no s
     console.warn = (...a) => { captured.push(a.map(String).join(" ")); };
     try {
       const closed = tempStatePath(CLOSED);
-      const hooks = await HarnessGate({});
-      await hooks["tool.execute.before"](
-        { tool: "task", sessionID: freshSid("v1-noleak-con"), config: ENFORCE, statePath: closed },
+      await runGatesShim(
+        { tool: "task", sessionID: freshSid("two-arg-noleak-con"), config: ENFORCE, statePath: closed },
         { args: { prompt: `no tags, ${SECRET} ${ABS_PATH}` } },
       ).then(
         () => { throw new Error("expected deny"); },
@@ -240,8 +239,8 @@ describe("PL-07 V2-VAL-12 — 🟡 deny details carry only reason+metadata (no s
       console.warn = origWarn;
     }
     for (const line of captured) {
-      assert.ok(!line.includes(SECRET), "v1 console must not leak the secret");
-      assert.ok(!line.includes(ABS_PATH), "v1 console must not leak the abs path");
+      assert.ok(!line.includes(SECRET), "console must not leak the secret");
+      assert.ok(!line.includes(ABS_PATH), "console must not leak the abs path");
     }
   });
 });

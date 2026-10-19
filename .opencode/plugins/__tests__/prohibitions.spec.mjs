@@ -9,8 +9,10 @@
 //   H1: never register the permission prompt hook ("ask") — gate.js:22-24.
 //   H2: never assign a system-transform scalar (G14) — validator/guardrail
 //       stay no-op, zero DenyError, zero `throw new`.
-//   H3: never subscribe a dead bus event — event.subscribe rows stay
-//       reserved (name null) and setup() never calls subscribe.
+//   H3: never subscribe a DEAD/unconfirmed bus event. `event.subscribe` is a
+//       CONFIRMED v2 API (measured on v2.0.32) — the prohibition is no longer
+//       "any .subscribe", it is "subscribe only the confirmed stream, never a
+//       named dual event". The table row carries the confirmed name.
 //   H5: never claim prose blocking — no prose-named hook, no prose deny/block
 //       identifier; the runtime registry must show no prose-named handler.
 //   H4 is declared PARTIAL (evadible parse, CI backstop) — never green.
@@ -22,11 +24,17 @@ import { fileURLToPath } from "node:url";
 import {
   setup,
   runGatesShim,
-  noteChatParamsShim,
-  humanBoundaryShim,
+  V2_TOOL_HOOK,
   V2_TOOL_KEYS,
   V2_HOOK_TABLE,
+  V2_TURN_BOUNDARY_TYPES,
+  isTurnBoundaryEvent,
 } from "../gate.js";
+import {
+  RUNTIME_TURN_BOUNDARY,
+  RUNTIME_TURN_BOUNDARY_EVENTS,
+  runtimeBoundarySample,
+} from "./fixtures/v2-runtime-events.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(HERE, "..", "..", "..");
@@ -45,7 +53,10 @@ const H1_PATTERNS = [
   /['"]permission\.ask['"]/,
 ];
 const H2_PATTERNS = [/output\.system\s*=/];
-const H3_PATTERNS = [/\.subscribe\s*\(/];
+// H3 (inverted): subscribing is allowed on the CONFIRMED stream, but never a
+// named/dual event (`subscribe("some.event")`). The confirmed v2 form takes no
+// name — the stream carries the boundary.
+const H3_PATTERNS = [/\.subscribe\s*\(\s*['"]/];
 const H5_PATTERNS = [
   /hook\(\s*['"][^'"]*prose/i,
   /denyProse|blockProse|proseBlock/i,
@@ -57,8 +68,8 @@ function spyStub() {
     calls,
     ctx: {
       tool: {
-        hook: async (tool, timing, handler) => {
-          calls.push({ api: "tool.hook", tool, timing, handler });
+        hook: async (tool, handler) => {
+          calls.push({ api: "tool.hook", tool, handler });
         },
       },
       session: {
@@ -67,8 +78,9 @@ function spyStub() {
         },
       },
       event: {
-        subscribe: async (name, handler) => {
-          calls.push({ api: "event.subscribe", name, handler });
+        subscribe: () => {
+          calls.push({ api: "event.subscribe" });
+          return { [Symbol.asyncIterator]: async function* () {} };
         },
       },
     },
@@ -115,7 +127,7 @@ describe("PL-08 V2-VAL-14 — prohibitions H1/H2/H3/H5 (static + runtime)", () =
     }
   });
 
-  it("H3 (sem evento inexistente): no subscribe call in any plugin source", () => {
+  it("H3 (sem evento inexistente): no plugin subscribes a named/dual event (only the confirmed stream)", () => {
     for (const rel of PLUGINS) {
       const text = src(rel);
       for (const pattern of H3_PATTERNS) {
@@ -123,14 +135,35 @@ describe("PL-08 V2-VAL-14 — prohibitions H1/H2/H3/H5 (static + runtime)", () =
       }
     }
     const subscribed = V2_HOOK_TABLE.filter((r) => r.v2.api === "ctx.event.subscribe" && r.v2.name);
-    assert.equal(subscribed.length, 0, "H3: event table keeps every row reserved (name null)");
+    assert.equal(subscribed.length, 1, "H3: exactly one subscribed row carries the confirmed stream name");
+    // 🟡-3: compare against the INDEPENDENT runtime fixture, never against
+    // gate.js's own constant — a self-referential check stays green even if
+    // BOTH sides drift away from the runtime.
+    assert.equal(
+      subscribed[0].v2.name,
+      RUNTIME_TURN_BOUNDARY,
+      "H3: the subscribed row names the runtime's measured turn-boundary events",
+    );
+    assert.equal(
+      V2_TURN_BOUNDARY_TYPES.join("|"),
+      RUNTIME_TURN_BOUNDARY,
+      "H3: the adapter's boundary list matches the runtime fixture",
+    );
+    for (const type of RUNTIME_TURN_BOUNDARY_EVENTS) {
+      assert.equal(
+        isTurnBoundaryEvent(runtimeBoundarySample(type, "fixture-session")),
+        true,
+        `H3: isTurnBoundaryEvent handles the measured ${type} event`,
+      );
+    }
   });
 
-  it("H3 (sem evento inexistente): setup never calls event.subscribe", async () => {
+  it("H3 (sem evento inexistente): setup subscribes the CONFIRMED stream exactly once, never a name", async () => {
     const { ctx, calls } = spyStub();
     await setup(ctx);
     const subs = calls.filter((c) => c.api === "event.subscribe");
-    assert.equal(subs.length, 0, `H3-DEAD-EVENT-FOUND: ${subs.length} subscribe call(s) at runtime`);
+    assert.equal(subs.length, 1, "one confirmed subscription replaces the v1 chat.message hook");
+    assert.equal(subs[0].name, undefined, "the confirmed stream takes no name");
   });
 
   it("H5 (sem bloqueio de prosa): no prose-named hook or prose deny identifier", () => {
@@ -151,18 +184,20 @@ describe("PL-08 V2-VAL-14 — prohibitions H1/H2/H3/H5 (static + runtime)", () =
     }
   });
 
-  it("smoke per gate: every gate-bearing tool + both session shims registered", async () => {
+  it("smoke: the single execute.before hook covers every gate-bearing tool + the stream", async () => {
     const { ctx, calls } = spyStub();
     const result = await setup(ctx);
-    assert.equal(result.id, "harness-gate");
-    for (const tool of V2_TOOL_KEYS) {
-      const hit = calls.find((c) => c.api === "tool.hook" && c.tool === tool && c.timing === "before");
-      assert.ok(hit, `gate registered for tool: ${tool}`);
-      assert.equal(hit.handler, runGatesShim, "shared deny loop, no fork");
-    }
-    const sessionCalls = calls.filter((c) => c.api === "session.hook");
-    assert.ok(sessionCalls.some((c) => c.handler === noteChatParamsShim), "params shim registered");
-    assert.ok(sessionCalls.some((c) => c.handler === humanBoundaryShim), "boundary shim registered");
+    assert.equal(result, undefined, "setup returns undefined (acquireRelease contract)");
+    const toolCalls = calls.filter((c) => c.api === "tool.hook");
+    assert.equal(toolCalls.length, 1, "a single registration covers every gate-bearing tool");
+    assert.equal(toolCalls[0].tool, V2_TOOL_HOOK, "the confirmed execute.before name");
+    assert.equal(toolCalls[0].handler, runGatesShim, "shared deny loop, no fork");
+    assert.deepEqual(
+      V2_TOOL_KEYS,
+      ["task", "write", "edit", "apply_patch", "patch", "bash", "shell"],
+      "the single hook documents every gate-bearing tool",
+    );
+    assert.equal(calls.filter((c) => c.api === "event.subscribe").length, 1, "confirmed stream subscribed");
   });
 
   it("H4 declarada parcial 🟠 (nunca 🟢): evadible parse + CI backstop documented", () => {

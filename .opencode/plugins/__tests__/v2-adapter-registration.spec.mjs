@@ -1,17 +1,25 @@
-// v2-adapter-registration.spec.mjs — PL-02 V2-BE-01 (TDD FIRST).
+// v2-adapter-registration.spec.mjs — PL-02 V2-BE-01, UPDATED to the measured
+// v2-only contract (opencode-v2-only, EX2-VAL-03).
 //
-// Asserts the v2 adapter registers every gate-bearing tool via
-// ctx.tool.hook(_, "before", runGatesShim) + the two session shims, and
-// NEVER registers the forbidden `ask` hook (H1) nor dead bus events (H3).
+// Asserts the v2 adapter registers the SINGLE confirmed tool hook
+// `ctx.tool.hook("execute.before", runGatesShim)` and the confirmed
+// turn-boundary event stream `ctx.event.subscribe()`, never registers the
+// forbidden `ask` hook (H1), and is idempotent per ctx.
+//
+// Retired (belonged to the removed dual shape):
+//   - "one before-hook per gate-bearing tool" -> v2 registers ONE hook; the
+//     per-tool filter lives in the pure cores.
+//   - "both session shims (params + message)"  -> the v1 session.hook surface
+//     is gone; the agent identity rides the execute.before payload and the
+//     turn boundary rides the confirmed event stream.
+//   - "event.subscribe only on a confirmed name" -> the confirmed stream takes
+//     NO name; the prohibition is now "never a named/dual event".
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import {
   setup,
   runGatesShim,
-  noteChatParamsShim,
-  humanBoundaryShim,
-  V2_TOOL_KEYS,
-  V2_HOOK_TABLE,
+  V2_TOOL_HOOK,
   V2_FORBIDDEN_HOOKS,
 } from "../gate.js";
 
@@ -21,8 +29,8 @@ function spyStub() {
     calls,
     ctx: {
       tool: {
-        hook: async (tool, timing, handler) => {
-          calls.push({ api: "tool.hook", tool, timing, handler });
+        hook: async (tool, handler) => {
+          calls.push({ api: "tool.hook", tool, handler });
         },
       },
       session: {
@@ -31,35 +39,37 @@ function spyStub() {
         },
       },
       event: {
-        subscribe: async (name, handler) => {
-          calls.push({ api: "event.subscribe", name, handler });
+        subscribe: () => {
+          calls.push({ api: "event.subscribe" });
+          return { [Symbol.asyncIterator]: async function* () {} };
         },
       },
     },
   };
 }
 
-describe("PL-02 V2-BE-01 — v2 adapter registration", () => {
-  it("registers one before-hook per gate-bearing tool (GATE-01..05 cover)", async () => {
+describe("PL-02 V2-BE-01 — v2 adapter registration (measured contract)", () => {
+  it("registers the single execute.before hook with runGatesShim", async () => {
     const { ctx, calls } = spyStub();
     const result = await setup(ctx);
-    assert.ok(Array.isArray(result.registered), "setup returns registered list");
+    assert.equal(result, undefined, "setup returns undefined");
     const toolCalls = calls.filter((c) => c.api === "tool.hook");
-    for (const tool of V2_TOOL_KEYS) {
-      const hit = toolCalls.find((c) => c.tool === tool && c.timing === "before");
-      assert.ok(hit, `tool.hook registered for ${tool}`);
-      assert.equal(hit.handler, runGatesShim, `handler for ${tool} is runGatesShim`);
-    }
+    assert.equal(toolCalls.length, 1, "a single registration covers every gate-bearing tool");
+    assert.equal(toolCalls[0].tool, V2_TOOL_HOOK);
+    assert.equal(toolCalls[0].handler, runGatesShim, "handler is runGatesShim");
   });
 
-  it("registers both session shims (params + message boundary)", async () => {
+  it("registers the confirmed turn-boundary stream (no session.hook surface)", async () => {
     const { ctx, calls } = spyStub();
-    await setup({ ...ctx, tool: ctx.tool, session: ctx.session, event: ctx.event });
-    const sessionCalls = calls.filter((c) => c.api === "session.hook");
-    const params = sessionCalls.find((c) => c.handler === noteChatParamsShim);
-    const boundary = sessionCalls.find((c) => c.handler === humanBoundaryShim);
-    assert.ok(params, "noteChatParamsShim registered via session.hook");
-    assert.ok(boundary, "humanBoundaryShim registered via session.hook");
+    await setup(ctx);
+    const subs = calls.filter((c) => c.api === "event.subscribe");
+    assert.equal(subs.length, 1, "one confirmed subscription");
+    assert.equal(subs[0].name, undefined, "the confirmed stream takes no name");
+    assert.equal(
+      calls.filter((c) => c.api === "session.hook").length,
+      0,
+      "the v1 session.hook surface is not used",
+    );
   });
 
   it("never registers the forbidden ask hook (H1) on any api", async () => {
@@ -73,27 +83,14 @@ describe("PL-02 V2-BE-01 — v2 adapter registration", () => {
     }
   });
 
-  it("event.subscribe is never called with an unconfirmed (dead) name (H3)", async () => {
-    const { ctx, calls } = spyStub();
-    await setup(ctx);
-    const subs = calls.filter((c) => c.api === "event.subscribe");
-    const confirmed = new Set(
-      V2_HOOK_TABLE.filter((r) => r.v2.api === "ctx.event.subscribe" && r.v2.name).map(
-        (r) => r.v2.name,
-      ),
-    );
-    for (const sub of subs) {
-      assert.ok(confirmed.has(sub.name), `event.subscribe only on confirmed name, got ${sub.name}`);
-    }
-  });
-
-  it("setup twice on the same ctx is idempotent (no duplicate deny)", async () => {
+  it("setup twice on the same ctx is idempotent (no duplicate deny, still undefined)", async () => {
     const { ctx, calls } = spyStub();
     const first = await setup(ctx);
     const countAfterFirst = calls.length;
-    assert.ok(first.registered.length > 0, "first setup registers hooks");
+    assert.equal(first, undefined);
+    assert.ok(countAfterFirst > 0, "first setup registers hooks");
     const second = await setup(ctx);
-    assert.equal(second.alreadyRegistered, true, "second setup reports alreadyRegistered");
+    assert.equal(second, undefined, "second setup returns undefined");
     assert.equal(calls.length, countAfterFirst, "second setup adds no hook calls");
   });
 });

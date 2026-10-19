@@ -12,19 +12,21 @@
 // pause (with the developer→reviewer loop exemption, I6). No prose, no dead
 // handlers.
 //
-// Dual-export v1+v2 (opencode-v2-plugin-migration, PL-04): the bare v1
-// function HitlGuardrail is intact and wired as `server`; the v2 entry
-// `setup` rides on the same default record (dual-branch, same shape as
-// gate.js:939-940): v1 loaders read `server`, v2 runtimes read `setup`.
-// setup registers nothing and denies nothing — pure no-op.
+// v2-only (opencode-v2-only, EX2-BE-02): the v1 `server` entry and the
+// `Plugin.define` branch were removed (the owner decided v2-only). MEASURED
+// contract of the installed runtime (v2.0.32): the module default MUST be an
+// object `{ id, setup }`, and `setup(ctx)` MUST return `undefined` — the runtime
+// hands the return value to Effect.acquireRelease and CALLS a truthy value.
+// The previous `return { … }` here was called as a function, producing the
+// `TypeError: t is not a function` that failed the plugin load (58x since
+// 2026-10-15) and, in this runtime, took the agent registry down with it.
 export const HitlGuardrail = async (_input = {}) => ({});
 
-// V2 entry (PL-04): no-op registration. Takes any stub ctx, registers zero
-// hooks, throws never, logs no args. Idempotent by construction (no state).
+// V2 entry: no-op registration. Registers zero hooks and returns `undefined`
+// (nothing to clean up). Takes any stub ctx, throws never, logs no args.
 export async function setup(_ctx = {}) {
-  return { id: "hitl-guardrail", registered: [], warnings: [], noop: true };
+  // no-op by design: the HITL pause lands in GATE-04 (I6); this module must
+  // never register a dead hook nor return a truthy value.
 }
 
-export default (typeof globalThis.Plugin?.define === "function"
-  ? globalThis.Plugin.define({ id: "hitl-guardrail", server: HitlGuardrail, setup })
-  : { id: "hitl-guardrail", server: HitlGuardrail, setup });
+export default { id: "hitl-guardrail", setup };
