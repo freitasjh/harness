@@ -80,3 +80,13 @@ Registro cronológico de funcionalidades e refactors entregues.
 - [x] Fase 4 — Quality Gate / Harness (QA independente: 831/831, dry-run 0 writes, gating nas 2 direções, transcript byte-idêntico)
 - [x] Fase 5 — Verify (3 dimensões ✅ APPROVED; traceability 100%, 46/46 checkboxes)
 - [x] Fase 6 — Archive (move para `.spec/archive/20261018-harness-eixos-stack/`, `current_phase: Completed`, lições no Brain)
+| 2026-10-20 | `opencode-v2-only` | Refactor | Migração total do harness para o OpenCode **v2-only**: contrato de plugin medido no binário (`{id, setup}` + `setup`→`undefined`), gate migrado para `ctx.tool.hook("execute.before")`/`ctx.event.subscribe`, 41 asserções do contrato v1/dual aposentadas, merge do instalador removendo **só** o que o harness gerou (npm do usuário preservado), prosa alinhada (I5 → `permission.edit`, selo ← `HARNESS_SEAL_JSON`) e supersession do ciclo anterior. 9 tasks (`MIG-*`), 51/51 caixas, 3 reviews APPROVED, traceability 100%. Notas (1 linha): **brain_store bloqueado** (MCP exige login) — 8 lições em `workflow-state.lessons` (L-01..L-08); **A-1** `Completed` real exige `HARNESS_SEAL_JSON` no host; **F-03 (P2)** o parse de higiene casa o padrão no texto do comando; abertos: `TD-01` (atlas-ecm/taskflow com a receita do fatal), `TD-07` (`estudo/opencode.json` inválido), `TD-13` (16 rótulos `EX2-*`), `TD-14/15`. | `.spec/archive/20261020-opencode-v2-only/` | Completed |
+
+## Etapas concluídas — opencode-v2-only
+- [x] Fase 0/1 — Triagem + Análise (PROPOSAL + SPEC com o contrato MEDIDO; §0 corrigido 2×; security pela matriz de autoridade)
+- [x] Fase 2 — Planejamento (PLAN + TASKS, 9 tasks `MIG-*`, 51 caixas)
+- [x] Fase 3 — Execução (3 batches: plugins+testes · merge do instalador · prosa+supersession; **3 reviews**, loop de correção até zero 🔴; o Batch 3 exigiu 3 iterações + 1 autorizada pelo owner)
+- [x] Fase 3.5 — Incidente RT-02 (registry global caindo): causa raiz = worktree velho + contrato de plugin; neutralizado/removido
+- [x] Fase 4 — Quality Gate (suíte selada: 379/0 plugins + 516/0 installer + static 10 PASS + sdd 8 PASS + selo ok)
+- [x] Fase 5 — Verify (3 dimensões ✅; traceability 100%; 51/51 caixas; 0 TODO)
+- [x] Fase 6 — Archive (`.spec/archive/20261020-opencode-v2-only/` + superseded em `.spec/archive/20261015-opencode-v2-plugin-migration-superseded/`; `current_phase: Completed`; lições locais — Brain bloqueado por login)

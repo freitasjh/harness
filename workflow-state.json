@@ -1,8 +1,8 @@
 {
   "current_feature": "opencode-v2-only",
-  "current_phase": "Testing",
-  "previous_phase": "Execution",
-  "next_phase": "Completed",
+  "current_phase": "Completed",
+  "previous_phase": "Testing",
+  "next_phase": null,
   "type": "refactor",
   "layer": "instalador-config",
   "repo": "harness",
@@ -11,7 +11,7 @@
     "bug_report": "harness/harness-eixos-stack-p2.json",
     "source_tech_debt": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
     "previous_archive": ".spec/archive/20261018-harness-eixos-stack/",
-    "verify": ".spec/backend/opencode-v2-only/VERIFY.md",
+    "verify": ".spec/archive/20261020-opencode-v2-only/VERIFY.md",
     "harness_evidence": ".spec/archive/20261018-harness-eixos-stack/harness/",
     "harness_report": "harness/harness-eixos-stack.json",
     "tech_debt_p2": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
@@ -21,11 +21,12 @@
       "harness_report": "harness/prd-adr-pipeline.json"
     },
     "c1_previous_bug": ".spec/bugs/harness-eixos-stack-p2/TASKS.md",
-    "proposal": ".spec/backend/opencode-v2-only/PROPOSAL.md",
-    "spec": ".spec/backend/opencode-v2-only/SPEC.md",
-    "plan": ".spec/backend/opencode-v2-only/PLAN.md",
-    "tasks": ".spec/backend/opencode-v2-only/TASKS.md",
-    "superseded_cycle": ".spec/backend/opencode-v2-plugin-migration/ (superseded: SPEC prescrevia Plugin.define, inexistente no runtime v2.0.32)"
+    "proposal": ".spec/archive/20261020-opencode-v2-only/PROPOSAL.md",
+    "spec": ".spec/archive/20261020-opencode-v2-only/SPEC.md",
+    "plan": ".spec/archive/20261020-opencode-v2-only/PLAN.md",
+    "tasks": ".spec/archive/20261020-opencode-v2-only/TASKS.md",
+    "superseded_cycle": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/ (superseded: SPEC prescrevia `Plugin.define`, ausente no binario v2.0.32)",
+    "archive": ".spec/archive/20261020-opencode-v2-only"
   },
   "scope": {
     "interpretation": "esteira PRD->ADR->SDD no harness (visibilidade de intencao antes do codigo)",
@@ -1557,14 +1558,64 @@
   "superseded_cycles": [
     {
       "id": "opencode-v2-plugin-migration",
-      "dir": ".spec/backend/opencode-v2-plugin-migration/",
+      "dir": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/",
       "desde": "15/10/2026",
       "superseded_por": "opencode-v2-only",
       "declarado_em": "2026-10-19T13:08:44.430Z",
       "motivo": "A SPEC daquele ciclo prescreve `Plugin.define({id, setup})` como o contrato de plugin. MEDIDO no runtime v2.0.32: `Plugin.define` esta AUSENTE do binario (grep=0) — existe apenas como *identity shim* (`define(def)=>def`) no pacote `@opencode/plugin@2.0.29` instalado em `~/.config/opencode/node_modules`. O contrato real e `export default {id, setup}` com `setup()` retornando `undefined`.",
       "regra": "NAO editar os artefatos do ciclo superseded (SPEC/PROPOSAL/PLAN/TASKS ficam como estao) — a supersession e declarada aqui e no SPEC/PROPOSAL do ciclo novo (RF-06).",
-      "status": "superseded"
+      "status": "superseded",
+      "archivado_em": "2026-10-20"
     }
   ],
-  "harness_status_detail": "suite selada verde: plugins 379/379, installer 516/516, static 10 PASS, sdd 8 PASS, selo intacto"
+  "harness_status_detail": "suite selada verde: plugins 379/379, installer 516/516, static 10 PASS, sdd 8 PASS, selo intacto",
+  "archive": {
+    "at": "2026-10-20",
+    "dir": ".spec/archive/20261020-opencode-v2-only",
+    "delta_specs": "ja aplicados na fonte (gate-contract.md I5, harness-config.md selo, workflow-state.json); o §7 do SPEC registra o diff",
+    "superseded_archived": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/"
+  },
+  "lessons": [
+    {
+      "id": "L-01",
+      "tema": "contrato de plugin v2",
+      "licao": "`export default { id, setup }` (objeto); `setup(ctx)` DEVE retornar `undefined` — retorno truthy e CHAMADO pelo Effect.acquireRelease => TypeError => `failed to reload plugins` => o registry GLOBAL de agentes cai."
+    },
+    {
+      "id": "L-02",
+      "tema": "prova de mutacao",
+      "licao": "Nunca mutar plugin in-place com runtime vivo (o watcher recarrega e derruba o registry, matando a propria sessao). Mutar copia em /tmp."
+    },
+    {
+      "id": "L-03",
+      "tema": "fontes de config",
+      "licao": "Git worktrees velhos sao lidos como fonte de config; um worktree com plugin antigo (setup->objeto) derruba o registry global. Neutralizar/remover worktrees obsoletos."
+    },
+    {
+      "id": "L-04",
+      "tema": "teste verde x cobertura",
+      "licao": "Teste verde nao prova o ramo de producao: a suite cobria o shape de fallback (`args`) e nao o envelope real (`input`). Teste deve entrar pela ENTRADA REAL."
+    },
+    {
+      "id": "L-05",
+      "tema": "autoridade v2",
+      "licao": "`write` NAO e recurso independente: o runtime o mapeia para a acao `edit`. Nao existe 'escreve mas nao edita' — negar `edit` torna o agente read-only total."
+    },
+    {
+      "id": "L-06",
+      "tema": "merge de config",
+      "licao": "Remover SEMPRE por forma/conteudo do que o harness gerou, nunca por nome de chave: `plugin` e a lista de pacotes npm do usuario; arrays mistos existem na pratica."
+    },
+    {
+      "id": "L-07",
+      "tema": "checador de task ID",
+      "licao": "`TASK_ID_SRC` exige `[A-Z]+(?:-[A-Z]+)*-\\\\d+`: prefixos com digito (EX2, V2) NAO casam e deixam o SDD-02 vermelho no CI."
+    },
+    {
+      "id": "L-08",
+      "tema": "gate x prosa",
+      "licao": "O parse de higiene casa o padrao no TEXTO do comando (nao so na execucao): o canal `bash` do orchestrator nao edita prosa que mencione o padrao. Enforcement vivo, falso-positivo real (F-03, P2)."
+    }
+  ],
+  "brain_pending": "brain_store BLOQUEADO: o MCP `http://127.0.0.1:8321/mcp` exige login. As 8 licoes acima estao no state (L-01..L-08) e precisam ser gravadas no Brain quando o owner autenticar."
 }
