@@ -1,8 +1,8 @@
 {
   "current_feature": "opencode-v2-only",
-  "current_phase": "Execution",
-  "previous_phase": "Completed",
-  "next_phase": "Testing",
+  "current_phase": "Testing",
+  "previous_phase": "Execution",
+  "next_phase": "Completed",
   "type": "refactor",
   "layer": "instalador-config",
   "repo": "harness",
@@ -11,7 +11,7 @@
     "bug_report": "harness/harness-eixos-stack-p2.json",
     "source_tech_debt": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
     "previous_archive": ".spec/archive/20261018-harness-eixos-stack/",
-    "verify": ".spec/archive/20261018-harness-eixos-stack/VERIFY.md",
+    "verify": ".spec/backend/opencode-v2-only/VERIFY.md",
     "harness_evidence": ".spec/archive/20261018-harness-eixos-stack/harness/",
     "harness_report": "harness/harness-eixos-stack.json",
     "tech_debt_p2": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
@@ -143,7 +143,7 @@
       "created": "2026-10-18T00:00:00Z"
     }
   ],
-  "last_update": "2026-10-19T13:08:44.437Z",
+  "last_update": "2026-10-20T00:00:00Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -892,23 +892,13 @@
     "pos_restart3": "orcamento ESGOTADO (2/2: fix + review); proxima delegacao nega; restart #4 necessario"
   },
   "verify": {
-    "dimensoes": {
-      "completude": "pass",
-      "corretude": "pass",
-      "coerencia": "pass"
-    },
-    "veredito": "APPROVED",
-    "traceability": "100%",
-    "ciclo": "harness-eixos-stack",
-    "evidencia": "46/46 checkboxes marcados (0 pendentes); 0 TODO real (2 hits sao prosa PT 'TODO destino'/'TODOS os'); suiteFull 831/831 (plugins 352 + installer 479 + static 10/0 + vendor OK); RF-01..RF-14 com 14/14 mapeados em task e codigo; 0 orfaos de spec e de codigo; E2E declarado (dry-run 0 writes + transcript byte-identico) em vez de H3 de browser (N/A: repo sem frontend)",
-    "observacoes": [
-      "C-1 (P1, aberto, dono owner): REPORT schema-invalido por decisao declarada — schema exige counts, contraprova nega counts nao observados (verificado empiricamente pelo QA: com counts => DENY; sem => ALLOW). Owner decidiu manter o desvio declarado.",
-      "A-1 (pre-existente, externo): HARNESS_SEAL_JSON ausente no host => current_phase 'Completed' negado fail-closed. Selo computado byte-igual ao publicado (suiteFull sha256 c904f1c5...). Owner vai republicar.",
-      "FU-59/FU-60 (P2 novos do QA P4): (a) caminho default do menu (Enter,Enter) chega ao comando da suite SEM default para java+vue e repete BAD_ANSWER; (b) assimetria de gating — a rule Vue sai do destino react mas a skill local frontend-vue-specialist entra. Registrados em .spec/tech-debts/harness-eixos-stack-p2/TASKS.md.",
-      "FU-56 (3 skills mobile divergentes do pin declarado; nomeadas no VENDOR-NOTICE).",
-      "FU-58/FU-57/FU-55 (constante de prova do dry-run irreprodutivel; checkVendor nao pega edicao so-da-tabela; incidente de processo auto-declarado no Batch 3).",
-      "Desvios de escopo declarados e aprovados: menu em 2 passos (D-A), optional como metadado, AGENTS.md inexistente => nota no README.md."
-    ]
+    "at": "2026-10-20T00:00:00Z",
+    "verdict": "3/3 PASS",
+    "completude": "51/51 checkboxes, 0 TODO, 7/7 RF, trace 100%",
+    "corretude": "379/0 plugins + 516/0 installer + static 10 PASS + sdd 8 PASS + selo ok + 19 agentes",
+    "coerencia": "12/12 nucleos puros, 0 linhas config/lib, 0 contradicao prosa x permissao, arquivado intocado",
+    "artefato": ".spec/backend/opencode-v2-only/VERIFY.md",
+    "report": "harness/opencode-v2-only.json (schema-valido: 9/9 no report-schema.spec.mjs)"
   },
   "commit": "63660a7",
   "remote": "git@github.com:freitasjh/harness.git (SSH; push + CI pendentes)",
