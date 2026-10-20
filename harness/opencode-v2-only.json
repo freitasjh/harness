@@ -2,9 +2,9 @@
   "version": 1,
   "demand": "opencode-v2-only",
   "agent": "developer-engineer",
-  "phase": "Execution",
-  "batch": "1/3 — MIG-BE-01 (gate.js adapter) + MIG-BE-02 (2 satellites) + MIG-VAL-03 (contrato/matriz) + MIG-VAL-04 (runtime). Pós-review: 2 🔴 + 5 🟡/🟢 (fix loop 1) + C-1/D-15 (fix loop 2)",
-  "gitSha": "98f2e8189552e0c55111176b86072dd4ac6358a9",
+  "phase": "verify",
+  "batch": "1-3",
+  "gitSha": "4d0133119893b4ed9f9af6f10a640dd56656d0cb",
   "commands": [
     {
       "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
@@ -49,15 +49,43 @@
     }
   },
   "counts": {
-    "unit": { "passed": 379, "failed": 0, "skipped": 0 },
-    "it": { "passed": 502, "failed": 0, "skipped": 0 },
-    "frontend": { "passed": 0, "failed": 0, "skipped": 0 }
+    "unit": {
+      "passed": 379,
+      "failed": 0,
+      "skipped": 0
+    },
+    "it": {
+      "passed": 516,
+      "failed": 0,
+      "skipped": 0
+    },
+    "frontend": {
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0
+    }
   },
   "countsNote": "C-1/D-15: counts agora DECLARADOS (schema exige). O executor padrao da contraprova observa apenas exit code (defaultContraproveExec => counts: null), logo a contraprova devolve allow com a nota declarada `counts-unverifiable` (nunca `contraprove-divergent`). Divergencia REAL (counts observaveis e diferentes) continua DENY.",
   "observedCounts": {
-    "unit_plugins": { "tests": 379, "passed": 379, "failed": 0, "skipped": 0, "suites": 94 },
-    "it_installer": { "tests": 502, "passed": 502, "failed": 0, "skipped": 0, "suites": 168 },
-    "static_checks": { "pass": 10, "fail": 0, "info": 2 },
+    "unit_plugins": {
+      "tests": 379,
+      "passed": 379,
+      "failed": 0,
+      "skipped": 0,
+      "suites": 94
+    },
+    "it_installer": {
+      "tests": 502,
+      "passed": 502,
+      "failed": 0,
+      "skipped": 0,
+      "suites": 168
+    },
+    "static_checks": {
+      "pass": 10,
+      "fail": 0,
+      "info": 2
+    },
     "vendor_check": "vendor-check OK (.agents/skills/.vendor-lock.json)",
     "suites_total": 881
   },
@@ -74,7 +102,17 @@
     "passed": 379,
     "failed": 0,
     "suites": 94,
-    "verdict": "GREEN — 379 pass / 0 fail (suite de plugins do Batch 1 apos fix loop 1 + C-1)"
+    "installer": {
+      "command": "node --test \"installer/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "tests": 516,
+      "passed": 516,
+      "failed": 0
+    },
+    "static": "10 PASS / 0 FAIL / 2 INFO",
+    "sdd": "8 PASS",
+    "suiteFull": "exit 0",
+    "verdict": "GREEN — estado final do ciclo (batches 1-3)"
   },
   "h2": {
     "referenceBaseline": {
@@ -116,7 +154,11 @@
       ],
       "newFatalReloads": 0,
       "fatalFilterNote": "a unica linha que casa `failed to reload plugins` nas linhas novas e' o ECO do proprio comando (message=\"spawning process\"); excluindo 'spawning process' o count e' 0 (capture /tmp/opencode/b1fix/c1/reload.log)",
-      "agentsAfter": { "cmd": "opencode debug agents", "count": 19, "capture": "/tmp/opencode/b1fix/c1/agents-after.json" },
+      "agentsAfter": {
+        "cmd": "opencode debug agents",
+        "count": 19,
+        "capture": "/tmp/opencode/b1fix/c1/agents-after.json"
+      },
       "verdict": "PASS — hot reload limpo: os 3 plugins recarregam sem 'failed to reload plugins' e o registry segue com 19 agentes"
     },
     "rf07": {
@@ -137,30 +179,54 @@
           "target": ".opencode/plugins/gate.js (ramo isEvent)",
           "mutation": "`{ args: payloadObj.input }` -> `{ args: undefined }`",
           "whatItProves": "o envelope de PRODUCAO (input -> args) e' load-bearing (era zero cobertura)",
-          "bleed": { "passed": 370, "failed": 2, "tests": 372 },
-          "bleedingTests": ["bash event denies pkill-f: input.command reaches ctx.args", "the payload.agent feed persists: a later agent-less write from that session still denies"]
+          "bleed": {
+            "passed": 370,
+            "failed": 2,
+            "tests": 372
+          },
+          "bleedingTests": [
+            "bash event denies pkill-f: input.command reaches ctx.args",
+            "the payload.agent feed persists: a later agent-less write from that session still denies"
+          ]
         },
         {
           "id": "P2",
           "target": ".opencode/plugins/gate.js (noteTurnBoundary)",
           "mutation": "early `return false` apos o predicado",
           "whatItProves": "o feed do boundary de turno (I6) e' load-bearing",
-          "bleed": { "passed": 368, "failed": 4, "tests": 372 },
-          "bleedingTests": ["noteTurnBoundary resets the HITL counter (session.idle|message.updated|session.step.ended)", "FU-19 (a): the real human-turn boundary resets the tracker (v2 event stream)"]
+          "bleed": {
+            "passed": 368,
+            "failed": 4,
+            "tests": 372
+          },
+          "bleedingTests": [
+            "noteTurnBoundary resets the HITL counter (session.idle|message.updated|session.step.ended)",
+            "FU-19 (a): the real human-turn boundary resets the tracker (v2 event stream)"
+          ]
         },
         {
           "id": "P3",
           "target": ".opencode/plugins/gate.js (feed payload.agent)",
           "mutation": "`if (agent) recordSessionAgent(...)` -> `if (false && agent) ...`",
           "whatItProves": "o feed session->agente (I11) e' load-bearing",
-          "bleed": { "passed": 371, "failed": 1, "tests": 372 },
-          "bleedingTests": ["the payload.agent feed persists: a later agent-less write from that session still denies"]
+          "bleed": {
+            "passed": 371,
+            "failed": 1,
+            "tests": 372
+          },
+          "bleedingTests": [
+            "the payload.agent feed persists: a later agent-less write from that session still denies"
+          ]
         },
         {
           "id": "P2+P3",
           "target": ".opencode/plugins/gate.js (ambos)",
           "mutation": "combinado (wording do acceptance)",
-          "bleed": { "passed": 367, "failed": 5, "tests": 372 }
+          "bleed": {
+            "passed": 367,
+            "failed": 5,
+            "tests": 372
+          }
         }
       ],
       "reverted": "copias mutantes removidas; suite viva 372/0; sha256(gate.js) antes==depois"
@@ -175,24 +241,42 @@
           "target": ".opencode/plugins/gate.js (comparacao de counts)",
           "mutation": "condicao de divergencia -> sempre false (sempre-allow)",
           "whatItProves": "acceptance 2: a divergencia REAL de counts observaveis continua DENY (nunca afrouxada)",
-          "bleed": { "passed": 378, "failed": 1, "tests": 379 },
-          "bleedingTests": ["stated counts + DIVERGENT observation => deny contraprove-divergent (both modes, never weakened)"]
+          "bleed": {
+            "passed": 378,
+            "failed": 1,
+            "tests": 379
+          },
+          "bleedingTests": [
+            "stated counts + DIVERGENT observation => deny contraprove-divergent (both modes, never weakened)"
+          ]
         },
         {
           "id": "M-UNVERIFIABLE",
           "target": ".opencode/plugins/gate.js (ramo nao-observavel)",
           "mutation": "volta a lançar DENY contraprove-divergent cause=counts-unverifiable",
           "whatItProves": "acceptance 1: counts nao-observavel => ALLOW com nota declarada (nunca divergente)",
-          "bleed": { "passed": 378, "failed": 1, "tests": 379 },
-          "bleedingTests": ["stated counts + UNOBSERVED counts => allow with the declared counts-unverifiable note (never divergent)"]
+          "bleed": {
+            "passed": 378,
+            "failed": 1,
+            "tests": 379
+          },
+          "bleedingTests": [
+            "stated counts + UNOBSERVED counts => allow with the declared counts-unverifiable note (never divergent)"
+          ]
         },
         {
           "id": "M-SCHEMA",
           "target": "harness/opencode-v2-only.json (evidence real)",
           "mutation": "remover o campo `counts` do REPORT real (sem declaracao de deviation)",
           "whatItProves": "acceptance 4: uma violacao REAL de schema deixa a suite vermelha (o guard nao e vacuo)",
-          "bleed": { "passed": 378, "failed": 1, "tests": 379 },
-          "bleedingTests": ["every real report conforms, or declares the exact missing key as a deviation"]
+          "bleed": {
+            "passed": 378,
+            "failed": 1,
+            "tests": 379
+          },
+          "bleedingTests": [
+            "every real report conforms, or declares the exact missing key as a deviation"
+          ]
         }
       ],
       "reverted": "copias mutantes removidas; suite viva 379/0; sha256(gate.js) antes==depois"
@@ -205,20 +289,43 @@
   "retiredTests": {
     "why": "o contrato v1/dual deixou de existir (decisao v2-only do owner): todo teste que fixava o shape v1 (`server`, `plugin` com caminho local, `agents`/`system`, `permissions`, paridade v1 x v2) foi APOSENTADO e substituido pelo equivalente v2-only. No fix loop 1, o entry v1 `HarnessGate` foi REMOVIDO e seus usos de teste migrados para `runGatesShim`/`noteTurnBoundary`. Nenhum teste foi removido por estar falhando.",
     "fixLoop1": {
-      "removed": ["describe MIG-VAL-03 duplicado em gate.spec.mjs (2 its; owner unico = opencode-v2-adapter.spec.mjs)", "it 'plugin surface exposes only contract hooks' (superficie v1 do HarnessGate)"],
-      "added": ["2 testes do envelope medido (input -> args)", "4 testes dos feeds v2 (3 shapes de boundary + 1 negativo) + 1 do feed payload.agent"],
+      "removed": [
+        "describe MIG-VAL-03 duplicado em gate.spec.mjs (2 its; owner unico = opencode-v2-adapter.spec.mjs)",
+        "it 'plugin surface exposes only contract hooks' (superficie v1 do HarnessGate)"
+      ],
+      "added": [
+        "2 testes do envelope medido (input -> args)",
+        "4 testes dos feeds v2 (3 shapes de boundary + 1 negativo) + 1 do feed payload.agent"
+      ],
       "net": "368 -> 372"
     },
     "c1": {
-      "rewritten": ["describe FU-09 counts-unverifiable (2 its: 'unobserved => deny') reescrito para a semantica D-15 (4 its: unobserved => allow com nota; matching => allow; DIVERGENT => deny; sem counts => allow)"],
-      "added": ["6 its de validacao REAL do schema em report-schema.spec.mjs (arquivos harness/*.json + guardas nao-vacuosas + limite declarado)"],
+      "rewritten": [
+        "describe FU-09 counts-unverifiable (2 its: 'unobserved => deny') reescrito para a semantica D-15 (4 its: unobserved => allow com nota; matching => allow; DIVERGENT => deny; sem counts => allow)"
+      ],
+      "added": [
+        "6 its de validacao REAL do schema em report-schema.spec.mjs (arquivos harness/*.json + guardas nao-vacuosas + limite declarado)"
+      ],
       "net": "372 -> 379"
     },
     "noSkips": "0 skipped em todas as 4 etapas do suiteFull; nenhum @Disabled/@Ignore/assumeTrue"
   },
   "integrity": {
     "i1PureCoresByteIdentical": {
-      "cores": ["DenyError", "decide", "CORE_GATES", "registerCoreGate", "listCoreGates", "loadConfigOrDeny", "ensureConfig", "gatePiccoTask", "gateCompletionAnchorA", "gatePhaseAnchorB", "gateHitlBatch", "gateShellHygiene"],
+      "cores": [
+        "DenyError",
+        "decide",
+        "CORE_GATES",
+        "registerCoreGate",
+        "listCoreGates",
+        "loadConfigOrDeny",
+        "ensureConfig",
+        "gatePiccoTask",
+        "gateCompletionAnchorA",
+        "gatePhaseAnchorB",
+        "gateHitlBatch",
+        "gateShellHygiene"
+      ],
       "method": "extracao por nome (balanceamento de chaves) + sha256 do corpo, HEAD vs worktree",
       "result": "12/12 IDENTICAL",
       "cmd": "node /tmp/opencode/mutants/i1-core-diff.mjs /tmp/opencode/ex2-b1-head/.opencode/plugins/gate.js .opencode/plugins/gate.js",
@@ -271,7 +378,15 @@
     "ports": [],
     "processes": [],
     "note": "Nenhum servidor/porta subido (harness.config.json infra = null; stack = N/A). Zero `pkill -f` (workflow-rules.md §5 H5.1). As copias de mutacao foram restauradas (byte-identicas) e removidas.",
-    "tempdirs_removed": ["/tmp/opencode/b1fix/P1", "/tmp/opencode/b1fix/P2", "/tmp/opencode/b1fix/P3", "/tmp/opencode/b1fix/P2P3", "/tmp/opencode/b1fix/c1/M-DIVERGENT", "/tmp/opencode/b1fix/c1/M-UNVERIFIABLE", "/tmp/opencode/b1fix/c1/M-SCHEMA"],
+    "tempdirs_removed": [
+      "/tmp/opencode/b1fix/P1",
+      "/tmp/opencode/b1fix/P2",
+      "/tmp/opencode/b1fix/P3",
+      "/tmp/opencode/b1fix/P2P3",
+      "/tmp/opencode/b1fix/c1/M-DIVERGENT",
+      "/tmp/opencode/b1fix/c1/M-UNVERIFIABLE",
+      "/tmp/opencode/b1fix/c1/M-SCHEMA"
+    ],
     "evidenceKept": [
       "/tmp/opencode/b1fix/MUTATION-PROOFS.md",
       "/tmp/opencode/b1fix/c1/{plugins,installer,static,vendor,suitefull}.log",
@@ -288,5 +403,21 @@
     "phase = valor observado em workflow-state.json no momento da execucao. A transicao de fase e' do orquestrador.",
     "gitSha = HEAD base (98f2e81); as mudancas do Batch 1 + fix loops estao na ARVORE DE TRABALHO (nao commitadas) — o commit e' passo do orquestrador/humano.",
     "Bloqueio remanescente NAO relacionado a C-1: com o selo publicado AUSENTE (HARNESS_SEAL_JSON nao republicado), a contraprova real de um `Completed` ainda nega `sealed-command-mismatch` {cause:'empty-seal'} (item A-1, aberto)."
+  ],
+  "verify": {
+    "completude": "PASS (51/51 checkboxes, 0 TODO, 7/7 RF, trace 100%)",
+    "corretude": "PASS (379/0 + 516/0 + static 10 + sdd 8 + selo ok + 19 agentes)",
+    "coerencia": "PASS (12/12 nucleos puros, 0 linhas config/lib, 0 contradicao prosa x permissao, arquivado intocado)",
+    "verdict": "3/3 PASS — archive liberado (sujeito ao portao humano P5->P6)",
+    "artefato": ".spec/backend/opencode-v2-only/VERIFY.md"
+  },
+  "residual_risks": [
+    "TD-01 atlas-ecm/taskflow com a receita do fatal",
+    "TD-07 estudo/opencode.json JSON invalido",
+    "A-1 HARNESS_SEAL_JSON no host",
+    "F-03 (P2) gate casa o padrao no texto do comando",
+    "TD-13 16 rotulos EX2-*",
+    "TD-14 falso-DENY de path absoluto",
+    "TD-15 agente orfao sdd-orquestrador"
   ]
 }

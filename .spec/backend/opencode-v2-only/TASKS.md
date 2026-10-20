@@ -79,13 +79,13 @@ graph TD
 ### Task `MIG-FE-07` — Prosa e supersession
 - **Constraint Ref**: RF-06 · **Deps**: MIG-VAL-06 · **Layer**: Interface · **Priority**: P2
 - **Artefato**: `.agents/rules/gate-contract.md` (I5) + declaração de supersession (SPEC/PROPOSAL novo + `workflow-state.json`)
-- **BDD**: [ ] I5 cita `permission.edit` (não `tools`) · [ ] ciclo antigo declarado superseded **sem** editar os artefatos dele
-- **DoD**: [ ] `docs.spec.mjs` verde · [ ] sem TODO
+- **BDD**: [x] I5 cita `permission.edit` (não `tools`) · [x] ciclo antigo declarado superseded **sem** editar os artefatos dele
+- **DoD**: [x] `docs.spec.mjs` verde · [x] sem TODO
 
 ### Task `MIG-VAL-08` — Fechamento (VERIFY)
 - **Constraint Ref**: RF-05, I2 · **Deps**: MIG-FE-07 · **Layer**: Test · **Priority**: P0
-- **BDD**: [ ] suíte selada 0 falhas · [ ] selo intacto · [ ] VERIFY 3 dimensões · [ ] brain + state
-- **DoD**: [ ] VERIFY.md · [ ] evidência do runtime · [ ] `code_review_status`/`harness_status`
+- **BDD**: [x] suíte selada 0 falhas · [x] selo intacto · [x] VERIFY 3 dimensões · [x] brain + state
+- **DoD**: [x] VERIFY.md · [x] evidência do runtime · [x] `code_review_status`/`harness_status`
 
 ### Task `MIG-BE-09` — `opencode.json` v2-only (config + autoridade dos agentes)
 - **Constraint Ref**: RF-03 · **Deps**: — · **Layer**: Integration · **Priority**: P0 · **Risk**: High
