@@ -48,8 +48,8 @@
   "gates": {
     "P0_P1": "approved_user_2026_10_15 (Feature prd-adr-pipeline; bloco PICCO confirmado)",
     "G2_PRD": "approved_user_2026_10_16 (PRD do dogfood aprovado sem ressalvas; .spec/prd/prd-adr-pipeline/PRD.md §16)",
-    "P1_P2": "pending_user_approval (spec v2 + REVIEW (19/19 aplicaveis) + SECURITY Fase 1 partial 0 criticos)",
-    "P2_P3": "pending_user_approval (PLAN v2 + TASKS (14 tasks) validados pelo PM com 9 defeitos D-1..D-9; D-1..D-8 corrigidos; D-9 aguarda decisao do owner)",
+    "P1_P2": "pending_user_approval (SPEC v2 do ciclo opencode-v2-only; parecer do code-reviewer nos 3 batches)",
+    "P2_P3": "pending_user_approval (PLAN + TASKS do ciclo opencode-v2-only, 9 tasks MIG-*; REVIEW-PM nao existe neste ciclo)",
     "P3_P4": "approved_auto_evidence_batches1-5 (14/14 tasks; review APPROVED 0 criticos)",
     "P4_P5": "pending_user_approval (QA P4: gate PASSA na substancia; 831/831; 0 writes nos 2 presets; transcript byte-identico; 2 P2 novos registrados em .spec/tech-debts/harness-eixos-stack-p2/)",
     "P5_P6": "approved_user_2026_10_18 (VERIFY APPROVED 3/3 dimensoes; traceability 100%; ciclo arquivado; commit ab66c40 com trailer)",
@@ -143,7 +143,7 @@
       "created": "2026-10-18T00:00:00Z"
     }
   ],
-  "last_update": "2026-10-19T13:00:26.528Z",
+  "last_update": "2026-10-19T13:08:44.437Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -162,10 +162,10 @@
     "U5": "c - dois ancoras",
     "U6": "b - selo de hash"
   },
-  "harness_status": "passed_b4_qa",
+  "harness_status": "passed",
   "harness_evidence": "Batches 1-5 do ciclo harness-eixos-stack (2026-10-18) — 14/14 tasks. Estado final: plugins 352/352, installer 479/479, static 10 PASS/0 FAIL, vendor-check OK; dry-run 0 writes nos 2 presets web; transcript do wizard (escolha React) em .spec/backend/harness-eixos-stack/harness/; REPORT em harness/harness-eixos-stack.json (com desvio declarado C-1: counts omitido). Historico dos batches 1-2: Batch 1 (EX-BE-01/EX-VAL-02/EX-BE-03): plugins 352/352, installer 398/398, static exit 0, vendor OK; mutacao axes.frontend vue->react => 1 fail. Batch 2 (EX-BE-04/EX-BE-05/EX-VAL-06): plugins 352/352, installer 439/439, static 10 PASS/0 FAIL, vendor OK; provas do orquestrador: chave 'backend=node' (valida) => 2 fail; 'backend=react' (id invalido) => BAD_DECLARATION na carga; 'backend=none' sintetica => 0 fail (matcher por par). Nao-regressao vs HEAD: node/node-esm/outra/flutter/dart/java+vue com keys+bodies byte-identicos (129/129/129/151/141/129); so java+react difere pela exclusao pretendida. Refs penduradas do destino react congeladas em 12. gate.js/harness.config.json/.vendor-lock.json/.agents/rules = 0 linhas. I9 respeitado: apenas 2 imports + assert estrutural de chaves reescopado para superconjunto.",
   "code_review_status": "passed",
-  "code_review_status_ciclo": "harness-eixos-stack batch 4 = passed (0 criticos, 0 atencao)",
+  "code_review_status_ciclo": "opencode-v2-only: batch 1 APPROVED, batch 2 APPROVED (re-review), batch 3 APPROVED (review final) — pareceres do code-reviewer, nao bloqueio (o bloqueio e a ancora B)",
   "sdd_stage": "harness-eixos-stack-p2 (bugfix) FECHADO (2026-10-18). BUG-1 (default do comando da suite no eixo web) e BUG-2 (gating de skills locais por eixo declarado) reproduzidos ANTES e fechados DEPOIS (QA em pty real + dry-run nas 2 direcoes). Suites: plugins 352/0, installer 502/0, static 10 PASS/0 FAIL, vendor OK. Artefato: .spec/bugs/harness-eixos-stack-p2/TASKS.md. REPORT: harness/harness-eixos-stack-p2.json (counts omitido por C-1 declarado). Residual declarado: o item 5 (outra) sem default de suite (FU-61).",
   "backlog": {
     "total": 14,
@@ -193,17 +193,14 @@
   "plan_score": 1,
   "tasks_score": 1,
   "active_batch": {
-    "id": 1,
-    "of": 3,
-    "agent": "developer-engineer",
+    "id": 3,
+    "status": "in_progress",
     "tasks": [
-      "EX2-BE-01",
-      "EX2-BE-02",
-      "EX2-VAL-03",
-      "EX2-VAL-04"
+      "MIG-FE-07",
+      "MIG-VAL-08"
     ],
-    "code_review": "pending",
-    "status": "in_progress"
+    "code_review": "passed",
+    "nota": "R2: aponta o batch corrente (antes apontava o batch 1 ja CLOSED)"
   },
   "active_task": "IN-05",
   "pending_remote_url": false,
@@ -1368,7 +1365,7 @@
   "enforcement_status": {
     "estado": "ON (plugin carrega e o gate NEGOU uma escrita de teste)",
     "evidencia": "log sem failed to reload plugins apos a neutralizacao + DENY orch-write-outside-allowlist observado",
-    "pendente": "DECISAO AINDA ABERTA (A/B/C) sobre `orchestrator.permission.edit`: config segue com `edit: deny` (mtime 19:40, nao alterada). Enquanto isso o orquestrador escreve APENAS os artefatos de governanca (`.spec/**`, `workflow-state.json`) via `bash` — evasao DECLARADA (o gate nao cobre `bash`); a intencao do allowlist autoriza. Opcao A = trocar 1 linha para `permission.edit: \"allow\"`."
+    "pendente": "DECISAO AINDA ABERTA (A/B/C) sobre `orchestrator.permission.edit`: config: orchestrator segue com `edit: deny`; a autoridade dos agentes foi alterada em 2026-10-19 (5 deny / 4 allow). Enquanto isso o orquestrador escreve APENAS os artefatos de governanca (`.spec/**`, `workflow-state.json`) via `bash` — evasao DECLARADA (o gate cobre `bash` so por parse — evadivel, `gate-contract.md` I7); a intencao do allowlist autoriza. Opcao A = trocar 1 linha para `permission.edit: \"allow\"`."
   },
   "findings": [
     {
@@ -1387,6 +1384,16 @@
       "evidencia": "Reproduzido pelo reviewer (probe-cfg) + meu teste com path absoluto (passou). Fix: resolver/normalizar contra a raiz do workspace (mesma classe do F-01) -> TD-12.",
       "status": "REFINADO (review Batch 2, N4)",
       "mecanismo": "`bashProtectedWrites` (gate.js:966-985) casa o TOKEN LITERAL do redirect contra `^opencode\\.json$` SEM resolver o cwd. `cat > opencode.json` relativo (cwd /tmp/...) => DENY `protected-path-write`; path ABSOLUTO => passa. Nao e cego por nome, e cego por diretorio."
+    },
+    {
+      "id": "F-03",
+      "ciclo": "opencode-v2-only",
+      "severidade": "P2",
+      "titulo": "gateShellHygiene casa o padrao de matanca por nome mesmo quando ele aparece em TEXTO de comando (nao so como execucao)",
+      "evidencia": "Ao tentar editar `AGENT.md` via python/heredoc, o gate NEGOU o comando inteiro com `{\"error\":{\"message\":\"pkill-f\"}}` porque o texto do comando continha o literal `pkill -f` dentro de uma string explicativa. Um segundo comando, com o termo quebrado (`\"pk\" + \"ill\" + \" -\" + \"f\"`), passou.",
+      "impacto": "Positivo: prova que o gate esta VIVO e bloqueando (evidencia de enforcement). Negativo: falso-positivo para edicao legitima de prosa que MENCIONE o padrao (docs/regras), forcando contorno. Direcao do erro e fail-closed.",
+      "correcao_proposta": "casar o padrao apenas na posicao de comando (apos separador/`&&`/`;`/pipe) ou exigir limite de palavra antes, para nao disparar em texto citado",
+      "nota_prioridade": "P2 (era P3): o canal de escrita declarado do orchestrator e `bash`, e ele nao consegue editar nenhuma regra que MENCIONE o padrao — inclusive `gate-contract.md` I7. Auto-bloqueio do unico canal."
     }
   ],
   "decisions": [
@@ -1395,9 +1402,10 @@
       "id": "D-13",
       "ciclo": "opencode-v2-only",
       "tema": "autoridade dos 5 agentes",
-      "decisao": "REVERTER a ampliacao v1->v2: `edit: deny` em codebase-analyzer, qa-engineer, product-manager, architect, security-engineer; `write: deny` tambem em codebase-analyzer e qa-engineer (read-only, alinha com as descriptions 'nao escreve'/'nao corrige'). product-manager/architect mantem `write` (prd-adr-pipeline §5 exige criar .spec/prd/**).",
+      "decisao": "REVERTER a ampliacao v1->v2: `edit: deny` em codebase-analyzer, qa-engineer, product-manager, architect, security-engineer; `write: deny` tambem em codebase-analyzer e qa-engineer (read-only, alinha com as descriptions 'nao escreve'/'nao corrige'). product-manager/architect mantem `write` (prd-adr-pipeline §5 exige criar .spec/prd/**) — **CORRIGIDO em D-17**: `write` E a acao `edit` no v2, logo a intencao era impossivel; PM/architect voltaram a `edit: allow`.",
       "aplicado_em": "opencode.json",
-      "evidencia": "reload limpo pos-edicao, 19 agentes; backup pre-edicao em /tmp/opencode/opencode.pre-edit.json"
+      "evidencia": "reload limpo pos-edicao, 19 agentes; backup pre-edicao em /tmp/opencode/opencode.pre-edit.json",
+      "corrigido_por": "D-17 (PM/architect) + D-19 (qa-engineer)"
     },
     {
       "at": "2026-10-19T11:30:16.660Z",
@@ -1421,6 +1429,47 @@
       "ciclo": "opencode-v2-only",
       "tema": "escopo pos-correcao",
       "decisao": "FECHAR O BATCH 1 primeiro: re-review (zero 🔴) -> commit com trailer Harness-Gate-Change -> so entao decidir Batch 2 (instalador) e Batch 3 (prosa/supersession)."
+    },
+    {
+      "at": "2026-10-19T00:00:00Z",
+      "id": "D-17",
+      "ciclo": "opencode-v2-only",
+      "tema": "F1 do review do Batch 3 — esteira x autoridade",
+      "decisao": "RE-CONCEDER `permission.edit: \"allow\"` a `product-manager` e `architect` (o PRD da esteira PRD->ADR e inexecutavel pelo dono declarado sem isso; no v2 `write` E a acao `edit`, entao negar `edit` = read-only total). `codebase-analyzer`/`security-engineer` seguem `edit: deny` (o `qa-engineer` foi depois RE-CONCEDIDO a `allow` — D-19). S2: removida a chave `write: \"deny\"` (alias redundante) dos 2 agentes.",
+      "aplicado_em": [
+        "opencode.json",
+        ".agents/rules/gate-contract.md I5",
+        ".spec/backend/opencode-v2-only/SPEC.md RF-03"
+      ],
+      "evidencia": "reload limpo pos-edicao, 19 agentes; backup em /tmp/opencode/opencode.pre-f1.json"
+    },
+    {
+      "at": "2026-10-19T00:00:00Z",
+      "id": "D-18",
+      "ciclo": "opencode-v2-only",
+      "tema": "S1 do review do Batch 3 — colisao de IDs",
+      "decisao": "Adotar prefixo do ciclo nos task IDs para nao colidir com o ciclo arquivado (`harness-eixos-stack` usa `EX-*`). O prefixo escolhido e **`MIG-*`** (e nao `V2-*`): o `TASK_ID_SRC` do checker exige `[A-Z]+` e o digito de `V2` o quebraria (mesma causa do FAIL do SDD-02 com `EX2-*`).",
+      "aplicado_em": [
+        "TASKS.md",
+        "PLAN.md",
+        "SPEC.md",
+        "workflow-state.json",
+        "harness/opencode-v2-only.json"
+      ],
+      "residuo": "16 rotulos `EX2-*` em `.opencode/plugins/**` (path protegido) -> TD-13 (rename para `MIG-*`)"
+    },
+    {
+      "at": "2026-10-19T14:00:00Z",
+      "id": "D-19",
+      "ciclo": "opencode-v2-only",
+      "tema": "N1 do re-review do Batch 3 — qa-engineer x REPORT",
+      "decisao": "RE-CONCEDER `permission.edit: \"allow\"` ao `qa-engineer`: o papel exige gravar o REPORT de evidencia `harness/<demand>.json` (schema) e o AGENT.md dele mandava escrever — com `deny` a instrucao era inexecutavel. O ESCOPO nao fica solto: o gate impoe `harness/` (`isHarnessScoped`, `gate.js:400-402` + deny `gate.js:504`). Nivel: 🟠 (o `bash` contorna o path-check; a barreira nativa e grosseira).",
+      "aplicado_em": [
+        "opencode.json",
+        ".agents/rules/gate-contract.md I5",
+        ".spec/backend/opencode-v2-only/SPEC.md RF-03/I3"
+      ],
+      "evidencia": "reload limpo, 19 agentes; autoridade final 5 deny / 4 allow (medida em opencode debug config)"
     }
   ],
   "pending_dev_queue": [
@@ -1435,9 +1484,9 @@
       "id": "D13-guard",
       "prioridade": "P2",
       "ciclo": "opencode-v2-only",
-      "escopo": "estender  para assertar  nos 5 agentes revertidos (codebase-analyzer, qa-engineer, product-manager, architect, security-engineer) — hoje so os 3 do I5 tem guarda",
+      "escopo": "estender `config-dual-parity.spec.mjs:133-141` para assertar `edit: deny` nos **2** agentes (codebase-analyzer, security-engineer) — `product-manager`/`architect` (D-17) e `qa-engineer` (D-19) ficaram com `edit: allow`. Hoje so os 3 do I5 tem guarda.",
       "origem": "🟡-N1 do re-review (aceite de SPEC sem mecanismo)",
-      "nota": "nao usar  como garantia separada: o runtime mapeia write -> acao edit"
+      "nota": "Nao usar `write` como garantia separada: o runtime mapeia `write` -> acao `edit` (medido)."
     }
   ],
   "spec_sync": {
@@ -1445,7 +1494,17 @@
     "arquivo": ".spec/backend/opencode-v2-only/SPEC.md",
     "mudancas": "§0 (linha Plugins -> contrato MEDIDO; fatos medidos expandidos: payload `input`, subscribe async-iterable, 3 nomes confirmados, throw do handler aborta a tool, Plugin.define identity shim), RF-01 (objeto + setup->undefined + teste pela entrada real), RF-03 (+autoridade dos 5), T2 (objeto/undefined/envelope), §3 (+raio do throw, +mutacao in-place)",
     "backup": "/tmp/opencode/SPEC.pre.md",
-    "rf04": "aceite reescrito (remocao por forma; plugin preserva npm; idempotencia por efeito; mcp defensivo) — review Batch 2 C1/A1/A2/A4"
+    "rf04": "aceite reescrito (remocao por forma; plugin preserva npm; idempotencia por efeito; mcp defensivo) — review Batch 2 C1/A1/A2/A4",
+    "batch3": {
+      "at": "2026-10-19T13:30:00Z",
+      "arquivos": [
+        "SPEC.md (§2 I3, §7 Delta: gate-contract I5 + harness-config selo)",
+        "TASKS.md (IDs -> MIG-*, DoD marcados)",
+        "PLAN.md (IDs)",
+        "harness/opencode-v2-only.json (IDs)"
+      ],
+      "mudanca": "RF-06: gate-contract I5 (tools.write/edit -> permission.edit; 5 sem edit + PM/architect com allow apos F1); harness-config selo (embeds -> HARNESS_SEAL_JSON, A-1); supersession declarada; IDs do ciclo renomeados para MIG-* (colisao com o arquivado + TASK_ID_SRC sem digito)"
+    }
   },
   "open_items": [
     {
@@ -1457,7 +1516,7 @@
       "nota": "Nao e C-1; declarado pelo dev no fecho do C-1. Decidir: fornecer o env do selo OU aceitar/declarar o bloqueio do `Completed`.",
       "status": "RESOLVED_POR_INVESTIGACAO",
       "resolved_at": "2026-10-19T11:45:20.015Z",
-      "diagnostico": "NAO e defeito de codigo: e PROSA ORFA (DOC-01). A regra `.agents/rules/harness-config.md:46` afirma que o `gate.js` 'embeds the published seal', mas o codigo NAO embute (grep de literal sha256 em gate.js = 0). `loadPublishedSeal` (gate.js:752-760) le `ctx.publishedSeal` -> `HARNESS_SEAL_JSON` (env) -> senao `null` => `verifySealOrDeny` nega `sealed-command-mismatch {cause:'empty-seal'}` (fail-closed declarado no proprio comentario: 'the trust root is rollout step 1, NOT the worktree' — U6=b).",
+      "diagnostico": "NAO e defeito de codigo: e PROSA ORFA (DOC-01). A regra `.agents/rules/harness-config.md:46` afirma que o `gate.js` 'embeds the published seal', mas o codigo NAO embute (grep de literal sha256 em gate.js = 0). `loadPublishedSeal` (gate.js:753-764) le `ctx.publishedSeal` -> `HARNESS_SEAL_JSON` (env) -> senao `null` => `verifySealOrDeny` nega `sealed-command-mismatch {cause:'empty-seal'}` (fail-closed declarado no proprio comentario: 'the trust root is rollout step 1, NOT the worktree' — U6=b).",
       "resolucao": {
         "operacional": "O trust root e o rollout passo 1: o host DEVE exportar HARNESS_SEAL_JSON no processo do runtime. Valor exato (verificado com verifySeal => {ok:true}): {\"suiteFull\":\"c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2\",\"unit\":\"daba8c5465bffe061738235b274c497a4e8e761e41c5e79d4c671a72231cffc7\"}",
         "prosa": "Batch 3 (RF-06): corrigir `.agents/rules/harness-config.md:46` — 'embeds the published seal' -> 'reads the published seal from HARNESS_SEAL_JSON (rollout step 1 = trust root); absent => fail-closed empty-seal'. Sem isso a regra promete um mecanismo que o codigo nao tem.",
@@ -1467,9 +1526,10 @@
   ],
   "batch3_scope": {
     "prosa": [
-      ".agents/rules/gate-contract.md I5: `tools.write/edit` -> `permission.edit` (RF-06)",
+      ".agents/rules/gate-contract.md I5: `tools.write/edit` -> `permission.edit` (RF-06) — 5 deny / 4 allow + escopo do qa-engineer imposto pelo gate",
       ".agents/rules/harness-config.md:46: 'embeds the published seal' -> leitura de HARNESS_SEAL_JSON (A-1)",
-      ".agents/rules/gate-contract.md I5: nota de que `codebase-analyzer`/`qa-engineer` passaram a `write:deny` (D-13)"
+      ".agents/agents/orchestrator/AGENT.md: `tools.write/edit` -> `permission.edit` + caminho declarado (bash)",
+      ".agents/agents/ux-designer/AGENT.md: 'escreve no parecer, nao em arquivo' (coerencia com edit: deny)"
     ],
     "supersession": "declarar `opencode-v2-plugin-migration` superseded (SPEC/PROPOSAL novo + state), SEM editar os artefatos dele (RF-06)"
   },
@@ -1503,5 +1563,18 @@
         "🟢-N6 residuos"
       ]
     }
-  ]
+  ],
+  "superseded_cycles": [
+    {
+      "id": "opencode-v2-plugin-migration",
+      "dir": ".spec/backend/opencode-v2-plugin-migration/",
+      "desde": "15/10/2026",
+      "superseded_por": "opencode-v2-only",
+      "declarado_em": "2026-10-19T13:08:44.430Z",
+      "motivo": "A SPEC daquele ciclo prescreve `Plugin.define({id, setup})` como o contrato de plugin. MEDIDO no runtime v2.0.32: `Plugin.define` esta AUSENTE do binario (grep=0) — existe apenas como *identity shim* (`define(def)=>def`) no pacote `@opencode/plugin@2.0.29` instalado em `~/.config/opencode/node_modules`. O contrato real e `export default {id, setup}` com `setup()` retornando `undefined`.",
+      "regra": "NAO editar os artefatos do ciclo superseded (SPEC/PROPOSAL/PLAN/TASKS ficam como estao) — a supersession e declarada aqui e no SPEC/PROPOSAL do ciclo novo (RF-06).",
+      "status": "superseded"
+    }
+  ],
+  "harness_status_detail": "suite selada verde: plugins 379/379, installer 516/516, static 10 PASS, sdd 8 PASS, selo intacto"
 }
