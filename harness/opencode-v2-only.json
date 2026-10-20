@@ -3,7 +3,7 @@
   "demand": "opencode-v2-only",
   "agent": "developer-engineer",
   "phase": "Execution",
-  "batch": "1/3 — EX2-BE-01 (gate.js adapter) + EX2-BE-02 (2 satellites) + EX2-VAL-03 (contrato/matriz) + EX2-VAL-04 (runtime). Pós-review: 2 🔴 + 5 🟡/🟢 (fix loop 1) + C-1/D-15 (fix loop 2)",
+  "batch": "1/3 — MIG-BE-01 (gate.js adapter) + MIG-BE-02 (2 satellites) + MIG-VAL-03 (contrato/matriz) + MIG-VAL-04 (runtime). Pós-review: 2 🔴 + 5 🟡/🟢 (fix loop 1) + C-1/D-15 (fix loop 2)",
   "gitSha": "98f2e8189552e0c55111176b86072dd4ac6358a9",
   "commands": [
     {
@@ -205,7 +205,7 @@
   "retiredTests": {
     "why": "o contrato v1/dual deixou de existir (decisao v2-only do owner): todo teste que fixava o shape v1 (`server`, `plugin` com caminho local, `agents`/`system`, `permissions`, paridade v1 x v2) foi APOSENTADO e substituido pelo equivalente v2-only. No fix loop 1, o entry v1 `HarnessGate` foi REMOVIDO e seus usos de teste migrados para `runGatesShim`/`noteTurnBoundary`. Nenhum teste foi removido por estar falhando.",
     "fixLoop1": {
-      "removed": ["describe EX2-VAL-03 duplicado em gate.spec.mjs (2 its; owner unico = opencode-v2-adapter.spec.mjs)", "it 'plugin surface exposes only contract hooks' (superficie v1 do HarnessGate)"],
+      "removed": ["describe MIG-VAL-03 duplicado em gate.spec.mjs (2 its; owner unico = opencode-v2-adapter.spec.mjs)", "it 'plugin surface exposes only contract hooks' (superficie v1 do HarnessGate)"],
       "added": ["2 testes do envelope medido (input -> args)", "4 testes dos feeds v2 (3 shapes de boundary + 1 negativo) + 1 do feed payload.agent"],
       "net": "368 -> 372"
     },

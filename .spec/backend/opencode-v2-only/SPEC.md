@@ -2,7 +2,7 @@
 
 > **Feature ID**: `opencode-v2-only` · **Tipo**: refactor/migração · **Status**: `Under Review`
 > **Fonte**: `PROPOSAL.md` (mesmo dir) + doc oficial v2 (`/docs/agents/`, `/docs/plugins/`, 2026-10-17) + RT-02 (`workflow-state.json`)
-> **Supersedes**: `opencode-v2-plugin-migration` (15/10) — SPEC prescreve `Plugin.define`, inexistente no runtime instalado
+> **Supersedes**: `opencode-v2-plugin-migration` (15/10) — a SPEC daquele ciclo prescreve `Plugin.define({id, setup})`. **Medido**: `Plugin.define` está **ausente do binário** (`grep -c`=0) e existe só como *identity shim* (`define(def)=>def`) no pacote `@opencode/plugin@2.0.29`; o contrato real é `export default {id, setup}` com `setup()` → `undefined` (ver §0)
 
 ## 0. Contratos do runtime v2 (fonte da verdade desta SPEC)
 
@@ -41,10 +41,10 @@ Cada um dos 3 plugins (`gate.js`, `harness-validator.js`, `hitl-guardrail.js`) p
 
 ### RF-03 — `opencode.json` v2-only ✅ (aplicado)
 - **Aceite (verificado)**: 9/9 agentes com `description` + `permission`; sem `agents`/`system`; `permissions` malformado removido; `plugin` vazio; `opencode debug agents` lista os 9.
-- **Aceite**: `permission.edit: "deny"` em `orchestrator`/`code-reviewer`/`ux-designer` (preserva a intenção de I5).
-- **Aceite (decisão do owner, 2026-10-19)**: reversão da ampliação de autoridade introduzida pela conversão v1→v2 — `edit: "deny"` em `codebase-analyzer`, `qa-engineer`, `product-manager`, `architect`, `security-engineer` (o v1 tinha `tools:{write:true, edit:false}`).
-  - **Correção de higiene (review 2026-10-19, 🟡-N1)**: a chave `write` **não** é um recurso independente — `opencode debug config` prova que o runtime mapeia `write` → **ação `edit`** (o config renderiza `[{edit,deny},{shell,allow},{edit,deny}]`). Logo `write: "deny"` em `codebase-analyzer`/`qa-engineer` é **alias redundante** de `edit: "deny"`, não uma segunda garantia. O mecanismo real do read-only desses 2 é `edit: "deny"` (camada nativa) — declarado aqui para não over-claimar (DOC-01). `product-manager`/`architect` mantêm `write` porque `prd-adr-pipeline.md` §5 exige que criem `.spec/prd/**`.
-  - **Guarda pendente**: o teste (`config-dual-parity.spec.mjs:133-141`) ainda só asserta `edit: deny` para `orchestrator`/`code-reviewer`/`ux-designer` — a reversão dos 5 agentes está **sem guarda** (aceite sem mecanismo). Enfileirado em `workflow-state.json.pending_dev_queue` (`D13-guard`, P2).
+- **Aceite**: `permission.edit: "deny"` em **5** agentes — `orchestrator`/`code-reviewer`/`ux-designer`/`codebase-analyzer`/`security-engineer` (preserva a intenção de I5; ver I3).
+- **Aceite (decisão do owner, 2026-10-19; **corrigido em F1** pelo review do Batch 3)**: reversão da ampliação de autoridade introduzida pela conversão v1→v2 — `edit: "deny"` em `codebase-analyzer`, `security-engineer` (o v1 tinha `tools:{write:true, edit:false}`); **`qa-engineer` foi RE-CONCEDIDO a `edit: "allow"`** (D-19) porque o papel exige gravar o REPORT `harness/<demand>.json` — com o escopo imposto pelo gate (`isHarnessScoped`). **`product-manager`/`architect` voltam a `edit: "allow"`**: `prd-adr-pipeline.md` §5 exige que criem `.spec/prd/**`, e no v2 `write` **é** a ação `edit` ⇒ negar `edit` tornaria o passo 1 da esteira inexecutável pelo dono declarado.
+  - **Correção de higiene (review 2026-10-19, 🟡-N1 + S2)**: a chave `write` **não** é um recurso independente — `opencode debug config` prova que o runtime mapeia `write` → **ação `edit`** (o config renderiza `[{edit,deny},{shell,allow},{edit,deny}]`). Por isso `write: "deny"` foi **removida** do config dos 2 agentes (alias redundante); o read-only deles é `edit: "deny"` (camada nativa).
+  - **Guarda pendente**: o teste (`config-dual-parity.spec.mjs:133-141`) ainda só asserta `edit: deny` para `orchestrator`/`code-reviewer`/`ux-designer` — a reversão dos **2** agentes (`codebase-analyzer`/`security-engineer`) está **sem guarda** (aceite sem mecanismo). Enfileirado em `workflow-state.json.pending_dev_queue` (`D13-guard`, P2).
 
 ### RF-04 — Merge do instalador deixa o destino **v2-only** 🟢 P0 (produto)
 > **Semântica corrigida pelo review do Batch 2 (2026-10-19, C1/A1/A2)** — remoção **por forma/conteúdo**, NUNCA por nome de chave.
@@ -76,7 +76,7 @@ Cada um dos 3 plugins (`gate.js`, `harness-validator.js`, `hitl-guardrail.js`) p
 |---|---|---|---|
 | I1 | Núcleos puros com **diff vazio** vs HEAD | `git diff` por função | 🟢 |
 | I2 | `commands.suiteFull` + **selo** intactos | `git diff --numstat harness.config.json` = 0 + suíte | 🟢 |
-| I3 | Papéis: `orchestrator`/`code-reviewer`/`ux-designer` sem edit | `permission.edit: deny` nos 3 | 🟢 literal · 🟠 intenção |
+| I3 | Papéis sem edit (**5**): `orchestrator`/`code-reviewer`/`ux-designer`/`codebase-analyzer`/`security-engineer` | `permission.edit: deny` nos **5**; com `allow`: `developer-engineer`, `product-manager`/`architect` (esteira — F1) e `qa-engineer` (REPORT — N1; escopo imposto pelo gate: `isHarnessScoped` `gate.js:402`/`504`). Medido; `write` é alias de `edit` | 🟢 literal · 🟠 intenção |
 | I4 | Nenhum hook registrado sem equivalente confirmado | revisão + teste de contrato | 🟢 |
 | I5 | Propagação do `opencode.json` preservada | teste do merge | 🟢 |
 | I6 | `.spec/archive/**` intocado | `git status` | 🟢 |
@@ -138,8 +138,17 @@ DDD/DB/tenancy/RBAC/eventos/Flyway: **N/A** (repo de tooling Node ESM, sem backe
 #### MODIFIED
 > **Seção alvo**: §1, linha **I5**
 ```
-| I5 | `orchestrator`/`code-reviewer`/`ux-designer` sem edit | `opencode.json` (`permission.edit: "deny"` nos 3; campo `tools` e v1-only e deprecated no runtime v2) — camada nativa, grosseira (SPEC ADR-001) | 🟢 literal · 🟠 intenção — `bash` contorna |
+| I5 | **5 sem `edit`**: `orchestrator`/`code-reviewer`/`ux-designer`/`codebase-analyzer`/`security-engineer`; com `edit: allow`: `developer-engineer`, `product-manager`/`architect` (esteira) e `qa-engineer` (REPORT) | `opencode.json` (`permission.edit: "deny"`) — camada nativa, grosseira (SPEC §2, ADR-001). Nota: no v2 `write` **é** a ação `edit` | 🟢 literal · 🟠 intenção — `bash` contorna (SPEC §7.1) |
 ```
+
+### Delta: `.agents/rules/harness-config.md`
+#### MODIFIED
+> **Seção alvo**: *Command seal (ADR-002, U6=b)*
+```
+-`gate.js` … embeds the published seal and compares it at runtime against the value read from the config
++`gate.js` … **reads the published seal from `HARNESS_SEAL_JSON`** (rollout step 1 = the trust root, *not* the worktree; `loadPublishedSeal`, `gate.js:753-764`); **seal absent ⇒ fail-closed** (`cause: "empty-seal"`); regenerate with `sealCommands(commands)`
+```
+> **Motivo**: a prosa afirmava um mecanismo **inexistente** (0 literais sha256 em `gate.js`) — item **A-1** do ciclo (prosa órfã, DOC-01).
 
 ### Delta: `workflow-state.json`
 #### MODIFIED

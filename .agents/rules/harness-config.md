@@ -43,8 +43,12 @@ host-process env `HARNESS_GATES=off`. Covered by test
 
 `suiteFull` is sealed: `.opencode/plugins/lib/seal.mjs` exposes
 `sha256` / `sealCommands` / `verifySeal`. `gate.js` (Batch 4, GATE-01)
-embeds the published seal and compares it at runtime against the value
-read from the config; divergence ⇒ `DenyError sealed-command-mismatch`.
+**reads the published seal from `HARNESS_SEAL_JSON`** (rollout step 1 = the
+trust root, *not* the worktree — U6=b; `loadPublishedSeal`, `gate.js:753-764`)
+and compares it at runtime against the value read from the config;
+divergence ⇒ `DenyError sealed-command-mismatch`; **seal absent ⇒ fail-closed**
+(`cause: "empty-seal"`) — never allow. Regenerate with `sealCommands(commands)`
+whenever `commands.suiteFull` changes.
 Seal behavior is covered by `seal.spec.mjs` (confere/diverge).
 
 ## Static checks (TST-02)

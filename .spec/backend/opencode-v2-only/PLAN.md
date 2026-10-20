@@ -43,31 +43,31 @@
 
 ## 5. Caminho crítico
 
-`EX2-BE-01` → `EX2-VAL-03` → `EX2-VAL-04` → `EX2-BE-05` → `EX2-VAL-06` → `EX2-VAL-08`
+`MIG-BE-01` → `MIG-VAL-03` → `MIG-VAL-04` → `MIG-BE-05` → `MIG-VAL-06` → `MIG-VAL-08`
 
 ## 6. Tasks
 
 ### Fase 1
-- **[EX2-BE-01]** [ ] `gate.js`: export **função** v2 (hooks) preservando núcleos puros
+- **[MIG-BE-01]** [ ] `gate.js`: export **função** v2 (hooks) preservando núcleos puros
   - Deps: — · Layer: Integration · Artefato: `.opencode/plugins/gate.js` · Constraint: RF-01/RF-02
-- **[EX2-BE-02]** [ ] `harness-validator.js` + `hitl-guardrail.js`: mesmo contrato
-  - Deps: EX2-BE-01 · Layer: Integration · Constraint: RF-01
-- **[EX2-VAL-03]** [ ] Contrato do adapter (T2) + matriz deny/allow (T1)
-  - Deps: EX2-BE-02 · Layer: Test · Constraint: RF-02
-- **[EX2-VAL-04]** [ ] Verificação de runtime: os 3 carregam, log sem `TypeError`
-  - Deps: EX2-VAL-03 · Layer: Test · Constraint: RF-01/RF-07
+- **[MIG-BE-02]** [ ] `harness-validator.js` + `hitl-guardrail.js`: mesmo contrato
+  - Deps: MIG-BE-01 · Layer: Integration · Constraint: RF-01
+- **[MIG-VAL-03]** [ ] Contrato do adapter (T2) + matriz deny/allow (T1)
+  - Deps: MIG-BE-02 · Layer: Test · Constraint: RF-02
+- **[MIG-VAL-04]** [ ] Verificação de runtime: os 3 carregam, log sem `TypeError`
+  - Deps: MIG-VAL-03 · Layer: Test · Constraint: RF-01/RF-07
 
 ### Fase 2
-- **[EX2-BE-05]** [ ] Merge do `opencode.json` substitui/limpa shape obsoleto
-  - Deps: EX2-VAL-04 · Layer: Integration · Artefato: `installer/install.mjs` · Constraint: RF-04
-- **[EX2-VAL-06]** [ ] Testes do merge (destino com shape antigo; destino sem config)
-  - Deps: EX2-BE-05 · Layer: Test · Constraint: RF-04/RF-05
+- **[MIG-BE-05]** [ ] Merge do `opencode.json` substitui/limpa shape obsoleto
+  - Deps: MIG-VAL-04 · Layer: Integration · Artefato: `installer/install.mjs` · Constraint: RF-04
+- **[MIG-VAL-06]** [ ] Testes do merge (destino com shape antigo; destino sem config)
+  - Deps: MIG-BE-05 · Layer: Test · Constraint: RF-04/RF-05
 
 ### Fase 3
-- **[EX2-FE-07]** [ ] Prosa: `gate-contract.md` I5 + supersession do ciclo antigo
-  - Deps: EX2-VAL-06 · Layer: Interface · Constraint: RF-06
-- **[EX2-VAL-08]** [ ] Fechamento: instalação nova v2-only + suíte + VERIFY
-  - Deps: EX2-FE-07 · Layer: Test · Constraint: RF-05
+- **[MIG-FE-07]** [ ] Prosa: `gate-contract.md` I5 + supersession do ciclo antigo
+  - Deps: MIG-VAL-06 · Layer: Interface · Constraint: RF-06
+- **[MIG-VAL-08]** [ ] Fechamento: instalação nova v2-only + suíte + VERIFY
+  - Deps: MIG-FE-07 · Layer: Test · Constraint: RF-05
 
 ## 7. Riscos
 

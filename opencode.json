@@ -22,7 +22,7 @@
     "developer-engineer": {
       "mode": "subagent",
       "prompt": "{file:./.agents/agents/developer-engineer/AGENT.md}",
-      "description": "Implementa codigo e testes sob delegacao do orquestrador (unico com write/edit).",
+      "description": "Implementa codigo e testes sob delegacao do orquestrador (com write/edit).",
       "permission": {
         "edit": "allow",
         "bash": "allow"
@@ -34,8 +34,7 @@
       "description": "Analise estatica de codigo e arquitetura; nao escreve.",
       "permission": {
         "edit": "deny",
-        "bash": "allow",
-        "write": "deny"
+        "bash": "allow"
       }
     },
     "product-manager": {
@@ -43,7 +42,7 @@
       "prompt": "{file:./.agents/agents/product-manager/AGENT.md}",
       "description": "Validacao de negocio: escopo, aceite e riscos de produto.",
       "permission": {
-        "edit": "deny",
+        "edit": "allow",
         "bash": "allow"
       }
     },
@@ -52,9 +51,8 @@
       "prompt": "{file:./.agents/agents/qa-engineer/AGENT.md}",
       "description": "Execucao do harness/qualidade e verificacao independente (nao corrige).",
       "permission": {
-        "edit": "deny",
-        "bash": "allow",
-        "write": "deny"
+        "edit": "allow",
+        "bash": "allow"
       }
     },
     "architect": {
@@ -62,7 +60,7 @@
       "prompt": "{file:./.agents/agents/architect/AGENT.md}",
       "description": "Decisoes arquiteturais, ADRs e integridade estrutural.",
       "permission": {
-        "edit": "deny",
+        "edit": "allow",
         "bash": "allow"
       }
     },

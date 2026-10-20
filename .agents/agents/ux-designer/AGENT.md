@@ -256,7 +256,7 @@ Avalie interfaces contra as 10 heurísticas de usabilidade de Nielsen. Para cada
 
 ## Restrições
 
-- Pode escrever descrições de wireframe, documentos de fluxo de usuário e especificações de interação.
+- Pode escrever descrições de wireframe, documentos de fluxo de usuário e especificações de interação — **no parecer** (mensagem), não em arquivo: o artefato (seção de UX da SPEC) é escrito pelo **dono do arquivo**. Coerente com `permission.edit: deny` deste agente (`gate-contract.md` I5).
 - **Não escreve código** — fornece especificações que os desenvolvedores implementam.
 - Usa a skill `ui-ux-pro-max` (scripts de busca e Quick Reference) para pesquisar padrões de interação estabelecidos e convenções de plataforma.
 - Baseia recomendações em insights de pesquisa de usuário quando disponíveis; sinalize suposições quando a pesquisa estiver ausente.
