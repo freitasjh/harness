@@ -1,10 +1,10 @@
 {
-  "current_feature": "opencode-v2-only",
-  "current_phase": "Completed",
-  "previous_phase": "Testing",
-  "next_phase": null,
-  "type": "refactor",
-  "layer": "instalador-config",
+  "current_feature": "garantias-runtime-adr-001",
+  "current_phase": "Planning",
+  "previous_phase": "Completed",
+  "next_phase": "Execution",
+  "type": "feature",
+  "layer": "gate-runtime",
   "repo": "harness",
   "artifacts": {
     "bug_tasks": ".spec/bugs/gate-counts-observation/TASKS.md",
@@ -21,12 +21,16 @@
       "harness_report": "harness/prd-adr-pipeline.json"
     },
     "c1_previous_bug": ".spec/bugs/harness-eixos-stack-p2/TASKS.md",
-    "proposal": ".spec/archive/20261020-opencode-v2-only/PROPOSAL.md",
-    "spec": ".spec/archive/20261020-opencode-v2-only/SPEC.md",
-    "plan": ".spec/archive/20261020-opencode-v2-only/PLAN.md",
-    "tasks": ".spec/archive/20261020-opencode-v2-only/TASKS.md",
+    "proposal": ".spec/backend/garantias-runtime-adr-001/PROPOSAL.md",
+    "spec": ".spec/backend/garantias-runtime-adr-001/SPEC.md",
+    "plan": ".spec/backend/garantias-runtime-adr-001/PLAN.md",
+    "tasks": ".spec/backend/garantias-runtime-adr-001/TASKS.md",
     "superseded_cycle": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/ (superseded: SPEC prescrevia `Plugin.define`, ausente no binario v2.0.32)",
-    "archive": ".spec/archive/20261020-opencode-v2-only"
+    "archive": ".spec/archive/20261020-opencode-v2-only",
+    "prd": ".spec/prd/prd-garantias-runtime/PRD.md",
+    "research": ".spec/prd/prd-garantias-runtime/RESEARCH.md",
+    "adr_index": ".spec/prd/prd-garantias-runtime/ADR-INDEX.md",
+    "adr": ".spec/prd/prd-garantias-runtime/ADRs/ADR-001-modo-gate-no-env/ADR.md"
   },
   "scope": {
     "interpretation": "esteira PRD->ADR->SDD no harness (visibilidade de intencao antes do codigo)",
@@ -47,16 +51,29 @@
     "rigor": "E1/E2 bloqueiam"
   },
   "gates": {
-    "P0_P1": "approved_user_2026_10_15 (Feature prd-adr-pipeline; bloco PICCO confirmado)",
-    "G2_PRD": "approved_user_2026_10_16 (PRD do dogfood aprovado sem ressalvas; .spec/prd/prd-adr-pipeline/PRD.md §16)",
-    "P1_P2": "pending_user_approval (SPEC v2 do ciclo opencode-v2-only; parecer do code-reviewer nos 3 batches)",
-    "P2_P3": "pending_user_approval (PLAN + TASKS do ciclo opencode-v2-only, 9 tasks MIG-*; REVIEW-PM nao existe neste ciclo)",
+    "P0_P1": "approved_user_2026_10_22 (PRD do ciclo prd-garantias-runtime aprovado no portao G1; ADR-001 aprovado no portao G2)",
+    "G2_PRD": "approved_user_2026_10_22 (PRD prd-garantias-runtime aprovado sem ressalvas; §16 do PRD.md; 3 decisoes do owner)",
+    "P1_P2": "pending_user_approval (SPEC do ciclo garantias-runtime-adr-001: 128 linhas, 4 requisitos normativos, 6 invariantes, Delta Specs com 5 docs, 5 itens N/A justificados)",
+    "P2_P3": "pending_user_approval (PLAN + TASKS do ciclo garantias-runtime-adr-001: 9 tasks MODO-01..MODO-09, SDD-02 1:1 9/9, 4 fases, caminho critico MODO-01->02->06->07->08)",
     "P3_P4": "approved_auto_evidence_batches1-5 (14/14 tasks; review APPROVED 0 criticos)",
     "P4_P5": "pending_user_approval (QA P4: gate PASSA na substancia; 831/831; 0 writes nos 2 presets; transcript byte-identico; 2 P2 novos registrados em .spec/tech-debts/harness-eixos-stack-p2/)",
     "P5_P6": "approved_user_2026_10_18 (VERIFY APPROVED 3/3 dimensoes; traceability 100%; ciclo arquivado; commit ab66c40 com trailer)",
     "P6_fim": "done_commit_63660a7 (trailer Harness-Gate-Change aceito; bugfix harness-eixos-stack-p2; push PENDENTE — 3 commits a frente de origin/main)",
     "B1_B2": "approved_user_2026_09_29",
-    "FU32": "closed_approved_decision_B"
+    "FU32": "closed_approved_decision_B",
+    "_previous_cycle_opencode_v2_only": {
+      "P0_P1": "approved_user_2026_10_15 (Feature prd-adr-pipeline; bloco PICCO confirmado)",
+      "G2_PRD": "approved_user_2026_10_16 (PRD do dogfood aprovado sem ressalvas; .spec/prd/prd-adr-pipeline/PRD.md §16)",
+      "P1_P2": "pending_user_approval (SPEC v2 do ciclo opencode-v2-only; parecer do code-reviewer nos 3 batches)",
+      "P2_P3": "pending_user_approval (PLAN + TASKS do ciclo opencode-v2-only, 9 tasks MIG-*; REVIEW-PM nao existe neste ciclo)",
+      "P3_P4": "approved_auto_evidence_batches1-5 (14/14 tasks; review APPROVED 0 criticos)",
+      "P4_P5": "pending_user_approval (QA P4: gate PASSA na substancia; 831/831; 0 writes nos 2 presets; transcript byte-identico; 2 P2 novos registrados em .spec/tech-debts/harness-eixos-stack-p2/)",
+      "P5_P6": "approved_user_2026_10_18 (VERIFY APPROVED 3/3 dimensoes; traceability 100%; ciclo arquivado; commit ab66c40 com trailer)",
+      "P6_fim": "done_commit_63660a7 (trailer Harness-Gate-Change aceito; bugfix harness-eixos-stack-p2; push PENDENTE — 3 commits a frente de origin/main)",
+      "B1_B2": "approved_user_2026_09_29",
+      "FU32": "closed_approved_decision_B"
+    },
+    "G2_ADR": "approved_user_2026_10_22 (4 ADRs aprovados; ADR-001 in-progress na branch adr/prd-garantias-runtime/01-modo-gate-no-env; merge humano)"
   },
   "code_review": {
     "last_invoked_at": "2026-10-19T13:00:26.528Z",
@@ -119,11 +136,13 @@
     },
     {
       "name": "prd-adr-pipeline",
-      "stage": "Discovery",
-      "progress": 5,
+      "stage": "Archived",
+      "progress": 100,
       "type": "feature",
       "depends_on": [],
-      "artifacts": {},
+      "artifacts": {
+        "archive": ".spec/archive/20261016-prd-adr-pipeline/"
+      },
       "created": "2026-10-15T00:00:00Z"
     },
     {
@@ -142,19 +161,36 @@
         "jira_board": ".spec/backend/harness-eixos-stack/JIRA_BOARD.md"
       },
       "created": "2026-10-18T00:00:00Z"
+    },
+    {
+      "name": "garantias-runtime-adr-001",
+      "stage": "Planning",
+      "progress": 25,
+      "type": "feature",
+      "depends_on": [],
+      "artifacts": {
+        "proposal": ".spec/backend/garantias-runtime-adr-001/PROPOSAL.md",
+        "spec": ".spec/backend/garantias-runtime-adr-001/SPEC.md",
+        "plan": ".spec/backend/garantias-runtime-adr-001/PLAN.md",
+        "tasks": ".spec/backend/garantias-runtime-adr-001/TASKS.md",
+        "prd": ".spec/prd/prd-garantias-runtime/PRD.md",
+        "adr": ".spec/prd/prd-garantias-runtime/ADRs/ADR-001-modo-gate-no-env/ADR.md"
+      },
+      "created": "2026-10-22T00:00:00Z"
     }
   ],
-  "last_update": "2026-10-20T00:00:00Z",
+  "last_update": "2026-10-22T00:00:00Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
   "spec_score": 1,
-  "spec_status": "v2_reviewed_aguardando_P1_P2 (conformidade aplicavel 19/19; 6 itens N/A declarados em SPEC 8; 3 gaps altos + 4 medios + 1 baixo encontrados e corrigidos na mesma rodada)",
-  "plan_status": "v3 aprovado para P2->P3 pelo parecer de negocio (rodada 4): 12 tasks PAP-01..PAP-12; SDD-02 1:1 12/12; 0 bloqueadores; 3 nits cosmeticos para P3 (notacao §14.N, cross-ref sem arquivo, frase ampla em SPEC:161)",
+  "spec_status": "gerado (garantias-runtime-adr-001/SPEC.md, 128 linhas; 4/4 requisitos normativos com origem no PRD; 6 invariantes; estrategia de teste em 4 niveis; Delta Specs com 5 documentos; 5 itens N/A justificados com motivo)",
+  "plan_status": "gerado (garantias-runtime-adr-001/PLAN.md, 86 linhas; 4 fases; constraint mapping com 8 restricoes; caminho critico MODO-01->MODO-02->MODO-06->MODO-07->MODO-08; ciclo de vida de eventos N/A justificado; 5 riscos de execucao mapeados)",
   "validation": {
-    "architect": "Fase 1: 5 ADRs propostos (P01..P05) com prova de independencia par-a-par",
-    "product-manager": "harness-eixos-stack: 9 defeitos (D-1..D-9). D-1 (axes sem consumidor real / eixo decorativo), D-2 (prompt do W3 contradiz a escolha no mesmo run), D-3 (optional inerte => leitura ambigua) = P1. D-4a/D-4b/D-5/D-6 = P2. D-7/D-8/D-9 = P3. D-1..D-8 corrigidos nos 4 artefatos + REVIEW-PM.md; D-9 = decisao pendente do owner (default Vue vs React no passo 2). Confirmados sem reabrir: D-A..D-D, caminho A do vendor, 1:1 PLAN->TASKS, suite de referencia. 0 arquivos escritos pelo PM.",
-    "ux-designer": "N/A - sem tela, fluxo ou componente visual neste ciclo"
+    "architect": "ADR-001 (interface congelada de 10 itens) aprovado no portao G2 de 2026-10-22; RESEARCH com 17 fontes http(s) verificadas (200)",
+    "product-manager": "PRD prd-garantias-runtime aprovado no portao G1 (3 decisoes do owner registradas no §16; RF-03 alinhado ao ADR-003 em 8d8a619)",
+    "ux-designer": "N/A - sem tela; o `reason` do deny e a interface (PRD §11)",
+    "code-reviewer": "N/A neste ponto - o review roda no portao P3->P4, apos a implementacao"
   },
   "pending_user_decisions": [],
   "spec_version": 4,
@@ -163,11 +199,11 @@
     "U5": "c - dois ancoras",
     "U6": "b - selo de hash"
   },
-  "harness_status": "passed",
+  "harness_status": "pending (ciclo garantias-runtime-adr-001 ainda nao implementado)",
   "harness_evidence": "Batches 1-5 do ciclo harness-eixos-stack (2026-10-18) — 14/14 tasks. Estado final: plugins 352/352, installer 479/479, static 10 PASS/0 FAIL, vendor-check OK; dry-run 0 writes nos 2 presets web; transcript do wizard (escolha React) em .spec/backend/harness-eixos-stack/harness/; REPORT em harness/harness-eixos-stack.json (com desvio declarado C-1: counts omitido). Historico dos batches 1-2: Batch 1 (EX-BE-01/EX-VAL-02/EX-BE-03): plugins 352/352, installer 398/398, static exit 0, vendor OK; mutacao axes.frontend vue->react => 1 fail. Batch 2 (EX-BE-04/EX-BE-05/EX-VAL-06): plugins 352/352, installer 439/439, static 10 PASS/0 FAIL, vendor OK; provas do orquestrador: chave 'backend=node' (valida) => 2 fail; 'backend=react' (id invalido) => BAD_DECLARATION na carga; 'backend=none' sintetica => 0 fail (matcher por par). Nao-regressao vs HEAD: node/node-esm/outra/flutter/dart/java+vue com keys+bodies byte-identicos (129/129/129/151/141/129); so java+react difere pela exclusao pretendida. Refs penduradas do destino react congeladas em 12. gate.js/harness.config.json/.vendor-lock.json/.agents/rules = 0 linhas. I9 respeitado: apenas 2 imports + assert estrutural de chaves reescopado para superconjunto.",
-  "code_review_status": "passed",
+  "code_review_status": "pending (ciclo garantias-runtime-adr-001 ainda nao implementado)",
   "code_review_status_ciclo": "opencode-v2-only: batch 1 APPROVED, batch 2 APPROVED (re-review), batch 3 APPROVED (review final) — pareceres do code-reviewer, nao bloqueio (o bloqueio e a ancora B)",
-  "sdd_stage": "harness-eixos-stack-p2 (bugfix) FECHADO (2026-10-18). BUG-1 (default do comando da suite no eixo web) e BUG-2 (gating de skills locais por eixo declarado) reproduzidos ANTES e fechados DEPOIS (QA em pty real + dry-run nas 2 direcoes). Suites: plugins 352/0, installer 502/0, static 10 PASS/0 FAIL, vendor OK. Artefato: .spec/bugs/harness-eixos-stack-p2/TASKS.md. REPORT: harness/harness-eixos-stack-p2.json (counts omitido por C-1 declarado). Residual declarado: o item 5 (outra) sem default de suite (FU-61).",
+  "sdd_stage": "garantias-runtime-adr-001 (ADR-001) em PLANNING — PROPOSAL/SPEC/PLAN/TASKS gerados (80/128/86/233 linhas); aguardando portao P2->P3",
   "backlog": {
     "total": 14,
     "todo": 0,
@@ -190,20 +226,11 @@
       "IM-VAL-06"
     ]
   },
-  "next_task": "IM-DOC-01",
+  "next_task": "MODO-01",
   "plan_score": 1,
   "tasks_score": 1,
-  "active_batch": {
-    "id": 3,
-    "status": "in_progress",
-    "tasks": [
-      "MIG-FE-07",
-      "MIG-VAL-08"
-    ],
-    "code_review": "passed",
-    "nota": "R2: aponta o batch corrente (antes apontava o batch 1 ja CLOSED)"
-  },
-  "active_task": "IN-05",
+  "active_batch": null,
+  "active_task": "MODO-01",
   "pending_remote_url": false,
   "follow_ups_created_at_basis": "PAP-12: created_at de cada follow_up = data do commit mais antigo em que o id apareceu em workflow-state.json (git log -S \"<id>\" -- workflow-state.json). Nao havia timestamp registrado a mao; a data e derivada, nao inventada.",
   "follow_ups": [
@@ -992,15 +1019,14 @@
     "env": "HARNESS_GATES=off (host)"
   },
   "prd_adr": {
-    "prd_id": "prd-adr-pipeline",
+    "prd_id": "prd-garantias-runtime",
     "prd_status": "approved",
-    "active_adr": null,
+    "active_adr": "ADR-001",
     "adr_order": [
       "ADR-001",
       "ADR-002",
       "ADR-003",
-      "ADR-004",
-      "ADR-005"
+      "ADR-004"
     ],
     "snapshots": []
   },
