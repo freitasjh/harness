@@ -57,6 +57,7 @@ graph TD
 - *Borda*: dado `env = {HARNESS_GATE_PICCO:"ENFORCE"}` (maiúsculas) ou `{"off"}`, quando resolve, então `mode === "enforce"` (domínio é estrito: `enforce`|`warn`).
 
 **DoD**: função pura exportada; 5 casos de teste verdes; nenhuma linha de log dentro da função; `decide()` intocada.
+**Status**: [x] concluído — commit `308403c` (DoD satisfeito; ver VERIFY.md)
 
 ---
 
@@ -79,6 +80,7 @@ graph TD
 - *Borda*: dado um gate sem `gateName` (higiene), quando resolve com env que não o nomeia, então `mode === "enforce"`.
 
 **DoD**: `modeForGate` lê env; `DEFAULT_MODE` preservado; testes verdes; `decide()` com a mesma assinatura.
+**Status**: [x] concluído — commit `308403c` (DoD satisfeito; ver VERIFY.md)
 
 ---
 
@@ -101,6 +103,7 @@ graph TD
 - *Borda*: dado `gates:{chaveDesconhecida:"warn"}`, quando o config é carregado, então 1 WARN com "gate registrado: não".
 
 **DoD**: auditoria com exatamente 1 WARN por chave não-`enforce`; nenhum WARN para `enforce`; log sem path do arquivo.
+**Status**: [x] concluído — commit `530be78` (DoD satisfeito; ver VERIFY.md)
 
 ---
 
@@ -123,6 +126,7 @@ graph TD
 - *Borda*: dado o mesmo par resolvido 2×, quando resolve, então 1 único WARN de rebaixamento.
 
 **DoD**: rebaixamento nunca silencioso; recusa sempre anunciada; 1 WARN por par (gate, motivo).
+**Status**: [x] concluído — commit `530be78` (DoD satisfeito; ver VERIFY.md)
 
 ---
 
@@ -145,6 +149,7 @@ graph TD
 - *Borda*: dado `HARNESS_GATES=off` e config ausente, quando `write` é chamada, então **allow** — o corte precede a **resolução de modo**; a carga/auditoria do config vem antes do corte por ser fato de config, não resolução (SPEC §3.5; review do batch 3, A3).
 
 **DoD**: ordem fixa e verificada por teste; `via:"kill-switch"` inalterado; nenhum deny novo.
+**Status**: [x] concluído — commit `eb62598` (DoD satisfeito; ver VERIFY.md)
 
 ---
 
@@ -167,6 +172,7 @@ graph TD
 - *Borda*: dado `gates` com chave desconhecida e valor não-`enforce`, quando o config é carregado, então há WARN de auditoria mas o modo efetivo é `enforce`.
 
 **DoD**: `resolveMode` não existe mais no código; `resolveGateMode` é o único resolvedor; 379 testes verdes (mesma contagem); `R-NODENY` PASS.
+**Status**: [x] concluído — commit `eb62598` (DoD satisfeito; ver VERIFY.md)
 
 ---
 
@@ -190,6 +196,7 @@ graph TD
 - *Borda*: a prosa pode declarar "rebaixamento auditado, não aplicável ao config" — desde que o alcance corresponda ao código.
 
 **DoD**: 4 trechos reescritos com lastro; zero afirmação que o config decide modo; checks verdes.
+**Status**: [x] concluído — commit `a19acab` (DoD satisfeito; ver VERIFY.md)
 
 ---
 
@@ -213,6 +220,7 @@ graph TD
 - *Borda*: o doc pode manter a nota histórica ("o código permitia…") desde que marque como resolvido.
 
 **DoD**: 3 trechos atualizados; `wc -l` inalterado; nenhum lastro quebrado.
+**Status**: [x] concluído — commit `a19acab` (DoD satisfeito; ver VERIFY.md)
 
 ---
 
@@ -234,6 +242,7 @@ graph TD
 - *Borda*: o instalador pode omitir `gates.*` por completo — mas isso quebraria o golden e o config do destino; **não** é o caminho escolhido.
 
 **DoD**: formato do config inalterado; 516 testes verdes; semântica declarada no instalador.
+**Status**: [x] concluído — commit `a19acab` (DoD satisfeito; ver VERIFY.md)
 
 ---
 
@@ -257,3 +266,4 @@ graph TD
 - *Borda*: a prosa pode registrar o histórico ("o config decidia modo antes do ADR-001") desde que o presente seja o correto.
 
 **DoD**: 2 trechos reescritos; `wc -l` inalterado nos 2 arquivos; checks verdes.
+**Status**: [x] concluído — commit `a19acab` (DoD satisfeito; ver VERIFY.md)

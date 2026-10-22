@@ -1,8 +1,8 @@
 {
   "current_feature": "garantias-runtime-adr-001",
-  "current_phase": "Testing",
-  "previous_phase": "Execution",
-  "next_phase": "Completed",
+  "current_phase": "Completed",
+  "previous_phase": "Testing",
+  "next_phase": null,
   "type": "feature",
   "layer": "gate-runtime",
   "repo": "harness",
@@ -164,8 +164,8 @@
     },
     {
       "name": "garantias-runtime-adr-001",
-      "stage": "Testing",
-      "progress": 85,
+      "stage": "Complete",
+      "progress": 100,
       "type": "feature",
       "depends_on": [],
       "artifacts": {
@@ -199,9 +199,9 @@
     "U5": "c - dois ancoras",
     "U6": "b - selo de hash"
   },
-  "harness_status": "passed (H1: 379+516 testes verdes; H3 N/A justificado — repo sem UI/infra; H4 aplicado; H5 brain_store por batch; REPORT a emitir no VERIFY)",
+  "harness_status": "passed",
   "harness_evidence": "Batches 1-5 do ciclo harness-eixos-stack (2026-10-18) — 14/14 tasks. Estado final: plugins 352/352, installer 479/479, static 10 PASS/0 FAIL, vendor-check OK; dry-run 0 writes nos 2 presets web; transcript do wizard (escolha React) em .spec/backend/harness-eixos-stack/harness/; REPORT em harness/harness-eixos-stack.json (com desvio declarado C-1: counts omitido). Historico dos batches 1-2: Batch 1 (EX-BE-01/EX-VAL-02/EX-BE-03): plugins 352/352, installer 398/398, static exit 0, vendor OK; mutacao axes.frontend vue->react => 1 fail. Batch 2 (EX-BE-04/EX-BE-05/EX-VAL-06): plugins 352/352, installer 439/439, static 10 PASS/0 FAIL, vendor OK; provas do orquestrador: chave 'backend=node' (valida) => 2 fail; 'backend=react' (id invalido) => BAD_DECLARATION na carga; 'backend=none' sintetica => 0 fail (matcher por par). Nao-regressao vs HEAD: node/node-esm/outra/flutter/dart/java+vue com keys+bodies byte-identicos (129/129/129/151/141/129); so java+react difere pela exclusao pretendida. Refs penduradas do destino react congeladas em 12. gate.js/harness.config.json/.vendor-lock.json/.agents/rules = 0 linhas. I9 respeitado: apenas 2 imports + assert estrutural de chaves reescopado para superconjunto.",
-  "code_review_status": "passed (4 batches: 1🔴->0, 1🔴->0, 0🔴, 2🔴->0; mutacao em todos os batches; 0 atencao aberta de codigo)",
+  "code_review_status": "passed",
   "code_review_status_ciclo": "opencode-v2-only: batch 1 APPROVED, batch 2 APPROVED (re-review), batch 3 APPROVED (review final) — pareceres do code-reviewer, nao bloqueio (o bloqueio e a ancora B)",
   "sdd_stage": "garantias-runtime-adr-001 (ADR-001) EXECUTION COMPLETA — 10/10 tasks MODO-01..MODO-10 implementadas e revisadas; proximo: VERIFY (fase 5, 3 dimensoes) + harness REPORT + PR (merge humano)",
   "backlog": {
@@ -931,15 +931,15 @@
     "pos_restart3": "orcamento ESGOTADO (2/2: fix + review); proxima delegacao nega; restart #4 necessario"
   },
   "verify": {
-    "at": "2026-10-20T00:00:00Z",
+    "at": "2026-10-22T00:00:00Z",
     "verdict": "3/3 PASS",
-    "completude": "51/51 checkboxes, 0 TODO, 7/7 RF, trace 100%",
-    "corretude": "379/0 plugins + 516/0 installer + static 10 PASS + sdd 8 PASS + selo ok + 19 agentes",
-    "coerencia": "12/12 nucleos puros, 0 linhas config/lib, 0 contradicao prosa x permissao, arquivado intocado",
-    "artefato": ".spec/backend/opencode-v2-only/VERIFY.md",
-    "report": "harness/opencode-v2-only.json (schema-valido: 9/9 no report-schema.spec.mjs)"
+    "completude": "10/10 tasks com DoD satisfeito; zero TODO",
+    "corretude": "suiteFull exit 0 (6055-6057ms, stderr 0); 379/0 plugins + 516/0 installer; static 10 PASS; sdd 8 PASS; contraprova allow (counts-unverifiable, a6 declarado); selo adulterado => DENY",
+    "coerencia": "10/10 itens da interface congelada do ADR-001 mapeados e provados; decide() intocada; sem deny/hook novo; dispatcher nao decide modo",
+    "artefato": ".spec/backend/garantias-runtime-adr-001/VERIFY.md",
+    "report": "harness/garantias-runtime-adr-001.json (schema-valido, counts reais)"
   },
-  "commit": "63660a7",
+  "commit": "a19acab",
   "remote": "git@github.com:freitasjh/harness.git (SSH; push + CI pendentes)",
   "ci_evidence": {
     "main": "GREEN confirmado na UI",
@@ -1654,5 +1654,10 @@
       "licao": "O parse de higiene casa o padrao no TEXTO do comando (nao so na execucao): o canal `bash` do orchestrator nao edita prosa que mencione o padrao. Enforcement vivo, falso-positivo real (F-03, P2)."
     }
   ],
-  "brain_pending": "brain_store BLOQUEADO: o MCP `http://127.0.0.1:8321/mcp` exige login. As 8 licoes acima estao no state (L-01..L-08) e precisam ser gravadas no Brain quando o owner autenticar."
+  "brain_pending": "brain_store BLOQUEADO: o MCP `http://127.0.0.1:8321/mcp` exige login. As 8 licoes acima estao no state (L-01..L-08) e precisam ser gravadas no Brain quando o owner autenticar.",
+  "upstream": {
+    "branch": "adr/prd-garantias-runtime/01-modo-gate-no-env",
+    "pr": "pendente (merge humano)",
+    "commits": 6
+  }
 }

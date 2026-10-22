@@ -1,0 +1,197 @@
+{
+  "version": 1,
+  "demand": "garantias-runtime-adr-001",
+  "agent": "qa-engineer",
+  "phase": "Testing",
+  "gitSha": "a19acab8822cf3bb735559c162974726fe1e6606",
+  "branch": "adr/prd-garantias-runtime/01-modo-gate-no-env",
+  "commands": [
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node --test \"installer/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs && node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 6055,
+      "stdoutHash": "sha256:68c5b2a844f068bf6f793610eb37145cf48f24f20715acc60aaf126e15d85fc9",
+      "stderrHash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrBytes": 0,
+      "stdoutBytes": 121695,
+      "capture": "/tmp/opencode/qa-adr001/suitefull.stdout.log",
+      "captureStderr": "/tmp/opencode/qa-adr001/suitefull.stderr.log",
+      "resolution": "lido do config em runtime (JSON.parse(harness.config.json).commands.suiteFull) e executado com spawnSync('bash', ['-c', cmd]) - nunca copiado de prosa nem do REPORT anterior"
+    }
+  ],
+  "counts": {
+    "unit": { "passed": 379, "failed": 0, "skipped": 0 },
+    "it": { "passed": 516, "failed": 0, "skipped": 0 },
+    "frontend": { "passed": 0, "failed": 0, "skipped": 0 }
+  },
+  "countsNote": "counts DECLARADOS e medidos nesta sessao pelo stdout do comando literal: plugins 379 tests / 379 pass / 0 fail / 0 skipped (94 suites); installer 516 / 516 / 0 / 0 (178 suites); frontend 0/0/0 porque o repo nao tem frontend (stack.frontend = N/A). O executor padrao da contraprova observa apenas exit code (defaultContraproveExec => counts: null), portanto o veredito esperado e ALLOW com via 'counts-unverifiable' (gate.js:801-803) - achado a6 declarado abaixo. Divergencia REAL de counts observaveis continua DENY (gate.js:784-798).",
+  "observedCounts": {
+    "unit_plugins": { "tests": 379, "passed": 379, "failed": 0, "skipped": 0, "suites": 94, "duration_ms": 439.293842 },
+    "it_installer": { "tests": 516, "passed": 516, "failed": 0, "skipped": 0, "suites": 178, "duration_ms": 5456.434809 },
+    "static_checks": { "pass": 10, "fail": 0, "info": 2 },
+    "vendor_check": "vendor-check OK (.agents/skills/.vendor-lock.json)",
+    "exitCode": 0,
+    "durationMs": 6055,
+    "command": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node --test \"installer/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs && node scripts/vendor-skills.mjs --check",
+    "postWriteRun": {
+      "why": "acceptance 9: a suite precisa passar DEPOIS do REPORT existir, porque report-schema.spec.mjs valida todo harness/*.json real contra o schema",
+      "exitCode": 0,
+      "durationMs": 5853,
+      "stdoutHash": "sha256:2ce1eef5a6c1011c41d2ace3f78c001fd69dae608e2481df8c20976df57f507a",
+      "stderrBytes": 0,
+      "counts": { "unit": 379, "it": 516, "failed": 0, "skipped": 0 },
+      "note": "4 execucoes verdes nesta sessao, 4 hashes diferentes (6055ms/68c5b2a, 5861ms interno da contraprova, 5853ms/2ce1eef, 5830ms/79309d): mesmo resultado (exit 0, 379+516), stdout nao byte-identico — ver findings.stdoutHash_not_consumed"
+    }
+  },
+  "e2e": {
+    "status": "N/A",
+    "justification": "harness.config.json stack.backend/stack.frontend = N/A e infra.composeFile/ports = null: repo de tooling Node ESM, sem UI, sem banco, sem servidor local. Nao existe alvo para o MCP chrome-devtools (mcp.required) - nao ha URL para abrir. O equivalente E2E deste repo e a execucao real do dispatcher do plugin (probe de comportamento, ver evaluation.negocio), nao um browser.",
+    "escalateOnRisk": "nao dispara: nenhum arquivo tocado casa riskPaths (\"**/security/**\", \"**/acl/**\", \"**/*Permission*\", \"**/auth/**\", \"**/i18n/**\"). Verificado contra a lista de 16 arquivos em gitDiffStat."
+  },
+  "evaluation": {
+    "telas": "n/a-sem-UI. harness.config.json declara stack backend/frontend N/A e infra null; o MCP chrome-devtools nao tem URL alvo. O equivalente observavel de 'tela' neste ciclo e a linha de log do runtime, medida ao vivo no probe: 1 WARN de auditoria do config (gates.e2eGreenfield inerte), 1 WARN de rebaixamento quando HARNESS_GATE_PICCO=warn + motivo, 0 WARN sob HARNESS_GATES=off.",
+    "negocio": "ok-ADR-001 entregue e medido fora da suite: (1) resolveGateMode cobre as 5 rows da SPEC 3.2 - ausente/enforce/warn+motivo/warn-sem-motivo/valor-invalido; (2) o config nao participa: resolveGateMode('picco', harness.config.json.gates) => enforce/default; (3) auditConfigGates sobre o harness.config.json REAL emite exatamente 1 WARN (e2eGreenfield, chave inerte, com a remediacao correta) e nenhum para os 3 gates em enforce; (4) ordem: HARNESS_GATES=off + HARNESS_GATE_PICCO=warn => verdict kill-switch com ZERO WARN de modo (corte antes da resolucao); (5) INV-3: com picco rebaixado, o DenyError de PICCO virou log+allow e o proximo gate (ancora B, em enforce) negou - o rebaixamento e por gate, nao global; (6) RF-05: o rebaixamento em vigor emite a linha 'gate \"picco\" rebaixado para \"warn\" por HARNESS_GATE_PICCO: qa-probe'. Sem HARNESS_GATE_*, o mesmo task nega picco-tag-absent (INV-1).",
+    "logica": "ok-suiteFull literal exit 0 em 6055 ms: plugins 379/379 (94 suites), installer 516/516 (178 suites), static-checks 10 PASS / 0 FAIL / 2 INFO (V6, V6b, V2, V3, V7, V15, V14, PRD-01, ADR-01, ADR-02), vendor-check OK. 0 failed, 0 skipped, 0 todo; stderr vazio (0 bytes). Os testes de contrato do ciclo cobrem: 5 regras de resolucao, auditoria deduplicada por (chave,valor), anuncio 1x por (gate,motivo)/(gate,tipo), anti-drift announceGateMode(x) == modeForGate(x) para os 3 gates + o gate sem gateName, ordem em 3 pernas e o E2E de config que nao rebaixa.",
+    "perf": "suiteFull 6055 ms (plugins 439 ms, installer 5456 ms, static-checks + vendor ~160 ms). Mesma ordem de grandeza dos ciclos anteriores (6.7-6.8 s) - o ciclo nao adicionou custo perceptivel. Repo sem runtime de produto: nao ha metrica de latencia de aplicacao a medir."
+  },
+  "h3": {
+    "status": "N/A com justificativa",
+    "why": "H3 pressupoe UI + banco + servidores (wipe/re-cadastro em browser). Neste repo stack = N/A e infra = null; nao ha browser alvo. O que H3 pegaria (tela branca, rota duplicada, i18n faltando, CORS/auth em browser) nao existe aqui.",
+    "substitute": "probe de comportamento do dispatcher (evaluation.negocio) + a propria suite de contrato - o defeito que H3 pegaria num repo de plugin seria o plugin nao carregar/nao aplicar, e isso e coberto por smoke-load/v2-adapter + o probe."
+  },
+  "verification": {
+    "method": "script /tmp/opencode/qa-adr001/proof-gate-reads-report.mjs importando as funcoes REAIS de .opencode/plugins/gate.js e .opencode/plugins/lib/seal.mjs (nenhuma reimplementacao). Saida integral em /tmp/opencode/qa-adr001/proof-gate-reads-report.json.",
+    "readEvidenceReport": {
+      "calledWith": "{} (sem ctx.report) — o gate resolve current_feature em workflow-state.json e le harness/<feature>.json do evidence.path do config",
+      "found": true,
+      "demand": "garantias-runtime-adr-001",
+      "agent": "qa-engineer",
+      "exitCode": 0,
+      "schemaViolations": []
+    },
+    "sealComputedLocally": {
+      "fn": "sealCommands(harness.config.json.commands)",
+      "keys": ["suiteFull", "unit"],
+      "sha256_suiteFull": "c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2",
+      "sha256_unit": "daba8c5465bffe061738235b274c497a4e8e761e41c5e79d4c671a72231cffc7",
+      "note": "o selo de suiteFull e identico ao dos ciclos anteriores (c904f1c5...) — harness.config.json nao mudou neste ciclo"
+    },
+    "runContraprova": {
+      "execFn": "omitido de proposito => defaultContraproveExec RE-EXECUTA o comando selado (caminho de producao, counts: null)",
+      "verdict": "allow",
+      "via": "counts-unverifiable",
+      "wallMs": 5861,
+      "cacheKey": "garantias-runtime-adr-001::c38d9fa9b1af4ab50ec43615cc849487adfa1c7b5de76e90bef8b2d8996e6815::unknown",
+      "reading": "exitCode declarado 0 == observado 0; counts declarados existem mas o executor nao os observa, entao o allow sai com a nota declarada counts-unverifiable (gate.js:801-803) — exatamente o achado a6"
+    },
+    "tamperedCommand": {
+      "input": "commands.suiteFull + ' # tampered' com o selo REAL",
+      "verdict": "DENY",
+      "reason": "sealed-command-mismatch",
+      "mismatches": ["suiteFull"],
+      "reading": "o selo e load-bearing: trocar o comando canonico nega antes de qualquer execucao"
+    },
+    "emptySealBlocker": {
+      "input": "seal: null (HARNESS_SEAL_JSON ausente no host)",
+      "verdict": "DENY",
+      "reason": "sealed-command-mismatch",
+      "cause": "empty-seal",
+      "reading": "c1: sem o selo publicado, um Completed real NEGA empty-seal. Este REPORT nao remove esse bloqueio; ele apenas o declara. Para o ciclo fechar de fato, o operador do host precisa publicar HARNESS_SEAL_JSON com o selo acima."
+    }
+  },
+  "findings": {
+    "a6_counts_never_compared": {
+      "severity": "declarado (nao bloqueia este ciclo)",
+      "what": "No caminho real de producao o executor da contraprova devolve counts: null (defaultContraproveExec, gate.js:726-737), enquanto o schema EXIGE counts. Logo o veredito sai por via 'counts-unverifiable' (gate.js:801-803) e as contagens declaradas NUNCA sao comparadas.",
+      "evidence": "gate.js:726-737 e gate.js:784-803; medido no veredito do runContraprova em verification.",
+      "owner": "ADR-003 (P1-C) - fora do escopo deste ADR-001."
+    },
+    "c1_published_seal_is_external": {
+      "severity": "declarado (bloqueio operacional)",
+      "what": "O selo e lido de HARNESS_SEAL_JSON do processo host (loadPublishedSeal, gate.js:918-929). Sem essa env, a contraprova nega sealed-command-mismatch cause 'empty-seal' (gate.js:146-155). Nada no worktree publica o selo.",
+      "evidence": "prova em verification.emptySealBlocker.",
+      "owner": "operacao/rollout (passo 1) - nao e defeito de codigo."
+    },
+    "stdoutHash_not_consumed": {
+      "severity": "declarado",
+      "what": "Nenhum consumidor le commands[].stdoutHash: grep em .opencode/plugins/ e scripts/ acha apenas o schema e um fixture de teste. O hash e evidencia declarada, nao verificada; o gate compara exitCode e counts.",
+      "evidence": "grep -rn stdoutHash .opencode/plugins/ scripts/ => so report-schema.spec.mjs:42.",
+      "why_it_matters": "tambem e instavel: o stdout do node --test embute duration_ms, entao duas execucoes verdes dao hashes diferentes (orquestrador 92a2af..., esta sessao 68c5b2...). Nao serve como fingerprint de resultado."
+    },
+    "modeForGate_dead_in_production": {
+      "severity": "atencao (prosa)",
+      "what": "O dispatcher de producao resolve o modo por announceGateMode (gate.js:1395); modeForGate (gate.js:126) so e usado por testes e pelo anti-drift. O comentario gate.js:36 diz que o modo e 'resolved ... through modeForGate', o que nao descreve o caminho real.",
+      "evidence": "grep -n modeForGate gate.js => definicao + comentarios; uso em producao: nenhum.",
+      "impact": "nao afeta comportamento; e drift de prosa do proprio ciclo que combate prosa stale."
+    },
+    "anchorB_strict_status_blocks_next_task": {
+      "severity": "atencao operacional (estado, nao codigo)",
+      "what": "checkAnchorB exige harness_status === 'passed' literal (gate.js:983-1000). O workflow-state.json atual tem 'passed (H1: ...)' descritivo, entao um `task` novo e negado prev-cycle-not-completed - medido no probe.",
+      "evidence": "probe armedDowngrade: reason prev-cycle-not-completed, details.harness_status = 'passed (H1: ...)'.",
+      "action": "o orquestrador deve gravar harness_status exatamente 'passed' (e mover a evidencia para outro campo) antes de abrir o proximo ciclo. Ja documentado em brain regras/projetos/harness/anchor-b-picco-continuation."
+    },
+    "audit_warn_per_process_on_real_config": {
+      "severity": "esperado (ruido aceito)",
+      "what": "O harness.config.json real tem gates.e2eGreenfield='warn' sem gate correspondente => 1 WARN por processo ('chave inerte'). E MODO-03 funcionando, nao erro; a decisao de remover a chave ou registrar o gate fica para MODO-06/07.",
+      "evidence": "audit.warned = 1 no probe, com a mensagem exata."
+    },
+    "qa_absolute_path_false_deny": {
+      "severity": "atencao (TD-14, pre-existente)",
+      "what": "Esta sessao levou um deny qa-scope-violation ao gravar o REPORT por path ABSOLUTO: normalizePath remove o '/' inicial e o path deixa de casar 'harness/'. O MESMO write com path relativo passou. E o TD-14 ja registrado (falso-DENY de path absoluto), nao um defeito do ADR-001.",
+      "evidence": "write(/home/joao/.../harness/garantias-runtime-adr-001.json) => qa-scope-violation; write(harness/garantias-runtime-adr-001.json) => OK."
+    }
+  },
+  "brainStore": [
+    "sessoes/projetos/harness/2026-10-22-qa-garantias-runtime-adr-001",
+    "estudos/projetos/harness/ciclo-prd-garantias-runtime-2026-10-22",
+    "estudos/projetos/harness/gap-analysis-runtime-vs-declarado",
+    "estudos/projetos/harness/prosa-stale-ciclo-2026-10-22",
+    "estudos/projetos/harness/batch1-adr001-mutacao-como-criterio",
+    "estudos/projetos/harness/batch2-adr001-log-que-mente",
+    "estudos/projetos/harness/batch3-adr001-prova-de-remocao",
+    "estudos/projetos/harness/batch4-adr001-citacao-deslocada"
+  ],
+  "brainNote": "O primeiro path foi GRAVADO por esta sessao com brain_store (layer sessoes, project harness; resposta {ok:true, chunks:4}). Os demais foram LIDOS no brain (brain_search/brain_read/brain_recent) — nao inventados. Nenhuma nota de licao em estudos/ ou regras/ foi criada: a consolidacao do ciclo pertence ao orquestrador.",
+  "cleanup": {
+    "ports": [],
+    "processes": [],
+    "note": "Nenhum servidor subido: infra.composeFile/ports = null em harness.config.json e stack = N/A. Zero `pkill -f` (workflow-rules.md §5 H5.1/H5.2). Processos verificados: nenhum node --test/opencode residual desta sessao (spawnSync/execFileSync retornam sincronamente). Artefatos temporarios em /tmp/opencode/qa-adr001/ (logs + probe), fora do worktree.",
+    "verifiedPortsFree": "backend/frontend = null => nada a liberar"
+  },
+  "selfReported": true,
+  "selfReportedNote": "true por honestidade: os numeros foram medidos pelo proprio executor (spawnSync). A observacao independente e a contraprova do gate, que re-executa o comando selado - resultado em verification.",
+  "gitDiffStat": {
+    "commits": 6,
+    "branchVsMain": "6 commits em main..HEAD (9efd07b, 3b54e86, 308403c, 530be78, eb62598, a19acab)",
+    "files": [
+      ".agents/agents/orchestrator/AGENT.md (4)",
+      ".agents/rules/gate-contract.md (16)",
+      ".agents/rules/harness-config.md (10)",
+      ".opencode/plugins/__tests__/gate.spec.mjs (503)",
+      ".opencode/plugins/__tests__/matrix-v1v2-parity.spec.mjs (47)",
+      ".opencode/plugins/gate.js (251)",
+      ".opencode/plugins/lib/config.mjs (6)",
+      ".spec/backend/garantias-runtime-adr-001/{PROPOSAL,SPEC,PLAN,TASKS}.md (565)",
+      ".spec/prd/prd-garantias-runtime/ADR-INDEX.md (2)",
+      "README.md (2)",
+      "docs/FUNCIONAMENTO.md (358)",
+      "installer/install.mjs (2)",
+      "workflow-state.json (115)"
+    ],
+    "scopeVerdict": "16 arquivos, todos justificados: 8 da matriz da SPEC §5 (gate.js, gate.spec, matrix-v1v2-parity, gate-contract, harness-config, README, FUNCIONAMENTO, install.mjs) + 2 do gap de escopo MODO-10 (orchestrator/AGENT.md, lib/config.mjs) + 4 artefatos SDD + ADR-INDEX + workflow-state.json. Nenhum arquivo inesperado; nenhum vazamento de escopo detectado."
+  },
+  "residual_risks": [
+    "a6: counts declarados nunca comparados no caminho real (allow via counts-unverifiable) - ADR-003",
+    "c1: sem HARNESS_SEAL_JSON publicado no host, Completed nega empty-seal",
+    "stdoutHash sem consumidor e instavel entre runs",
+    "modeForGate sem uso em producao + comentario gate.js:36 impreciso",
+    "workflow-state.harness_status nao-strict bloqueia o proximo task (ancora B)",
+    "1 WARN de auditoria por processo no repo real (gates.e2eGreenfield inerte)",
+    "TD-14: path absoluto no write do qa-engineer => falso deny qa-scope-violation"
+  ],
+  "notes": [
+    "Verificacao INDEPENDENTE: o comando foi resolvido do config em runtime e re-executado nesta sessao (exit 0, 6055 ms). Nao houve copia dos numeros do orquestrador; o stdoutHash e diferente do dele (68c5b2a... vs 92a2afa...) justamente porque execucoes verdes nao produzem stdout byte-identico (duration_ms no relatorio do node --test).",
+    "Nenhum codigo foi corrigido: os achados acima sao declarados, com arquivo:linha, para o orquestrador decidir.",
+    "Fora do escopo de escrita deste papel: o REPORT e o unico arquivo gravado (harness/); .spec/backend/garantias-runtime-adr-001/ foi apenas lido."
+  ]
+}

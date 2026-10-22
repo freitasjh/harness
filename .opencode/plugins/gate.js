@@ -33,10 +33,10 @@
 //   denies the tool call. Pre-flip history ("warn": log + allow) is kept in
 //   git history. ADR-001: the effective mode lives in the host-process env —
 //   HARNESS_GATE_<GATE>=[enforce|warn] plus HARNESS_GATE_<GATE>_REASON —
-//   resolved by the pure resolveGateMode (MODO-01) through modeForGate
-//   (MODO-02). DEFAULT_MODE is the fallback for gates without a gateName
-//   (hygiene) and for every env that is absent/out of domain (fail-closed).
-//   harness.config.json gates.* never decides a mode (RF-01).
+//   resolved+announced by announceGateMode (MODO-04, gate.js:278) over the pure
+//   resolveGateMode (MODO-01, gate.js:98); modeForGate (gate.js:126) is the frozen
+//   reference (SPEC 3.3). DEFAULT_MODE is the fallback for gates without gateName
+//   (hygiene) and envs absent/out of domain (fail-closed); config gates.* decides no mode (RF-01).
 //   Flip record (DOG-01): gate.spec.mjs green in BOTH modes (helpers
 //   deniesBothModes/allowsBothModes) + dogfood.spec.mjs S1-S4 + runbook
 //   .spec/governance/harness-v7/FLIP-RUNBOOK.md. Rollback: HARNESS_GATES=off
