@@ -462,7 +462,7 @@ Para correções de bug, NÃO execute SDD completo. Siga este workflow comprimid
 
 ## Harness de Testes & Validação (NON-NEGOTIABLE — H1-H7)
 
-> 🚨 **REGRA MÁXIMA.** Fonte da verdade: `workflow-rules.md §5`. Plugin `harness-validator.js` injeta esta regra em todos os agentes via system prompt. Em conflito, o §5 prevalece.
+> 🚨 **REGRA MÁXIMA.** Fonte da verdade: `workflow-rules.md §5`. A regra H1-H7 é carregada pelo array global `instructions` (`opencode.json:6-8` → `.agents/rules/*.md`) e o texto de cada agente vem de `agent.<nome>.prompt` (`opencode.json:12-94`) — alcance por config, não medido no binário; esta citação é a do orquestrador. O **enforcement** (negação) vive em `.opencode/plugins/gate.js` (GATE-01..GATE-05) — `harness-validator.js` é no-op desde FIX-01 e não injeta nada. Em conflito, o §5 prevalece.
 
 ### Pre-Delegation Gate (ORQUESTRADOR executa ANTES de delegar)
 
@@ -625,8 +625,8 @@ Antes de marcar qualquer tarefa como concluída, verifique:
   (SPEC ADR-008; RUNTIME-CONTRACT H5/H6, §6).
 - **Review** delegado a `code-reviewer`; o veredito alimenta
   `code_review_status` — o bloqueio é a âncora B do gate (SPEC §5.3).
-- **Kill-switch** = env `HARNESS_GATES=off` no host; `gates.*` do config é
-  informativo (SPEC ADR-009).
+- **Kill-switch** = env `HARNESS_GATES=off` no host; `gates.*` do config não desliga
+  a suíte (SPEC ADR-009), mas rebaixa um gate isolado para `warn` (`resolveMode`, `gate.js:76-80`).
 
 ## Documentos de Referência
 

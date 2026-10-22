@@ -141,7 +141,7 @@ describe("gate.js core — GATE-01 (ADR-001/006/009)", () => {
     assert.equal(isKillSwitchOff({ [KILL_SWITCH_ENV]: "off" }), true);
   });
 
-  it("resolveMode: default warn; config gates.* off/unknown never disables (ADR-009)", () => {
+  it("resolveMode: default warn; config gates.* off/unknown downgrades to warn, never off (ADR-009)", () => {
     assert.equal(resolveMode(undefined, "picco"), "warn");
     assert.equal(resolveMode({}, "picco"), "warn");
     assert.equal(resolveMode({ gates: { picco: "off" } }, "picco"), "warn");

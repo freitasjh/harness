@@ -41,7 +41,7 @@ describe("static-checks.mjs loader — CFG-01 (RF-01/RF-02, ADR-009)", () => {
     assert.throws(() => resolveCommand(config, "nope"), /fail-closed/i);
   });
 
-  it("gates.* off in config does NOT disable enforcement (ADR-009)", () => {
+  it("gates.* off in config does NOT disable the suite (ADR-009)", () => {
     const off = { picco: "off", evidence: "off", hitlBatch: "off", e2eGreenfield: "off" };
     assert.equal(configGatesDisableEnforcement(off), false);
     const config = loadHarnessConfig(DEFAULT_CONFIG_PATH);

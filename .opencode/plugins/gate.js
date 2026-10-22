@@ -41,8 +41,8 @@
 //
 // Kill-switch (ADR-009):
 //   ONLY the host-process env HARNESS_GATES=off disables enforcement.
-//   gates.* in harness.config.json is informative/audited and NEVER disables
-//   anything — see resolveMode + configGatesDisableEnforcement.
+//   gates.* in harness.config.json never disables the SUITE, but it DOWNGRADES
+//   a gate to "warn" (log+allow, no deny) — see resolveMode + configGatesDisableEnforcement.
 import { readFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { join } from "node:path";
@@ -71,8 +71,8 @@ export function isKillSwitchOff(env = process.env) {
   return env?.[KILL_SWITCH_ENV] === KILL_SWITCH_OFF;
 }
 
-// ADR-009: gates.* never disables. "enforce" is honored; anything else
-// (including "off" or unknown values) falls back to "warn".
+// ADR-009: gates.* never disables the SUITE (only the host env HARNESS_GATES=off);
+// per gate it DOES downgrade: only "enforce" is honored, any other value ⇒ "warn" (log+allow).
 export function resolveMode(config, _gateName) {
   const raw = config?.gates?.[_gateName];
   if (raw === "enforce") return "enforce";
@@ -238,13 +238,13 @@ export function ensureConfig(ctx = {}) {
 // ---------------------------------------------------------------------------
 // Session→agent map (I11). The deny primitive carries no agent identity —
 // only {tool, sessionID, callID} plus args — so per-agent rules resolve the
-// subject through this map, fed by the chat.params hook (contract §2).
+// subject through this map, fed by the execute.before payload (v2: gate.js:1181).
 // Without an entry, no per-agent rule applies (SPEC G8): allow.
 // ---------------------------------------------------------------------------
 
 const sessionAgentMap = new Map();
 
-// Bound on session entries: the map is fed by chat.params (one entry per
+// Bound on session entries: the map is fed by the execute.before payload (one entry per
 // sessionID). Unbounded growth across long-lived hosts is a memory leak;
 // evict the oldest insertion when over cap (Map preserves insertion order).
 // Cap is generous on purpose: eviction only drops the agent hint, which
@@ -888,7 +888,7 @@ export function readEvidenceReport(ctx = {}) {
 // The mandatory correction loop (developer-engineer -> code-reviewer (renamed RENAME, Batch 7)
 // as the first two calls) therefore always passes — the exemption is
 // structural (2 < 3), not a special case. Human turns arrive via the
-// chat.message hook, which resets the per-session counter.
+// event stream (v2 turn-boundary events), which resets the per-session counter.
 // ---------------------------------------------------------------------------
 
 export function createHitlTracker() {

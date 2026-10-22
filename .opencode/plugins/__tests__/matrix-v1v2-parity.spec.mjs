@@ -194,7 +194,7 @@ describe("PL-07 V2-VAL-10 — matrix deny/allow through the v2 entry (setup → 
     assert.equal(row.via, "kill-switch");
   });
 
-  it("GATES-OFF (GATE-01/ADR-009): gates.*=off never disables — hygiene still denies", async () => {
+  it("GATES-OFF (GATE-01/ADR-009): gates.*=off downgrades to warn, never off — hygiene still denies", async () => {
     // gateShellHygiene carries no gates.* key by design, so modeForGate falls
     // back to DEFAULT_MODE (enforce) even when every gates.* is off.
     const row = await runV2({

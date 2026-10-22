@@ -17,8 +17,8 @@ plugins never hardcode its values (SPEC ADR-003). Enforcement lives in
 | `infra` | nulls — no compose file, no local servers in this repo (E2E targets consumers via MCP) |
 | `mcp.required` | `["chrome-devtools"]` (SPEC §5.1; RF-06) |
 | `protectedPaths` | canonical list, identical to SPEC ADR-007 |
-| `gates.*` | informative/audited only — see below |
-| `riskPaths` / `escalateOnRisk` | identical to SPEC §5.1; a change touching a risk path escalates `e2eGreenfield` to `enforce` and requires E2E evidence of the affected flow |
+| `gates.*` | never disables the suite; downgrades one gate to `warn` — see below |
+| `riskPaths` / `escalateOnRisk` | identical to SPEC §5.1; declared as escalating `e2eGreenfield` to `enforce` and requiring E2E evidence of the affected flow — declarative: no runtime consumer in `gate.js` (see `docs/FUNCIONAMENTO.md` §10a2) |
 | `contraproveTimeoutMs` | identical to SPEC §5.1; re-execution past this timeout is a `contraprove-timeout` deny (ADR-002) |
 | `evidence` | `harness/` + report schema path |
 
@@ -35,9 +35,9 @@ never from prose. Covered by `config-loader.spec.mjs`.
 
 ## Kill-switch (ADR-009)
 
-`gates.*` does NOT switch anything off. The only kill-switch is the
-host-process env `HARNESS_GATES=off`. Covered by test
-(`configGatesDisableEnforcement` always false).
+`gates.*` never switches the whole suite off — the only kill-switch is the
+host-process env `HARNESS_GATES=off` (`configGatesDisableEnforcement` always
+false); but it does downgrade one gate: any value ≠ `"enforce"` ⇒ `"warn"` (log+allow).
 
 ## Command seal (ADR-002, U6=b)
 

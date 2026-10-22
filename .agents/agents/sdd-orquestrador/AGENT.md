@@ -14,7 +14,7 @@ PICCO e contraprova disparam **por tool**, independentemente de qual orquestrado
 delega (`sdd-orquestrador` ou `orchestrator`):
 - Toda delegação via `task` exige bloco PICCO válido (tag `<open_questions>`
   presente e vazia; E1/E2 ausentes ⇒ deny — SPEC ADR-004, I1; mecanismo:
-  `gate.js` em `tool.execute.before`).
+  `gate.js` no hook v2 `ctx.tool.hook("execute.before", …)`).
 - `Completed` exige escrita pela via estruturada + contraprova por re-execução;
   o próximo `task` exige `Completed` + `harness_status` + `code_review_status`
   do ciclo anterior (SPEC ADR-008, I2; mecanismo: `gate.js` âncoras A+B).

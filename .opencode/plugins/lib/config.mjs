@@ -32,9 +32,9 @@ export function resolveCommand(config, key) {
   return cmd;
 }
 
-// ADR-009: gates.* in the config is informative/audited, never authoritative.
-// Only the host env HARNESS_GATES=off disables enforcement. This function
-// exists so the rule is executable and tested, not prose.
+// ADR-009: gates.* in the config never disables the SUITE (only the host env
+// HARNESS_GATES=off does); per gate it downgrades — resolveMode honors only
+// "enforce"; other values fall back to "warn" (log+allow, no deny). Executable, not prose.
 export function configGatesDisableEnforcement(_gates) {
   return false;
 }
