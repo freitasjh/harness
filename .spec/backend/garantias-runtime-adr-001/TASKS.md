@@ -142,7 +142,7 @@ graph TD
 **BDD**
 - *Sucesso*: dado `HARNESS_GATES=off`, quando qualquer tool é chamada, então `verdict === "allow"` com `via:"kill-switch"`.
 - *Falha*: dado `HARNESS_GATES=off` **ausente** e `HARNESS_GATE_PICCO=warn`+motivo, quando `task` sem PICCO é chamada, então **deny**.
-- *Borda*: dado `HARNESS_GATES=off` e config ausente, quando `write` é chamada, então **allow** (o corte precede a carga do config).
+- *Borda*: dado `HARNESS_GATES=off` e config ausente, quando `write` é chamada, então **allow** — o corte precede a **resolução de modo**; a carga/auditoria do config vem antes do corte por ser fato de config, não resolução (SPEC §3.5; review do batch 3, A3).
 
 **DoD**: ordem fixa e verificada por teste; `via:"kill-switch"` inalterado; nenhum deny novo.
 
@@ -201,10 +201,11 @@ graph TD
 
 **Passos**
 1. §3 (funcionalidades): atualizar a linha #7 (kill-switch) para refletir o canal por gate no env.
-2. §4.7 (config fail-closed, kill-switch e selo): descrever a resolução por env, a auditoria do config e a ordem de avaliação.
-3. §10 `a7`: mudar de "achado" para "implementado em 2026-10-22 (ADR-001)" — mantendo o lastro e o nível.
-4. Preservar a contagem de linhas do arquivo (as ~120 citações `arquivo:linha` do doc dependem dela) — ajuste 1:1.
-5. Validar os 7 diagramas Mermaid (nenhum label com `<`/`>` novo).
+2. §4.2 (dispatcher): remover a citação a `resolveMode` (removido em MODO-06) e descrever a ordem carga+auditoria → corte de suíte → resolução de modo.
+3. §4.7 (config fail-closed, kill-switch e selo): descrever a resolução por env, a auditoria do config e a ordem de avaliação.
+4. §10 `a7`: mudar de "achado" para "implementado em 2026-10-22 (ADR-001)" — mantendo o lastro e o nível.
+5. Preservar a contagem de linhas do arquivo (as ~120 citações `arquivo:linha` do doc dependem dela) — ajuste 1:1.
+6. Validar os 7 diagramas Mermaid (nenhum label com `<`/`>` novo).
 
 **BDD**
 - *Sucesso*: dado §10 `a7`, quando lida, então diz "implementado" e aponta o ADR-001.

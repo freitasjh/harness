@@ -9,7 +9,6 @@ import {
   DEFAULT_MODE,
   KILL_SWITCH_ENV,
   isKillSwitchOff,
-  resolveMode,
   resolveGateMode,
   verifySealOrDeny,
   decide,
@@ -47,9 +46,14 @@ import {
   bashProtectedWrites,
   gateShellHygiene,
   modeForGate,
+  announceGateMode,
   isCacheableTreeHash,
   resetGateObservability,
 } from "../gate.js";
+// MODO-06/A1: namespace import so the removal proof catches EVERY export form
+// — `export function`, `export const x = () => …`, an alias or a re-export. A
+// textual grep only caught the first form (and false-positived on comments).
+import * as gateNamespace from "../gate.js";
 import { sealCommands } from "../lib/seal.mjs";
 
 const PLUGIN_DIR = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -143,12 +147,34 @@ describe("gate.js core — GATE-01 (ADR-001/006/009)", () => {
     assert.equal(isKillSwitchOff({ [KILL_SWITCH_ENV]: "off" }), true);
   });
 
-  it("resolveMode: default warn; config gates.* off/unknown downgrades to warn, never off (ADR-009)", () => {
-    assert.equal(resolveMode(undefined, "picco"), "warn");
-    assert.equal(resolveMode({}, "picco"), "warn");
-    assert.equal(resolveMode({ gates: { picco: "off" } }, "picco"), "warn");
-    assert.equal(resolveMode({ gates: { picco: "banana" } }, "picco"), "warn");
-    assert.equal(resolveMode({ gates: { picco: "enforce" } }, "picco"), "enforce");
+  it("config gates.* never decides a mode: only the host env does (ADR-001/RF-01)", () => {
+    // MODO-06: this replaces the legacy `resolveMode(config, gate)` contract
+    // test — SAME inputs, new contract. A config object is not an env, so every
+    // one of these resolves to the fail-closed default (enforce): a "warn" or
+    // "off" sitting in gates.* changes nothing (it is merely audited, MODO-03).
+    for (const config of [
+      undefined,
+      {},
+      { gates: { picco: "off" } },
+      { gates: { picco: "banana" } },
+      { gates: { picco: "enforce" } },
+    ]) {
+      assert.equal(
+        resolveGateMode("picco", config).mode,
+        "enforce",
+        `config ${JSON.stringify(config)} must not decide a mode`,
+      );
+      assert.equal(modeForGate(gatePiccoTask, config), "enforce");
+    }
+    // ADR-001 item 4: the legacy resolver is gone as an EXPORT, whatever the
+    // form. The namespace probe catches `export function`, `export const x =
+    // () => …`, an alias and a re-export — the textual check it replaced only
+    // caught the first form, so an arrow-function reintroduction survived it.
+    const legacyResolver = ["resolve", "Mode"].join("");
+    assert.ok(
+      !(legacyResolver in gateNamespace),
+      "the legacy config→mode resolver must stay removed (any export form)",
+    );
   });
 
   it("DenyError is an Error with name + reason + details", () => {
@@ -1080,6 +1106,33 @@ describe("FU-06/ADR-001 per-gate modes: modeForGate resolves from the host env",
       "audit",
     );
 
+    // ADR-001 (MODO-06, anti-drift): production resolves through
+    // announceGateMode (the dispatcher) while this spec pins modeForGate (the
+    // frozen pure reference, SPEC 3.3). The two must return the SAME mode for
+    // the same input — otherwise the pinned contract drifts from the running
+    // one without any test noticing. The six rows cover the whole domain of
+    // resolveGateMode plus the gate without a gateName.
+    resetGateObservability();
+    const driftLogger = makeLogger();
+    const antiDrift = [
+      [gatePiccoTask, {}],
+      [gatePiccoTask, { HARNESS_GATE_PICCO: "enforce" }],
+      [gatePiccoTask, { HARNESS_GATE_PICCO: "warn", HARNESS_GATE_PICCO_REASON: "debug" }],
+      [gatePiccoTask, { HARNESS_GATE_PICCO: "warn" }],
+      [gatePiccoTask, { HARNESS_GATE_PICCO: "banana" }],
+      [
+        gateShellHygiene,
+        { HARNESS_GATE_GATESHELLHYGIENE: "warn", HARNESS_GATE_GATESHELLHYGIENE_REASON: "debug" },
+      ],
+    ];
+    for (const [gateFn, driftEnv] of antiDrift) {
+      assert.equal(
+        announceGateMode(gateFn, driftEnv, driftLogger),
+        modeForGate(gateFn, driftEnv),
+        `mode drift for ${gateFn?.gateName ?? "no-gateName"} × ${JSON.stringify(driftEnv)}`,
+      );
+    }
+
     // ADR-001 (MODO-04, RF-05/INV-3): the resolver stays pure; the CALLER
     // announces. A downgrade in force is never silent, and it is announced
     // once per (gate, motive) per process — the hot path resolves the same
@@ -1167,6 +1220,68 @@ describe("FU-06/ADR-001 per-gate modes: modeForGate resolves from the host env",
     for (const entry of [...downgradeLog.entries, ...refusedLog.entries, ...invalidLog.entries]) {
       assert.ok(!entry.message.includes("/"), `log line must not carry a path: ${entry.message}`);
     }
+
+    // ADR-001 (MODO-05, SPEC 3.5/INV-4): the suite kill-switch cuts BEFORE any
+    // mode resolution. With HARNESS_GATES=off + a downgrading env the verdict
+    // is the same shape decide() produced for the kill-switch and NO line is
+    // emitted at all — not a downgrade, not a refusal. Without the cut the same
+    // env IS resolved and announced, so the pair isolates the order.
+    resetGateObservability();
+    const orderEnv = { HARNESS_GATE_PICCO: "warn", HARNESS_GATE_PICCO_REASON: "debug" };
+    const orderState = {
+      current_phase: "Completed",
+      harness_status: "passed",
+      code_review_status: "passed",
+    };
+    const orderRun = (env, logger) => {
+      const sessionID = `modo05-${Math.random()}`;
+      resetHitlTracker(sessionID);
+      return runGatesShim(
+        {
+          tool: "task",
+          sessionID,
+          config: TEST_CONFIG,
+          workflowState: orderState,
+          env,
+          logger,
+        },
+        { args: { prompt: "delegacao sem bloco picco" } },
+      );
+    };
+    const ANNOUNCEMENT = /rebaixado para|recusado/;
+    const offLog = makeLogger();
+    const offVerdict = await orderRun({ ...orderEnv, [KILL_SWITCH_ENV]: "off" }, offLog);
+    assert.deepEqual(offVerdict, { verdict: "allow", via: "kill-switch" });
+    assert.equal(
+      offLog.entries.filter((e) => ANNOUNCEMENT.test(e.message)).length,
+      0,
+      "kill-switch cuts before the mode resolution: zero downgrade/refusal announcements",
+    );
+    // Without the kill-switch the same env IS resolved: the PICCO deny becomes
+    // an announced downgrade (allow via "warn"), one WARN — a downgraded gate
+    // cannot deny, so this row cannot be "deny + downgrade WARN" at once. What
+    // the pair proves is the order: the cut path announces nothing, the armed
+    // path resolves and announces exactly once.
+    const armedLog = makeLogger();
+    const armedVerdict = await orderRun(orderEnv, armedLog);
+    assert.deepEqual(armedVerdict, { verdict: "allow", via: "warn", reason: "picco-tag-absent" });
+    const armedAnnouncements = armedLog.entries.filter((e) => ANNOUNCEMENT.test(e.message));
+    assert.equal(armedAnnouncements.length, 1, "the armed path announces exactly one downgrade");
+    assert.match(armedAnnouncements[0].message, /rebaixado para "warn"/);
+    // A2: the other line is NOT an anonymous count — it is decide()'s warn-mode
+    // allow, and it must name the reason it swallowed. Losing that log now
+    // fails here by name instead of shifting a magic number.
+    const warnAllowLines = armedLog.entries.filter((e) => e.message.includes("picco-tag-absent"));
+    assert.equal(warnAllowLines.length, 1, "decide()'s warn-mode allow names the swallowed reason");
+    assert.equal(warnAllowLines[0].level, "warn");
+    // And the cut changes the OUTCOME, not only the log: with the gate armed
+    // (empty env ⇒ enforce) the very same task denies.
+    const armLog = makeLogger();
+    await assert.rejects(
+      () => orderRun({}, armLog),
+      (err) => err instanceof DenyError && err.reason === "picco-tag-absent",
+      "empty env keeps PICCO armed",
+    );
   });
 
   it("unknown gate or missing key falls back to DEFAULT_MODE (never off); MODO-03 audits every gates.* key with no effect", async () => {
@@ -1275,6 +1390,22 @@ describe("FU-06/ADR-001 per-gate modes: modeForGate resolves from the host env",
     for (const entry of [...auditLog.entries, ...unknownLog.entries, ...inertLog.entries, ...bothLog.entries]) {
       assert.ok(!entry.message.includes("/"), `audit line must not carry a path: ${entry.message}`);
     }
+
+    // ADR-001 (MODO-05, SPEC 3.5): the audit is a config FACT, not a mode
+    // resolution, so it runs BEFORE the kill-switch early-return — an inert
+    // gates.* key keeps being reported even when the suite is off.
+    resetGateObservability();
+    const killAuditLog = makeLogger();
+    const killAuditVerdict = await runGatesShim({
+      tool: "bash",
+      args: { command: "ls" },
+      config: { ...TEST_CONFIG, gates: { desligadoNoKillSwitch: "warn" } },
+      env: { [KILL_SWITCH_ENV]: "off" },
+      logger: killAuditLog,
+    });
+    assert.deepEqual(killAuditVerdict, { verdict: "allow", via: "kill-switch" });
+    assert.equal(killAuditLog.entries.length, 1, "the config audit survives the kill-switch");
+    assert.match(killAuditLog.entries[0].message, /gates\.desligadoNoKillSwitch="warn"/);
   });
 
   it("mixed env: picco enforce denies while hitlBatch warn allows (no partial flip)", async () => {

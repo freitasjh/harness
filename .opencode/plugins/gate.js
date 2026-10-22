@@ -78,16 +78,9 @@ export function isKillSwitchOff(env = process.env) {
   return env?.[KILL_SWITCH_ENV] === KILL_SWITCH_OFF;
 }
 
-// ADR-009 legacy resolver — no production caller since MODO-02 (modeForGate
-// reads the env now); it stays only because the legacy contract test pins it,
-// and MODO-06 removes both. Its body still maps config gates.* to "warn"
-// (only "enforce" is honored), but that path is dead in the running system:
-// the config never decides a mode (ADR-001).
-export function resolveMode(config, _gateName) {
-  const raw = config?.gates?.[_gateName];
-  if (raw === "enforce") return "enforce";
-  return "warn";
-}
+// ADR-001 item 4 (MODO-06): the legacy config→mode resolver is gone. The
+// config never decides a mode (RF-01); the effective mode comes from the
+// host-process env through resolveGateMode/modeForGate below.
 
 // ---------------------------------------------------------------------------
 // ADR-001 (MODO-01): the effective mode of a gate lives in the host-process
@@ -1363,6 +1356,14 @@ export async function runGatesShim(v2Payload = {}, v2Output) {
   // is audited before any gate reads it. Deduped per (key, value), so the
   // ensureConfig audit inside a gate adds nothing for the same config.
   auditConfigGates(config, logger);
+  // ADR-001 (MODO-05, SPEC 3.5/INV-4): order is config load + audit → suite
+  // kill-switch → per-gate mode resolution. The audit above is a config FACT,
+  // not a mode resolution, so it stays before this cut. With HARNESS_GATES=off
+  // nothing below runs: no resolveGateMode, no announceGateMode (zero
+  // downgrade/refusal WARN) and no gate execution. Same verdict shape decide()
+  // returns for the kill-switch, which stays there as the second line of
+  // defence.
+  if (isKillSwitchOff(base.env)) return { verdict: "allow", via: "kill-switch" };
   const ctx = {
     ...base,
     config: config ?? undefined,
