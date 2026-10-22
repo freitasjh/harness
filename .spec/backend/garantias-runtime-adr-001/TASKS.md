@@ -16,6 +16,7 @@
 | Phase 4 | `MODO-07` | Prosa de contrato (gate-contract, harness-config, README) | P1 | Low | doc | `MODO-06` |
 | Phase 4 | `MODO-08` | `docs/FUNCIONAMENTO.md`: §3, §4.7, §10 `a7` | P1 | Low | doc | `MODO-07` |
 | Phase 4 | `MODO-09` | Instalador declara a semântica de `gates.*` (formato inalterado) | P2 | Low | doc+test | `MODO-02` |
+| Phase 4 | `MODO-10` | Prosa residual falsificada pelo ciclo (`config.mjs`, `orchestrator/AGENT.md`) | P1 | Low | doc | `MODO-06` |
 
 ## Grafo de dependências
 
@@ -32,6 +33,7 @@ graph TD
     MODO-05 --> MODO-06
     MODO-06 --> MODO-07
     MODO-07 --> MODO-08
+    MODO-06 --> MODO-10
 ```
 
 ---
@@ -231,3 +233,26 @@ graph TD
 - *Borda*: o instalador pode omitir `gates.*` por completo — mas isso quebraria o golden e o config do destino; **não** é o caminho escolhido.
 
 **DoD**: formato do config inalterado; 516 testes verdes; semântica declarada no instalador.
+
+---
+
+### MODO-10 — Prosa residual falsificada pelo ciclo
+
+**Prioridade** P1 · **Risco** Low · **Tipo** doc · **Depende de** `MODO-06` · **Fecha** RF-04 (lacuna de escopo detectada no code review do batch 1)
+
+**Arquivos**: `.opencode/plugins/lib/config.mjs` (comentário `:35-37`), `.agents/agents/orchestrator/AGENT.md` (bullet `:629`)
+
+**Por que existe**: o batch 1 (MODO-01/MODO-02) tornou `gates.*` inócuo, mas duas afirmações de prosa ainda dizem o contrário e **nenhuma task de MODO-07/MODO-08 as cobre** — MODO-07 lista só `gate-contract.md`/`harness-config.md`/`README.md`, MODO-08 só `docs/FUNCIONAMENTO.md`. Sem esta task, o ciclo fecharia com prosa falsa no próprio repo.
+
+**Passos**
+1. `.opencode/plugins/lib/config.mjs:35-37`: o comentário diz "per gate it downgrades — resolveMode honors only 'enforce'". Reescrever para a verdade do ADR-001: `gates.*` nunca decide modo; o rebaixamento vive no env do processo host (`HARNESS_GATE_<GATE>` + `_REASON`).
+2. `.agents/agents/orchestrator/AGENT.md:629`: o bullet diz "`gates.*` do config não desliga a suíte, mas rebaixa um gate isolado para `warn`". Reescrever: não desliga a suíte **nem** rebaixa gate; o rebaixamento vive no env do processo host e exige motivo.
+3. Preservar a contagem de linhas dos 2 arquivos (ajuste 1:1) — as citações `arquivo:linha` do `docs/FUNCIONAMENTO.md` e do `gate-contract.md` dependem delas.
+4. Rodar `node scripts/static-checks.mjs` e `node scripts/sdd-checks.mjs` ⇒ verdes.
+
+**BDD**
+- *Sucesso*: dado `config.mjs:35-37`, quando lido, então afirma que `gates.*` não decide modo e que o canal é o env.
+- *Falha*: se a prosa disser que o config rebaixa o gate, quando lida contra `modeForGate` (que só lê `gateFn.gateName`), então contradiz.
+- *Borda*: a prosa pode registrar o histórico ("o config decidia modo antes do ADR-001") desde que o presente seja o correto.
+
+**DoD**: 2 trechos reescritos; `wc -l` inalterado nos 2 arquivos; checks verdes.

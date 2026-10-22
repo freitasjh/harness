@@ -10,6 +10,7 @@ import {
   KILL_SWITCH_ENV,
   isKillSwitchOff,
   resolveMode,
+  resolveGateMode,
   verifySealOrDeny,
   decide,
   runGatesShim,
@@ -1004,24 +1005,120 @@ describe("C-1 (D-15) counts: unobservable => allow (declared note); observable d
 // every deny pins enforce-rejects + warn-allows.
 // ---------------------------------------------------------------------------
 
-describe("FU-06 per-gate modes: resolveMode(config, gateName) routes each gate", () => {
-  it("picco routes via gates.picco; hitl via gates.hitlBatch", async () => {
-    assert.equal(modeForGate(gatePiccoTask, { gates: { picco: "enforce" } }), "enforce");
-    assert.equal(modeForGate(gatePiccoTask, { gates: { picco: "warn" } }), "warn");
-    assert.equal(modeForGate(gateHitlBatch, { gates: { hitlBatch: "warn" } }), "warn");
-    assert.equal(modeForGate(gateHitlBatch, { gates: { hitlBatch: "enforce" } }), "enforce");
+describe("FU-06/ADR-001 per-gate modes: modeForGate resolves from the host env", () => {
+  it("picco/hitl route via env; resolveGateMode covers the five SPEC 3.2 rules", async () => {
+    assert.equal(modeForGate(gatePiccoTask, { HARNESS_GATE_PICCO: "enforce" }), "enforce");
+    assert.equal(
+      modeForGate(gatePiccoTask, { HARNESS_GATE_PICCO: "warn", HARNESS_GATE_PICCO_REASON: "debug" }),
+      "warn",
+    );
+    assert.equal(
+      modeForGate(gateHitlBatch, { HARNESS_GATE_HITLBATCH: "warn", HARNESS_GATE_HITLBATCH_REASON: "debug" }),
+      "warn",
+    );
+    assert.equal(modeForGate(gateHitlBatch, { HARNESS_GATE_HITLBATCH: "enforce" }), "enforce");
+
+    // ADR-001 (MODO-01): resolveGateMode(gateName, env) — the five SPEC 3.2
+    // rules. Folded into this existing test on purpose: the suite count stays
+    // 379 (SPEC §6). The pure resolver returns the full 4-field shape.
+    const absent = resolveGateMode("picco", {});
+    assert.deepEqual(absent, { mode: "enforce", source: "default", envVar: null, reason: null });
+    assert.deepEqual(resolveGateMode("picco", undefined), absent);
+
+    assert.deepEqual(resolveGateMode("picco", { HARNESS_GATE_PICCO: "enforce" }), {
+      mode: "enforce",
+      source: "env",
+      envVar: "HARNESS_GATE_PICCO",
+      reason: null,
+    });
+
+    assert.deepEqual(
+      resolveGateMode("picco", { HARNESS_GATE_PICCO: "warn", HARNESS_GATE_PICCO_REASON: "debug" }),
+      { mode: "warn", source: "env", envVar: "HARNESS_GATE_PICCO", reason: "debug" },
+    );
+
+    assert.deepEqual(resolveGateMode("picco", { HARNESS_GATE_PICCO: "warn" }), {
+      mode: "enforce",
+      source: "default",
+      envVar: "HARNESS_GATE_PICCO",
+      reason: null,
+    });
+    assert.equal(
+      resolveGateMode("picco", { HARNESS_GATE_PICCO: "warn", HARNESS_GATE_PICCO_REASON: "  " }).mode,
+      "enforce",
+      "a blank reason is not a motive",
+    );
+    assert.equal(
+      resolveGateMode("picco", { HARNESS_GATE_PICCO: "warn", HARNESS_GATE_PICCO_REASON: "" }).mode,
+      "enforce",
+      "an empty reason is not a motive",
+    );
+
+    for (const raw of ["ENFORCE", "off", "banana", "", 42]) {
+      assert.deepEqual(
+        resolveGateMode("picco", { HARNESS_GATE_PICCO: raw }),
+        { mode: "enforce", source: "default", envVar: "HARNESS_GATE_PICCO", reason: null },
+        `strict domain: ${JSON.stringify(raw)} must resolve to enforce/default`,
+      );
+    }
+
+    // SPEC 3.2 row "ausente": only `undefined` means absent (envVar:null). A
+    // present `null` is out of domain and keeps the key that was refused.
+    assert.deepEqual(resolveGateMode("picco", { HARNESS_GATE_PICCO: null }), {
+      mode: "enforce",
+      source: "default",
+      envVar: "HARNESS_GATE_PICCO",
+      reason: null,
+    });
+
+    // Env naming contract (SPEC 3.1): HARNESS_GATE_ + gateName.toUpperCase()
+    // and the _REASON variant.
+    assert.equal(resolveGateMode("evidence", { HARNESS_GATE_EVIDENCE: "enforce" }).envVar, "HARNESS_GATE_EVIDENCE");
+    assert.equal(
+      resolveGateMode("hitlBatch", { HARNESS_GATE_HITLBATCH: "warn", HARNESS_GATE_HITLBATCH_REASON: "audit" }).reason,
+      "audit",
+    );
   });
 
   it("unknown gate or missing key falls back to DEFAULT_MODE (never off)", async () => {
-    assert.equal(modeForGate(async () => {}, { gates: {} }), DEFAULT_MODE);
-    assert.equal(modeForGate(gatePiccoTask, { gates: { picco: "off" } }), "warn");
+    assert.equal(modeForGate(async () => {}, {}), DEFAULT_MODE);
+    assert.equal(modeForGate(gatePiccoTask, {}), DEFAULT_MODE, "empty env ⇒ enforce (INV-1)");
+    assert.equal(modeForGate(gatePiccoTask, { HARNESS_GATE_PICCO: "off" }), "enforce", "off never downgrades");
     assert.equal(modeForGate(gatePiccoTask, undefined), DEFAULT_MODE);
+    assert.equal(
+      modeForGate(gatePiccoTask, { HARNESS_GATE_PICCO: "warn" }),
+      "enforce",
+      "warn without a motive is refused",
+    );
+
+    // ADR-001 (MODO-02): a gate without its own gateName (hygiene) falls back
+    // to DEFAULT_MODE and ignores any env that tries to name it. The env keys
+    // use the function name (GATESHELLHYGIENE), which is exactly what the
+    // removed `gateFn?.gateName ?? gateFn?.name` fallback would have read: with
+    // that fallback back in place this assertion resolves "warn" and fails.
+    assert.equal(modeForGate(gateShellHygiene, {}), "enforce");
+    assert.equal(
+      modeForGate(gateShellHygiene, {
+        HARNESS_GATE_GATESHELLHYGIENE: "warn",
+        HARNESS_GATE_GATESHELLHYGIENE_REASON: "debug",
+      }),
+      "enforce",
+      "hygiene carries no gateName ⇒ DEFAULT_MODE (a name-based env never applies)",
+    );
+
+    // Both completion anchors share the "evidence" gate name (SPEC 3.1).
+    for (const gateFn of [gateCompletionAnchorA, gatePhaseAnchorB]) {
+      assert.equal(
+        modeForGate(gateFn, { HARNESS_GATE_EVIDENCE: "warn", HARNESS_GATE_EVIDENCE_REASON: "audit" }),
+        "warn",
+      );
+    }
   });
 
-  it("mixed config: picco enforce denies while hitlBatch warn allows (no partial flip)", async () => {
-    const config = { gates: { picco: "enforce", hitlBatch: "warn" } };
-    assert.equal(modeForGate(gatePiccoTask, config), "enforce");
-    assert.equal(modeForGate(gateHitlBatch, config), "warn");
+  it("mixed env: picco enforce denies while hitlBatch warn allows (no partial flip)", async () => {
+    const env = { HARNESS_GATE_PICCO: "enforce", HARNESS_GATE_HITLBATCH: "warn", HARNESS_GATE_HITLBATCH_REASON: "audit" };
+    assert.equal(modeForGate(gatePiccoTask, env), "enforce");
+    assert.equal(modeForGate(gateHitlBatch, env), "warn");
   });
 });
 
@@ -1074,16 +1171,44 @@ describe("FU-11 lazy state: corrupt workflow-state routes via decide (warn-allow
 
   it("v2 entry in warn allows on corrupt state (warn-allows preserved)", async () => {
     const statePath = corruptStatePath();
-    const warnConfig = { ...TEST_CONFIG, gates: { picco: "warn", evidence: "warn", hitlBatch: "warn" } };
+    // ADR-001: the downgrade channel is the host env, not gates.*. The config
+    // says "enforce" for every gate on purpose — if the code ever read config
+    // again, this fixture would deny and the test would go red. The warn comes
+    // exclusively from warnEnv.
+    const warnConfig = { ...TEST_CONFIG, gates: { picco: "enforce", evidence: "enforce", hitlBatch: "enforce" } };
+    const warnEnv = {
+      HARNESS_GATE_PICCO: "warn",
+      HARNESS_GATE_PICCO_REASON: "fu11",
+      HARNESS_GATE_EVIDENCE: "warn",
+      HARNESS_GATE_EVIDENCE_REASON: "fu11",
+    };
     // Valid PICCO so the run reaches anchor B; corrupt state must allow-via-warn, not throw raw.
     // Two-arg envelope shape (contract H6), routed through the same runGatesShim.
     const outcome = await runGatesShim(
-      { tool: "task", sessionID: `fu11-warn-${Date.now()}`, statePath, config: warnConfig },
+      { tool: "task", sessionID: `fu11-warn-${Date.now()}`, statePath, config: warnConfig, env: warnEnv },
       { args: { prompt: REAL_DELEGATION } },
     );
     assert.equal(outcome.verdict, "allow");
     assert.equal(outcome.via, "warn");
     assert.equal(outcome.reason, "state-corrupt");
+
+    // ADR-001/RF-01 end-to-end (the PRD case): config says picco "warn" and
+    // the env is empty — PICCO still denies. The config is not a downgrade
+    // channel any more.
+    await assert.rejects(
+      () =>
+        runGatesShim(
+          {
+            tool: "task",
+            sessionID: `fu11-config-warn-${Date.now()}`,
+            statePath,
+            config: { ...TEST_CONFIG, gates: { picco: "warn", evidence: "warn", hitlBatch: "warn" } },
+            env: {},
+          },
+          { args: { prompt: "delegacao sem bloco picco" } },
+        ),
+      (err) => err instanceof DenyError && err.reason === "picco-tag-absent",
+    );
   });
 
   it("v2 entry in enforce denies on corrupt state with state-corrupt", async () => {

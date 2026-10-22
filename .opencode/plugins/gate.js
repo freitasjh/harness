@@ -31,9 +31,12 @@
 //
 //   DEFAULT_MODE is "enforce" since DOG-01 (Batch 8/8, flip): a DenyError
 //   denies the tool call. Pre-flip history ("warn": log + allow) is kept in
-//   git history. Per-gate modes resolve via modeForGate(config, gateFn) from
-//   harness.config.json gates.* (FU-06); DEFAULT_MODE is the fallback for
-//   gates without a gates.* key (hygiene) and for missing/invalid config.
+//   git history. ADR-001: the effective mode lives in the host-process env —
+//   HARNESS_GATE_<GATE>=[enforce|warn] plus HARNESS_GATE_<GATE>_REASON —
+//   resolved by the pure resolveGateMode (MODO-01) through modeForGate
+//   (MODO-02). DEFAULT_MODE is the fallback for gates without a gateName
+//   (hygiene) and for every env that is absent/out of domain (fail-closed).
+//   harness.config.json gates.* never decides a mode (RF-01).
 //   Flip record (DOG-01): gate.spec.mjs green in BOTH modes (helpers
 //   deniesBothModes/allowsBothModes) + dogfood.spec.mjs S1-S4 + runbook
 //   .spec/governance/harness-v7/FLIP-RUNBOOK.md. Rollback: HARNESS_GATES=off
@@ -41,8 +44,11 @@
 //
 // Kill-switch (ADR-009):
 //   ONLY the host-process env HARNESS_GATES=off disables enforcement.
-//   gates.* in harness.config.json never disables the SUITE, but it DOWNGRADES
-//   a gate to "warn" (log+allow, no deny) — see resolveMode + configGatesDisableEnforcement.
+//   gates.* in harness.config.json neither disables the SUITE nor downgrades a
+//   gate (ADR-001) — the per-gate downgrade channel is the env above: a motive
+//   is required, and MODO-04 will log every downgrade and every refusal. No log
+//   exists yet (resolveGateMode is pure); until MODO-04 lands, a refusal is
+//   silent and is declared as such here.
 import { readFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { join } from "node:path";
@@ -71,8 +77,11 @@ export function isKillSwitchOff(env = process.env) {
   return env?.[KILL_SWITCH_ENV] === KILL_SWITCH_OFF;
 }
 
-// ADR-009: gates.* never disables the SUITE (only the host env HARNESS_GATES=off);
-// per gate it DOES downgrade: only "enforce" is honored, any other value ⇒ "warn" (log+allow).
+// ADR-009 legacy resolver — no production caller since MODO-02 (modeForGate
+// reads the env now); it stays only because the legacy contract test pins it,
+// and MODO-06 removes both. Its body still maps config gates.* to "warn"
+// (only "enforce" is honored), but that path is dead in the running system:
+// the config never decides a mode (ADR-001).
 export function resolveMode(config, _gateName) {
   const raw = config?.gates?.[_gateName];
   if (raw === "enforce") return "enforce";
@@ -80,27 +89,50 @@ export function resolveMode(config, _gateName) {
 }
 
 // ---------------------------------------------------------------------------
-// FU-06: per-gate modes. Each core gate carries a gateName; modeForGate
-// resolves it through resolveMode(config, key). Gates without a gates.* key
-// (hygiene: no such key in harness.config.json) fall back to DEFAULT_MODE.
-// Unknown gate functions fall back too — never "off" (ADR-009).
+// ADR-001 (MODO-01): the effective mode of a gate lives in the host-process
+// env, never in harness.config.json (RF-01). Pure: no I/O, no logging — the
+// caller will announce refusals/downgrades once MODO-04 lands; nothing logs
+// them today. Domain is strict {enforce, warn}; everything else is fail-closed
+// to enforce/default.
+//   HARNESS_GATE_<GATE>            = "enforce" | "warn"
+//   HARNESS_GATE_<GATE>_REASON     = non-empty motive for a downgrade
 // ---------------------------------------------------------------------------
 
-const GATE_NAME_TO_CONFIG_KEY = {
-  picco: "picco",
-  evidence: "evidence",
-  hitlBatch: "hitlBatch",
-};
+const GATE_MODE_ENV_PREFIX = "HARNESS_GATE_";
+const GATE_MODE_REASON_SUFFIX = "_REASON";
 
-export function modeForGate(gateFn, config) {
-  // No config (missing/unreadable): fail-closed needs the deny to stick, so
-  // fall back to DEFAULT_MODE (enforce post-flip), never to warn. The gate
-  // itself still throws config-unavailable from inside decide() (FU-05).
-  if (!config || typeof config !== "object") return DEFAULT_MODE;
-  const gateName = gateFn?.gateName ?? gateFn?.name;
-  const key = GATE_NAME_TO_CONFIG_KEY[gateName];
-  if (!key) return DEFAULT_MODE;
-  return resolveMode(config, key);
+export function resolveGateMode(gateName, env) {
+  const envVar = `${GATE_MODE_ENV_PREFIX}${String(gateName).toUpperCase()}`;
+  const raw = env?.[envVar];
+  if (raw === undefined) {
+    return { mode: "enforce", source: "default", envVar: null, reason: null };
+  }
+  if (raw === "enforce") return { mode: "enforce", source: "env", envVar, reason: null };
+  if (raw === "warn") {
+    const reason = env?.[`${envVar}${GATE_MODE_REASON_SUFFIX}`];
+    if (typeof reason === "string" && reason.trim().length > 0) {
+      return { mode: "warn", source: "env", envVar, reason };
+    }
+    // Downgrade refused (RF-05/INV-3). MODO-04 will log the refusal; this
+    // resolver is pure (SPEC 3.1) and emits nothing.
+    return { mode: "enforce", source: "default", envVar, reason: null };
+  }
+  // Out of domain — null, "ENFORCE", "off", 42, ...: fail-closed. A present but
+  // invalid value keeps envVar (it names the key that was refused).
+  return { mode: "enforce", source: "default", envVar, reason: null };
+}
+
+// ---------------------------------------------------------------------------
+// FU-06/ADR-001: per-gate modes. Each core gate carries a gateName; modeForGate
+// resolves it from the host-process env through resolveGateMode (MODO-02). A
+// gate without its own gateName (hygiene) falls back to DEFAULT_MODE — there is
+// no env lookup for it. The config never participates (RF-01).
+// ---------------------------------------------------------------------------
+
+export function modeForGate(gateFn, env) {
+  const gateName = gateFn?.gateName;
+  if (typeof gateName !== "string" || gateName.length === 0) return DEFAULT_MODE;
+  return resolveGateMode(gateName, env).mode;
 }
 
 // ---------------------------------------------------------------------------
@@ -1004,9 +1036,9 @@ export async function gateShellHygiene(ctx = {}) {
 }
 
 // Gate registration (Batch 4/7). GATE-03 contributes both anchors.
-// FU-06: each gate carries a gateName so modeForGate(config, gateFn) can
-// resolve its mode. Hygiene has no gates.* key on purpose:
-// it falls back to DEFAULT_MODE (declared in modeForGate).
+// FU-06/ADR-001: each gate carries a gateName so modeForGate(gateFn, env) can
+// resolve its mode from HARNESS_GATE_<GATE>. Hygiene carries no gateName on
+// purpose: it falls back to DEFAULT_MODE (declared in modeForGate).
 registerCoreGate(gatePiccoTask);
 registerCoreGate(gateCompletionAnchorA);
 registerCoreGate(gatePhaseAnchorB);
@@ -1213,7 +1245,7 @@ export async function runGatesShim(v2Payload = {}, v2Output) {
   for (const gateFn of CORE_GATES) {
     const result = await decide({
       gateFn,
-      mode: config ? modeForGate(gateFn, config) : DEFAULT_MODE,
+      mode: modeForGate(gateFn, base.env),
       ctx,
       env: base.env,
       logger,

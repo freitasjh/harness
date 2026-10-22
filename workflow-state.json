@@ -54,7 +54,7 @@
     "P0_P1": "approved_user_2026_10_22 (PRD do ciclo prd-garantias-runtime aprovado no portao G1; ADR-001 aprovado no portao G2)",
     "G2_PRD": "approved_user_2026_10_22 (PRD prd-garantias-runtime aprovado sem ressalvas; §16 do PRD.md; 3 decisoes do owner)",
     "P1_P2": "pending_user_approval (SPEC do ciclo garantias-runtime-adr-001: 128 linhas, 4 requisitos normativos, 6 invariantes, Delta Specs com 5 docs, 5 itens N/A justificados)",
-    "P2_P3": "pending_user_approval (PLAN + TASKS do ciclo garantias-runtime-adr-001: 9 tasks MODO-01..MODO-09, SDD-02 1:1 9/9, 4 fases, caminho critico MODO-01->02->06->07->08)",
+    "P2_P3": "pending_user_approval (PLAN + TASKS do ciclo garantias-runtime-adr-001: 10 tasks MODO-01..MODO-10 (MODO-10 nasceu do code review do batch 1 — prosa residual sem dono), SDD-02 1:1 10/10, 4 fases, caminho critico MODO-01->02->06->07->08)",
     "P3_P4": "approved_auto_evidence_batches1-5 (14/14 tasks; review APPROVED 0 criticos)",
     "P4_P5": "pending_user_approval (QA P4: gate PASSA na substancia; 831/831; 0 writes nos 2 presets; transcript byte-identico; 2 P2 novos registrados em .spec/tech-debts/harness-eixos-stack-p2/)",
     "P5_P6": "approved_user_2026_10_18 (VERIFY APPROVED 3/3 dimensoes; traceability 100%; ciclo arquivado; commit ab66c40 com trailer)",
@@ -164,8 +164,8 @@
     },
     {
       "name": "garantias-runtime-adr-001",
-      "stage": "Planning",
-      "progress": 25,
+      "stage": "Execution",
+      "progress": 35,
       "type": "feature",
       "depends_on": [],
       "artifacts": {
@@ -185,7 +185,7 @@
   ],
   "spec_score": 1,
   "spec_status": "gerado (garantias-runtime-adr-001/SPEC.md, 128 linhas; 4/4 requisitos normativos com origem no PRD; 6 invariantes; estrategia de teste em 4 niveis; Delta Specs com 5 documentos; 5 itens N/A justificados com motivo)",
-  "plan_status": "gerado (garantias-runtime-adr-001/PLAN.md, 86 linhas; 4 fases; constraint mapping com 8 restricoes; caminho critico MODO-01->MODO-02->MODO-06->MODO-07->MODO-08; ciclo de vida de eventos N/A justificado; 5 riscos de execucao mapeados)",
+  "plan_status": "gerado (garantias-runtime-adr-001/PLAN.md, 86 linhas; 4 fases; constraint mapping com 8 restricoes; caminho critico MODO-01->MODO-02->MODO-06->MODO-07->MODO-08; ciclo de vida de eventos N/A justificado; 5 riscos de execucao mapeados; +MODO-10 (prosa residual) apos o review do batch 1)",
   "validation": {
     "architect": "ADR-001 (interface congelada de 10 itens) aprovado no portao G2 de 2026-10-22; RESEARCH com 17 fontes http(s) verificadas (200)",
     "product-manager": "PRD prd-garantias-runtime aprovado no portao G1 (3 decisoes do owner registradas no §16; RF-03 alinhado ao ADR-003 em 8d8a619)",
@@ -199,11 +199,11 @@
     "U5": "c - dois ancoras",
     "U6": "b - selo de hash"
   },
-  "harness_status": "pending (ciclo garantias-runtime-adr-001 ainda nao implementado)",
+  "harness_status": "partial (batch 1: 379+516 testes, 0 falhas; sdd-checks 8 PASS; static 0 FAIL; harness completo no fim do ciclo)",
   "harness_evidence": "Batches 1-5 do ciclo harness-eixos-stack (2026-10-18) — 14/14 tasks. Estado final: plugins 352/352, installer 479/479, static 10 PASS/0 FAIL, vendor-check OK; dry-run 0 writes nos 2 presets web; transcript do wizard (escolha React) em .spec/backend/harness-eixos-stack/harness/; REPORT em harness/harness-eixos-stack.json (com desvio declarado C-1: counts omitido). Historico dos batches 1-2: Batch 1 (EX-BE-01/EX-VAL-02/EX-BE-03): plugins 352/352, installer 398/398, static exit 0, vendor OK; mutacao axes.frontend vue->react => 1 fail. Batch 2 (EX-BE-04/EX-BE-05/EX-VAL-06): plugins 352/352, installer 439/439, static 10 PASS/0 FAIL, vendor OK; provas do orquestrador: chave 'backend=node' (valida) => 2 fail; 'backend=react' (id invalido) => BAD_DECLARATION na carga; 'backend=none' sintetica => 0 fail (matcher por par). Nao-regressao vs HEAD: node/node-esm/outra/flutter/dart/java+vue com keys+bodies byte-identicos (129/129/129/151/141/129); so java+react difere pela exclusao pretendida. Refs penduradas do destino react congeladas em 12. gate.js/harness.config.json/.vendor-lock.json/.agents/rules = 0 linhas. I9 respeitado: apenas 2 imports + assert estrutural de chaves reescopado para superconjunto.",
-  "code_review_status": "pending (ciclo garantias-runtime-adr-001 ainda nao implementado)",
+  "code_review_status": "passed (batch 1: 0 🔴 / 0 🟡 apos rodada 2; mutacao confirma discriminacao)",
   "code_review_status_ciclo": "opencode-v2-only: batch 1 APPROVED, batch 2 APPROVED (re-review), batch 3 APPROVED (review final) — pareceres do code-reviewer, nao bloqueio (o bloqueio e a ancora B)",
-  "sdd_stage": "garantias-runtime-adr-001 (ADR-001) em PLANNING — PROPOSAL/SPEC/PLAN/TASKS gerados (80/128/86/233 linhas); aguardando portao P2->P3",
+  "sdd_stage": "garantias-runtime-adr-001 (ADR-001) em EXECUTION — batch 1 (MODO-01+02: resolveGateMode + modeForGate por env) APROVADO com 0 criticos e 0 atencao; proximo: batch 2 (fase 2: MODO-03+04 — auditoria do config + log de rebaixamento)",
   "backlog": {
     "total": 14,
     "todo": 0,
@@ -226,11 +226,20 @@
       "IM-VAL-06"
     ]
   },
-  "next_task": "MODO-01",
+  "next_task": "MODO-03",
   "plan_score": 1,
   "tasks_score": 1,
-  "active_batch": null,
-  "active_task": "MODO-01",
+  "active_batch": {
+    "id": 1,
+    "status": "approved",
+    "tasks": [
+      "MODO-01",
+      "MODO-02"
+    ],
+    "code_review": "passed",
+    "nota": "rodada 1: 0 criticos / 5 atencao (4 must-fix); rodada 2: 0/0, discriminacao provada por mutacao (reviewer + developer). Contagem de testes 379 mantida."
+  },
+  "active_task": "MODO-02",
   "pending_remote_url": false,
   "follow_ups_created_at_basis": "PAP-12: created_at de cada follow_up = data do commit mais antigo em que o id apareceu em workflow-state.json (git log -S \"<id>\" -- workflow-state.json). Nao havia timestamp registrado a mao; a data e derivada, nao inventada.",
   "follow_ups": [
