@@ -38,6 +38,12 @@ resolveGateMode(gateName: string, env: object) → {
 - Variante do motivo: `HARNESS_GATE_<GATE>_REASON`.
 
 ### 3.2 Regras de resolução (fail-closed)
+
+> A coluna **Log** é do chamador (`announceGateMode`): o resolvedor é puro (§3.1).
+> Um valor **presente** que resolve para `enforce` só gera WARN de recusa quando a
+> resolução caiu no **fallback** (`source === "default"`); `"enforce"` explícito é
+> resolução normal e não loga nada.
+
 | Env | Resultado | Log |
 |---|---|---|
 | ausente | `{mode:"enforce", source:"default", envVar:null, reason:null}` | — |
@@ -53,9 +59,15 @@ resolveGateMode(gateName: string, env: object) → {
   (o de higiene) cai no `DEFAULT_MODE` (`enforce`).
 
 ### 3.4 Auditoria do config (observabilidade, não decisão)
-- No carregamento, para cada `gates[k]` com valor ≠ `"enforce"`: **exatamente 1 WARN**
-  contendo chave, valor, modo efetivo (`"enforce"`) e se a chave é gate registrado
-  (sim/não).
+- No carregamento, para cada `gates[k]` com valor ≠ `"enforce"`: **exatamente 1 WARN
+  por (chave, valor) por processo**, contendo a chave, o valor, a afirmação de que o
+  config **não altera** o modo efetivo — nunca afirmar o valor `"enforce"` resolvido,
+  porque o env pode estar rebaixando o mesmo gate no mesmo run — e se a chave é gate
+  registrado (sim/não).
+- A remediação declarada depende de a chave ser gate registrado: **registrada** ⇒
+  nomear `HARNESS_GATE_<GATE>` + `HARNESS_GATE_<GATE>_REASON`; **não registrada** ⇒
+  declarar que a chave é **inerte** (nenhum gate tem esse nome; remover a chave ou
+  registrar o gate) — nunca prescrever uma env que também não faria nada.
 - Para valor `"enforce"`: **nenhum** log.
 
 ### 3.5 Ordem de avaliação

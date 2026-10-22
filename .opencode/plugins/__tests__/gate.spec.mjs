@@ -48,6 +48,7 @@ import {
   gateShellHygiene,
   modeForGate,
   isCacheableTreeHash,
+  resetGateObservability,
 } from "../gate.js";
 import { sealCommands } from "../lib/seal.mjs";
 
@@ -1006,7 +1007,7 @@ describe("C-1 (D-15) counts: unobservable => allow (declared note); observable d
 // ---------------------------------------------------------------------------
 
 describe("FU-06/ADR-001 per-gate modes: modeForGate resolves from the host env", () => {
-  it("picco/hitl route via env; resolveGateMode covers the five SPEC 3.2 rules", async () => {
+  it("picco/hitl route via env; resolveGateMode covers the five SPEC 3.2 rules; MODO-04 announces every downgrade/refusal once", async () => {
     assert.equal(modeForGate(gatePiccoTask, { HARNESS_GATE_PICCO: "enforce" }), "enforce");
     assert.equal(
       modeForGate(gatePiccoTask, { HARNESS_GATE_PICCO: "warn", HARNESS_GATE_PICCO_REASON: "debug" }),
@@ -1078,9 +1079,97 @@ describe("FU-06/ADR-001 per-gate modes: modeForGate resolves from the host env",
       resolveGateMode("hitlBatch", { HARNESS_GATE_HITLBATCH: "warn", HARNESS_GATE_HITLBATCH_REASON: "audit" }).reason,
       "audit",
     );
+
+    // ADR-001 (MODO-04, RF-05/INV-3): the resolver stays pure; the CALLER
+    // announces. A downgrade in force is never silent, and it is announced
+    // once per (gate, motive) per process — the hot path resolves the same
+    // pair on every tool call. `evidence` names two anchors, so a per-anchor
+    // announcement would log twice: the single evidence line is the dedupe
+    // proof inside ONE run.
+    resetGateObservability();
+    const runObserved = (env, logger) =>
+      runGatesShim({ tool: "bash", args: { command: "ls" }, config: TEST_CONFIG, env, logger });
+    const downgradeEnv = {
+      HARNESS_GATE_PICCO: "warn",
+      HARNESS_GATE_PICCO_REASON: "debug",
+      HARNESS_GATE_EVIDENCE: "warn",
+      HARNESS_GATE_EVIDENCE_REASON: "audit",
+    };
+    const downgradeLog = makeLogger();
+    await runObserved(downgradeEnv, downgradeLog);
+    assert.equal(
+      downgradeLog.entries.length,
+      2,
+      "one WARN per downgraded gate — evidence resolves twice (two anchors) and still logs once",
+    );
+    const piccoLine = downgradeLog.entries.map((e) => e.message).find((m) => /"picco"/.test(m));
+    assert.ok(piccoLine, "the downgrade of picco must be announced");
+    assert.match(piccoLine, /HARNESS_GATE_PICCO\b/, "the env that downgrades must be named");
+    assert.match(piccoLine, /debug/, "the motive must be in the line");
+    assert.match(piccoLine, /"warn"/);
+    assert.equal(
+      downgradeLog.entries.filter((e) => /"evidence"/.test(e.message)).length,
+      1,
+      "dedupe: two anchors share the gate name, so one line per (gate, motive)",
+    );
+    // Same pairs resolved again in the same process => still one line each.
+    await runObserved(downgradeEnv, downgradeLog);
+    assert.equal(downgradeLog.entries.length, 2, "dedupe per (gate, motive) across resolutions");
+    // A NEW motive for the same gate is a new fact, not a duplicate.
+    await runObserved({ HARNESS_GATE_PICCO: "warn", HARNESS_GATE_PICCO_REASON: "outro" }, downgradeLog);
+    assert.equal(downgradeLog.entries.length, 3, "a new motive is announced again");
+
+    // Refusal: "warn" without a motive. One WARN naming the refusal, and
+    // NEVER a downgrade line (the mode stayed enforce).
+    resetGateObservability();
+    const refusedLog = makeLogger();
+    await runObserved({ HARNESS_GATE_PICCO: "warn" }, refusedLog);
+    assert.equal(refusedLog.entries.length, 1);
+    assert.match(refusedLog.entries[0].message, /motivo ausente/);
+    assert.match(refusedLog.entries[0].message, /"picco"/);
+    assert.match(refusedLog.entries[0].message, /HARNESS_GATE_PICCO/);
+    assert.ok(!/rebaixado para/.test(refusedLog.entries[0].message), "a refusal is not a downgrade");
+    await runObserved({ HARNESS_GATE_PICCO: "warn" }, refusedLog);
+    assert.equal(refusedLog.entries.length, 1, "dedupe per (gate, kind) for refusals");
+
+    // Refusal: out-of-domain value.
+    resetGateObservability();
+    const invalidLog = makeLogger();
+    await runObserved({ HARNESS_GATE_PICCO: "banana" }, invalidLog);
+    assert.equal(invalidLog.entries.length, 1);
+    assert.match(invalidLog.entries[0].message, /valor inv[aá]lido/);
+    assert.ok(!/rebaixado para/.test(invalidLog.entries[0].message), "an invalid value is not a downgrade");
+
+    // C-1 (review 🔴): "enforce" is the MOST VALID value of the domain — a
+    // normal resolution with source "env". It must produce ZERO lines: not a
+    // downgrade, and not the false "valor inválido" refusal that gating on
+    // envVar alone produced.
+    resetGateObservability();
+    const enforceLog = makeLogger();
+    await runObserved({ HARNESS_GATE_PICCO: "enforce", HARNESS_GATE_EVIDENCE: "enforce" }, enforceLog);
+    assert.equal(enforceLog.entries.length, 0, "an explicit enforce is neither a downgrade nor a refusal");
+
+    // I-3 (review 🟡): a refusal names the env and the enum cause, never the
+    // raw env value — it may be a mistyped secret. A mutant that echoes the
+    // raw value survives the path-only assertion above; this one kills it.
+    for (const raw of ["banana", "ENFORCE"]) {
+      resetGateObservability();
+      const rawLog = makeLogger();
+      await runObserved({ HARNESS_GATE_PICCO: raw }, rawLog);
+      assert.equal(rawLog.entries.length, 1, `${raw} must be announced as a refusal`);
+      assert.ok(
+        !rawLog.entries[0].message.includes(raw),
+        `a refusal must not echo the raw env value (${raw}): ${rawLog.entries[0].message}`,
+      );
+    }
+
+    // I10: no observability line echoes a path.
+    for (const entry of [...downgradeLog.entries, ...refusedLog.entries, ...invalidLog.entries]) {
+      assert.ok(!entry.message.includes("/"), `log line must not carry a path: ${entry.message}`);
+    }
   });
 
-  it("unknown gate or missing key falls back to DEFAULT_MODE (never off)", async () => {
+  it("unknown gate or missing key falls back to DEFAULT_MODE (never off); MODO-03 audits every gates.* key with no effect", async () => {
     assert.equal(modeForGate(async () => {}, {}), DEFAULT_MODE);
     assert.equal(modeForGate(gatePiccoTask, {}), DEFAULT_MODE, "empty env ⇒ enforce (INV-1)");
     assert.equal(modeForGate(gatePiccoTask, { HARNESS_GATE_PICCO: "off" }), "enforce", "off never downgrades");
@@ -1113,12 +1202,126 @@ describe("FU-06/ADR-001 per-gate modes: modeForGate resolves from the host env",
         "warn",
       );
     }
+
+    // ADR-001 (MODO-03, SPEC 3.4/INV-3): the config never decides a mode, so a
+    // `gates.*` key that is not "enforce" must be AUDITED — otherwise a
+    // `"warn"` sitting in the config reads as an effective downgrade that does
+    // nothing. Exactly one WARN per (key, value) per process: the config is
+    // read on every tool call.
+    resetGateObservability();
+    const auditLog = makeLogger();
+    const auditRun = (gates, logger = auditLog, env = {}) =>
+      runGatesShim({
+        tool: "bash",
+        args: { command: "ls" },
+        config: { ...TEST_CONFIG, gates },
+        env,
+        logger,
+      });
+    await auditRun({ picco: "warn", evidence: "enforce" });
+    assert.equal(auditLog.entries.length, 1, "exactly one WARN: only the non-enforce key is audited");
+    const auditLine = auditLog.entries[0].message;
+    assert.match(auditLine, /gates\.picco="warn"/, "key and value must be named");
+    // SPEC 3.4 (I-1): the line states the MECHANISM, never the resolved value
+    // — the env may be downgrading the same gate in the same run.
+    assert.match(auditLine, /não altera o modo efetivo/, "the mechanism must be stated");
+    assert.ok(!/modo efetivo é/.test(auditLine), "the audit must not assert a resolved mode");
+    assert.match(auditLine, /gate registrado: sim/, "picco is a registered gate");
+    assert.match(auditLine, /HARNESS_GATE_PICCO \+ HARNESS_GATE_PICCO_REASON/, "registered ⇒ env remediation");
+    assert.ok(!/evidence/.test(auditLine), "an enforce key is never audited");
+    // Re-reading the same config in the same process is the same fact.
+    await auditRun({ picco: "warn", evidence: "enforce" });
+    assert.equal(auditLog.entries.length, 1, "dedupe per (key, value) across config reads");
+    // A NEW value for the same key is a new fact.
+    await auditRun({ picco: "banana", evidence: "enforce" });
+    assert.equal(auditLog.entries.length, 2, "a new value logs again");
+    // Unknown key: audited, declared as not a registered gate.
+    const unknownLog = makeLogger();
+    await auditRun({ chaveDesconhecida: "warn" }, unknownLog);
+    assert.equal(unknownLog.entries.length, 1);
+    assert.match(unknownLog.entries[0].message, /gates\.chaveDesconhecida="warn"/);
+    assert.match(unknownLog.entries[0].message, /gate registrado: não/);
+    // I-2 (review 🟡): a key that names no registered gate is INERT — the
+    // remediation must not prescribe an env that would also do nothing. The
+    // real config of this repo carries exactly such a key (e2eGreenfield).
+    assert.match(unknownLog.entries[0].message, /inerte/);
+    assert.ok(
+      !/HARNESS_GATE_CHAVEDESCONHECIDA/.test(unknownLog.entries[0].message),
+      "an inert key must not be prescribed an env",
+    );
+    const inertLog = makeLogger();
+    await auditRun({ e2eGreenfield: "warn" }, inertLog);
+    assert.equal(inertLog.entries.length, 1, "the real config key is audited");
+    assert.match(inertLog.entries[0].message, /gate registrado: não/);
+    assert.match(inertLog.entries[0].message, /inerte/);
+    assert.ok(
+      !/HARNESS_GATE_E2EGREENFIELD/.test(inertLog.entries[0].message),
+      "no env prescription for an inert key",
+    );
+    // I-1: audit and downgrade in the SAME run must not contradict each other.
+    resetGateObservability();
+    const bothLog = makeLogger();
+    await auditRun({ picco: "warn", evidence: "enforce" }, bothLog, {
+      HARNESS_GATE_PICCO: "warn",
+      HARNESS_GATE_PICCO_REASON: "debug",
+    });
+    assert.equal(bothLog.entries.length, 2, "audit + downgrade, no extra line");
+    const auditOnly = bothLog.entries.map((e) => e.message).find((m) => /^config gates\.picco/.test(m));
+    const downgradeOnly = bothLog.entries.map((e) => e.message).find((m) => /^gate "picco"/.test(m));
+    assert.match(auditOnly, /não altera o modo efetivo/);
+    assert.ok(!/modo efetivo é/.test(auditOnly), "the audit never contradicts the downgrade line");
+    assert.match(downgradeOnly, /rebaixado para "warn"/);
+    // I10: the audit line never echoes the config path.
+    for (const entry of [...auditLog.entries, ...unknownLog.entries, ...inertLog.entries, ...bothLog.entries]) {
+      assert.ok(!entry.message.includes("/"), `audit line must not carry a path: ${entry.message}`);
+    }
   });
 
   it("mixed env: picco enforce denies while hitlBatch warn allows (no partial flip)", async () => {
-    const env = { HARNESS_GATE_PICCO: "enforce", HARNESS_GATE_HITLBATCH: "warn", HARNESS_GATE_HITLBATCH_REASON: "audit" };
+    const env = {
+      HARNESS_GATE_PICCO: "enforce",
+      HARNESS_GATE_HITLBATCH: "warn",
+      HARNESS_GATE_HITLBATCH_REASON: "audit",
+    };
     assert.equal(modeForGate(gatePiccoTask, env), "enforce");
     assert.equal(modeForGate(gateHitlBatch, env), "warn");
+
+    // I-4 (review 🟡): prove the TITLE, not just the mode strings. Same task
+    // (no PICCO block), same run shape: picco enforce denies it; picco
+    // warn+motive allows it via warn. A closed state removes anchor B from the
+    // picture, so the verdict can only come from the PICCO gate.
+    const closedState = {
+      current_phase: "Completed",
+      harness_status: "passed",
+      code_review_status: "passed",
+    };
+    const runMixed = (mixedEnv) => {
+      const sessionID = `mixed-env-${Math.random()}`;
+      resetHitlTracker(sessionID);
+      return runGatesShim(
+        {
+          tool: "task",
+          sessionID,
+          config: TEST_CONFIG,
+          workflowState: closedState,
+          env: mixedEnv,
+          logger: makeLogger(),
+        },
+        { args: { prompt: "delegacao sem bloco picco" } },
+      );
+    };
+    await assert.rejects(
+      () => runMixed(env),
+      (err) => err instanceof DenyError && err.reason === "picco-tag-absent",
+      "picco in enforce denies the same task whose sibling gate is downgraded",
+    );
+    const downgradedVerdict = await runMixed({
+      HARNESS_GATE_PICCO: "warn",
+      HARNESS_GATE_PICCO_REASON: "debug",
+    });
+    assert.equal(downgradedVerdict.verdict, "allow");
+    assert.equal(downgradedVerdict.via, "warn");
+    assert.equal(downgradedVerdict.reason, "picco-tag-absent");
   });
 });
 
