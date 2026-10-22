@@ -34,7 +34,7 @@ Tornar o conjunto de garantias do harness **verificável e coerente com a prosa*
 |---|---|---|
 | Gates rebaixáveis por config gravável | nº de gates de `CORE_GATES` cujo modo efetivo muda quando `gates.<chave>` ≠ `"enforce"` (enumeração `CORE_GATES` × `resolveMode`) | 0 |
 | Tool calls allow com config indisponível | nº de tools que retornam `allow` em `runGatesShim` com `configPath` inexistente (sonda: `task`, `write`, `edit`, `bash`) | 0 |
-| Contraprova que declara verificação não feita | nº de `runContraprova` que retornam `via: "counts-unverifiable"` no caminho do executor padrão | 0 |
+| Contraprova que declara verificação não feita | nº de `runContraprova` cujo veredito NÃO carrega `countsVerification` (estado de comparabilidade) | 0 |
 | Afirmação de garantia sem lastro | nº de linhas de garantia em `gate-contract.md` e `docs/FUNCIONAMENTO.md` sem `arquivo:linha` nem nível | 0 |
 | Nível declarado ≠ comportamento medido | nº de garantias cujo nível difere do resultado da sonda correspondente (sonda inexistente conta como divergência) | 0 |
 | Suíte completa verde | `commands.suiteFull`: `node --test` + `node scripts/static-checks.mjs` + `node scripts/vendor-skills.mjs --check` | 0 falhas |
@@ -43,7 +43,7 @@ Tornar o conjunto de garantias do harness **verificável e coerente com a prosa*
 ## 6. Escopo [obrigatória]
 - **P1-A**: nenhuma chave de `harness.config.json` pode reduzir o modo efetivo de um gate registrado; se o rebaixamento for desejado, ele passa a viver em canal fora do worktree (ADR-009 já fixa o kill-switch na env do processo host). *Aceite*: sonda por gate — config com `gates.<chave>` = `"warn"`/`"off"`/valor inválido ⇒ modo efetivo inalterado; suíte completa verde.
 - **P1-B**: config ausente ou inválido produz deny em toda tool call, com motivo acionável e sem ecoar o path. *Aceite*: sonda com `configPath` inexistente ⇒ deny `config-unavailable` nas 4 tools; `HARNESS_GATES=off` permanece como saída declarada.
-- **P1-C**: a contraproveva declara o que verificou — contagem comparada, não comparável por falta de observador, ou não comparável por desenho — e a afirmação correspondente na prosa tem o mesmo alcance. *Aceite*: o veredito nunca retorna `via: "counts-unverifiable"` sem o motivo declarado, e o deny `contraprove-divergent` é alcançável pelo caminho de execução real **ou** a promessa é reduzida.
+- **P1-C**: a contraproveva declara o que verificou — contagem comparada, não comparável por falta de observador, ou não comparável por desenho — e a afirmação correspondente na prosa tem o mesmo alcance. *Aceite*: o veredito sempre carrega `countsVerification` e nunca é lido como "verificado" quando as contagens não foram comparadas; o deny `contraprove-divergent` é alcançável pelo caminho de execução real **ou** a promessa é reduzida.
 - **Coerência de prosa (transversal)**: toda garantia afirmada passa a citar `arquivo:linha` do mecanismo e o nível real (🟢/🟠/🟡/🔴), no formato já usado em `gate-contract.md` §1.
 - **Este PRD não altera código, config, regra ou workflow-state** — só define problema, objetivo, escopo, métricas e critérios de aceite para os ADRs que virão.
 > ❓ Validação: o escopo é fechado o bastante para caber em até 5 ADRs e não prescreve a solução? (sim/não)
@@ -70,7 +70,7 @@ Tornar o conjunto de garantias do harness **verificável e coerente com a prosa*
 ## 9. Requisitos funcionais [obrigatória]
 - **RF-01**: nenhuma chave de `harness.config.json` altera o modo efetivo de um gate registrado. *Verificável*: para cada gate de `CORE_GATES`, config com `gates.<chave>` ∈ {`"warn"`, `"off"`, inválido} ⇒ modo efetivo = `enforce`.
 - **RF-02**: config ausente ou inválido ⇒ deny de **toda** tool call, com motivo `config-unavailable` e sem eco do path. *Verificável*: sonda nas tools `task`/`write`/`edit`/`bash`.
-- **RF-03**: a contraproveva declara o que verificou (comparou / não comparável por falta de observador / não comparável por desenho) e a garantia correspondente na prosa tem o mesmo alcance. *Verificável*: teste do contrato do veredito + conferência da prosa.
+- **RF-03**: a contraproveva declara o que verificou — o veredito carrega um estado de comparabilidade (`compared` | `not-declared` | `not-observable` | `not-by-design`) e a garantia correspondente na prosa tem o mesmo alcance. *Verificável*: teste do contrato do veredito + conferência da prosa.
 - **RF-04**: toda afirmação de garantia em prosa cita `arquivo:linha` do mecanismo e o nível real. *Verificável*: check estático na suíte existente (sem novo bloqueio de runtime).
 - **RF-05**: rebaixamento de gate, quando existir, é **registrado em log** — nunca silencioso. *Verificável*: teste do logger.
 - **RF-06**: o deny por config indisponível é distinguível do deny de política (`reason` distinto), para que o operador saiba a causa. *Verificável*: teste do `reason`.
