@@ -625,8 +625,8 @@ Antes de marcar qualquer tarefa como concluída, verifique:
   (SPEC ADR-008; RUNTIME-CONTRACT H5/H6, §6).
 - **Review** delegado a `code-reviewer`; o veredito alimenta
   `code_review_status` — o bloqueio é a âncora B do gate (SPEC §5.3).
-- **Kill-switch** = env `HARNESS_GATES=off` no host; `gates.*` do config não desliga
-  a suíte (SPEC ADR-009), mas rebaixa um gate isolado para `warn` (`resolveMode`, `gate.js:76-80`).
+- **Kill-switch** = env `HARNESS_GATES=off` no host; `gates.*` do config não desliga a suíte **nem**
+  rebaixa gate: o rebaixamento vive no env (`HARNESS_GATE_<GATE>` + `_REASON`, `gate.js:98`) e exige motivo; o config é auditado (`gate.js:252`) — 🟢 runtime: resolução pura (`gate.js:98`) + anúncio único (`gate.js:278`), corte por env (`gate.js:1366`).
 
 ## Documentos de Referência
 

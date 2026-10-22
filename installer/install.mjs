@@ -661,7 +661,7 @@ export function generateConfig(answers, { writtenPaths = null } = {}) {
       'opencode.json',
       'harness.config.json',
     ],
-    gates: { picco: 'enforce', evidence: 'enforce', hitlBatch: 'enforce', e2eGreenfield: 'warn' },
+    gates: { picco: 'enforce', evidence: 'enforce', hitlBatch: 'enforce', e2eGreenfield: 'warn' }, // informativo/auditado: nao decide modo; rebaixamento vive no env do host (HARNESS_GATE_<GATE> + _REASON)
     riskPaths: ['**/security/**', '**/auth/**'],
     escalateOnRisk: { e2eGreenfield: 'enforce', evidenceScenario: 'required' },
     contraproveTimeoutMs: 900000,

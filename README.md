@@ -14,7 +14,7 @@
 | 4 | **Portão de prompt** — toda demanda de mudança passa por 6 elementos (PICCO); sem eles, o orquestrador pergunta em vez de adivinhar | skill `prompt-optimizer` + gate PICCO |
 | 5 | **SDD governado** — SPEC → PLAN → TASKS → execução → VERIFY → archive, com portões humanos P0..P6 e asserts executáveis | skills `sdd-compiler`, `spec-review` + checks |
 | 6 | **Cobertura de risco** — mudança em `riskPaths` (auth/acl/security/i18n) está declarada para subir o E2E a `enforce` (declarativo: sem consumidor no runtime — ver `docs/FUNCIONAMENTO.md` §10a2) | `escalateOnRisk` |
-| 7 | **Kill-switch fora do worktree** — `HARNESS_GATES=off` no processo host; o config nunca desliga a suíte (mas rebaixa um gate isolado para `warn`) | ADR-009 |
+| 7 | **Kill-switch fora do worktree** — `HARNESS_GATES=off` no processo host corta a suíte; o config nunca desliga a suíte **nem** rebaixa um gate — o rebaixamento por gate vive no env (`HARNESS_GATE_<GATE>` + `_REASON` obrigatório, `gate.js:98`) e todo `gates.*` com valor ≠ `"enforce"` é auditado (`gate.js:252`) | ADR-009 · 🟢 runtime |
 | 8 | **Memória persistente** — decisões, erros e lições no Brain (busca antes, registra depois) | skill `brain` |
 | 9 | **Instalador** — leva o harness a outro repo sem copiar domínio alheio (caso Hive) | `installer/` + skill `harness-installer` |
 | 10 | **Esteira PRD→ADR→SDD** — intenção de negócio aprovada **antes** do design; 1 ADR = 1 branch = 1 ciclo SDD; checks entram no `suiteFull`, sem deny novo no runtime | `.spec/prd/**` (bucket non-cycle) + `.agents/rules/prd-adr-pipeline.md` + `PRD-01`/`ADR-01`/`ADR-02` |
