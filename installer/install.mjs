@@ -1370,8 +1370,17 @@ export function runDoctor({ target, sourceDir = null, answersFile = null, backup
   // stack do destino esta no manifesto do init. Sem isto o D3 proporia `create`
   // de um artefato que o `init` excluiu de proposito (o eixo nao seria aplicado).
   if (!redacting.stack) {
+    // ADR-005: manifest/answers com backend+frontend sem stack => resolver via presetOfAxes
+    try {
+      const parsed = JSON.parse(fs.readFileSync(path.join(pf.target, MANIFEST_NAME), 'utf8'));
+      const a = (parsed && parsed.answers) || {};
+      if (a.backend && a.frontend && !a.stack) {
+        const preset = presetOfAxes(a.backend, a.frontend);
+        if (preset) redacting = { ...redacting, stack: preset, backend: redacting.backend || a.backend, frontend: redacting.frontend || a.frontend };
+      }
+    } catch { /* noop */ }
     const fromTarget = destinationStack(pf.target);
-    if (fromTarget) redacting = { ...redacting, stack: fromTarget };
+    if (fromTarget && !redacting.stack) redacting = { ...redacting, stack: fromTarget };
   }
   // BE-07: manifest legado (sem axes) deriva axes de stack.
   if ((!redacting.backend || !redacting.frontend) && redacting.stack) {
@@ -2770,41 +2779,145 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 // harness. Sem remoção automatica de user-owned; backup verificado antes de
 // toda escrita; dry-run sem writes.
 
-export function planUpgrade(target, incomingFiles) {
-  const t = path.resolve(target);
+// Normaliza fileHashes do manifesto (array [{path, sha256|hash|sha}] ou objeto
+// path->hash) em objeto path->hash. Fail-closed: ausente => {}.
+function manifestFileHashes(manifest) {
+  const out = {};
+  if (!manifest || typeof manifest !== 'object') return out;
+  const fh = manifest.fileHashes;
+  if (Array.isArray(fh)) {
+    for (const e of fh) {
+      if (!e || typeof e !== 'object') continue;
+      const p = e.path;
+      const h = e.sha256 || e.hash || e.sha || e.digest;
+      if (typeof p === 'string' && typeof h === 'string') out[p] = h;
+    }
+  } else if (fh && typeof fh === 'object') {
+    for (const [k, v] of Object.entries(fh)) {
+      if (typeof v === 'string') out[k] = v;
+      else if (v && typeof v === 'object') {
+        const h = v.sha256 || v.hash || v.sha || v.digest;
+        if (typeof h === 'string') out[k] = h;
+      }
+    }
+  }
+  return out;
+}
+
+function safeReadText(abs) {
+  try { return fs.readFileSync(abs, 'utf8'); } catch { return null; }
+}
+
+// Overload: planUpgrade(target, incomingFiles, { prevManifest })  (task)
+//         planUpgrade(prevManifest, incomingFiles, destDir)         (SPEC FR-09)
+export function planUpgrade(target, incomingFiles, third) {
+  let t = target;
+  let incoming = incomingFiles || {};
+  let prevManifest = null;
+  let opts = {};
+  if (typeof target === 'string') {
+    opts = (third && typeof third === 'object' && !Array.isArray(third)) ? third : {};
+    prevManifest = opts.prevManifest || null;
+  } else {
+    // first arg is prevManifest
+    prevManifest = target;
+    incoming = incomingFiles || {};
+    if (typeof third === 'string') { t = third; opts = {}; }
+    else if (third && typeof third === 'object' && !Array.isArray(third)) { t = third.target || third.destDir || third.dest || third.dir; opts = third; if (opts.prevManifest) prevManifest = opts.prevManifest; }
+    else { t = null; }
+  }
+  if (!prevManifest && typeof t === 'string') {
+    try { prevManifest = JSON.parse(fs.readFileSync(path.join(path.resolve(t), MANIFEST_NAME), 'utf8')); } catch { prevManifest = null; }
+  }
+  const resolved = path.resolve(typeof t === 'string' ? t : process.cwd());
+  const manifestHashes = manifestFileHashes(prevManifest);
   const plan = [];
-  for (const [rel, content] of Object.entries(incomingFiles)) {
-    assertInside(t, path.join(t, rel));
+  for (const [rel, content] of Object.entries(incoming)) {
+    assertInside(resolved, path.join(resolved, rel));
     const layer = layerOf(rel);
-    const abs = path.join(t, rel);
+    const abs = path.join(resolved, rel);
     const exists = fs.existsSync(abs);
-    if (layer === 'harness.config.json') {
-      if (!exists) { plan.push({ path: rel, layer, action: 'create', reason: 'generated from Q&A (ADR-002)' }); continue; }
-      let current;
-      try { current = fs.readFileSync(abs, 'utf8'); } catch { current = '__unreadable__'; }
-      if (current === content) { plan.push({ path: rel, layer, action: 'noop', reason: 'identical' }); continue; }
-      plan.push({ path: rel, layer, action: 'generate-overwrite', reason: 'managed overwrite (upgrade)' });
+    const incomingHash = sha256(String(content));
+    if (!exists) { plan.push({ path: rel, layer, action: 'create', reason: 'incoming-new' }); continue; }
+    const current = safeReadText(abs);
+    const diskHash = current === null ? null : sha256(current);
+    if (current !== null && current === content) { plan.push({ path: rel, layer, action: 'noop', reason: 'identical' }); continue; }
+    const manifestHash = manifestHashes[rel];
+    const userModified = (manifestHash !== undefined) ? (diskHash !== manifestHash) : true;
+    const isOpencode = rel === 'opencode.json' || layer === 'opencode.json';
+    const isHarnessConfig = rel === 'harness.config.json' || layer === 'harness.config.json';
+    if (userModified) {
+      plan.push({ path: rel, layer, action: 'flag', reason: 'user-modified (disk != manifest)' });
       continue;
     }
-    if (!exists) { plan.push({ path: rel, layer, action: 'create', reason: 'incoming-new' }); continue; }
-    let current = '';
-    try { current = fs.readFileSync(abs, 'utf8'); } catch { current = null; }
-    if (current === content) { plan.push({ path: rel, layer, action: 'noop', reason: 'identical' }); continue; }
-    plan.push({ path: rel, layer, action: 'overwrite', reason: 'managed overwrite (upgrade)' });
+    if (isOpencode) {
+      plan.push({ path: rel, layer, action: 'merge', reason: 'managed merge (upgrade)' });
+    } else if (isHarnessConfig) {
+      plan.push({ path: rel, layer, action: 'generate-overwrite', reason: 'generated from Q&A (ADR-002)' });
+    } else {
+      plan.push({ path: rel, layer, action: 'overwrite', reason: 'managed overwrite (upgrade)' });
+    }
+  }
+  // deletes: paths in manifest but absent from incoming
+  for (const [rel, mhash] of Object.entries(manifestHashes)) {
+    if (Object.prototype.hasOwnProperty.call(incoming, rel)) continue;
+    const abs = path.join(resolved, rel);
+    if (!fs.existsSync(abs)) continue;
+    const current = safeReadText(abs);
+    const diskHash = current === null ? null : sha256(current);
+    if (diskHash !== null && diskHash === mhash) {
+      plan.push({ path: rel, layer: layerOf(rel), action: 'delete', reason: 'removed from incoming (unmodified)' });
+    } else {
+      plan.push({ path: rel, layer: layerOf(rel), action: 'flag', reason: 'user-modified (disk != manifest)' });
+    }
   }
   return plan;
 }
 
-export function applyUpgrade(target, plan, { incomingFiles = {}, dryRun = false } = {}) {
+export function applyUpgrade(target, plan, opts = {}) {
+  // Overload: applyUpgrade(plan, { target/destDir, incomingFiles, dryRun })
+  if (Array.isArray(target)) {
+    const p = target;
+    const o = plan || {};
+    target = o.target || o.destDir || o.dest || o.dir;
+    plan = p;
+    opts = o;
+  }
+  const incomingFiles = (opts && opts.incomingFiles) || {};
+  const dryRun = !!(opts && opts.dryRun);
   const t = path.resolve(target);
   const written = [];
   const flagged = [];
-  if (dryRun) return { written, flagged: plan.filter((p) => p.action === 'flag'), planned: plan.length };
-  for (const step of plan) {
+  const removed = [];
+  if (dryRun) return { written, flagged: (Array.isArray(plan) ? plan : []).filter((p) => p && p.action === 'flag'), removed, planned: Array.isArray(plan) ? plan.length : 0 };
+  for (const step of (Array.isArray(plan) ? plan : [])) {
     const abs = assertInside(t, path.join(t, step.path));
     if (step.action === 'noop') continue;
     if (step.action === 'flag') { flagged.push(step); continue; }
+    if (step.action === 'delete') {
+      if (fs.existsSync(abs)) { try { fs.unlinkSync(abs); } catch { /* ignore */ } }
+      removed.push(step.path);
+      continue;
+    }
     const incoming = incomingFiles[step.path];
+    if (step.action === 'merge') {
+      if (typeof incoming !== 'string') {
+        throw new InstallError(`missing incoming content for ${step.path}: refusing silent empty write (FU-21)`, 'MISSING_INCOMING');
+      }
+      const current = fs.existsSync(abs) ? fs.readFileSync(abs, 'utf8') : null;
+      let body;
+      if (step.path === 'opencode.json' || layerOf(step.path) === 'opencode.json') {
+        const { merged } = mergeOpencodeJson(current ? JSON.parse(current) : {}, JSON.parse(incoming));
+        body = JSON.stringify(merged, null, 2);
+      } else {
+        const r = mergeAgentFile(current || '', incoming);
+        body = r.content;
+      }
+      fs.mkdirSync(path.dirname(abs), { recursive: true });
+      fs.writeFileSync(abs, body);
+      written.push({ path: step.path, strategy: 'merge', preMergeSha256: current ? sha256(current) : undefined });
+      continue;
+    }
     if (typeof incoming !== 'string') {
       throw new InstallError(`missing incoming content for ${step.path}: refusing silent empty write (FU-21)`, 'MISSING_INCOMING');
     }
@@ -2813,7 +2926,7 @@ export function applyUpgrade(target, plan, { incomingFiles = {}, dryRun = false 
     fs.writeFileSync(abs, incoming);
     written.push({ path: step.path, strategy: step.action, preMergeSha256: pre ? sha256(pre) : undefined });
   }
-  return { written, flagged };
+  return { written, flagged, removed };
 }
 
 export async function runUpgrade({
@@ -2851,7 +2964,7 @@ export async function runUpgrade({
     const generated = JSON.stringify(generateConfig(subjectAnswers, { writtenPaths: writtenPathsOf(incomingFiles) }), null, 2);
     const incoming = { ...incomingFiles, 'harness.config.json': generated };
 
-    const plan = planUpgrade(pf.target, incoming);
+    const plan = planUpgrade(pf.target, incoming, { prevManifest });
     say(`[INFO] upgrade: plano gerado (${plan.length} itens)`);
     printPlan(plan, { output: stdout, answers });
 
@@ -2869,21 +2982,24 @@ export async function runUpgrade({
     const written = result.written || [];
     const fileContents = {};
     for (const w of written) { try { fileContents[w.path] = fs.readFileSync(path.join(pf.target, w.path), 'utf8'); } catch { /* noop */ } }
-    const installed = written.filter((w) => w.strategy === 'create' || w.strategy === 'generate-overwrite' || w.strategy === 'overwrite').map((w) => ({ path: w.path, kind: 'file' }));
+    const installed = written.filter((w) => w.strategy === 'create' || w.strategy === 'generate-overwrite' || w.strategy === 'overwrite').map((w) => ({ path: w.path, kind: 'file', preMergeSha256: w.preMergeSha256 }));
+    const merged = written.filter((w) => w.strategy === 'merge').map((w) => ({ path: w.path, kind: 'file', preMergeSha256: w.preMergeSha256 }));
+    const flagged = result.flagged || [];
+    const removed = result.removed || plan.filter((p) => p.action === 'delete').map((p) => p.path);
     const manifest = buildManifest({
-      target: pf.target, backupDir: bk.backupDir, installed, merged: [], flagged: result.flagged || [],
+      target: pf.target, backupDir: bk.backupDir, installed, merged, flagged,
       answers: subjectAnswers, checks: { passed: true, failed: [] }, fileContents, source: `harness@${VERSION}`,
     });
     manifest.upgradedFrom = prevManifest.source || null;
-    manifest.removed = [];
-    manifest.collisions = [];
+    manifest.removed = removed;
+    manifest.collisions = flagged.map((f) => (typeof f === 'string' ? f : f.path));
     manifest.doctorPre = { verdict: report.verdict, next: report.next };
     const manifestRef = writeManifest(pf.target, manifest);
     const checks = runChecks(pf.target, { manifest, answers: subjectAnswers });
     manifest.checks = checks;
     fs.writeFileSync(path.join(pf.target, MANIFEST_NAME), JSON.stringify(manifest, null, 2));
     say(`[OK] upgrade: aplicado; checks ${checks.passed ? 'PASS' : 'FAIL'}`);
-    return { target: pf.target, answers: serializeAnswers(subjectAnswers), plan, applied: true, result, checks, manifestRef, backupDir: bk.backupDir, exitCode: checks.passed ? 0 : 1 };
+    return { target: pf.target, answers: serializeAnswers(subjectAnswers), plan, applied: true, result, checks, manifestRef, manifest, removed: manifest.removed, collisions: manifest.collisions, backupDir: bk.backupDir, exitCode: checks.passed ? 0 : 1 };
   } catch (e) {
     if (e instanceof InstallError) {
       try { e.message = sanitizeLog(String(e.message), answers); } catch { /* message ja segura */ }

@@ -112,3 +112,14 @@ Registro cronológico de funcionalidades e refactors entregues.
 - [x] Fase 4 — Quality Gate (suite 559/559, static-checks PASS, code review APPROVED)
 - [x] Fase 5 — Verify (3 dimensões ✅)
 - [x] Fase 6 — Archive (move para `.spec/archive/20261028-harness-adr-005-dual-axes/`, lições no Brain)
+
+| 2026-10-28 | `harness-feature-c-vendor-upgrade` | Feature | Feature C: vendor NestJS (Kadajett/agent-nestjs-skills, MIT declared-evidence) como `nestjs-best-practices` (stacks ['nestjs']), VENDOR-NOTICE + LICENSE agregado; upgrade path manifest-diff (create/noop/overwrite/merge/flag/delete) com backup-first, dry-run, idempotência; Doctor derivação. Rust mantido como skill local (sem fonte upstream adequada). 4 tasks, suite 559/559, static-checks PASS, --check PASS. | `.spec/archive/20261028-harness-feature-c-vendor-upgrade/` | Completed |
+
+## Etapas concluídas — harness-feature-c-vendor-upgrade
+- [x] Fase 0 — Triagem (Feature, PICCO confirmado, análise architect + product-manager)
+- [x] Fase 1 — Análise (PROPOSAL + SPEC, 3 ADRs, 14 FRs, 6 invariantes, delta)
+- [x] Fase 2 — Planejamento (PLAN 4 tasks, TASKS 4 microtasks)
+- [x] Fase 3 — Execução (vendor NestJS + upgrade path manifest-diff)
+- [x] Fase 4 — Quality Gate (suite 559/559, static-checks PASS, --check PASS)
+- [x] Fase 5 — Verify (3 dimensões ✅)
+- [x] Fase 6 — Archive (move para `.spec/archive/20261028-harness-feature-c-vendor-upgrade/`, lições no Brain)

@@ -12,6 +12,7 @@ A procedencia da LICENCA varia por FONTE (`licenseOrigin`): `upstream-file` = sh
 | dart-lang/skills | github | 0d9f1c4a0ae29d6f5180bf6143d7997ec3bacf49 | BSD-3-Clause | upstream-file | LICENSE-dart-lang-skills |
 | flutter/skills | github | 0ef3972f93e2baa4156ba1cbb1e515cd53079c68 | BSD-3-Clause | upstream-file | LICENSE-flutter-skills |
 | vercel-labs/agent-skills | github | 063bee94c3f4df8453406c830b0a7df0f2860278 | MIT | declared-evidence | LICENSE-vercel-agent-skills |
+| Kadajett/agent-nestjs-skills | github | 3986e0cede33958e000f959031cbee0cd83c2941 | MIT | declared-evidence | LICENSE-kadajett-agent-nestjs-skills |
 | google-labs-code/stitch-skills | github | 0337446dadde6f8c94210444e2aa9d546126480f | Apache-2.0 | upstream-file | LICENSE-stitch-skills |
 
 ## Licencas (texto completo + copyright)
@@ -393,6 +394,38 @@ node scripts/vendor-skills.mjs --source <stage> --lock scripts/vendor/skills-loc
 ```
 
 O `--check` roda no CI SEM rede nem clones: o lock commitado e a evidencia.
+
+### Kadajett/agent-nestjs-skills — MIT (`LICENSE-kadajett-agent-nestjs-skills`)
+
+Origem `declared-evidence`: o upstream NAO publica arquivo de licenca; o texto foi TRANSCRITO por nos e o `--check` valida o sha do NOSSO texto. A fidelidade da transcricao e 🟡 processo (evidencia citada), NAO garantia de runtime.
+
+Evidencia:
+- https://github.com/Kadajett/agent-nestjs-skills/blob/3986e0cede33958e000f959031cbee0cd83c2941/skills/nestjs-best-practices/SKILL.md — frontmatter: license: MIT (metadata.author: Kadajett) (commit `3986e0cede33958e000f959031cbee0cd83c2941`)
+- https://github.com/Kadajett/agent-nestjs-skills/blob/3986e0cede33958e000f959031cbee0cd83c2941/README.md — Installation / Supported Agents (OpenCode listed) (commit `3986e0cede33958e000f959031cbee0cd83c2941`)
+
+```text
+MIT License
+
+Copyright (c) 2026 Kadajett
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
 
 ## Limites declarados
 

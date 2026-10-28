@@ -364,6 +364,32 @@ SOFTWARE.`;
 //                          sha congela o NOSSO texto transcrito.
 // `licenseFile` (opcional) declara o nome do arquivo agregado; sem ele o nome
 // e derivado do slug (comportamento historico: `LICENSE-<slug>`).
+// Kadajett/agent-nestjs-skills: sem arquivo LICENSE no upstream; MIT declarado
+// no frontmatter do SKILL.md (license: MIT, metadata.author: Kadajett) e no
+// README. Licenca declarada por evidencia (declared-evidence).
+const MIT_KADAJOETT = `MIT License
+
+Copyright (c) 2026 Kadajett
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+`;
+
 export const SOURCE_LICENSES = {
   "dart-lang/skills": {
     spdx: "BSD-3-Clause",
@@ -409,6 +435,28 @@ export const SOURCE_LICENSES = {
         section: '"license": "MIT"',
         commit: "063bee94c3f4df8453406c830b0a7df0f2860278",
         note: "holder 'Vercel, Inc.' atribuido do author/organization declarados upstream (🟡 processo)",
+      },
+    ],
+  },
+  // Kadajett: sem arquivo LICENSE no upstream; MIT declarado no frontmatter do
+  // SKILL.md (license: MIT, metadata.author: Kadajett) — evidencia citada.
+  "Kadajett/agent-nestjs-skills": {
+    spdx: "MIT",
+    licenseOrigin: "declared-evidence",
+    licenseFile: "LICENSE-kadajett-agent-nestjs-skills",
+    licenseText: MIT_KADAJOETT,
+    sha256: "264e78cc6fa0d0c6067e947522100c11a7b302617c9b719d7d9f4e9def00177e",
+    evidence: [
+      {
+        url: "https://github.com/Kadajett/agent-nestjs-skills/blob/3986e0cede33958e000f959031cbee0cd83c2941/skills/nestjs-best-practices/SKILL.md",
+        section: "frontmatter: license: MIT (metadata.author: Kadajett)",
+        commit: "3986e0cede33958e000f959031cbee0cd83c2941",
+      },
+      {
+        url: "https://github.com/Kadajett/agent-nestjs-skills/blob/3986e0cede33958e000f959031cbee0cd83c2941/README.md",
+        section: "Installation / Supported Agents (OpenCode listed)",
+        commit: "3986e0cede33958e000f959031cbee0cd83c2941",
+        note: "holder 'Kadajett' atribuido do metadata.author declarado upstream (🟡 processo)",
       },
     ],
   },
