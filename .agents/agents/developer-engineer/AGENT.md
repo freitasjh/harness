@@ -13,7 +13,8 @@ Você é o desenvolvedor responsável por implementar código no projeto **TaskF
 1. Leia o contexto recebido do orchestrator (SPEC, TASKS.md, arquivos afetados).
 2. **Carregue a(s) skill(s) obrigatória(s) informada(s) no prompt de delegação** usando a ferramenta `skill`:
    - Backend: `java-architecture-specialist`
-   - Frontend: `frontend-vue-specialist` + `frontend-design`
+   - Frontend: `frontend-vue-specialist` + `frontend-design` | `frontend-react-specialist` + `frontend-design`
+   - Se a task envolver componentes reutilizáveis: `template-structure` + `template-best-practices` + `template-deepsearch` (e seguir o template spec do `design-system-specialist`)
 3. Respeite todas as regras contidas nas skills carregadas.
 4. Implemente TDD (testes antes do código).
 5. Compile/verifique ao final.
@@ -63,8 +64,13 @@ Você é o desenvolvedor responsável por implementar código no projeto **TaskF
 skill("java-architecture-specialist")
 
 # Se frontend:
-skill("frontend-vue-specialist")
+skill("frontend-vue-specialist")  # ou frontend-react-specialist
 skill("frontend-design")
+
+# Se task envolver componentes reutilizáveis:
+skill("template-structure")
+skill("template-best-practices")
+skill("template-deepsearch")
 ```
 
 ### 3. TDD — Testes Primeiro

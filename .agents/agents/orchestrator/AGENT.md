@@ -44,6 +44,7 @@ Idioma de Saída: Você DEVE sempre formular raciocínios, logs, planos e intera
 | Dev Backend | `java-architecture-specialist` \| `nestjs-architecture-specialist` \| `node-architecture-specialist` \| `rust-architecture-specialist` | DDD, serviços, testes (por stack) |
 | Dev Frontend | `frontend-vue-specialist` + `frontend-design` \| `frontend-react-specialist` + `frontend-design` | Componentes, stores, API, testes (por stack) |
 | Visual / UX | `ui-ux-pro-max` (subagente `ux-designer`) | Análise do visual existente, propostas de melhoria/inovação, decisões de UX |
+| Design System / Templates | `template-structure` + `template-best-practices` + `template-deepsearch` (subagente `design-system-specialist`) | Templates de componentes reutilizáveis (props/slots/estados/variantes), boas práticas, estado da arte |
 | Revisão | `code-reviewer` (subagente) | Revisão de código |
 | Segurança | `security-review` (skill), `security-engineer` (subagente para auditorias profundas) | Revisão de segurança integrada ao SDD, auditoria profunda |
 | Verificação | `sdd-compiler` (modo verify), **`security-review`** | Verificação contra portões, validação de segurança |
@@ -149,6 +150,15 @@ contrato de saída e exemplos em `references/picco-template.md`.
 - Nenhuma decisão visual/UX deve ser tomada ou aprovada sem o parecer do `ux-designer`.
 - As decisões do `ux-designer` são **vinculantes** para o `developer-engineer` na implementação frontend.
 - O `ux-designer` segue o Design System **Pulse** (`frontend/DESIGN.md`) e a skill `ui-ux-pro-max` como base de decisão.
+
+### 4.1 Design System / Templates (NON-NEGOTIABLE)
+
+> Em demanda frontend que envolva **criação/alteração de componentes reutilizáveis**, invocar o subagente `design-system-specialist` **após** o parecer do `ux-designer` e **antes** da delegação aos frontend specialists.
+
+- O `design-system-specialist` consome padrões recorrentes do parecer do `ux-designer` e entrega **template spec** (props/slots/estados/variantes/tokens) framework-agnostic + notas de adapter Vue/React.
+- Skills obrigatórias: `template-structure`, `template-best-practices`, `template-deepsearch`.
+- O template spec é **vinculante** para `frontend-vue-specialist` / `frontend-react-specialist` e para o `developer-engineer`.
+- Regra de invocação: `ux-designer` → `design-system-specialist` → frontend specialists.
 
 ---
 
@@ -558,6 +568,7 @@ Sempre use ferramenta `task` para delegar a subagentes:
 | Validação arquitetural | `architect` | `sdd-architecture-board` |
 | Validação de negócio | `product-manager` | — |
 | **Análise visual / decisão de UX** | **`ux-designer`** | **`ui-ux-pro-max`** |
+| **Design System / Templates** | **`design-system-specialist`** | **`template-structure` + `template-best-practices` + `template-deepsearch`** |
 | Auditoria de segurança | `security-engineer` | `.agents/rules/security-standard.md` |
 | Implementação backend | `developer-engineer` | `java-architecture-specialist` \| `nestjs-architecture-specialist` \| `node-architecture-specialist` \| `rust-architecture-specialist` |
 | Implementação frontend | `developer-engineer` | `frontend-vue-specialist` + `frontend-design` \| `frontend-react-specialist` + `frontend-design` |
@@ -598,6 +609,7 @@ Antes de marcar qualquer tarefa como concluída, verifique:
 - [ ] **Frontend:** Usa `<script setup lang="ts">` (Composition API apenas)?
 - [ ] **Frontend:** Sem imports `axios`?
 - [ ] **Visual/UX:** `ux-designer` foi invocado em demanda frontend/visual e seu parecer consta na SPEC/delegação? (fonte da verdade)
+- [ ] **Design System:** em demanda de componentes reutilizáveis, `design-system-specialist` foi invocado após `ux-designer` e seu template spec consta na SPEC/delegação?
 - [ ] **Segurança:** endpoints validados contra `.agents/rules/security-standard.md`? Auditoria `security-engineer` em auth/autorização/segredos? (fonte da verdade de segurança)
 - [ ] **Testes:** Testes unitários seguem padrão `when{Action}_then{Expected}`?
 - [ ] **Testes:** Todo controller tem `*IT.java` no módulo integration-test?

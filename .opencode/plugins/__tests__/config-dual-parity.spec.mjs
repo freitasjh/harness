@@ -120,7 +120,7 @@ describe("PL-05 — opencode.json is v2-only (dual keys ABSENT, v2 shape PRESENT
   it("v2 shape: every `agent` entry has the mandatory `description` + `permission`", () => {
     const json = opencodeJson();
     const names = Object.keys(json.agent ?? {});
-    assert.equal(names.length, 9, `9 agents expected, got ${names.length}`);
+    assert.equal(names.length, 10, `10 agents expected, got ${names.length}`);
     for (const name of names) {
       const entry = json.agent[name];
       assert.equal(typeof entry.description, "string", `agent.${name}.description present`);
@@ -130,9 +130,9 @@ describe("PL-05 — opencode.json is v2-only (dual keys ABSENT, v2 shape PRESENT
     }
   });
 
-  it("I3/RF-03: orchestrator / code-reviewer / ux-designer deny edit", () => {
+  it("I3/RF-03: orchestrator / code-reviewer / ux-designer / design-system-specialist deny edit", () => {
     const json = opencodeJson();
-    for (const name of ["orchestrator", "code-reviewer", "ux-designer"]) {
+    for (const name of ["orchestrator", "code-reviewer", "ux-designer", "design-system-specialist"]) {
       assert.equal(
         json.agent?.[name]?.permission?.edit,
         "deny",

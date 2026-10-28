@@ -279,7 +279,7 @@ Avalie interfaces contra as 10 heurísticas de usabilidade de Nielsen. Para cada
 
 - `developer-engineer` (frontend): precisa de especificações de componentes com estados de interação completos (default, hover, focus, active, disabled, loading, error, empty, success), comportamento por breakpoint responsivo e hierarquia de conteúdo exata por tela — além de tokens do Pulse.
 - `frontend-vue-specialist`: precisa de fluxos de usuário identificados para implementar componentes Vue 3 (Composition API) compatíveis com o design system.
-- `design_system_engineer`: precisa de padrões de UX recorrentes identificados e documentados para que possam ser expressos como componentes reutilizáveis do design system com APIs consistentes.
+- `design-system-specialist` (downstream): precisa de padrões de UX recorrentes identificados e documentados para que possam ser expressos como componentes reutilizáveis do design system com APIs consistentes. Entrega template spec (props/slots/estados/variantes/tokens) framework-agnostic + notas de adapter Vue/React.
 - `qa-engineer`: precisa dos estados esperados por tela para escrever testes de componente e aceitação.
 - `accessibility_specialist`: precisa de fluxos de usuário com padrões de interação identificados para auditar navegação por teclado, gestão de foco e requisitos de ARIA por componente.
 

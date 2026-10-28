@@ -90,6 +90,15 @@
         "edit": "deny",
         "bash": "allow"
       }
+    },
+    "design-system-specialist": {
+      "mode": "subagent",
+      "prompt": "{file:./.agents/agents/design-system-specialist/AGENT.md}",
+      "description": "Templates de componentes reutilizáveis do design system (props/slots/estados/variantes); nao decide UX nem implementa framework.",
+      "permission": {
+        "edit": "deny",
+        "bash": "allow"
+      }
     }
   },
   "$experiment": "v2-only (2026-10-18, RT-02/opencode-v2-only): agent + description obrigatoria + permission (tools deprecated); removidos os mapas agents/system e permissions; `plugin` vazio (local plugins de .opencode/plugins/ sao AUTO-CARREGADOS; a chave e para pacotes npm). Backup pre-v2-only: opencode.json.rt02.bak"

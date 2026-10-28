@@ -638,6 +638,7 @@ const KNOWN_AGENTS = new Set([
   "qa-engineer",
   "code-reviewer",
   "ux-designer",
+  "design-system-specialist",
   "unknown",
 ]);
 
@@ -669,7 +670,7 @@ export function checkWriteAccess({ agent, tool, targets = [], protectedPaths = [
     if (agent === "qa-engineer" && !isHarnessScoped(normalized)) {
       throw new DenyError(DENY_QA_SCOPE, { tool, path: sanitizePathForDetails(normalized) });
     }
-    if (agent === "code-reviewer" || agent === "ux-designer") {
+    if (agent === "code-reviewer" || agent === "ux-designer" || agent === "design-system-specialist") {
       throw new DenyError(DENY_ROLE_WRITE, {
         tool,
         path: sanitizePathForDetails(normalized),

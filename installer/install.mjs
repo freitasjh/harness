@@ -424,6 +424,9 @@ export const SKILLS_COMMON = [
   'rust-architecture-specialist',
   'security-review',
   'spec-review',
+  'template-best-practices',
+  'template-deepsearch',
+  'template-structure',
   'ui-ux-pro-max',
 ];
 

@@ -123,3 +123,14 @@ Registro cronológico de funcionalidades e refactors entregues.
 - [x] Fase 4 — Quality Gate (suite 559/559, static-checks PASS, --check PASS)
 - [x] Fase 5 — Verify (3 dimensões ✅)
 - [x] Fase 6 — Archive (move para `.spec/archive/20261028-harness-feature-c-vendor-upgrade/`, lições no Brain)
+
+| 2026-10-28 | `harness-design-system-agent` | Feature | Agente `design-system-specialist` + 3 skills (template-structure, template-best-practices, template-deepsearch) para templates de UI/componentes. Integrado ao workflow (opencode.json, orchestrator, developer-engineer, ux-designer, workflow-rules.md), SKILLS_COMMON +3, gate-contract I5 atualizado (6 sem edit). 12 tasks, code review APPROVED (após correção de contagem), suite plugins 379/379 + installer 559/559, static-checks PASS. | `.spec/archive/20261028-harness-design-system-agent/` | Completed |
+
+## Etapas concluídas — harness-design-system-agent
+- [x] Fase 0 — Triagem (Feature, PICCO confirmado, análise architect + product-manager)
+- [x] Fase 1 — Análise (PROPOSAL + SPEC, 3 ADRs, 7 FRs, 4 invariantes, delta)
+- [x] Fase 2 — Planejamento (PLAN 12 tasks, TASKS 12 microtasks)
+- [x] Fase 3 — Execução (agente + 3 skills + integração + installer + code review fix)
+- [x] Fase 4 — Quality Gate (plugins 379/379, installer 559/559, static-checks PASS, code review APPROVED)
+- [x] Fase 5 — Verify (3 dimensões ✅)
+- [x] Fase 6 — Archive (move para `.spec/archive/20261028-harness-design-system-agent/`, lições no Brain)
