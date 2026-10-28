@@ -41,8 +41,8 @@ Idioma de Saída: Você DEVE sempre formular raciocínios, logs, planos e intera
 |-------|----------------|---------|
 | Análise | `brain`, `sdd-architecture-board`, **`security-review`** | Consulta de contexto, decisões arquiteturais, validação de requisitos de segurança |
 | Planejamento | `sdd-compiler`, `spec-review`, `jira-microtask-breaker` | Geração SPEC/PLAN/TASKS, validação, microtasks |
-| Dev Backend | `java-architecture-specialist` | DDD, JPA, serviços, testes |
-| Dev Frontend | `frontend-vue-specialist` + `frontend-design` | Componentes, stores, API, testes |
+| Dev Backend | `java-architecture-specialist` \| `nestjs-architecture-specialist` \| `node-architecture-specialist` \| `rust-architecture-specialist` | DDD, serviços, testes (por stack) |
+| Dev Frontend | `frontend-vue-specialist` + `frontend-design` \| `frontend-react-specialist` + `frontend-design` | Componentes, stores, API, testes (por stack) |
 | Visual / UX | `ui-ux-pro-max` (subagente `ux-designer`) | Análise do visual existente, propostas de melhoria/inovação, decisões de UX |
 | Revisão | `code-reviewer` (subagente) | Revisão de código |
 | Segurança | `security-review` (skill), `security-engineer` (subagente para auditorias profundas) | Revisão de segurança integrada ao SDD, auditoria profunda |
@@ -318,7 +318,7 @@ Delegacao para developer-engineer
 - Tasks: [IDs das tasks]
 - Contexto: [trecho SPEC, decisoes arquiteturais, arquivos afetados]
 - Decisoes visuais do ux-designer (se frontend, VINCULANTES): [resumo do parecer do ux-designer]
-- Skills obrigatorias que deve carregar: [java-architecture-specialist | frontend-vue-specialist + frontend-design]
+- Skills obrigatorias que deve carregar: [java-architecture-specialist | nestjs-architecture-specialist | node-architecture-specialist | rust-architecture-specialist | frontend-vue-specialist + frontend-design | frontend-react-specialist + frontend-design]
 - Criterios de aceite:
   1. Compilacao: mvn compile
   2. Testes unitarios passando: mvn test
@@ -437,7 +437,7 @@ Para correções de bug, NÃO execute SDD completo. Siga este workflow comprimid
    - Tasks do `.spec/bugs/{contexto}/TASKS.md`
    - Contexto do bug (causa raiz, arquivo:linha, stack trace)
    - Se visual/UX: decisões do `ux-designer` (vinculantes)
-   - Skills obrigatórias: `java-architecture-specialist` ou `frontend-vue-specialist`
+   - Skills obrigatórias: `java-architecture-specialist` \| `nestjs-architecture-specialist` \| `node-architecture-specialist` \| `rust-architecture-specialist` \| `frontend-vue-specialist` \| `frontend-react-specialist`
    - Critérios de aceite: compilação, testes existentes ainda passam, testes novos adicionados
 2. Após retorno, delegue revisão para `code-reviewer` em chamada separada.
 3. Loop correção se necessário (máx 3 iterações, orquestrador só re-delega).
@@ -559,8 +559,8 @@ Sempre use ferramenta `task` para delegar a subagentes:
 | Validação de negócio | `product-manager` | — |
 | **Análise visual / decisão de UX** | **`ux-designer`** | **`ui-ux-pro-max`** |
 | Auditoria de segurança | `security-engineer` | `.agents/rules/security-standard.md` |
-| Implementação backend | `developer-engineer` | `java-architecture-specialist` |
-| Implementação frontend | `developer-engineer` | `frontend-vue-specialist` + `frontend-design` |
+| Implementação backend | `developer-engineer` | `java-architecture-specialist` \| `nestjs-architecture-specialist` \| `node-architecture-specialist` \| `rust-architecture-specialist` |
+| Implementação frontend | `developer-engineer` | `frontend-vue-specialist` + `frontend-design` \| `frontend-react-specialist` + `frontend-design` |
 | Revisão de código | `code-reviewer` | — |
 | Execução de testes | `qa-engineer` | — |
 

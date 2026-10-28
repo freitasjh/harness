@@ -193,7 +193,7 @@ export function backup(target, { backupRoot, injectFailure = false } = {}) {
 // de instalar. O comportamento fica congelado por teste (generate.spec.mjs).
 // FONTE UNICA da lista de stacks aceitos (RF-14/D-2): alimenta o prompt do W3,
 // a mensagem de BAD_ANSWER e o `howToFix('stack')` — nenhuma lista duplicada a mao.
-export const STACK_VALUES = ['node', 'java+vue', 'java+react', 'outra', 'node-esm', 'flutter', 'dart'];
+export const STACK_VALUES = ['node', 'java+vue', 'java+react', 'outra', 'node-esm', 'flutter', 'dart', 'rust', 'nestjs', 'node+react', 'nestjs+react', 'rust+react'];
 
 export const QUESTIONS = [
   { key: 'project', prompt: 'Nome do projeto?', kind: 'name' },
@@ -216,7 +216,7 @@ export const QUESTIONS = [
 // Os IDs mobile (`dart`/`flutter`) valem nos dois eixos (SPEC RF-01: o preset
 // flutter carrega `flutter/flutter`) — declarado aqui, nunca inferido do nome.
 export const AXIS_IDS = {
-  backend: ['java', 'node', 'dart', 'flutter', 'other', 'none'],
+  backend: ['java', 'node', 'rust', 'nestjs', 'dart', 'flutter', 'other', 'none'],
   frontend: ['vue', 'react', 'dart', 'flutter', 'other', 'none'],
 };
 
@@ -240,6 +240,8 @@ export function stacksFor(axes) {
   }
   const out = [];
   if (axes.backend === 'dart') out.push('dart');
+  if (axes.backend === 'rust') out.push('rust');
+  if (axes.backend === 'nestjs') out.push('nestjs');
   if (axes.frontend === 'react') out.push('react');
   return out;
 }
@@ -273,6 +275,46 @@ export const STACK_PROFILES = {
     axes: { backend: 'java', frontend: 'react' },
     backend: 'java+react backend (declared via Q&A)',
     frontend: 'java+react frontend (declared via Q&A)',
+    commands: {},
+    mcp: ['chrome-devtools'],
+    moduleMap: {},
+  },
+  rust: {
+    axes: { backend: 'rust', frontend: 'none' },
+    backend: 'rust backend (declared via Q&A)',
+    frontend: 'rust frontend (declared via Q&A)',
+    commands: {},
+    mcp: ['chrome-devtools'],
+    moduleMap: {},
+  },
+  nestjs: {
+    axes: { backend: 'nestjs', frontend: 'none' },
+    backend: 'nestjs backend (declared via Q&A)',
+    frontend: 'nestjs frontend (declared via Q&A)',
+    commands: {},
+    mcp: ['chrome-devtools'],
+    moduleMap: {},
+  },
+  'node+react': {
+    axes: { backend: 'node', frontend: 'react' },
+    backend: 'node+react backend (declared via Q&A)',
+    frontend: 'node+react frontend (declared via Q&A)',
+    commands: {},
+    mcp: ['chrome-devtools'],
+    moduleMap: {},
+  },
+  'nestjs+react': {
+    axes: { backend: 'nestjs', frontend: 'react' },
+    backend: 'nestjs+react backend (declared via Q&A)',
+    frontend: 'nestjs+react frontend (declared via Q&A)',
+    commands: {},
+    mcp: ['chrome-devtools'],
+    moduleMap: {},
+  },
+  'rust+react': {
+    axes: { backend: 'rust', frontend: 'react' },
+    backend: 'rust+react backend (declared via Q&A)',
+    frontend: 'rust+react frontend (declared via Q&A)',
     commands: {},
     mcp: ['chrome-devtools'],
     moduleMap: {},
@@ -324,6 +366,7 @@ for (const name of Object.keys(STACK_PROFILES)) {
 // continua entrando em TODO destino que nao case (residual declarado do RF-04/D-4b).
 export const RULES_BY_AXIS = {
   'frontend=react': ['frontend-coding-standards.md'],
+  'frontend=vue': ['frontend-react-coding-standards.md'],
 };
 
 // Artefatos de rule COMUNS: entram em todo destino. Toda rule de
@@ -349,6 +392,7 @@ export const RULES_COMMON = [
 // lock) e gateada por `stacks` (RF-03) e NAO passa por este mapa.
 export const SKILLS_BY_AXIS = {
   'frontend=react': ['frontend-vue-specialist'],
+  'frontend=vue': ['frontend-react-specialist'],
 };
 
 // Skills LOCAIS COMUNS: entram em todo destino. Toda skill local de
@@ -362,15 +406,19 @@ export const SKILLS_COMMON = [
   'dev-planner',
   'feature-status-dashboard',
   'frontend-design',
+  'frontend-react-specialist',
   'harness-installer',
   'harness-report',
   'java-architecture-specialist',
   'jira-microtask-breaker',
+  'nestjs-architecture-specialist',
+  'node-architecture-specialist',
   'prd-adr-pipeline',
   'prompt-optimizer',
   'sdd-architecture-board',
   'sdd-compiler',
   'sdd-feedback',
+  'rust-architecture-specialist',
   'security-review',
   'spec-review',
   'ui-ux-pro-max',

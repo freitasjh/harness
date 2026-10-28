@@ -498,7 +498,7 @@ describe('INS-08 mapeamento sem nova key (REQ-02)', () => {
 // nao repete a lista antiga de install.mjs:196 — que omitia java+react.
 // AT-1 (review iteracao 2): a lista esperada e LITERAL (oraculo independente);
 // `assert.match(line, /java\+vue/)` era satisfeito pelo sufixo `(default: ...)`.
-const EXPECTED_STACK_PROMPT = 'Stack do destino? (node/java+vue/java+react/outra/node-esm/flutter/dart)';
+const EXPECTED_STACK_PROMPT = 'Stack do destino? (node/java+vue/java+react/outra/node-esm/flutter/dart/rust/nestjs/node+react/nestjs+react/rust+react)';
 
 describe('EX-BE-03 prompt do W3 derivado da fonte unica (RF-14)', () => {
   it('QUESTIONS.stack.prompt e exatamente a lista derivada (falha se voltar hardcoded)', () => {

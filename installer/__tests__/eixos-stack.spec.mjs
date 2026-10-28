@@ -41,6 +41,11 @@ const EXPECTED_STACKS = {
   'node-esm': [],
   'java+vue': [],
   'java+react': ['react'],
+  rust: ['rust'],
+  nestjs: ['nestjs'],
+  'node+react': ['react'],
+  'nestjs+react': ['nestjs', 'react'],
+  'rust+react': ['rust', 'react'],
   outra: [],
   flutter: ['flutter', 'dart'],
   dart: ['dart'],
@@ -290,6 +295,11 @@ describe('EX-BE-05 CR-1: chave de RULES_BY_AXIS validada na carga e nunca inerte
     assert.deepEqual([...ES_IDS('dart')].sort(), ['backend=dart', 'frontend=none']);
     assert.deepEqual([...ES_IDS('java+react')].sort(), ['backend=java', 'frontend=react']);
     assert.deepEqual([...ES_IDS('java+vue')].sort(), ['backend=java', 'frontend=vue']);
+    assert.deepEqual([...ES_IDS('rust')].sort(), ['backend=rust', 'frontend=none']);
+    assert.deepEqual([...ES_IDS('nestjs')].sort(), ['backend=nestjs', 'frontend=none']);
+    assert.deepEqual([...ES_IDS('node+react')].sort(), ['backend=node', 'frontend=react']);
+    assert.deepEqual([...ES_IDS('nestjs+react')].sort(), ['backend=nestjs', 'frontend=react']);
+    assert.deepEqual([...ES_IDS('rust+react')].sort(), ['backend=rust', 'frontend=react']);
     assert.deepEqual([...ES_IDS('flutter')].sort(), ['backend=flutter', 'frontend=flutter']);
     assert.deepEqual([...ES_IDS('outra')].sort(), ['backend=other', 'frontend=other']);
   });
