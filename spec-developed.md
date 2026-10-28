@@ -101,3 +101,14 @@ Registro cronológico de funcionalidades e refactors entregues.
 - [x] Fase 4 — Quality Gate (suite 546/546, static-checks PASS, temp install PASS, code review APPROVED)
 - [x] Fase 5 — Verify (3 dimensões ✅)
 - [x] Fase 6 — Archive (move para `.spec/archive/20261028-harness-stacks-nestjs-rust-react/`, lições no Brain)
+
+| 2026-10-28 | `harness-adr-005-dual-axes` | Feature | ADR-005 (pergunta dupla backend+frontend) no installer: `presetOfAxes`/`presetsOfAxes` puros, `collectAnswers` dual-shape (legado/novo/misto/nenhum/paired), `answersVersion` opcional, `validateAnswer` backend/frontend, `generateConfig` resolution, `defaultSuiteFor` dual input, wizard axes derivados, doctor derivação reversa. 9 tasks, code review APPROVED, suite 559/559, static-checks PASS. | `.spec/archive/20261028-harness-adr-005-dual-axes/` | Completed |
+
+## Etapas concluídas — harness-adr-005-dual-axes
+- [x] Fase 0 — Triagem (Feature, PICCO confirmado, análise architect + product-manager)
+- [x] Fase 1 — Análise (PROPOSAL + SPEC, ADR-005, 8 FRs, 4 invariantes, delta)
+- [x] Fase 2 — Planejamento (PLAN 9 tasks, TASKS 9 microtasks)
+- [x] Fase 3 — Execução (implementação BE-01..BE-09 + testes BE-08 + doctor fix)
+- [x] Fase 4 — Quality Gate (suite 559/559, static-checks PASS, code review APPROVED)
+- [x] Fase 5 — Verify (3 dimensões ✅)
+- [x] Fase 6 — Archive (move para `.spec/archive/20261028-harness-adr-005-dual-axes/`, lições no Brain)

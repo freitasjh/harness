@@ -1,5 +1,5 @@
 {
-  "current_feature": "harness-stacks-nestjs-rust-react",
+  "current_feature": "harness-adr-005-dual-axes",
   "current_phase": "Completed",
   "previous_phase": "Testing",
   "next_phase": null,
@@ -21,12 +21,12 @@
       "harness_report": "harness/prd-adr-pipeline.json"
     },
     "c1_previous_bug": ".spec/bugs/harness-eixos-stack-p2/TASKS.md",
-    "proposal": ".spec/backend/harness-stacks-nestjs-rust-react/PROPOSAL.md",
-    "spec": ".spec/backend/harness-stacks-nestjs-rust-react/SPEC.md",
-    "plan": ".spec/backend/harness-stacks-nestjs-rust-react/PLAN.md",
-    "tasks": ".spec/backend/harness-stacks-nestjs-rust-react/TASKS.md",
+    "proposal": ".spec/backend/harness-adr-005-dual-axes/PROPOSAL.md",
+    "spec": ".spec/backend/harness-adr-005-dual-axes/SPEC.md",
+    "plan": ".spec/backend/harness-adr-005-dual-axes/PLAN.md",
+    "tasks": ".spec/backend/harness-adr-005-dual-axes/TASKS.md",
     "superseded_cycle": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/ (superseded: SPEC prescrevia `Plugin.define`, ausente no binario v2.0.32)",
-    "archive": ".spec/archive/20261028-harness-stacks-nestjs-rust-react/",
+    "archive": ".spec/archive/20261028-harness-adr-005-dual-axes/",
     "prd": ".spec/prd/prd-garantias-runtime/PRD.md",
     "research": ".spec/prd/prd-garantias-runtime/RESEARCH.md",
     "adr_index": ".spec/prd/prd-garantias-runtime/ADR-INDEX.md",
@@ -76,11 +76,11 @@
     "G2_ADR": "approved_user_2026_10_22 (4 ADRs aprovados; ADR-001 in-progress na branch adr/prd-garantias-runtime/01-modo-gate-no-env; merge humano)"
   },
   "code_review": {
-    "last_invoked_at": "2026-10-28T13:34:11.831850Z",
+    "last_invoked_at": "2026-10-28T14:53:02.140937Z",
     "last_status": "passed",
     "critical_issues": 0,
-    "attention_issues": 1,
-    "reviewer_notes": "APPROVED zero criticos; 1 atencao (SDD-02 headings) corrigido; 2 sugestoes (tech debt backend gating, commands defaults)."
+    "attention_issues": 3,
+    "reviewer_notes": "APPROVED zero criticos; 3 atencao (BE-08 testes dedicados, doctor derivação reversa, validateAxesCombination silent) — testes adicionados e doctor fix aplicado."
   },
   "overrides": [
     {
@@ -178,7 +178,7 @@
       "created": "2026-10-22T00:00:00Z"
     }
   ],
-  "last_update": "2026-10-28T13:57:17.594949Z",
+  "last_update": "2026-10-28T14:53:06.513722Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],

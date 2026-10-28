@@ -195,14 +195,6 @@ export function backup(target, { backupRoot, injectFailure = false } = {}) {
 // a mensagem de BAD_ANSWER e o `howToFix('stack')` — nenhuma lista duplicada a mao.
 export const STACK_VALUES = ['node', 'java+vue', 'java+react', 'outra', 'node-esm', 'flutter', 'dart', 'rust', 'nestjs', 'node+react', 'nestjs+react', 'rust+react'];
 
-export const QUESTIONS = [
-  { key: 'project', prompt: 'Nome do projeto?', kind: 'name' },
-  { key: 'stack', prompt: `Stack do destino? (${STACK_VALUES.join('/')})`, kind: 'stack' },
-  { key: 'suiteCommand', prompt: 'Comando da suite de testes?', kind: 'command' },
-  { key: 'pluginsDir', prompt: 'Diretorio de plugins no destino?', kind: 'path' },
-  { key: 'deployToken', prompt: 'Token de deploy (sensivel, opcional)?', kind: 'string', secret: true },
-];
-
 // ---------- perfis de stack (ADR-008) ----------
 // Registry puro: UNICA fonte das capacidades por stack (axes, backend/frontend,
 // commands, mcp, moduleMap). `stacks` (skills/rules que o perfil aceita, A4)
@@ -225,6 +217,17 @@ export const AXIS_IDS = {
 // chave e o PAR de eixos `backend+frontend`, que identifica o mesmo preset sem
 // ambiguidade (preset flutter = axes flutter/flutter) — nao ha heuristica por
 // nome nem por um eixo isolado.
+export const QUESTIONS = [
+  { key: 'project', prompt: 'Nome do projeto?', kind: 'name' },
+  { key: 'stack', prompt: `Stack do destino? (${STACK_VALUES.join('/')})`, kind: 'stack' },
+  { key: 'backend', prompt: `Backend? (${AXIS_IDS.backend.join('/')})`, kind: 'backend', optional: true },
+  { key: 'frontend', prompt: `Frontend? (${AXIS_IDS.frontend.join('/')})`, kind: 'frontend', optional: true },
+  { key: 'suiteCommand', prompt: 'Comando da suite de testes?', kind: 'command' },
+  { key: 'pluginsDir', prompt: 'Diretorio de plugins no destino?', kind: 'path' },
+  { key: 'deployToken', prompt: 'Token de deploy (sensivel, opcional)?', kind: 'string', secret: true },
+];
+
+
 export const STACKS_FOR_EXCEPTIONS = {
   'flutter+flutter': ['flutter', 'dart'],
 };
@@ -542,6 +545,27 @@ export function profileOf(stack) {
   return STACK_PROFILES[stack] || null;
 }
 
+// ADR-005 (BE-01): reverse index por axes key `${backend}+${frontend}`.
+// Funcao pura (sem I/O). `presetsOfAxes` retorna TODOS os presets que casam
+// (array, ordem de STACK_VALUES). `presetOfAxes` retorna o primeiro (ou null).
+export function presetsOfAxes(backend, frontend) {
+  const out = [];
+  for (const name of STACK_VALUES) {
+    const prof = STACK_PROFILES[name];
+    if (prof && prof.axes && prof.axes.backend === backend && prof.axes.frontend === frontend) {
+      out.push(name);
+    }
+  }
+  return out;
+}
+
+// Ambiguidade documentada: para axes {backend:'node', frontend:'none'} existem
+// dois presets (node, node-esm); o primeiro match por STACK_VALUES e 'node'.
+export function presetOfAxes(backend, frontend) {
+  const arr = presetsOfAxes(backend, frontend);
+  return arr.length ? arr[0] : null;
+}
+
 function commandResolves(cmd) {
   if (!cmd || typeof cmd !== 'string') return false;
   const bin = cmd.trim().split(/\s+/)[0];
@@ -567,6 +591,10 @@ export function pubspecDeclaresFlutter(text) {
 export function validateAnswer(target, key, value) {
   const q = QUESTIONS.find((x) => x.key === key);
   if (!q) throw new InstallError(`unknown question: ${key}`, 'BAD_ANSWER');
+  // optional: valor vazio => ausente (undefined), sem BAD_ANSWER.
+  if (q.optional && (value === undefined || value === null || String(value).trim() === '')) {
+    return undefined;
+  }
   const t = path.resolve(target);
   switch (q.kind) {
     case 'name':
@@ -609,20 +637,80 @@ export function validateAnswer(target, key, value) {
       return String(value);
     case 'string':
       return value === undefined || value === null ? '' : String(value);
+    case 'backend': {
+      const v = String(value);
+      if (!AXIS_IDS.backend.includes(v)) {
+        throw new InstallError(`backend must be one of ${AXIS_IDS.backend.join('|')}`, 'BAD_ANSWER');
+      }
+      return v;
+    }
+    case 'frontend': {
+      const v = String(value);
+      if (!AXIS_IDS.frontend.includes(v)) {
+        throw new InstallError(`frontend must be one of ${AXIS_IDS.frontend.join('|')}`, 'BAD_ANSWER');
+      }
+      return v;
+    }
     default:
       return value;
   }
 }
 
+export function validateAxesCombination(backend, frontend) {
+  if (backend === undefined || backend === null || frontend === undefined || frontend === null) return;
+  if (presetOfAxes(backend, frontend) === null) {
+    throw new InstallError(`no preset for axes ${backend}+${frontend}`, 'BAD_ANSWER');
+  }
+}
+
 export function collectAnswers(target, scripted) {
   const answers = {};
+  const hasStack = scripted.stack !== undefined && scripted.stack !== null && scripted.stack !== '';
+  const hasBackend = scripted.backend !== undefined && scripted.backend !== null && scripted.backend !== '';
+  const hasFrontend = scripted.frontend !== undefined && scripted.frontend !== null && scripted.frontend !== '';
+
+  // paired: ambos ou nenhum
+  if (hasBackend !== hasFrontend) {
+    throw new InstallError('paired: backend and frontend must both be present', 'BAD_ANSWER');
+  }
+  // nenhum -> BAD_ANSWER (missing answer)
+  if (!hasStack && !hasBackend) {
+    throw new InstallError('missing answer: stack', 'BAD_ANSWER');
+  }
+
+  if (hasStack) {
+    answers.stack = validateAnswer(target, 'stack', scripted.stack);
+  }
+  if (hasBackend) {
+    answers.backend = validateAnswer(target, 'backend', scripted.backend);
+    answers.frontend = validateAnswer(target, 'frontend', scripted.frontend);
+    validateAxesCombination(answers.backend, answers.frontend);
+    const preset = presetOfAxes(answers.backend, answers.frontend);
+    if (preset === null) {
+      throw new InstallError(`no preset for axes ${answers.backend}+${answers.frontend}`, 'BAD_ANSWER');
+    }
+    if (!hasStack) {
+      answers.stack = preset;
+    } else if (preset !== answers.stack) {
+      throw new InstallError('inconsistent stack vs axes', 'BAD_ANSWER');
+    }
+  }
+
   for (const q of QUESTIONS) {
+    if (q.key === 'stack' || q.key === 'backend' || q.key === 'frontend') continue;
     if (q.secret && (scripted[q.key] === undefined || scripted[q.key] === '')) {
       answers[q.key] = '';
       continue;
     }
-    if (scripted[q.key] === undefined && !q.secret) throw new InstallError(`missing answer: ${q.key}`, 'BAD_ANSWER');
+    if (scripted[q.key] === undefined) {
+      if (q.optional) continue;
+      throw new InstallError(`missing answer: ${q.key}`, 'BAD_ANSWER');
+    }
     answers[q.key] = validateAnswer(target, q.key, scripted[q.key]);
+  }
+
+  if (scripted.answersVersion !== undefined) {
+    answers.answersVersion = scripted.answersVersion;
   }
   return answers;
 }
@@ -634,6 +722,7 @@ export function serializeAnswers(answers) {
     if (q.secret) continue;
     if (answers[q.key] !== undefined) out[q.key] = answers[q.key];
   }
+  if (answers.answersVersion !== undefined) out.answersVersion = answers.answersVersion;
   return out;
 }
 
@@ -668,7 +757,21 @@ function refWillExist(rel, writtenPaths) {
 
 export function generateConfig(answers, { writtenPaths = null } = {}) {
   if (!answers || !answers.project) throw new InstallError('answers.project required', 'BAD_ANSWER');
-  const stack = answers.stack || 'node';
+  // BE-04: axes presentes mas sem preset => BAD_ANSWER.
+  if (answers.backend !== undefined && answers.frontend !== undefined) {
+    if (presetOfAxes(answers.backend, answers.frontend) === null) {
+      throw new InstallError(`no preset for axes ${answers.backend}+${answers.frontend}`, 'BAD_ANSWER');
+    }
+  }
+  let stack = answers.stack;
+  if (stack === undefined || stack === null || stack === '') {
+    if (answers.backend !== undefined && answers.frontend !== undefined) {
+      stack = presetOfAxes(answers.backend, answers.frontend);
+    } else {
+      stack = 'node';
+    }
+  }
+  if (!stack) stack = 'node';
   const profile = profileOf(stack);
   const defaultSuite = (profile && profile.commands && profile.commands.suiteFull) || 'node --test';
   const suiteFull = answers.suiteCommand || defaultSuite;
@@ -1256,12 +1359,30 @@ export function runDoctor({ target, sourceDir = null, answersFile = null, backup
     const loaded = loadAnswersFile(answersFile);
     redacting = { ...(loaded || {}) };
   }
+  // ADR-005: se manifest nao tem axes mas --answers-file traz backend/frontend,
+  // resolver stack via presetOfAxes(backend, frontend) antes de derivar axes
+  // (evita stacks=[] no D3).
+  if (!redacting.stack && redacting.backend && redacting.frontend) {
+    const preset = presetOfAxes(redacting.backend, redacting.frontend);
+    if (preset) redacting = { ...redacting, stack: preset };
+  }
   // SPEC §6: sem `--answers-file` o doctor NAO pode ser no-op (fail-open) — o
   // stack do destino esta no manifesto do init. Sem isto o D3 proporia `create`
   // de um artefato que o `init` excluiu de proposito (o eixo nao seria aplicado).
   if (!redacting.stack) {
     const fromTarget = destinationStack(pf.target);
     if (fromTarget) redacting = { ...redacting, stack: fromTarget };
+  }
+  // BE-07: manifest legado (sem axes) deriva axes de stack.
+  if ((!redacting.backend || !redacting.frontend) && redacting.stack) {
+    const prof = profileOf(redacting.stack);
+    if (prof && prof.axes) {
+      redacting = {
+        ...redacting,
+        backend: redacting.backend || prof.axes.backend,
+        frontend: redacting.frontend || prof.axes.frontend,
+      };
+    }
   }
   say(`[OK] D0 pre-flight: target=${pf.target}`);
   say('[INFO] D1 inventario do destino (somente leitura).');
@@ -1810,7 +1931,7 @@ export function promptAnswers(target, { input, output } = {}) {
   };
   return (async () => {
     const answers = {};
-    for (const q of QUESTIONS) {
+    for (const q of QUESTIONS.filter((x) => !x.optional)) {
       for (;;) {
         const raw = q.secret ? await askSecret(q) : await askOne(q);
         const value = raw === '' && q.secret ? '' : raw;
@@ -2068,7 +2189,12 @@ export function detect(target) {
 // o eixo web inteiro). Follow-up (exige decisao do owner, nao muda o
 // comportamento aqui): dar candidato ao eixo `other` ou tornar o comando
 // explicitamente obrigatorio no prompt.
-export function defaultSuiteFor(stack) {
+export function defaultSuiteFor(stackOrAxes) {
+  let stack = stackOrAxes;
+  if (stackOrAxes && typeof stackOrAxes === 'object') {
+    stack = presetOfAxes(stackOrAxes.backend, stackOrAxes.frontend) || stackOrAxes.stack || '';
+  }
+  stack = stack || '';
   const profile = profileOf(stack);
   const frontendAxis = profile ? profile.axes.frontend : null;
   const web = frontendAxis === 'vue' || frontendAxis === 'react';
@@ -2195,8 +2321,9 @@ export async function runWizard({
       pluginsDir: pf.target,
       deployToken: '',
     };
-    for (let i = 0; i < QUESTIONS.length; i++) {
-      const q = QUESTIONS[i];
+    const wizardQuestions = QUESTIONS.filter((q) => !q.optional);
+    for (let i = 0; i < wizardQuestions.length; i++) {
+      const q = wizardQuestions[i];
       // should-fix: o default de suiteCommand acompanha o stack RESPONDIDO no
       // W3, nao o detectado/menu. Se o usuario troca o stack, recalcula aqui.
       if (q.key === 'suiteCommand') {
@@ -2205,7 +2332,7 @@ export async function runWizard({
       const def = defaults[q.key] !== undefined ? defaults[q.key] : '';
       for (;;) {
         const shown = def !== '' && !q.secret ? ` (default: ${def})` : '';
-        const label = `[${i + 1}/${QUESTIONS.length}] ${q.prompt}${shown} (q cancela)`;
+        const label = `[${i + 1}/${wizardQuestions.length}] ${q.prompt}${shown} (q cancela)`;
         let raw;
         if (q.secret && canNoEcho(stdin)) {
           // FU-27: token sem eco; readline fechado e recriado para nao enfilar
@@ -2237,6 +2364,10 @@ export async function runWizard({
     // harness.config.json entra como placeholder (a acao dele independe do
     // conteudo) — assim o wizard NAO chama generateConfig.
     const profile = profileOf(answers.stack);
+    if (profile && profile.axes) {
+      answers.backend = profile.axes.backend;
+      answers.frontend = profile.axes.frontend;
+    }
     const stacks = profile ? profile.stacks : [answers.stack];
     const incomingFiles = collectIncoming(sourceDir, { stacks, stack: answers.stack ?? null });
     const plan = planMerge(pf.target, { ...incomingFiles, 'harness.config.json': '' });
