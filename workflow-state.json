@@ -1,8 +1,8 @@
 {
   "current_feature": "harness-inventory",
-  "current_phase": "Execution",
+  "current_phase": "Testing",
   "previous_phase": "Planning",
-  "next_phase": "Testing",
+  "next_phase": "Completed",
   "type": "refactor",
   "layer": "agents/skills/rules",
   "repo": "harness",
@@ -11,7 +11,7 @@
     "bug_report": "harness/harness-eixos-stack-p2.json",
     "source_tech_debt": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
     "previous_archive": ".spec/archive/20261018-harness-eixos-stack/",
-    "verify": ".spec/archive/20261020-opencode-v2-only/VERIFY.md",
+    "verify": ".spec/backend/harness-inventory-adr-001/VERIFY.md",
     "harness_evidence": ".spec/archive/20261018-harness-eixos-stack/harness/",
     "harness_report": "harness/harness-inventory.json",
     "tech_debt_p2": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
@@ -58,7 +58,7 @@
     "P2_P3": "approved_user_2026_11_11 (PLAN 57 linhas, TASKS 12 microtasks RV-01..RV-12)",
     "P3_P4": "approved_auto_evidence_batches_2026_11_11 (commits 1c8062b + 2b80685 + e63c464; code review 3 rodadas 0 criticos; correcoes de governanca aplicadas)",
     "P4_P5": "approved_auto_evidence_QA_2026_11_11 (REPORT harness/harness-inventory.json schema-valido; suite 379+559 = 938 testes, 0 falhas; static exit 0; sdd-checks 0 FAIL; vendor OK; selo inalterado)",
-    "P5_P6": "pending_user_approval (VERIFY do ciclo harness-inventory-adr-001)",
+    "P5_P6": "pending_user_approval (VERIFY 3/3 PASS; traceability 100%; 4 residuos declarados)",
     "P6_fim": "pending (merge humano do PR; push pendente)",
     "B1_B2": "approved_user_2026_09_29",
     "FU32": "closed_approved_decision_B",
@@ -191,7 +191,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-11T15:36:48.530Z",
+  "last_update": "2026-11-11T15:40:00.782Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -215,7 +215,7 @@
   "harness_evidence": "harness/harness-inventory.json — 6 comandos com exitCode e sha256 do stdout; ADR-001 16/16 itens verificados por comando; gate.js e harness.config.json com 0 linhas no range 5dcc0e0..HEAD; selo suiteFull c904f1c5 inalterado",
   "code_review_status": "passed",
   "code_review_status_ciclo": "harness-inventory-adr-001: 3 rodadas, 0 criticos; ultimas 3 atencao fechadas em bookkeeping do workflow-state (backlog, artifacts, gates, harness_status)",
-  "sdd_stage": "harness-inventory-adr-001: EXECUTION + QA completas (12/12 microtasks, REPORT aceito). Proximo: VERIFY (3 dimensoes) -> P5",
+  "sdd_stage": "harness-inventory-adr-001: EXECUTION + QA + VERIFY completos (3/3 PASS). Proximo: P5->P6 (merge humano do PR) e PRD-2",
   "backlog": {
     "total": 12,
     "todo": 0,
@@ -973,13 +973,14 @@
     "pos_restart3": "orcamento ESGOTADO (2/2: fix + review); proxima delegacao nega; restart #4 necessario"
   },
   "verify": {
-    "at": "2026-10-22T00:00:00Z",
+    "at": "2026-11-11T00:00:00-03:00",
     "verdict": "3/3 PASS",
-    "completude": "10/10 tasks com DoD satisfeito; zero TODO",
-    "corretude": "suiteFull exit 0 (6055-6057ms, stderr 0); 379/0 plugins + 516/0 installer; static 10 PASS; sdd 8 PASS; contraprova allow (counts-unverifiable, a6 declarado); selo adulterado => DENY",
-    "coerencia": "10/10 itens da interface congelada do ADR-001 mapeados e provados; decide() intocada; sem deny/hook novo; dispatcher nao decide modo",
-    "artefato": ".spec/backend/garantias-runtime-adr-001/VERIFY.md",
-    "report": "harness/garantias-runtime-adr-001.json (schema-valido, counts reais)"
+    "completude": "12/12 microtasks marcadas; 0 TODO/TBD/FIXME no ciclo; 5 artefatos presentes",
+    "corretude": "938 testes 0 falhas (379 plugins + 559 installer); static exit 0; sdd-checks 0 FAIL; vendor OK; selo c904f1c5 inalterado; 12/12 RF cobertos",
+    "coerencia": "16/16 itens do ADR com prova de comando; gate.js e harness.config.json byte-identicos; 3 desvios registrados como N8/N9/N10 antes do verify; instalador sem lista hardcoded",
+    "traceability": "100% (12 RF -> 12 tasks -> arquivo:linha)",
+    "artefato": ".spec/backend/harness-inventory-adr-001/VERIFY.md",
+    "report": "harness/harness-inventory.json"
   },
   "commit": "a19acab",
   "remote": "git@github.com:freitasjh/harness.git (SSH; push + CI pendentes)",
