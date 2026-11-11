@@ -558,7 +558,12 @@ Para **TODO** desenvolvimento, as skills apropriadas **OBRIGATORIAMENTE** devem 
 | **Planejamento Técnico** | `dev-planner` | Planejamento detalhado de features: descoberta, análise de restrições, desafio de soluções, projeto de arquitetura, estimativa e validação (6 fases, gera artefatos para sdd-compiler) |
 | **Arquitetura** | `sdd-architecture-board` | Decisões arquiteturais, ADRs, validação de design |
 | **Desenvolvimento Backend** | `java-architecture-specialist` | DDD, JPA, serviços, segurança, testes |
+| **Desenvolvimento Backend** | `nestjs-architecture-specialist` | NestJS, módulos, DI, guards, testes |
+| **Desenvolvimento Backend** | `node-architecture-specialist` | Node.js, Express/Fastify, módulos, testes |
+| **Desenvolvimento Backend** | `rust-architecture-specialist` | Rust, Axum/Actix, Cargo, async, testes |
 | **Desenvolvimento Frontend** | `frontend-vue-specialist` + `frontend-design` | Componentes, stores, router, API, testes + design visual |
+| **Desenvolvimento Frontend** | `frontend-react-specialist` + `frontend-design` | Componentes React, stores, router, API, testes + design visual |
+| **Design System / Templates** | `template-structure` + `template-best-practices` + `template-deepsearch` (subagente `design-system-specialist`) | Templates de componentes reutilizáveis (props/slots/estados/variantes), boas práticas, estado da arte via deepsearch |
 | **SDD Compiler** | `sdd-compiler` | Geração de SPEC, PLAN, TASK com validação |
 | **Revisão de Spec** | `spec-review` | Revisar SPEC.md contra regras do projeto, gerar relatório de gaps e conformidade |
 | **Revisão de Segurança** | `security-review` | Revisão de segurança integrada ao SDD (Fase 1, 3, 4.5) — OWASP, ASVS, MASVS |

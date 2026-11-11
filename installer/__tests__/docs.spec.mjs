@@ -102,7 +102,7 @@ describe('EX-FE-13 SKILL.md — registry de 7 presets, menu 2 passos e vendor po
   });
 
   it('registry: 7 presets com axes/stacks derivados e o eixo como fonte do gating', () => {
-    for (const preset of ['node', 'node-esm', 'java+vue', 'java+react', 'outra', 'flutter', 'dart']) {
+    for (const preset of ['node', 'node-esm', 'java+vue', 'java+react', 'rust', 'nestjs', 'node+react', 'nestjs+react', 'rust+react', 'outra', 'flutter', 'dart']) {
       assert.ok(skill.includes(preset), `cita o preset ${preset}`);
     }
     assert.match(skill, /AXIS_IDS/, 'cita AXIS_IDS (IDs de eixo)');
@@ -136,7 +136,7 @@ describe('EX-FE-13 harness-config.md — registry real (nao so o mobile)', () =>
 
   it('descreve o registry com 7 presets, axes, stacks derivado e gating por eixo', () => {
     assert.match(cfg, /## Perfis de stack do instalador/, 'secao renomeada (nao e so o mobile)');
-    for (const preset of ['node', 'node-esm', 'java+vue', 'java+react', 'outra', 'flutter', 'dart']) {
+    for (const preset of ['node', 'node-esm', 'java+vue', 'java+react', 'rust', 'nestjs', 'node+react', 'nestjs+react', 'rust+react', 'outra', 'flutter', 'dart']) {
       assert.ok(cfg.includes(preset), `cita o preset ${preset}`);
     }
     assert.match(cfg, /`AXIS_IDS`/, 'cita AXIS_IDS');

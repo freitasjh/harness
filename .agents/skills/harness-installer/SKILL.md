@@ -58,7 +58,7 @@ const out = main({
   target: '/caminho/do/destino',
   scriptedAnswers: {
     project: 'nome-do-projeto',          // obrigatório, não-vazio
-    stack: 'node',                       // node | node-esm | java+vue | java+react | outra | flutter | dart
+    stack: 'node',                       // node | node-esm | java+vue | java+react | rust | nestjs | node+react | nestjs+react | rust+react | outra | flutter | dart
     suiteCommand: 'node --test',         // precisa resolver (PATH ou arquivo)
     pluginsDir: '/caminho/do/destino',   // precisa existir dentro do target
     // deployToken: '...'                // sensível: só memória, nunca em disco
@@ -77,7 +77,7 @@ console.log(out.checks); // { passed: true, failed: [] } = instalado OK
 | Pergunta (`key`) | Validação | Segredo? |
 |---|---|---|
 | `project` | não-vazio | não |
-| `stack` | `node` \| `node-esm` \| `java+vue` \| `java+react` \| `outra` \| `flutter` \| `dart` | não |
+| `stack` | `node` \| `node-esm` \| `java+vue` \| `java+react` \| `rust` \| `nestjs` \| `node+react` \| `nestjs+react` \| `rust+react` \| `outra` \| `flutter` \| `dart` | não |
 | `suiteCommand` | precisa resolver via `PATH` ou existir como arquivo | não |
 | `pluginsDir` | precisa existir **dentro** do `--target` | não |
 | `deployToken` | livre, opcional | **SIM — só memória** |
@@ -187,8 +187,9 @@ ver §9.4.
 `STACK_PROFILES` (`installer/install.mjs`) é o **registry único** das capacidades por
 preset: `axes` (`AXIS_IDS`: IDs de eixo `backend`/`frontend`), `backend`/`frontend`
 (rótulos **literais**, nunca concatenados), `commands`, `mcp`, `moduleMap` e `stacks`.
-Os **7 presets** são `node`, `node-esm`, `java+vue`, `java+react`, `outra`, `flutter`,
-`dart` — `stacks` **não** é campo independente: deriva do eixo por
+Os **12 presets** são `node`, `node-esm`, `java+vue`, `java+react`, `rust`, `nestjs`,
+`node+react`, `nestjs+react`, `rust+react`, `outra`, `flutter`, `dart` — `stacks` **não** é campo
+independente: deriva do eixo por
 `stacksFor(axes)` (+ tabela de exceções declarada `STACKS_FOR_EXCEPTIONS`).
 
 O gating de artefato é **por eixo declarado**, nunca pelo nome do arquivo:
@@ -196,8 +197,9 @@ skills vendorizadas por `stacks` do vendor-lock (RF-03); skills **locais**
 (sem entrada no lock) por `SKILLS_BY_AXIS` + `SKILLS_COMMON`; e
 `.agents/rules/**` por `RULES_BY_AXIS` + `RULES_COMMON` (exclusão por eixo,
 `installer/install.mjs`) — eixo decorativo é defeito, não detalhe.
-Perfis de backend adicionais (**go**, **rust**) ainda **não** existem; a rota para
-eixos separados na pergunta está em `ADR-005` do ciclo `harness-eixos-stack`.
+Perfis de backend adicionais (**go**) ainda **não** existem (**rust**/**nestjs**
+agora existem); a rota para eixos separados na pergunta está em `ADR-005` do
+ciclo `harness-eixos-stack`.
 
 O instalador instala em projetos mobile pela via normal (`--target` + Q&A ou
 wizard). Este perfil foi desenhado para um repo Flutter/Dart com opencode.

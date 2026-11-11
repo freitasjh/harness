@@ -41,9 +41,10 @@ Idioma de Saída: Você DEVE sempre formular raciocínios, logs, planos e intera
 |-------|----------------|---------|
 | Análise | `brain`, `sdd-architecture-board`, **`security-review`** | Consulta de contexto, decisões arquiteturais, validação de requisitos de segurança |
 | Planejamento | `sdd-compiler`, `spec-review`, `jira-microtask-breaker` | Geração SPEC/PLAN/TASKS, validação, microtasks |
-| Dev Backend | `java-architecture-specialist` | DDD, JPA, serviços, testes |
-| Dev Frontend | `frontend-vue-specialist` + `frontend-design` | Componentes, stores, API, testes |
+| Dev Backend | `java-architecture-specialist` \| `nestjs-architecture-specialist` \| `node-architecture-specialist` \| `rust-architecture-specialist` | DDD, serviços, testes (por stack) |
+| Dev Frontend | `frontend-vue-specialist` + `frontend-design` \| `frontend-react-specialist` + `frontend-design` | Componentes, stores, API, testes (por stack) |
 | Visual / UX | `ui-ux-pro-max` (subagente `ux-designer`) | Análise do visual existente, propostas de melhoria/inovação, decisões de UX |
+| Design System / Templates | `template-structure` + `template-best-practices` + `template-deepsearch` (subagente `design-system-specialist`) | Templates de componentes reutilizáveis (props/slots/estados/variantes), boas práticas, estado da arte |
 | Revisão | `code-reviewer` (subagente) | Revisão de código |
 | Segurança | `security-review` (skill), `security-engineer` (subagente para auditorias profundas) | Revisão de segurança integrada ao SDD, auditoria profunda |
 | Verificação | `sdd-compiler` (modo verify), **`security-review`** | Verificação contra portões, validação de segurança |
@@ -149,6 +150,15 @@ contrato de saída e exemplos em `references/picco-template.md`.
 - Nenhuma decisão visual/UX deve ser tomada ou aprovada sem o parecer do `ux-designer`.
 - As decisões do `ux-designer` são **vinculantes** para o `developer-engineer` na implementação frontend.
 - O `ux-designer` segue o Design System **Pulse** (`frontend/DESIGN.md`) e a skill `ui-ux-pro-max` como base de decisão.
+
+### 4.1 Design System / Templates (NON-NEGOTIABLE)
+
+> Em demanda frontend que envolva **criação/alteração de componentes reutilizáveis**, invocar o subagente `design-system-specialist` **após** o parecer do `ux-designer` e **antes** da delegação aos frontend specialists.
+
+- O `design-system-specialist` consome padrões recorrentes do parecer do `ux-designer` e entrega **template spec** (props/slots/estados/variantes/tokens) framework-agnostic + notas de adapter Vue/React.
+- Skills obrigatórias: `template-structure`, `template-best-practices`, `template-deepsearch`.
+- O template spec é **vinculante** para `frontend-vue-specialist` / `frontend-react-specialist` e para o `developer-engineer`.
+- Regra de invocação: `ux-designer` → `design-system-specialist` → frontend specialists.
 
 ---
 
@@ -318,7 +328,7 @@ Delegacao para developer-engineer
 - Tasks: [IDs das tasks]
 - Contexto: [trecho SPEC, decisoes arquiteturais, arquivos afetados]
 - Decisoes visuais do ux-designer (se frontend, VINCULANTES): [resumo do parecer do ux-designer]
-- Skills obrigatorias que deve carregar: [java-architecture-specialist | frontend-vue-specialist + frontend-design]
+- Skills obrigatorias que deve carregar: [java-architecture-specialist | nestjs-architecture-specialist | node-architecture-specialist | rust-architecture-specialist | frontend-vue-specialist + frontend-design | frontend-react-specialist + frontend-design]
 - Criterios de aceite:
   1. Compilacao: mvn compile
   2. Testes unitarios passando: mvn test
@@ -437,7 +447,7 @@ Para correções de bug, NÃO execute SDD completo. Siga este workflow comprimid
    - Tasks do `.spec/bugs/{contexto}/TASKS.md`
    - Contexto do bug (causa raiz, arquivo:linha, stack trace)
    - Se visual/UX: decisões do `ux-designer` (vinculantes)
-   - Skills obrigatórias: `java-architecture-specialist` ou `frontend-vue-specialist`
+   - Skills obrigatórias: `java-architecture-specialist` \| `nestjs-architecture-specialist` \| `node-architecture-specialist` \| `rust-architecture-specialist` \| `frontend-vue-specialist` \| `frontend-react-specialist`
    - Critérios de aceite: compilação, testes existentes ainda passam, testes novos adicionados
 2. Após retorno, delegue revisão para `code-reviewer` em chamada separada.
 3. Loop correção se necessário (máx 3 iterações, orquestrador só re-delega).
@@ -558,9 +568,10 @@ Sempre use ferramenta `task` para delegar a subagentes:
 | Validação arquitetural | `architect` | `sdd-architecture-board` |
 | Validação de negócio | `product-manager` | — |
 | **Análise visual / decisão de UX** | **`ux-designer`** | **`ui-ux-pro-max`** |
+| **Design System / Templates** | **`design-system-specialist`** | **`template-structure` + `template-best-practices` + `template-deepsearch`** |
 | Auditoria de segurança | `security-engineer` | `.agents/rules/security-standard.md` |
-| Implementação backend | `developer-engineer` | `java-architecture-specialist` |
-| Implementação frontend | `developer-engineer` | `frontend-vue-specialist` + `frontend-design` |
+| Implementação backend | `developer-engineer` | `java-architecture-specialist` \| `nestjs-architecture-specialist` \| `node-architecture-specialist` \| `rust-architecture-specialist` |
+| Implementação frontend | `developer-engineer` | `frontend-vue-specialist` + `frontend-design` \| `frontend-react-specialist` + `frontend-design` |
 | Revisão de código | `code-reviewer` | — |
 | Execução de testes | `qa-engineer` | — |
 
@@ -598,6 +609,7 @@ Antes de marcar qualquer tarefa como concluída, verifique:
 - [ ] **Frontend:** Usa `<script setup lang="ts">` (Composition API apenas)?
 - [ ] **Frontend:** Sem imports `axios`?
 - [ ] **Visual/UX:** `ux-designer` foi invocado em demanda frontend/visual e seu parecer consta na SPEC/delegação? (fonte da verdade)
+- [ ] **Design System:** em demanda de componentes reutilizáveis, `design-system-specialist` foi invocado após `ux-designer` e seu template spec consta na SPEC/delegação?
 - [ ] **Segurança:** endpoints validados contra `.agents/rules/security-standard.md`? Auditoria `security-engineer` em auth/autorização/segredos? (fonte da verdade de segurança)
 - [ ] **Testes:** Testes unitários seguem padrão `when{Action}_then{Expected}`?
 - [ ] **Testes:** Todo controller tem `*IT.java` no módulo integration-test?

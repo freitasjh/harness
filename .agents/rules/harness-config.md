@@ -72,8 +72,9 @@ git remote exists — that is the declared state, not a masked one.
 
 `STACK_PROFILES` (`installer/install.mjs`) é o **registry único** das capacidades por preset:
 `axes` (IDs de eixo, `AXIS_IDS`), `backend`/`frontend` (rótulos **literais** — nunca concatenados),
-`commands`, `mcp`, `moduleMap` e `stacks`. Presets atuais (**7**): `node`, `node-esm`, `java+vue`,
-**`java+react`**, `outra`, `flutter`, `dart`. `stacks` **não** é campo independente: deriva do eixo
+`commands`, `mcp`, `moduleMap` e `stacks`. Presets atuais (**12**): `node`, `node-esm`, `java+vue`,
+**`java+react`**, `rust`, `nestjs`, `node+react`, `nestjs+react`, `rust+react`, `outra`, `flutter`, `dart`.
+`stacks` **não** é campo independente: deriva do eixo
 por `stacksFor(axes)` (+ `STACKS_FOR_EXCEPTIONS` declarada — o par mobile `flutter` → `['flutter','dart']`).
 
 O gating de artefato deriva do **eixo declarado**, NUNCA do nome do arquivo (ADR-002): skills

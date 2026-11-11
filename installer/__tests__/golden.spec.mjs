@@ -45,7 +45,7 @@ function baseline(stack, suiteCommand) {
   };
 }
 
-const NON_MOBILE = ['node', 'node-esm', 'java+vue', 'outra'];
+const NON_MOBILE = ['node', 'node-esm', 'java+vue', 'outra', 'rust', 'nestjs', 'node+react', 'nestjs+react', 'rust+react'];
 
 describe('IM-VAL-01 golden: stacks nao-mobile byte-identicos ao baseline (I7)', () => {
   for (const stack of NON_MOBILE) {
@@ -139,4 +139,33 @@ describe('C-2 golden: preset java+react byte-identico ao builder congelado', () 
       frontend: 'java+react frontend (declared via Q&A)',
     });
   });
+});
+
+// C-2 (Batch 4): baselines explicitos para os presets novos (rust, nestjs, node+react,
+// nestjs+react, rust+react) — mesmo padrao do java+react, sem nodeOnly.
+const NEW_WEB_PRESETS = ['rust', 'nestjs', 'node+react', 'nestjs+react', 'rust+react'];
+describe('C-2 golden: presets novos byte-identicos ao builder congelado', () => {
+  for (const stack of NEW_WEB_PRESETS) {
+    it(`stack=${stack}: suiteCommand explicito => byte-equal`, () => {
+      const actual = JSON.stringify(
+        generateConfig({ project: 'demo', stack, suiteCommand: 'npm run test:run' }),
+      );
+      assert.equal(actual, JSON.stringify(baseline(stack, 'npm run test:run')));
+    });
+    it(`stack=${stack}: sem suiteCommand => default congelado byte-equal`, () => {
+      const actual = JSON.stringify(generateConfig({ project: 'demo', stack }));
+      assert.equal(actual, JSON.stringify(baseline(stack, undefined)));
+    });
+    it(`${stack} congela commands/infra/gates/mcp explicitamente`, () => {
+      const cfg = generateConfig({ project: 'demo', stack });
+      assert.deepEqual(cfg.commands, { suiteFull: 'node --test', unit: 'node --test' });
+      assert.deepEqual(cfg.infra, { composeFile: null, ports: { backend: null, frontend: null } });
+      assert.deepEqual(cfg.gates, { picco: 'enforce', evidence: 'enforce', hitlBatch: 'enforce', e2eGreenfield: 'warn' });
+      assert.deepEqual(cfg.mcp.required, ['chrome-devtools']);
+      assert.deepEqual(cfg.stack, {
+        backend: `${stack} backend (declared via Q&A)`,
+        frontend: `${stack} frontend (declared via Q&A)`,
+      });
+    });
+  }
 });

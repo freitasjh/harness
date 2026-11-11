@@ -47,6 +47,20 @@
           "note": "holder 'Vercel, Inc.' atribuido do author/organization declarados upstream (🟡 processo)"
         }
       ]
+    },
+    {
+      "source": "Kadajett/agent-nestjs-skills",
+      "spdx": "MIT",
+      "file": "LICENSE-kadajett-agent-nestjs-skills",
+      "sha256": "264e78cc6fa0d0c6067e947522100c11a7b302617c9b719d7d9f4e9def00177e",
+      "licenseOrigin": "declared-evidence",
+      "evidence": [
+        {
+          "url": "https://github.com/Kadajett/agent-nestjs-skills/blob/3986e0cede33958e000f959031cbee0cd83c2941/skills/nestjs-best-practices/SKILL.md",
+          "section": "frontmatter: license: MIT (metadata.author: Kadajett)",
+          "commit": "3986e0cede33958e000f959031cbee0cd83c2941"
+        }
+      ]
     }
   ],
   "skills": {
@@ -373,6 +387,20 @@
       ],
       "license": "MIT",
       "licenseFile": "SKILL.md"
+    },
+    "nestjs-best-practices": {
+      "source": "Kadajett/agent-nestjs-skills",
+      "sourceType": "github",
+      "sourceCommit": "3986e0cede33958e000f959031cbee0cd83c2941",
+      "skillPath": "skills/nestjs-best-practices/SKILL.md",
+      "computedHash": "58f8a630637be3acce1f118c747d68160346ada8a43d76cb52a5b4c4edaa2d37",
+      "treeHash": "385c53af932e652d85f51d01d0a215d2e7bbafa2c336bd668c4063f64c8e9298",
+      "stacks": [
+        "nestjs"
+      ],
+      "license": "MIT",
+      "licenseFile": "LICENSE-kadajett-agent-nestjs-skills",
+      "licenseOrigin": "declared-evidence"
     }
   }
 }

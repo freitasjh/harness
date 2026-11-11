@@ -1,10 +1,10 @@
 {
-  "current_feature": "garantias-runtime-adr-001",
+  "current_feature": "harness-design-system-agent",
   "current_phase": "Completed",
   "previous_phase": "Testing",
   "next_phase": null,
   "type": "feature",
-  "layer": "gate-runtime",
+  "layer": "installer",
   "repo": "harness",
   "artifacts": {
     "bug_tasks": ".spec/bugs/gate-counts-observation/TASKS.md",
@@ -21,12 +21,12 @@
       "harness_report": "harness/prd-adr-pipeline.json"
     },
     "c1_previous_bug": ".spec/bugs/harness-eixos-stack-p2/TASKS.md",
-    "proposal": ".spec/backend/garantias-runtime-adr-001/PROPOSAL.md",
-    "spec": ".spec/backend/garantias-runtime-adr-001/SPEC.md",
-    "plan": ".spec/backend/garantias-runtime-adr-001/PLAN.md",
-    "tasks": ".spec/backend/garantias-runtime-adr-001/TASKS.md",
+    "proposal": ".spec/backend/harness-design-system-agent/PROPOSAL.md",
+    "spec": ".spec/backend/harness-design-system-agent/SPEC.md",
+    "plan": ".spec/backend/harness-design-system-agent/PLAN.md",
+    "tasks": ".spec/backend/harness-design-system-agent/TASKS.md",
     "superseded_cycle": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/ (superseded: SPEC prescrevia `Plugin.define`, ausente no binario v2.0.32)",
-    "archive": ".spec/archive/20261020-opencode-v2-only",
+    "archive": ".spec/archive/20261028-harness-design-system-agent/",
     "prd": ".spec/prd/prd-garantias-runtime/PRD.md",
     "research": ".spec/prd/prd-garantias-runtime/RESEARCH.md",
     "adr_index": ".spec/prd/prd-garantias-runtime/ADR-INDEX.md",
@@ -76,12 +76,11 @@
     "G2_ADR": "approved_user_2026_10_22 (4 ADRs aprovados; ADR-001 in-progress na branch adr/prd-garantias-runtime/01-modo-gate-no-env; merge humano)"
   },
   "code_review": {
-    "last_invoked_at": "2026-10-19T13:00:26.528Z",
+    "last_invoked_at": "2026-10-28T17:15:29.045891Z",
     "last_status": "passed",
     "critical_issues": 0,
-    "attention_issues": 2,
-    "reviewer_notes": "Batch 2 APPROVED no re-review. Residuos: N1 (agents por entrada -> TD-10), N2 (id nao inspecionado -> TD-11), N3 (plural vence na colisao -> declarado no RF-04), N4/F-02 refinado (gate casa token sem resolver cwd -> TD-12).",
-    "session": "ses_eabc822b0ffemsFtZ4N9e7SW13"
+    "attention_issues": 0,
+    "reviewer_notes": "CHANGES_REQUIRED corrigido: contagem 9->10, I3 deny-edit estendido, gate-contract I5 6 sem edit, workflow-rules padronizado, SKILLS_COMMON reordenado. Suites verdes."
   },
   "overrides": [
     {
@@ -179,7 +178,7 @@
       "created": "2026-10-22T00:00:00Z"
     }
   ],
-  "last_update": "2026-10-22T00:00:00Z",
+  "last_update": "2026-10-28T17:15:33.164594Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],

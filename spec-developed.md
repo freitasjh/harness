@@ -90,3 +90,47 @@ Registro cronológico de funcionalidades e refactors entregues.
 - [x] Fase 4 — Quality Gate (suíte selada: 379/0 plugins + 516/0 installer + static 10 PASS + sdd 8 PASS + selo ok)
 - [x] Fase 5 — Verify (3 dimensões ✅; traceability 100%; 51/51 caixas; 0 TODO)
 - [x] Fase 6 — Archive (`.spec/archive/20261020-opencode-v2-only/` + superseded em `.spec/archive/20261015-opencode-v2-plugin-migration-superseded/`; `current_phase: Completed`; lições locais — Brain bloqueado por login)
+
+| 2026-10-28 | `harness-stacks-nestjs-rust-react` | Feature | Suporte a stacks NestJS, Rust (backend) e React (frontend) no installer: eixos `rust`/`nestjs` adicionados, 5 presets aditivos (rust, nestjs, node+react, nestjs+react, rust+react, 7→12), gating React standards (rule + skill) por `frontend=vue`, 4 skills de arquitetura (nestjs/node/rust/frontend-react), docs/agents atualizados. 16 tasks em 4 batches, code review APPROVED (0 🔴), suite 546/546, static-checks PASS, temp install PASS. ADR-005 (pergunta dupla) e combos *+vue adiados para features separadas. | `.spec/archive/20261028-harness-stacks-nestjs-rust-react/` | Completed |
+
+## Etapas concluídas — harness-stacks-nestjs-rust-react
+- [x] Fase 0 — Triagem (Feature, PICCO confirmado, análise architect + product-manager)
+- [x] Fase 1 — Análise (PROPOSAL + SPEC v1, 4 ADRs, 10 FRs, 5 invariantes, delta)
+- [x] Fase 2 — Planejamento (PLAN 16 tasks / 4 fases, TASKS 16 microtasks)
+- [x] Fase 3 — Execução (4 batches: installer core, gating+artefatos, docs/agents, testes+validação)
+- [x] Fase 4 — Quality Gate (suite 546/546, static-checks PASS, temp install PASS, code review APPROVED)
+- [x] Fase 5 — Verify (3 dimensões ✅)
+- [x] Fase 6 — Archive (move para `.spec/archive/20261028-harness-stacks-nestjs-rust-react/`, lições no Brain)
+
+| 2026-10-28 | `harness-adr-005-dual-axes` | Feature | ADR-005 (pergunta dupla backend+frontend) no installer: `presetOfAxes`/`presetsOfAxes` puros, `collectAnswers` dual-shape (legado/novo/misto/nenhum/paired), `answersVersion` opcional, `validateAnswer` backend/frontend, `generateConfig` resolution, `defaultSuiteFor` dual input, wizard axes derivados, doctor derivação reversa. 9 tasks, code review APPROVED, suite 559/559, static-checks PASS. | `.spec/archive/20261028-harness-adr-005-dual-axes/` | Completed |
+
+## Etapas concluídas — harness-adr-005-dual-axes
+- [x] Fase 0 — Triagem (Feature, PICCO confirmado, análise architect + product-manager)
+- [x] Fase 1 — Análise (PROPOSAL + SPEC, ADR-005, 8 FRs, 4 invariantes, delta)
+- [x] Fase 2 — Planejamento (PLAN 9 tasks, TASKS 9 microtasks)
+- [x] Fase 3 — Execução (implementação BE-01..BE-09 + testes BE-08 + doctor fix)
+- [x] Fase 4 — Quality Gate (suite 559/559, static-checks PASS, code review APPROVED)
+- [x] Fase 5 — Verify (3 dimensões ✅)
+- [x] Fase 6 — Archive (move para `.spec/archive/20261028-harness-adr-005-dual-axes/`, lições no Brain)
+
+| 2026-10-28 | `harness-feature-c-vendor-upgrade` | Feature | Feature C: vendor NestJS (Kadajett/agent-nestjs-skills, MIT declared-evidence) como `nestjs-best-practices` (stacks ['nestjs']), VENDOR-NOTICE + LICENSE agregado; upgrade path manifest-diff (create/noop/overwrite/merge/flag/delete) com backup-first, dry-run, idempotência; Doctor derivação. Rust mantido como skill local (sem fonte upstream adequada). 4 tasks, suite 559/559, static-checks PASS, --check PASS. | `.spec/archive/20261028-harness-feature-c-vendor-upgrade/` | Completed |
+
+## Etapas concluídas — harness-feature-c-vendor-upgrade
+- [x] Fase 0 — Triagem (Feature, PICCO confirmado, análise architect + product-manager)
+- [x] Fase 1 — Análise (PROPOSAL + SPEC, 3 ADRs, 14 FRs, 6 invariantes, delta)
+- [x] Fase 2 — Planejamento (PLAN 4 tasks, TASKS 4 microtasks)
+- [x] Fase 3 — Execução (vendor NestJS + upgrade path manifest-diff)
+- [x] Fase 4 — Quality Gate (suite 559/559, static-checks PASS, --check PASS)
+- [x] Fase 5 — Verify (3 dimensões ✅)
+- [x] Fase 6 — Archive (move para `.spec/archive/20261028-harness-feature-c-vendor-upgrade/`, lições no Brain)
+
+| 2026-10-28 | `harness-design-system-agent` | Feature | Agente `design-system-specialist` + 3 skills (template-structure, template-best-practices, template-deepsearch) para templates de UI/componentes. Integrado ao workflow (opencode.json, orchestrator, developer-engineer, ux-designer, workflow-rules.md), SKILLS_COMMON +3, gate-contract I5 atualizado (6 sem edit). 12 tasks, code review APPROVED (após correção de contagem), suite plugins 379/379 + installer 559/559, static-checks PASS. | `.spec/archive/20261028-harness-design-system-agent/` | Completed |
+
+## Etapas concluídas — harness-design-system-agent
+- [x] Fase 0 — Triagem (Feature, PICCO confirmado, análise architect + product-manager)
+- [x] Fase 1 — Análise (PROPOSAL + SPEC, 3 ADRs, 7 FRs, 4 invariantes, delta)
+- [x] Fase 2 — Planejamento (PLAN 12 tasks, TASKS 12 microtasks)
+- [x] Fase 3 — Execução (agente + 3 skills + integração + installer + code review fix)
+- [x] Fase 4 — Quality Gate (plugins 379/379, installer 559/559, static-checks PASS, code review APPROVED)
+- [x] Fase 5 — Verify (3 dimensões ✅)
+- [x] Fase 6 — Archive (move para `.spec/archive/20261028-harness-design-system-agent/`, lições no Brain)

@@ -193,15 +193,7 @@ export function backup(target, { backupRoot, injectFailure = false } = {}) {
 // de instalar. O comportamento fica congelado por teste (generate.spec.mjs).
 // FONTE UNICA da lista de stacks aceitos (RF-14/D-2): alimenta o prompt do W3,
 // a mensagem de BAD_ANSWER e o `howToFix('stack')` — nenhuma lista duplicada a mao.
-export const STACK_VALUES = ['node', 'java+vue', 'java+react', 'outra', 'node-esm', 'flutter', 'dart'];
-
-export const QUESTIONS = [
-  { key: 'project', prompt: 'Nome do projeto?', kind: 'name' },
-  { key: 'stack', prompt: `Stack do destino? (${STACK_VALUES.join('/')})`, kind: 'stack' },
-  { key: 'suiteCommand', prompt: 'Comando da suite de testes?', kind: 'command' },
-  { key: 'pluginsDir', prompt: 'Diretorio de plugins no destino?', kind: 'path' },
-  { key: 'deployToken', prompt: 'Token de deploy (sensivel, opcional)?', kind: 'string', secret: true },
-];
+export const STACK_VALUES = ['node', 'java+vue', 'java+react', 'outra', 'node-esm', 'flutter', 'dart', 'rust', 'nestjs', 'node+react', 'nestjs+react', 'rust+react'];
 
 // ---------- perfis de stack (ADR-008) ----------
 // Registry puro: UNICA fonte das capacidades por stack (axes, backend/frontend,
@@ -216,7 +208,7 @@ export const QUESTIONS = [
 // Os IDs mobile (`dart`/`flutter`) valem nos dois eixos (SPEC RF-01: o preset
 // flutter carrega `flutter/flutter`) — declarado aqui, nunca inferido do nome.
 export const AXIS_IDS = {
-  backend: ['java', 'node', 'dart', 'flutter', 'other', 'none'],
+  backend: ['java', 'node', 'rust', 'nestjs', 'dart', 'flutter', 'other', 'none'],
   frontend: ['vue', 'react', 'dart', 'flutter', 'other', 'none'],
 };
 
@@ -225,6 +217,17 @@ export const AXIS_IDS = {
 // chave e o PAR de eixos `backend+frontend`, que identifica o mesmo preset sem
 // ambiguidade (preset flutter = axes flutter/flutter) — nao ha heuristica por
 // nome nem por um eixo isolado.
+export const QUESTIONS = [
+  { key: 'project', prompt: 'Nome do projeto?', kind: 'name' },
+  { key: 'stack', prompt: `Stack do destino? (${STACK_VALUES.join('/')})`, kind: 'stack' },
+  { key: 'backend', prompt: `Backend? (${AXIS_IDS.backend.join('/')})`, kind: 'backend', optional: true },
+  { key: 'frontend', prompt: `Frontend? (${AXIS_IDS.frontend.join('/')})`, kind: 'frontend', optional: true },
+  { key: 'suiteCommand', prompt: 'Comando da suite de testes?', kind: 'command' },
+  { key: 'pluginsDir', prompt: 'Diretorio de plugins no destino?', kind: 'path' },
+  { key: 'deployToken', prompt: 'Token de deploy (sensivel, opcional)?', kind: 'string', secret: true },
+];
+
+
 export const STACKS_FOR_EXCEPTIONS = {
   'flutter+flutter': ['flutter', 'dart'],
 };
@@ -240,6 +243,8 @@ export function stacksFor(axes) {
   }
   const out = [];
   if (axes.backend === 'dart') out.push('dart');
+  if (axes.backend === 'rust') out.push('rust');
+  if (axes.backend === 'nestjs') out.push('nestjs');
   if (axes.frontend === 'react') out.push('react');
   return out;
 }
@@ -273,6 +278,46 @@ export const STACK_PROFILES = {
     axes: { backend: 'java', frontend: 'react' },
     backend: 'java+react backend (declared via Q&A)',
     frontend: 'java+react frontend (declared via Q&A)',
+    commands: {},
+    mcp: ['chrome-devtools'],
+    moduleMap: {},
+  },
+  rust: {
+    axes: { backend: 'rust', frontend: 'none' },
+    backend: 'rust backend (declared via Q&A)',
+    frontend: 'rust frontend (declared via Q&A)',
+    commands: {},
+    mcp: ['chrome-devtools'],
+    moduleMap: {},
+  },
+  nestjs: {
+    axes: { backend: 'nestjs', frontend: 'none' },
+    backend: 'nestjs backend (declared via Q&A)',
+    frontend: 'nestjs frontend (declared via Q&A)',
+    commands: {},
+    mcp: ['chrome-devtools'],
+    moduleMap: {},
+  },
+  'node+react': {
+    axes: { backend: 'node', frontend: 'react' },
+    backend: 'node+react backend (declared via Q&A)',
+    frontend: 'node+react frontend (declared via Q&A)',
+    commands: {},
+    mcp: ['chrome-devtools'],
+    moduleMap: {},
+  },
+  'nestjs+react': {
+    axes: { backend: 'nestjs', frontend: 'react' },
+    backend: 'nestjs+react backend (declared via Q&A)',
+    frontend: 'nestjs+react frontend (declared via Q&A)',
+    commands: {},
+    mcp: ['chrome-devtools'],
+    moduleMap: {},
+  },
+  'rust+react': {
+    axes: { backend: 'rust', frontend: 'react' },
+    backend: 'rust+react backend (declared via Q&A)',
+    frontend: 'rust+react frontend (declared via Q&A)',
     commands: {},
     mcp: ['chrome-devtools'],
     moduleMap: {},
@@ -324,6 +369,7 @@ for (const name of Object.keys(STACK_PROFILES)) {
 // continua entrando em TODO destino que nao case (residual declarado do RF-04/D-4b).
 export const RULES_BY_AXIS = {
   'frontend=react': ['frontend-coding-standards.md'],
+  'frontend=vue': ['frontend-react-coding-standards.md'],
 };
 
 // Artefatos de rule COMUNS: entram em todo destino. Toda rule de
@@ -349,6 +395,7 @@ export const RULES_COMMON = [
 // lock) e gateada por `stacks` (RF-03) e NAO passa por este mapa.
 export const SKILLS_BY_AXIS = {
   'frontend=react': ['frontend-vue-specialist'],
+  'frontend=vue': ['frontend-react-specialist'],
 };
 
 // Skills LOCAIS COMUNS: entram em todo destino. Toda skill local de
@@ -362,17 +409,24 @@ export const SKILLS_COMMON = [
   'dev-planner',
   'feature-status-dashboard',
   'frontend-design',
+  'frontend-react-specialist',
   'harness-installer',
   'harness-report',
   'java-architecture-specialist',
   'jira-microtask-breaker',
+  'nestjs-architecture-specialist',
+  'node-architecture-specialist',
   'prd-adr-pipeline',
   'prompt-optimizer',
   'sdd-architecture-board',
   'sdd-compiler',
   'sdd-feedback',
+  'rust-architecture-specialist',
   'security-review',
   'spec-review',
+  'template-best-practices',
+  'template-deepsearch',
+  'template-structure',
   'ui-ux-pro-max',
 ];
 
@@ -494,6 +548,27 @@ export function profileOf(stack) {
   return STACK_PROFILES[stack] || null;
 }
 
+// ADR-005 (BE-01): reverse index por axes key `${backend}+${frontend}`.
+// Funcao pura (sem I/O). `presetsOfAxes` retorna TODOS os presets que casam
+// (array, ordem de STACK_VALUES). `presetOfAxes` retorna o primeiro (ou null).
+export function presetsOfAxes(backend, frontend) {
+  const out = [];
+  for (const name of STACK_VALUES) {
+    const prof = STACK_PROFILES[name];
+    if (prof && prof.axes && prof.axes.backend === backend && prof.axes.frontend === frontend) {
+      out.push(name);
+    }
+  }
+  return out;
+}
+
+// Ambiguidade documentada: para axes {backend:'node', frontend:'none'} existem
+// dois presets (node, node-esm); o primeiro match por STACK_VALUES e 'node'.
+export function presetOfAxes(backend, frontend) {
+  const arr = presetsOfAxes(backend, frontend);
+  return arr.length ? arr[0] : null;
+}
+
 function commandResolves(cmd) {
   if (!cmd || typeof cmd !== 'string') return false;
   const bin = cmd.trim().split(/\s+/)[0];
@@ -519,6 +594,10 @@ export function pubspecDeclaresFlutter(text) {
 export function validateAnswer(target, key, value) {
   const q = QUESTIONS.find((x) => x.key === key);
   if (!q) throw new InstallError(`unknown question: ${key}`, 'BAD_ANSWER');
+  // optional: valor vazio => ausente (undefined), sem BAD_ANSWER.
+  if (q.optional && (value === undefined || value === null || String(value).trim() === '')) {
+    return undefined;
+  }
   const t = path.resolve(target);
   switch (q.kind) {
     case 'name':
@@ -561,20 +640,80 @@ export function validateAnswer(target, key, value) {
       return String(value);
     case 'string':
       return value === undefined || value === null ? '' : String(value);
+    case 'backend': {
+      const v = String(value);
+      if (!AXIS_IDS.backend.includes(v)) {
+        throw new InstallError(`backend must be one of ${AXIS_IDS.backend.join('|')}`, 'BAD_ANSWER');
+      }
+      return v;
+    }
+    case 'frontend': {
+      const v = String(value);
+      if (!AXIS_IDS.frontend.includes(v)) {
+        throw new InstallError(`frontend must be one of ${AXIS_IDS.frontend.join('|')}`, 'BAD_ANSWER');
+      }
+      return v;
+    }
     default:
       return value;
   }
 }
 
+export function validateAxesCombination(backend, frontend) {
+  if (backend === undefined || backend === null || frontend === undefined || frontend === null) return;
+  if (presetOfAxes(backend, frontend) === null) {
+    throw new InstallError(`no preset for axes ${backend}+${frontend}`, 'BAD_ANSWER');
+  }
+}
+
 export function collectAnswers(target, scripted) {
   const answers = {};
+  const hasStack = scripted.stack !== undefined && scripted.stack !== null && scripted.stack !== '';
+  const hasBackend = scripted.backend !== undefined && scripted.backend !== null && scripted.backend !== '';
+  const hasFrontend = scripted.frontend !== undefined && scripted.frontend !== null && scripted.frontend !== '';
+
+  // paired: ambos ou nenhum
+  if (hasBackend !== hasFrontend) {
+    throw new InstallError('paired: backend and frontend must both be present', 'BAD_ANSWER');
+  }
+  // nenhum -> BAD_ANSWER (missing answer)
+  if (!hasStack && !hasBackend) {
+    throw new InstallError('missing answer: stack', 'BAD_ANSWER');
+  }
+
+  if (hasStack) {
+    answers.stack = validateAnswer(target, 'stack', scripted.stack);
+  }
+  if (hasBackend) {
+    answers.backend = validateAnswer(target, 'backend', scripted.backend);
+    answers.frontend = validateAnswer(target, 'frontend', scripted.frontend);
+    validateAxesCombination(answers.backend, answers.frontend);
+    const preset = presetOfAxes(answers.backend, answers.frontend);
+    if (preset === null) {
+      throw new InstallError(`no preset for axes ${answers.backend}+${answers.frontend}`, 'BAD_ANSWER');
+    }
+    if (!hasStack) {
+      answers.stack = preset;
+    } else if (preset !== answers.stack) {
+      throw new InstallError('inconsistent stack vs axes', 'BAD_ANSWER');
+    }
+  }
+
   for (const q of QUESTIONS) {
+    if (q.key === 'stack' || q.key === 'backend' || q.key === 'frontend') continue;
     if (q.secret && (scripted[q.key] === undefined || scripted[q.key] === '')) {
       answers[q.key] = '';
       continue;
     }
-    if (scripted[q.key] === undefined && !q.secret) throw new InstallError(`missing answer: ${q.key}`, 'BAD_ANSWER');
+    if (scripted[q.key] === undefined) {
+      if (q.optional) continue;
+      throw new InstallError(`missing answer: ${q.key}`, 'BAD_ANSWER');
+    }
     answers[q.key] = validateAnswer(target, q.key, scripted[q.key]);
+  }
+
+  if (scripted.answersVersion !== undefined) {
+    answers.answersVersion = scripted.answersVersion;
   }
   return answers;
 }
@@ -586,6 +725,7 @@ export function serializeAnswers(answers) {
     if (q.secret) continue;
     if (answers[q.key] !== undefined) out[q.key] = answers[q.key];
   }
+  if (answers.answersVersion !== undefined) out.answersVersion = answers.answersVersion;
   return out;
 }
 
@@ -620,7 +760,21 @@ function refWillExist(rel, writtenPaths) {
 
 export function generateConfig(answers, { writtenPaths = null } = {}) {
   if (!answers || !answers.project) throw new InstallError('answers.project required', 'BAD_ANSWER');
-  const stack = answers.stack || 'node';
+  // BE-04: axes presentes mas sem preset => BAD_ANSWER.
+  if (answers.backend !== undefined && answers.frontend !== undefined) {
+    if (presetOfAxes(answers.backend, answers.frontend) === null) {
+      throw new InstallError(`no preset for axes ${answers.backend}+${answers.frontend}`, 'BAD_ANSWER');
+    }
+  }
+  let stack = answers.stack;
+  if (stack === undefined || stack === null || stack === '') {
+    if (answers.backend !== undefined && answers.frontend !== undefined) {
+      stack = presetOfAxes(answers.backend, answers.frontend);
+    } else {
+      stack = 'node';
+    }
+  }
+  if (!stack) stack = 'node';
   const profile = profileOf(stack);
   const defaultSuite = (profile && profile.commands && profile.commands.suiteFull) || 'node --test';
   const suiteFull = answers.suiteCommand || defaultSuite;
@@ -1208,12 +1362,39 @@ export function runDoctor({ target, sourceDir = null, answersFile = null, backup
     const loaded = loadAnswersFile(answersFile);
     redacting = { ...(loaded || {}) };
   }
+  // ADR-005: se manifest nao tem axes mas --answers-file traz backend/frontend,
+  // resolver stack via presetOfAxes(backend, frontend) antes de derivar axes
+  // (evita stacks=[] no D3).
+  if (!redacting.stack && redacting.backend && redacting.frontend) {
+    const preset = presetOfAxes(redacting.backend, redacting.frontend);
+    if (preset) redacting = { ...redacting, stack: preset };
+  }
   // SPEC §6: sem `--answers-file` o doctor NAO pode ser no-op (fail-open) — o
   // stack do destino esta no manifesto do init. Sem isto o D3 proporia `create`
   // de um artefato que o `init` excluiu de proposito (o eixo nao seria aplicado).
   if (!redacting.stack) {
+    // ADR-005: manifest/answers com backend+frontend sem stack => resolver via presetOfAxes
+    try {
+      const parsed = JSON.parse(fs.readFileSync(path.join(pf.target, MANIFEST_NAME), 'utf8'));
+      const a = (parsed && parsed.answers) || {};
+      if (a.backend && a.frontend && !a.stack) {
+        const preset = presetOfAxes(a.backend, a.frontend);
+        if (preset) redacting = { ...redacting, stack: preset, backend: redacting.backend || a.backend, frontend: redacting.frontend || a.frontend };
+      }
+    } catch { /* noop */ }
     const fromTarget = destinationStack(pf.target);
-    if (fromTarget) redacting = { ...redacting, stack: fromTarget };
+    if (fromTarget && !redacting.stack) redacting = { ...redacting, stack: fromTarget };
+  }
+  // BE-07: manifest legado (sem axes) deriva axes de stack.
+  if ((!redacting.backend || !redacting.frontend) && redacting.stack) {
+    const prof = profileOf(redacting.stack);
+    if (prof && prof.axes) {
+      redacting = {
+        ...redacting,
+        backend: redacting.backend || prof.axes.backend,
+        frontend: redacting.frontend || prof.axes.frontend,
+      };
+    }
   }
   say(`[OK] D0 pre-flight: target=${pf.target}`);
   say('[INFO] D1 inventario do destino (somente leitura).');
@@ -1762,7 +1943,7 @@ export function promptAnswers(target, { input, output } = {}) {
   };
   return (async () => {
     const answers = {};
-    for (const q of QUESTIONS) {
+    for (const q of QUESTIONS.filter((x) => !x.optional)) {
       for (;;) {
         const raw = q.secret ? await askSecret(q) : await askOne(q);
         const value = raw === '' && q.secret ? '' : raw;
@@ -2020,7 +2201,12 @@ export function detect(target) {
 // o eixo web inteiro). Follow-up (exige decisao do owner, nao muda o
 // comportamento aqui): dar candidato ao eixo `other` ou tornar o comando
 // explicitamente obrigatorio no prompt.
-export function defaultSuiteFor(stack) {
+export function defaultSuiteFor(stackOrAxes) {
+  let stack = stackOrAxes;
+  if (stackOrAxes && typeof stackOrAxes === 'object') {
+    stack = presetOfAxes(stackOrAxes.backend, stackOrAxes.frontend) || stackOrAxes.stack || '';
+  }
+  stack = stack || '';
   const profile = profileOf(stack);
   const frontendAxis = profile ? profile.axes.frontend : null;
   const web = frontendAxis === 'vue' || frontendAxis === 'react';
@@ -2147,8 +2333,9 @@ export async function runWizard({
       pluginsDir: pf.target,
       deployToken: '',
     };
-    for (let i = 0; i < QUESTIONS.length; i++) {
-      const q = QUESTIONS[i];
+    const wizardQuestions = QUESTIONS.filter((q) => !q.optional);
+    for (let i = 0; i < wizardQuestions.length; i++) {
+      const q = wizardQuestions[i];
       // should-fix: o default de suiteCommand acompanha o stack RESPONDIDO no
       // W3, nao o detectado/menu. Se o usuario troca o stack, recalcula aqui.
       if (q.key === 'suiteCommand') {
@@ -2157,7 +2344,7 @@ export async function runWizard({
       const def = defaults[q.key] !== undefined ? defaults[q.key] : '';
       for (;;) {
         const shown = def !== '' && !q.secret ? ` (default: ${def})` : '';
-        const label = `[${i + 1}/${QUESTIONS.length}] ${q.prompt}${shown} (q cancela)`;
+        const label = `[${i + 1}/${wizardQuestions.length}] ${q.prompt}${shown} (q cancela)`;
         let raw;
         if (q.secret && canNoEcho(stdin)) {
           // FU-27: token sem eco; readline fechado e recriado para nao enfilar
@@ -2189,6 +2376,10 @@ export async function runWizard({
     // harness.config.json entra como placeholder (a acao dele independe do
     // conteudo) — assim o wizard NAO chama generateConfig.
     const profile = profileOf(answers.stack);
+    if (profile && profile.axes) {
+      answers.backend = profile.axes.backend;
+      answers.frontend = profile.axes.frontend;
+    }
     const stacks = profile ? profile.stacks : [answers.stack];
     const incomingFiles = collectIncoming(sourceDir, { stacks, stack: answers.stack ?? null });
     const plan = planMerge(pf.target, { ...incomingFiles, 'harness.config.json': '' });
@@ -2591,41 +2782,145 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 // harness. Sem remoção automatica de user-owned; backup verificado antes de
 // toda escrita; dry-run sem writes.
 
-export function planUpgrade(target, incomingFiles) {
-  const t = path.resolve(target);
+// Normaliza fileHashes do manifesto (array [{path, sha256|hash|sha}] ou objeto
+// path->hash) em objeto path->hash. Fail-closed: ausente => {}.
+function manifestFileHashes(manifest) {
+  const out = {};
+  if (!manifest || typeof manifest !== 'object') return out;
+  const fh = manifest.fileHashes;
+  if (Array.isArray(fh)) {
+    for (const e of fh) {
+      if (!e || typeof e !== 'object') continue;
+      const p = e.path;
+      const h = e.sha256 || e.hash || e.sha || e.digest;
+      if (typeof p === 'string' && typeof h === 'string') out[p] = h;
+    }
+  } else if (fh && typeof fh === 'object') {
+    for (const [k, v] of Object.entries(fh)) {
+      if (typeof v === 'string') out[k] = v;
+      else if (v && typeof v === 'object') {
+        const h = v.sha256 || v.hash || v.sha || v.digest;
+        if (typeof h === 'string') out[k] = h;
+      }
+    }
+  }
+  return out;
+}
+
+function safeReadText(abs) {
+  try { return fs.readFileSync(abs, 'utf8'); } catch { return null; }
+}
+
+// Overload: planUpgrade(target, incomingFiles, { prevManifest })  (task)
+//         planUpgrade(prevManifest, incomingFiles, destDir)         (SPEC FR-09)
+export function planUpgrade(target, incomingFiles, third) {
+  let t = target;
+  let incoming = incomingFiles || {};
+  let prevManifest = null;
+  let opts = {};
+  if (typeof target === 'string') {
+    opts = (third && typeof third === 'object' && !Array.isArray(third)) ? third : {};
+    prevManifest = opts.prevManifest || null;
+  } else {
+    // first arg is prevManifest
+    prevManifest = target;
+    incoming = incomingFiles || {};
+    if (typeof third === 'string') { t = third; opts = {}; }
+    else if (third && typeof third === 'object' && !Array.isArray(third)) { t = third.target || third.destDir || third.dest || third.dir; opts = third; if (opts.prevManifest) prevManifest = opts.prevManifest; }
+    else { t = null; }
+  }
+  if (!prevManifest && typeof t === 'string') {
+    try { prevManifest = JSON.parse(fs.readFileSync(path.join(path.resolve(t), MANIFEST_NAME), 'utf8')); } catch { prevManifest = null; }
+  }
+  const resolved = path.resolve(typeof t === 'string' ? t : process.cwd());
+  const manifestHashes = manifestFileHashes(prevManifest);
   const plan = [];
-  for (const [rel, content] of Object.entries(incomingFiles)) {
-    assertInside(t, path.join(t, rel));
+  for (const [rel, content] of Object.entries(incoming)) {
+    assertInside(resolved, path.join(resolved, rel));
     const layer = layerOf(rel);
-    const abs = path.join(t, rel);
+    const abs = path.join(resolved, rel);
     const exists = fs.existsSync(abs);
-    if (layer === 'harness.config.json') {
-      if (!exists) { plan.push({ path: rel, layer, action: 'create', reason: 'generated from Q&A (ADR-002)' }); continue; }
-      let current;
-      try { current = fs.readFileSync(abs, 'utf8'); } catch { current = '__unreadable__'; }
-      if (current === content) { plan.push({ path: rel, layer, action: 'noop', reason: 'identical' }); continue; }
-      plan.push({ path: rel, layer, action: 'generate-overwrite', reason: 'managed overwrite (upgrade)' });
+    const incomingHash = sha256(String(content));
+    if (!exists) { plan.push({ path: rel, layer, action: 'create', reason: 'incoming-new' }); continue; }
+    const current = safeReadText(abs);
+    const diskHash = current === null ? null : sha256(current);
+    if (current !== null && current === content) { plan.push({ path: rel, layer, action: 'noop', reason: 'identical' }); continue; }
+    const manifestHash = manifestHashes[rel];
+    const userModified = (manifestHash !== undefined) ? (diskHash !== manifestHash) : true;
+    const isOpencode = rel === 'opencode.json' || layer === 'opencode.json';
+    const isHarnessConfig = rel === 'harness.config.json' || layer === 'harness.config.json';
+    if (userModified) {
+      plan.push({ path: rel, layer, action: 'flag', reason: 'user-modified (disk != manifest)' });
       continue;
     }
-    if (!exists) { plan.push({ path: rel, layer, action: 'create', reason: 'incoming-new' }); continue; }
-    let current = '';
-    try { current = fs.readFileSync(abs, 'utf8'); } catch { current = null; }
-    if (current === content) { plan.push({ path: rel, layer, action: 'noop', reason: 'identical' }); continue; }
-    plan.push({ path: rel, layer, action: 'overwrite', reason: 'managed overwrite (upgrade)' });
+    if (isOpencode) {
+      plan.push({ path: rel, layer, action: 'merge', reason: 'managed merge (upgrade)' });
+    } else if (isHarnessConfig) {
+      plan.push({ path: rel, layer, action: 'generate-overwrite', reason: 'generated from Q&A (ADR-002)' });
+    } else {
+      plan.push({ path: rel, layer, action: 'overwrite', reason: 'managed overwrite (upgrade)' });
+    }
+  }
+  // deletes: paths in manifest but absent from incoming
+  for (const [rel, mhash] of Object.entries(manifestHashes)) {
+    if (Object.prototype.hasOwnProperty.call(incoming, rel)) continue;
+    const abs = path.join(resolved, rel);
+    if (!fs.existsSync(abs)) continue;
+    const current = safeReadText(abs);
+    const diskHash = current === null ? null : sha256(current);
+    if (diskHash !== null && diskHash === mhash) {
+      plan.push({ path: rel, layer: layerOf(rel), action: 'delete', reason: 'removed from incoming (unmodified)' });
+    } else {
+      plan.push({ path: rel, layer: layerOf(rel), action: 'flag', reason: 'user-modified (disk != manifest)' });
+    }
   }
   return plan;
 }
 
-export function applyUpgrade(target, plan, { incomingFiles = {}, dryRun = false } = {}) {
+export function applyUpgrade(target, plan, opts = {}) {
+  // Overload: applyUpgrade(plan, { target/destDir, incomingFiles, dryRun })
+  if (Array.isArray(target)) {
+    const p = target;
+    const o = plan || {};
+    target = o.target || o.destDir || o.dest || o.dir;
+    plan = p;
+    opts = o;
+  }
+  const incomingFiles = (opts && opts.incomingFiles) || {};
+  const dryRun = !!(opts && opts.dryRun);
   const t = path.resolve(target);
   const written = [];
   const flagged = [];
-  if (dryRun) return { written, flagged: plan.filter((p) => p.action === 'flag'), planned: plan.length };
-  for (const step of plan) {
+  const removed = [];
+  if (dryRun) return { written, flagged: (Array.isArray(plan) ? plan : []).filter((p) => p && p.action === 'flag'), removed, planned: Array.isArray(plan) ? plan.length : 0 };
+  for (const step of (Array.isArray(plan) ? plan : [])) {
     const abs = assertInside(t, path.join(t, step.path));
     if (step.action === 'noop') continue;
     if (step.action === 'flag') { flagged.push(step); continue; }
+    if (step.action === 'delete') {
+      if (fs.existsSync(abs)) { try { fs.unlinkSync(abs); } catch { /* ignore */ } }
+      removed.push(step.path);
+      continue;
+    }
     const incoming = incomingFiles[step.path];
+    if (step.action === 'merge') {
+      if (typeof incoming !== 'string') {
+        throw new InstallError(`missing incoming content for ${step.path}: refusing silent empty write (FU-21)`, 'MISSING_INCOMING');
+      }
+      const current = fs.existsSync(abs) ? fs.readFileSync(abs, 'utf8') : null;
+      let body;
+      if (step.path === 'opencode.json' || layerOf(step.path) === 'opencode.json') {
+        const { merged } = mergeOpencodeJson(current ? JSON.parse(current) : {}, JSON.parse(incoming));
+        body = JSON.stringify(merged, null, 2);
+      } else {
+        const r = mergeAgentFile(current || '', incoming);
+        body = r.content;
+      }
+      fs.mkdirSync(path.dirname(abs), { recursive: true });
+      fs.writeFileSync(abs, body);
+      written.push({ path: step.path, strategy: 'merge', preMergeSha256: current ? sha256(current) : undefined });
+      continue;
+    }
     if (typeof incoming !== 'string') {
       throw new InstallError(`missing incoming content for ${step.path}: refusing silent empty write (FU-21)`, 'MISSING_INCOMING');
     }
@@ -2634,7 +2929,7 @@ export function applyUpgrade(target, plan, { incomingFiles = {}, dryRun = false 
     fs.writeFileSync(abs, incoming);
     written.push({ path: step.path, strategy: step.action, preMergeSha256: pre ? sha256(pre) : undefined });
   }
-  return { written, flagged };
+  return { written, flagged, removed };
 }
 
 export async function runUpgrade({
@@ -2672,7 +2967,7 @@ export async function runUpgrade({
     const generated = JSON.stringify(generateConfig(subjectAnswers, { writtenPaths: writtenPathsOf(incomingFiles) }), null, 2);
     const incoming = { ...incomingFiles, 'harness.config.json': generated };
 
-    const plan = planUpgrade(pf.target, incoming);
+    const plan = planUpgrade(pf.target, incoming, { prevManifest });
     say(`[INFO] upgrade: plano gerado (${plan.length} itens)`);
     printPlan(plan, { output: stdout, answers });
 
@@ -2690,21 +2985,24 @@ export async function runUpgrade({
     const written = result.written || [];
     const fileContents = {};
     for (const w of written) { try { fileContents[w.path] = fs.readFileSync(path.join(pf.target, w.path), 'utf8'); } catch { /* noop */ } }
-    const installed = written.filter((w) => w.strategy === 'create' || w.strategy === 'generate-overwrite' || w.strategy === 'overwrite').map((w) => ({ path: w.path, kind: 'file' }));
+    const installed = written.filter((w) => w.strategy === 'create' || w.strategy === 'generate-overwrite' || w.strategy === 'overwrite').map((w) => ({ path: w.path, kind: 'file', preMergeSha256: w.preMergeSha256 }));
+    const merged = written.filter((w) => w.strategy === 'merge').map((w) => ({ path: w.path, kind: 'file', preMergeSha256: w.preMergeSha256 }));
+    const flagged = result.flagged || [];
+    const removed = result.removed || plan.filter((p) => p.action === 'delete').map((p) => p.path);
     const manifest = buildManifest({
-      target: pf.target, backupDir: bk.backupDir, installed, merged: [], flagged: result.flagged || [],
+      target: pf.target, backupDir: bk.backupDir, installed, merged, flagged,
       answers: subjectAnswers, checks: { passed: true, failed: [] }, fileContents, source: `harness@${VERSION}`,
     });
     manifest.upgradedFrom = prevManifest.source || null;
-    manifest.removed = [];
-    manifest.collisions = [];
+    manifest.removed = removed;
+    manifest.collisions = flagged.map((f) => (typeof f === 'string' ? f : f.path));
     manifest.doctorPre = { verdict: report.verdict, next: report.next };
     const manifestRef = writeManifest(pf.target, manifest);
     const checks = runChecks(pf.target, { manifest, answers: subjectAnswers });
     manifest.checks = checks;
     fs.writeFileSync(path.join(pf.target, MANIFEST_NAME), JSON.stringify(manifest, null, 2));
     say(`[OK] upgrade: aplicado; checks ${checks.passed ? 'PASS' : 'FAIL'}`);
-    return { target: pf.target, answers: serializeAnswers(subjectAnswers), plan, applied: true, result, checks, manifestRef, backupDir: bk.backupDir, exitCode: checks.passed ? 0 : 1 };
+    return { target: pf.target, answers: serializeAnswers(subjectAnswers), plan, applied: true, result, checks, manifestRef, manifest, removed: manifest.removed, collisions: manifest.collisions, backupDir: bk.backupDir, exitCode: checks.passed ? 0 : 1 };
   } catch (e) {
     if (e instanceof InstallError) {
       try { e.message = sanitizeLog(String(e.message), answers); } catch { /* message ja segura */ }
