@@ -58,8 +58,8 @@
     "P2_P3": "approved_user_2026_11_11 (PLAN 57 linhas, TASKS 12 microtasks RV-01..RV-12)",
     "P3_P4": "approved_auto_evidence_batches_2026_11_11 (commits 1c8062b + 2b80685 + e63c464; code review 3 rodadas 0 criticos; correcoes de governanca aplicadas)",
     "P4_P5": "approved_auto_evidence_QA_2026_11_11 (REPORT harness/harness-inventory.json schema-valido; suite 379+559 = 938 testes, 0 falhas; static exit 0; sdd-checks 0 FAIL; vendor OK; selo inalterado)",
-    "P5_P6": "pending_user_approval (VERIFY 3/3 PASS; traceability 100%; 4 residuos declarados)",
-    "P6_fim": "pending (merge humano do PR; push pendente)",
+    "P5_P6": "approved_user_2026_11_11 (VERIFY 3/3 PASS; traceability 100%; 4 residuos declarados; owner aprovou)",
+    "P6_fim": "pushed_pending_human_merge (branch adr/prd-harness-inventory/01-roster-de-agentes; merge humano; PR por URL de compare, sem gh)",
     "B1_B2": "approved_user_2026_09_29",
     "FU32": "closed_approved_decision_B",
     "_previous_cycle_opencode_v2_only": {
@@ -191,7 +191,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-11T15:40:00.782Z",
+  "last_update": "2026-11-11T15:40:25.156Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -215,7 +215,7 @@
   "harness_evidence": "harness/harness-inventory.json — 6 comandos com exitCode e sha256 do stdout; ADR-001 16/16 itens verificados por comando; gate.js e harness.config.json com 0 linhas no range 5dcc0e0..HEAD; selo suiteFull c904f1c5 inalterado",
   "code_review_status": "passed",
   "code_review_status_ciclo": "harness-inventory-adr-001: 3 rodadas, 0 criticos; ultimas 3 atencao fechadas em bookkeeping do workflow-state (backlog, artifacts, gates, harness_status)",
-  "sdd_stage": "harness-inventory-adr-001: EXECUTION + QA + VERIFY completos (3/3 PASS). Proximo: P5->P6 (merge humano do PR) e PRD-2",
+  "sdd_stage": "harness-inventory-adr-001 CONCLUIDO (VERIFY 3/3, push feito, merge humano pendente). Proximo do PRD-1: ADR-002 (prd-adr-pipeline como modulo)",
   "backlog": {
     "total": 12,
     "todo": 0,
@@ -1077,7 +1077,15 @@
     "prd_status": "approved",
     "active_adr": "ADR-001",
     "adr_order": [],
-    "snapshots": [],
+    "snapshots": [
+      {
+        "adr": "ADR-001",
+        "at": "2026-11-11",
+        "follow_ups_count": 2,
+        "escalations_count": 3,
+        "nota": "3 rodadas de code review (0 criticos) + QA P4 + VERIFY 3/3; branch pushada, merge humano pendente"
+      }
+    ],
     "decisions_closed": {
       "D1_D2": "retirar sdd-orquestrador + consolidar roster (funde codebase-analyzer em architect, remove stub code-reviewer/AGENT.md)",
       "D3": "manter vendor-by-axis (25 vendorizadas classificadas pelo .vendor-lock.json, sem exigir agente consumidor)",
@@ -1095,7 +1103,8 @@
         "branch": "adr/prd-harness-inventory/01-roster-de-agentes",
         "status": "in-progress",
         "commit": "5dcc0e0",
-        "gate": "G2 pendente (interface congelada de 16 itens)"
+        "gate": "G2 pendente (interface congelada de 16 itens)",
+        "merge": "pending_human"
       },
       {
         "order": 2,
