@@ -233,3 +233,18 @@ node scripts/sdd-checks.mjs                                                 # 0 
 ## 9. Emenda aprovada pelo owner em 2026-11-11 (item 17)
 
 17. **O `orchestrator` delega ao `planner` antes da SPEC** — em feature não isenta (`.agents/rules/prd-adr-pipeline.md` §3), a fase de planejamento do orquestrador **delega** ao `planner` em vez de executar F0–F5 localmente; a rule `.agents/rules/workflow-rules.md` descreve a delegação, não a execução local. *Verificação*: `grep -c "planner" .agents/agents/orchestrator/AGENT.md` ⇒ **≥1**; `grep -c "planner" .agents/rules/workflow-rules.md` ⇒ **≥1**; `grep -c "dev-planner" .agents/rules/workflow-rules.md` ⇒ **0**.
+
+## 10. Escopo deferido ao ADR-005 — decisão do owner (2026-11-11)
+
+O code review rodou 3 vezes e, na terceira, os achados **pararam de ser defeitos deste ADR** e passaram a ser o objeto de outro: a prosa solta dentro de `.agents/skills/dev-planner/` e as etapas duplicadas em `.agents/rules/workflow-rules.md`. O owner decidiu re-escopar em vez de abrir uma 4ª rodada.
+
+**Deferido (🟡 — dono: ADR-005, "prosa órfã"):**
+- **I2 (autor único de `PLAN.md`)** — ainda falso: `dev-planner/workflow.md:20-21` (diagrama), `:420` ("artefatos anteriores … PLAN"), `:434` ("tarefa do PLAN") e `:402` ("Posso gerar as tasks detalhadas?"). A métrica do item 8 passa porque o token está quebrado entre linhas ou sem extensão — verde por token, contraditório por sentido.
+- **I3 (DESIGN-DECISIONS não é ADR)** — ainda falso: `dev-planner/workflow.md:199` (`#### 2.5 — Registrar Decisões (ADRs)`), `:202` (`## ADR-001: …`) e `:225` têm template com `### Status`, exatamente o marcador que o item 10 proíbe. Corrigimos `workflow-rules.md:184` e `SKILL.md:159`; a **skill que o planner consome** continua mandando criar ADR.
+- **Autor único de `EXPLORATION.md`** — colisão criada pela fiação (item 17): `orchestrator/AGENT.md:285` (via `sdd-compiler explore`) e `:291` (via `planner`). Decidir qual dos dois é o autor.
+- **Protocolo de Delegação do orquestrador** — `orchestrator/AGENT.md:565-580` não lista `planner`; a fiação existe no texto da Fase 1, não na tabela de delegação.
+- **Gatilho da Fase 0** — `:176` ("complexas/inovações"), `:180` ("não isenta") e `:187` ("Feature simples") se sobrepõem: CRUD **não é isento**, logo cai nos dois passos.
+
+**Entregue e estável neste ADR:** o agente (`planner/AGENT.md`, 42 l., fronteira de 4 vizinhos), o registro (`opencode.json`, 10 chaves, `subagent`, `edit: allow` = 5), a correção do lastro inexistente (F4), o `gate-contract` I5 com 5 nomes, e a fiação em regra + orquestrador (F3).
+
+**N18 — correção de afirmação falsa.** O commit `0502835` traz na mensagem "F1: PLAN.md com um autor" e "F2: DESIGN-DECISIONS.md deixa de ser instruído/rotulado como ADR". Medido, **ambos continuam contraditórios** em `workflow.md`. A mensagem fica no histórico (não reescrevi), e este parágrafo é o registro de que ela estava errada. Corrigir a prosa, não a mensagem, é o que fecha o defeito — e essa correção agora pertence ao ADR-005.
