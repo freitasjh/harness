@@ -28,6 +28,15 @@
         "bash": "allow"
       }
     },
+    "planner": {
+      "mode": "subagent",
+      "prompt": "{file:./.agents/agents/planner/AGENT.md}",
+      "description": "Planejamento tecnico de features: consome a skill dev-planner e escreve EXPLORATION.md, CONSTRAINTS.md, DESIGN-DECISIONS.md e ARCHITECTURE.md. Nao escreve PRD.md (product-manager), nao decide ADR (architect), nao gera SPEC/PLAN/TASKS (sdd-compiler) e nao copia fases da skill dev-planner.",
+      "permission": {
+        "edit": "allow",
+        "bash": "allow"
+      }
+    },
     "product-manager": {
       "mode": "subagent",
       "prompt": "{file:./.agents/agents/product-manager/AGENT.md}",
