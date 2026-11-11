@@ -1,7 +1,7 @@
 {
   "current_feature": "harness-inventory-adr-005",
-  "current_phase": "Planning",
-  "previous_phase": "Completed",
+  "current_phase": "Completed",
+  "previous_phase": "Testing",
   "next_phase": "Planning",
   "type": "refactor",
   "layer": "agents/skills/rules",
@@ -11,9 +11,9 @@
     "bug_report": "harness/harness-eixos-stack-p2.json",
     "source_tech_debt": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
     "previous_archive": ".spec/archive/20261018-harness-eixos-stack/",
-    "verify": null,
+    "verify": ".spec/backend/harness-inventory-adr-005/VERIFY.md",
     "harness_evidence": ".spec/archive/20261018-harness-eixos-stack/harness/",
-    "harness_report": "harness/harness-inventory-adr-003.json",
+    "harness_report": "harness/harness-inventory-adr-005.json",
     "tech_debt_p2": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
     "previous_cycle": {
       "cycle": ".spec/backend/harness-inventory-adr-001/",
@@ -22,16 +22,16 @@
       "harness_report": "harness/harness-inventory.json"
     },
     "c1_previous_bug": ".spec/bugs/harness-eixos-stack-p2/TASKS.md",
-    "proposal": null,
-    "spec": null,
-    "plan": null,
-    "tasks": null,
+    "proposal": ".spec/backend/harness-inventory-adr-005/PROPOSAL.md",
+    "spec": ".spec/backend/harness-inventory-adr-005/SPEC.md",
+    "plan": ".spec/backend/harness-inventory-adr-005/PLAN.md",
+    "tasks": ".spec/backend/harness-inventory-adr-005/TASKS.md",
     "superseded_cycle": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/ (superseded: SPEC prescrevia `Plugin.define`, ausente no binario v2.0.32)",
     "archive": ".spec/archive/20261028-harness-design-system-agent/",
     "prd": ".spec/prd/prd-harness-inventory/PRD.md",
     "research": ".spec/prd/prd-harness-inventory/RESEARCH.md",
     "adr_index": ".spec/prd/prd-harness-inventory/ADR-INDEX.md",
-    "adr": null,
+    "adr": ".spec/prd/prd-harness-inventory/ADRs/ADR-005-prosa-orfa/ADR.md",
     "prd_lines": ".spec/prd/prd-harness-inventory/PRD.md (162 linhas, 16 secoes, PRD-01 PASS)"
   },
   "scope": {
@@ -57,10 +57,10 @@
     "G2_PRD": "approved_user_2026_10_22 (PRD prd-garantias-runtime aprovado sem ressalvas; §16 do PRD.md; 3 decisoes do owner)",
     "P1_P2": "approved_user_2026_11_11 (SPEC 49 linhas, 12 RF mapeados aos 16 itens do ADR-001, 6 invariantes)",
     "P2_P3": "approved_user_2026_11_11 (PLAN 57 linhas, TASKS 12 microtasks RV-01..RV-12)",
-    "P3_P4": "approved_auto_evidence_2026_11_11 (commits 1e74b4d..7f13923; review 3 rodadas; re-escopo aprovado pelo owner)",
-    "P4_P5": "approved_auto_evidence_QA_2026_11_11 (REPORT schema-valido; 938 testes; 17/17 itens)",
-    "P5_P6": "approved_user_2026_11_11 (VERIFY 3/3 com escopo deferido declarado)",
-    "P6_fim": "done_merge_f9c5ca2 (PR #6 merged na main; 5 commits; VERIFY 3/3 com escopo deferido)",
+    "P3_P4": "approved_auto_evidence_2026_11_11 (commits b1e3348..6c94003; review 3 rodadas; APPROVED na terceira)",
+    "P4_P5": "approved_auto_evidence_QA_2026_11_11 (REPORT schema-valido; 971 testes; 3 mutacoes provadas)",
+    "P5_P6": "approved_user_2026_11_11 (VERIFY 3/3 PASS)",
+    "P6_fim": "pending_human_merge (branch 05-prosa-orfa)",
     "B1_B2": "approved_user_2026_09_29",
     "FU32": "closed_approved_decision_B",
     "_previous_cycle_opencode_v2_only": {
@@ -75,15 +75,15 @@
       "B1_B2": "approved_user_2026_09_29",
       "FU32": "closed_approved_decision_B"
     },
-    "G2_ADR": "approved_user_2026_11_11 (ADR-003 interface de 16 itens + item 17 emendado)",
+    "G2_ADR": "approved_user_2026_11_11 (ADR-005 rubric de 6 classes + 26 instancias)",
     "G1_PRD": "approved_user_2026_11_11 (PRD-1 harness-inventory; D1-D7 fechadas; nenhum ADR criado antes do veredito)"
   },
   "code_review": {
     "last_invoked_at": "2026-11-11T00:00:00-03:00",
-    "last_status": "passed_with_scope_deferral",
+    "last_status": "passed",
     "critical_issues": 0,
     "attention_issues": 0,
-    "reviewer_notes": "ADR-003: 3 rodadas (2 criticos -> fechados por token; re-review apontou residuo semantico em dev-planner/workflow.md + colisao nova em EXPLORATION.md). Owner decidiu RE-ESCOPAR (ADR §10): I2/I3 e 4 achados deferidos ao ADR-005. Entregue e verificado: agente, registro, fronteira de 4 vizinhos, gate-contract I5=5, fiacao (item 17), lastros do doc."
+    "reviewer_notes": "ADR-005: 3 rodadas. R1 CHANGES_REQUIRED (2 criticos: PLAN com 2o autor em workflow-rules:91; predicado do item 8 com escopo igual ao arquivo corrigido). R2 CHANGES_REQUIRED (2 criticos: V18 escondia vendorOnly no PASS; stale-nondefect-entry aceitava proof datado). R3 APPROVED (4/4 fechadas com mutacao). Backlog nao bloqueante: precisao do criterio de autoria (fechada em N19), enumeracao incompleta em AGENT.md:9, extracao de Role por 1o token."
   },
   "overrides": [
     {
@@ -192,7 +192,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-11T18:01:24.267Z",
+  "last_update": "2026-11-11T19:01:45.923Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -212,24 +212,28 @@
     "U5": "c - dois ancoras",
     "U6": "b - selo de hash"
   },
-  "harness_status": "passed (REPORT harness/harness-inventory-adr-003.json schema-valido; 17/17 itens; 938 testes 0 falhas; gate.js/config/installer/lib com 0 linhas)",
-  "harness_evidence": "harness/harness-inventory-adr-002.json — 8 comandos com exitCode/sha256; contraprova collectIncoming em ac80e49 = novo 0 / velho 5; QA PASSA 12/12 + 8/8",
+  "harness_status": "passed (REPORT harness/harness-inventory-adr-005.json schema-valido; 412+559 testes 0 falhas; V18 com 5 modos, 3 provados por mutacao fora do repo; selo c904f1c5 inalterado)",
+  "harness_evidence": "harness/harness-inventory-adr-005.json — 11 comandos; 3 FAIL literais do V18 (orfa nova, baseline obsoleta, NON_DEFECT com proof datado); paridade de papeis por comm -3 vazio nos 2 ramos",
   "code_review_status": "passed",
-  "code_review_status_ciclo": "harness-inventory-adr-003: encerrado por decisao de escopo (ADR §10), nao por loop de correcao; 0 criticos abertos no escopo entregue; prosa da skill deferida ao ADR-005",
-  "sdd_stage": "ADR-003 MERGED (f9c5ca2). Ciclo seguinte: ADR-005 — prosa orfa (8 paths acionaveis + 5 herdados do ADR-003)",
+  "code_review_status_ciclo": "harness-inventory-adr-005: 3 rodadas, 4 ressalvas fechadas com mutacao; APPROVED",
+  "sdd_stage": "harness-inventory-adr-005 CONCLUIDO (VERIFY 3/3). Resta ADR-004 para fechar o PRD-1",
   "backlog": {
-    "total": 7,
+    "total": 11,
     "todo": 0,
     "doing": 0,
-    "done": 7,
+    "done": 11,
     "ids": [
-      "PL-01",
-      "PL-02",
-      "PL-03",
-      "PL-04",
-      "PL-05",
-      "PL-06",
-      "PL-07"
+      "PO-01",
+      "PO-02",
+      "PO-03",
+      "PO-04",
+      "PO-05",
+      "PO-06",
+      "PO-07",
+      "PO-08",
+      "PO-09",
+      "PO-10",
+      "PO-11"
     ]
   },
   "next_task": "ADR-002",
@@ -970,13 +974,13 @@
   },
   "verify": {
     "at": "2026-11-11T00:00:00-03:00",
-    "verdict": "3/3 PASS (com escopo deferido declarado)",
-    "completude": "7/7 microtasks; 5 itens deferidos declarados no ADR §10",
-    "corretude": "938 testes 0 falhas; 17/17 itens (§3 + item 17); REPORT schema-valido",
-    "coerencia": "gate.js/config/installer/lib 0 linhas; paridade 10/10; contradicao 9-vs-10 eliminada",
-    "traceability": "9/9 RF · 17/17 itens",
-    "artefato": ".spec/backend/harness-inventory-adr-003/VERIFY.md",
-    "report": "harness/harness-inventory-adr-003.json"
+    "verdict": "3/3 PASS",
+    "completude": "11/11 microtasks; limites N8/N9/N15/N19 declarados",
+    "corretude": "971 testes 0 falhas; 14/14 itens; REPORT schema-valido; V18 com 5 modos",
+    "coerencia": "protegidos com 0 linhas exceto os 5 paths com trailer; selo c904f1c5 identico; check nao-orfao (refs.spec roda runStaticChecks)",
+    "traceability": "8/8 RF · 14/14 itens",
+    "artefato": ".spec/backend/harness-inventory-adr-005/VERIFY.md",
+    "report": "harness/harness-inventory-adr-005.json"
   },
   "commit": "a19acab",
   "remote": "git@github.com:freitasjh/harness.git (SSH; push + CI pendentes)",
@@ -1136,8 +1140,8 @@
           "ADR-003"
         ],
         "branch": "adr/prd-harness-inventory/05-prosa-orfa",
-        "status": "todo",
-        "merge": null
+        "status": "in-progress",
+        "merge": "pending_human (branch 05-prosa-orfa)"
       }
     ],
     "prd_verdict": "approved_user_2026_11_11",
