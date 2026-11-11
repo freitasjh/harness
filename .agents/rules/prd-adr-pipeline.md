@@ -60,9 +60,9 @@ exige `gh`; nenhum push automático.
   fica intocado — SPEC §12.1). O bloqueio é o PR humano.
 - `prompt-optimizer` valida a **demanda** (E1..E6), **nunca** o PRD (fecha o
   parcial D13; `workflow-rules.md` §0).
-- `.agents/skills/prd-adr-pipeline/` é **path propagável** (installer). O
-  enforcement da esteira no repo-destino é 🟡 processo até F3 — não há CI
-  prometido no destino; só neste repo o check roda.
+- `.opencode/plugins/lib/prd-adr-pipeline/` é **path propagável** (installer): o
+  **módulo** aqui é mecanismo executável + templates (sem `SKILL.md`), e a norma
+  é esta rule. Enforcement no repo-destino: 🟡 processo até F3; só aqui roda.
 
 ## 6. O que cada afirmação prova (SPEC §5)
 

@@ -319,7 +319,7 @@ O **estado canônico** é o de `sdd-workflow-standard.md` (é o que vive em
 
 Fluxo: PRD aprovado → RESEARCH → ADR-INDEX → ADR (unidade/branch) → SDD scoped.
 Contrato completo, limiar de isenção e níveis de garantia: `.agents/rules/prd-adr-pipeline.md`.
-Nível: `PRD-01`/`ADR-01`/`ADR-02` em `.agents/skills/prd-adr-pipeline/checks.mjs`,
+Nível: `PRD-01`/`ADR-01`/`ADR-02` em `.opencode/plugins/lib/prd-adr-pipeline/checks.mjs`,
 via `scripts/static-checks.mjs` no `suiteFull` (🟢 neste repo; 🟡 processo em repo-destino
 até F3). Bug fora do funil (§4). Limiar de isenção: mudança sem comportamento observável
 não gera PRD/ADR. Os rótulos `PRD`/`RESEARCH`/`ADR-INDEX`/`ADR` mapeiam para o canônico

@@ -21,11 +21,12 @@ import {
   DEFAULT_CONFIG_PATH,
   REPO_ROOT,
 } from "../.opencode/plugins/lib/config.mjs";
-// PRD→ADR→SDD pipeline checks (PAP-04). The core lives under `.agents/skills/**`
-// because that is the only path the installer propagates (ADR-P02); this file is
-// just the adapter that registers the result in the same report the sealed
-// `commands.suiteFull` already runs — the command itself is NOT touched.
-import { runPrdChecks } from "../.agents/skills/prd-adr-pipeline/checks.mjs";
+// PRD→ADR→SDD pipeline checks (PAP-04). The core is the module at
+// `.opencode/plugins/lib/prd-adr-pipeline/` (ADR-002), a path the installer
+// propagates; this file is just the adapter that registers the result in the
+// same report the sealed `commands.suiteFull` already runs — the command itself
+// is NOT touched.
+import { runPrdChecks } from "../.opencode/plugins/lib/prd-adr-pipeline/checks.mjs";
 
 // Re-exported so the tested loader interface stays stable after the
 // Batch 3/7 relocation (GATE-01/FIX-01 scope). Canonical home is

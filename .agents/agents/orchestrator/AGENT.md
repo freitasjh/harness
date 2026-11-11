@@ -270,7 +270,7 @@ Fases (rótulos — mapeados ao vocabulário canônico, **sem** valor novo de
 mecanismo; a recusa é humana.)
 
 Validação da esteira: `PRD-01`/`ADR-01`/`ADR-02`
-(`.agents/skills/prd-adr-pipeline/checks.mjs`) — 🟢 neste repo via
+(`.opencode/plugins/lib/prd-adr-pipeline/checks.mjs`) — 🟢 neste repo via
 `scripts/static-checks.mjs` no `commands.suiteFull`; 🟡 processo no repo-destino.
 
 ---

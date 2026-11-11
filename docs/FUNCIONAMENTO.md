@@ -106,7 +106,8 @@ ele re-executa.
 | `.agents/rules/sdd-workflow-standard.md` | Layout `.spec/**` + campos canônicos de `workflow-state.json` | `1-50` |
 | `.agents/rules/brain-context.md` | Ponte para o repo `brain` (dono da regra) | `1-15` |
 | `.agents/agents/*/AGENT.md` | 9 diretórios de agente — 8 com `AGENT.md` + `code-reviewer/PROMPT.md` — e o `opencode.json` registra os mesmos 9: registro↔disco em paridade (ADR-001) | `opencode.json:12-94`; `orchestrator/AGENT.md:213-235`, `:426-457` |
-| `.agents/skills/` | Playbooks: `prompt-optimizer`, `sdd-compiler`, `harness-report`, `harness-installer`, `prd-adr-pipeline` | — |
+| `.agents/skills/` | Playbooks: `prompt-optimizer`, `sdd-compiler`, `harness-report`, `harness-installer` | — |
+| `.opencode/plugins/lib/prd-adr-pipeline/` | Módulo da esteira PRD→ADR: `checks.mjs` + 4 templates (norma fica na rule) | `checks.mjs:417-495` |
 | `.agents/schemas/harness-report.schema.json` | Schema canônico do relatório de evidência | `7-19`, `40-48` |
 | `scripts/static-checks.mjs` | Checks estáticos V2/V3/V6/V7/V12/V14/V15 + PRD/ADR-01/02 | `42-47`, `254-342`, `371-382` |
 | `scripts/sdd-checks.mjs` | Checks executáveis V4/V17/SDD-01..03/R-V12/R-NODENY/RENAME-01 | `367-421` |
@@ -135,7 +136,7 @@ enforcement que o gate implementa.
 | 7 | **Kill-switch e modo fora do worktree** — `HARNESS_GATES=off` no host desliga a suíte; o modo por gate vem de `HARNESS_GATE_<GATE>` (com `_REASON` não vazio para rebaixar); o config não decide modo, só é auditado | env do host + `resolveGateMode`/`auditConfigGates` | `gate.js:61-62`, `:77-79`, `:98-117`, `:252-272`, `:1366`, `config.mjs:35-40` | 🟢 por construção |
 | 8 | **Memória persistente** — decisões, erros e lições no Brain (busca antes, registra depois) | skill `brain` (MCP) | `.agents/rules/brain-context.md:1-15`, `workflow-rules.md:402-414` | 🟡 processo |
 | 9 | **Instalador** — leva o harness a outro repo sem copiar domínio alheio | `installer/install.mjs` por eixo + manifesto | `installer/install.mjs:218-309`, `:643-669` | 🟢 neste repo (suite própria) · 🟡 no destino |
-| 10 | **Esteira PRD→ADR→SDD** — 1 ADR = 1 branch = 1 ciclo SDD, sem deny novo no runtime | `PRD-01`/`ADR-01`/`ADR-02` dentro do `suiteFull` | `.agents/skills/prd-adr-pipeline/checks.mjs:417-495`, `static-checks.mjs:361-363` | 🟢 neste repo (CI) · 🟡 no destino |
+| 10 | **Esteira PRD→ADR→SDD** — 1 ADR = 1 branch = 1 ciclo SDD, sem deny novo no runtime | `PRD-01`/`ADR-01`/`ADR-02` dentro do `suiteFull` | `.opencode/plugins/lib/prd-adr-pipeline/checks.mjs:417-495`, `static-checks.mjs:361-363` | 🟢 neste repo (CI) · 🟡 no destino |
 | 11 | **Contraprova com selo** — o comando canônico é selado por `sha256`; divergência nega | `seal.mjs` + `verifySealOrDeny` | `gate.js:146-161`, `:748-749`, `:918-929` | 🟢 runtime (fail-closed: selo ausente ⇒ `empty-seal`) |
 | 12 | **Escopo de escrita por papel** — orquestrador só em `.spec/**` + state; qa-engineer só em `harness/`; reviewer e ux-designer não escrevem | `checkWriteAccess` | `gate.js:556-568`, `:652-681` | 🟠 parcial — depende da identidade de agente no payload (ver §10b) |
 | 13 | **Pausa HITL entre batches** — 3º `task` consecutivo sem turno humano nega | contador por sessão + fronteira de turno do event stream | `gate.js:1059-1102`, `:1270-1297` | 🟠 parcial (fronteira depende do stream emitir) |
@@ -481,7 +482,7 @@ Regras: nenhuma ADR nasce antes do bloco §16 do PRD preenchido
 
 Validação mecânica: `PRD-01` (7 seções obrigatórias), `ADR-01` (1:1 índice↔disco),
 `ADR-02` (ordem, `status`, `branch`, `merge`) — implementados em
-`.agents/skills/prd-adr-pipeline/checks.mjs` e executados **dentro** do `suiteFull`
+`.opencode/plugins/lib/prd-adr-pipeline/checks.mjs` e executados **dentro** do `suiteFull`
 (`scripts/static-checks.mjs:371-378`, `:361-363`). Nível: 🟢 neste repo (rodam no CI) ·
 🟡 no repo-destino (não há CI prometeido lá).
 
@@ -535,7 +536,7 @@ intencional (`isDeclaredDeviation`, `gate.js:896-907`).
 | V12 | `static-checks.mjs:288-321` | referência órfã a `harness-continuous.md` | 🟡 INFO — não falha o build (`:320`); a enforcing real é R-V12 |
 | V14 | `static-checks.mjs:323-342` | git + remote + CI presentes (ADR-007 operante) | 🟢 neste repo (remote `git@github.com:freitasjh/harness.git` existe) |
 | V15 | `static-checks.mjs:280-286` | referência de rede em `installer/` | 🟠 parcial — escapes E1..E9 declarados (`static-checks.mjs:144-175`; `gate-contract.md:31`) |
-| PRD-01 / ADR-01 / ADR-02 | `static-checks.mjs:361-363` → `prd-adr-pipeline/checks.mjs` | 7 seções do PRD; 1:1 do índice de ADRs; ordem/branch/merge | 🟢 neste repo · 🟡 no destino |
+| PRD-01 / ADR-01 / ADR-02 | `static-checks.mjs:361-363` → `.opencode/plugins/lib/prd-adr-pipeline/checks.mjs` | 7 seções do PRD; 1:1 do índice de ADRs; ordem/branch/merge | 🟢 neste repo · 🟡 no destino |
 | V4 | `sdd-checks.mjs:370-372` | orçamento de linhas das rules (1090 de 1705) | 🟢 |
 | R-V12 | `sdd-checks.mjs:374-376` | referência órfã ao arquivo fundido (FAIL real) | 🟢 |
 | V17 | `sdd-checks.mjs:378-381` | tabela de vocabulário canônico de `current_phase` | 🟢 |
