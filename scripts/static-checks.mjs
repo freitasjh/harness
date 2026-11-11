@@ -61,19 +61,35 @@ import {
 // (`install.mjs:2746`), so importing the module does not run the CLI.
 import { runInventoryChecks } from "../.opencode/plugins/lib/inventory/checks.mjs";
 // Critério do Destino Limpo (ADR-001): a rubrica de 4 vereditos é o módulo; o
-// V20 abaixo só registra o veredito. A fonte de eixo é o export do instalador,
-// importado DENTRO do módulo — este adapter não duplica o mapa. O par
-// `axis-decl`/`axis-class` é publicado junto: são duas leituras diferentes do
-// mesmo assunto, e esconder uma seria o defeito (ADR-001 §2.4). `axis-class`
-// vem do inventário JÁ calculado acima e é INJETADO — o módulo não lê nem
-// nomeia a saída do V19.
+// V20 abaixo só registra o veredito. O módulo NÃO importa `installer/` (C5 do
+// review): `installer/` não propaga, logo o import relativo morreria no destino
+// com `ERR_MODULE_NOT_FOUND`. Aqui — o adapter, que roda NESTE repo — os
+// exports do instalador são importados e INJETADOS em `exports`. Sem injeção o
+// módulo degrada para vocabulário vazio + `cdl-axis-vocabulary-missing`
+// (fail-closed, nunca verde). O par `axis-decl`/`axis-class` é publicado junto:
+// são duas leituras diferentes do mesmo assunto, e esconder uma seria o defeito
+// (ADR-001 §2.4). `axis-class` vem do inventário JÁ calculado acima e é
+// INJETADO como contador — o módulo não lê nem nomeia a saída do V19.
 import { runCdlChecks } from "../.opencode/plugins/lib/cdl/checks.mjs";
 import {
+  AXIS_IDS,
   SKILLS_BY_AXIS,
   SKILLS_COMMON,
   RULES_BY_AXIS,
   RULES_COMMON,
+  STACKS_FOR_EXCEPTIONS,
 } from "../installer/install.mjs";
+
+// Fonte de eixo do V20 — a declaração do instalador, injetada. É o único
+// caminho pelo qual o módulo conhece eixos: ele não importa `installer/`.
+const CDL_EXPORTS = Object.freeze({
+  AXIS_IDS,
+  RULES_BY_AXIS,
+  RULES_COMMON,
+  SKILLS_BY_AXIS,
+  SKILLS_COMMON,
+  STACKS_FOR_EXCEPTIONS,
+});
 
 // Re-exported so the tested loader interface stays stable after the
 // Batch 3/7 relocation (GATE-01/FIX-01 scope). Canonical home is
@@ -477,7 +493,8 @@ function checkInventory(root = REPO_ROOT) {
 // The counters are published in PASS **and** in FAIL — a counter that only
 // exists in the red branch is debt nobody reads while the check works.
 export function cdlCheckResults(root = REPO_ROOT, opts = {}) {
-  return runCdlChecks(root, opts).results;
+  // `exports` injetado (C5) — fixture pode sobrepor via `declarations`.
+  return runCdlChecks(root, { exports: CDL_EXPORTS, ...opts }).results;
 }
 
 function cdlClosure(c) {
@@ -489,11 +506,14 @@ function cdlClosure(c) {
     + `, axis-decl=${c.axisDecl.skills}/${c.axisDecl.rules}`
     + `, axis-class=${c.axisClass.skills ?? "n/a"}/${c.axisClass.rules ?? "n/a"} (skills/rules)`
     + `, refs-undetected=${c.refsUndetected} (owner ADR-004)`
-    + `, vocabulary=${c.vocabulary}, payload=${c.payload}`;
+    + `, vocabulary=${c.vocabulary}, payload=${c.payload}`
+    + `, structural-debt=${c.structuralDebt}`
+    + (c.structuralDebtEntries?.length ? ` (${c.structuralDebtEntries.join("; ")})` : "")
+    + `, vendor-upstream=${c.vendorUpstreamLines}/${c.vendorUpstream} (E-5)`;
 }
 
 function checkCdl(root = REPO_ROOT, axisClass) {
-  const { ok, results: cdl, counters } = runCdlChecks(root, { axisClass });
+  const { ok, results: cdl, counters } = runCdlChecks(root, { axisClass, exports: CDL_EXPORTS });
   const closure = cdlClosure(counters);
   const detail = ok
     ? `cdl medido: ${closure}`

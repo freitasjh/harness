@@ -46,29 +46,40 @@
 // `incondicional` por construção (ADR-001 §2.3, SPEC E1). "Comum a todos" NÃO
 // confere eixo.
 //
-// --- D2 (ADR-001 §2.3) ---------------------------------------------------
+// --- D2 (ADR-001 §2.3, §2.3-bis) ----------------------------------------
 // Proibição citando tecnologia NÃO recebe veredito e NÃO entra na baseline:
-// o efeito pretendido é ausência. O predicado é marcador de negação ANTES do
-// termo na mesma linha; a linha entra no contador `prohibition-cited`,
-// publicado em PASS e em FAIL. Uma proibição que deixe de citar tecnologia sai
-// do contador — a variação fica visível, não silenciosa.
+// o efeito pretendido é ausência. O predicado é POR TERMO (C3 do review):
+// negação imediatamente antes do termo, "X é proibido", "evitar X" ou
+// "não usar X", insensível a caixa. Uma linha mista (`Use Spring Boot; NUNCA
+// use Y`) conta a prescrição de X E a proibição de Y — o
+// predicado antigo ("negação antes de ALGUM termo") apagava a prescrição
+// inteira, que é como uma proibição escondia uma norma.
 //
-// --- Pureza (SPEC I1) ----------------------------------------------------
+// --- Predicado v2 (ADR-001 §2.3-bis) -------------------------------------
+// A forma canônica de prescrever stack neste repo é linha de TABELA; o
+// predicado v1 não a via (`| Framework | Spring Boot 3 |` passava verde) e
+// aceitava qualquer item de lista (item solto não é norma). O passo 1 é:
+//   (a) marcador normativo + termo na MESMA cláusula
+//   (b) linha de tabela/item com checkbox `[ ]`/`[x]`
+//   (c) item de lista SOB HEADING NORMATIVO (o heading é consultado)
+//   (d) linha de tabela cujo cabeçalho/célula declara stack/ferramenta/comando
+//   (e) prosa declarativa com cópula/determinação de stack
+//
+// --- Pureza e portabilidade (SPEC I1, ADR-001 §10-N4) --------------------
 // `node:fs`/`node:path` read-only + `node:crypto` para o `sha256` da linha
 // (hash é cálculo, não I/O). Sem rede, sem child process, sem gravação. `root`
 // é injetável; a árvore nunca é mutada. Vive em `.opencode/plugins/lib/**`,
 // caminho que o instalador propaga (install.mjs:107).
+//
+// O módulo NÃO importa `installer/` (C5 do review): `installer/` não propaga
+// (install.mjs:1689), logo um import relativo de lá morre no destino com
+// `ERR_MODULE_NOT_FOUND`. A fonte de eixo é INJETADA pelo adapter
+// (`scripts/static-checks.mjs` importa `installer/install.mjs` e passa
+// `exports`). Sem `exports` o módulo degrada para vocabulário vazio e
+// `cdl-axis-vocabulary-missing` FAIL — fail-closed, nunca verde por omissão.
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
-import {
-  AXIS_IDS,
-  RULES_BY_AXIS,
-  RULES_COMMON,
-  SKILLS_BY_AXIS,
-  SKILLS_COMMON,
-  STACKS_FOR_EXCEPTIONS,
-} from "../../../../installer/install.mjs";
 
 // --- Vereditos (ADR-001 §2.3) --------------------------------------------
 // Ordem FIXA: o primeiro passo que decide, decide. `classifyLine` devolve um
@@ -245,6 +256,36 @@ export const EXCEPTIONS = Object.freeze([
     predicate: { type: "population-exclusion", value: "X2" },
     proof: "git ls-files '*/__tests__/*.md' | wc -l ⇒ 0",
   },
+  {
+    id: "E-5",
+    name: "linha de skill vendorizada (upstream)",
+    reason:
+      "vendor é código de terceiro: `treeHash` congela os bytes, logo editar quebra "
+      + "`vendor-skills --check` e baselinar cria dívida IMPAGÁVEL (ADR-001 §10-N5). "
+      + "As linhas ficam fora de A-2 e do contador de proibições: medir upstream não "
+      + "é medir o destino",
+    predicate: { type: "vendored-skill" },
+    proof: ".agents/skills/.vendor-lock.json (25 skills com `treeHash`; line-stacks por chave)",
+  },
+  {
+    id: "E-6",
+    name: "dívida estrutural de A-1 declarada (com dono)",
+    reason:
+      "os dois alarmes estruturais de A-1 (license fora de SPDX; termo de stack fora do "
+      + "eixo declarado) NÃO são escusáveis pela entrada `identity` da BASELINE — era "
+      + "assim que o alarme criado para pegar o `license:` não-SPDX deste skill se "
+      + "desligava justamente ali (ADR-001 §10-N3). A escusa só existe como dívida "
+      + "estrutural nomeada, com dono e predicado vivo: corrigida a linha, a exceção "
+      + "fica obsoleta e o próprio check reprova",
+    predicate: {
+      type: "structural-offender",
+      kind: "license",
+      file: ".agents/skills/security-review/SKILL.md",
+      line: 4,
+      owner: "ADR-003",
+    },
+    proof: "sed -n '4p' .agents/skills/security-review/SKILL.md ⇒ `license:` não-SPDX (PRD §13)",
+  },
 ]);
 
 // --- Baseline (ADR-001 §2.5, SPEC I3) -----------------------------------
@@ -255,33 +296,20 @@ export const EXCEPTIONS = Object.freeze([
 // Entrada de baseline pode nomear a rule pelo SLOT do mapa de eixo do dono
 // (`@rule-axis:<chave>#<índice>`) em vez do path literal: as duas rules de
 // frontend são o sujeito do congelamento EX-VAL-06 (12 arquivos entregues que
-// citam a rule excluída do destino react) — o path é DERIVADO da declaração do
-// instalador, nunca digitado aqui. Resolvido na carga; o export sai com `file`.
+// citam a rule excluída do destino react) — o path é DERIVADO da declaração
+// injetada pelo adapter, nunca digitado aqui. Resolvido no `runCdlChecks`
+// (nunca na carga: o módulo não importa `installer/`, C5).
 const RULE_AXIS_REF = /^@rule-axis:(.+)#(\d+)$/;
 
-function resolveBaselineEntry(entry) {
+function resolveBaselineEntry(entry, exports) {
   if (typeof entry.file !== "string") return entry;
   const ref = RULE_AXIS_REF.exec(entry.file);
   if (!ref) return entry;
-  const slot = (RULES_BY_AXIS[ref[1]] ?? [])[Number(ref[2])];
+  const slot = (exports?.RULES_BY_AXIS?.[ref[1]] ?? [])[Number(ref[2])];
   return slot ? { ...entry, file: `.agents/rules/${slot}` } : entry;
 }
 
 export const BASELINE = Object.freeze([
-  {
-    file: ".agents/agents/code-reviewer/PROMPT.md",
-    line: 24,
-    sha256: "080c8e210cdf81626ced129cc448fece9299ebf9b3bcdba83aba8198d12bd87b",
-    verdict: "incondicional",
-    owner: "ADR-005",
-  },
-  {
-    file: ".agents/agents/code-reviewer/PROMPT.md",
-    line: 29,
-    sha256: "1af1ce79f3067199c7dc4dc2262a2d4d566b293bb62506e6c82100f401da90ab",
-    verdict: "incondicional",
-    owner: "ADR-005",
-  },
   {
     file: ".agents/agents/code-reviewer/PROMPT.md",
     line: 61,
@@ -312,8 +340,15 @@ export const BASELINE = Object.freeze([
   },
   {
     file: ".agents/agents/developer-engineer/AGENT.md",
-    line: 85,
-    sha256: "2ac782cf05a3a813689a1a3b5f98836d4204f5ec069ca5c3eaded7ec191670eb",
+    line: 100,
+    sha256: "aac6f5fea0d039f91193fc5c101e9344ae0fae1c2eda2a8bd392af37c1ac17f5",
+    verdict: "incondicional",
+    owner: "ADR-005",
+  },
+  {
+    file: ".agents/agents/developer-engineer/AGENT.md",
+    line: 144,
+    sha256: "a5a843231087121f816c0dbaf36f6f19d6c1794d990617f962a648c48ac45e78",
     verdict: "incondicional",
     owner: "ADR-005",
   },
@@ -321,6 +356,13 @@ export const BASELINE = Object.freeze([
     file: ".agents/agents/orchestrator/AGENT.md",
     line: 36,
     sha256: "99e4167817f1669da507c3d9d40a236e1d925ded5a55f1876e3325979aac05e4",
+    verdict: "incondicional",
+    owner: "ADR-005",
+  },
+  {
+    file: ".agents/agents/orchestrator/AGENT.md",
+    line: 323,
+    sha256: "6755b1793346e5f8ac704f8f657e0f7a44f8b0f4e3b8aa9c45758201f502db38",
     verdict: "incondicional",
     owner: "ADR-005",
   },
@@ -368,27 +410,6 @@ export const BASELINE = Object.freeze([
   },
   {
     file: ".agents/agents/orchestrator/AGENT.md",
-    line: 541,
-    sha256: "4667c613fb3011b3fbde4b574123e44317c3d11cfe3a1845dade194fae422ebb",
-    verdict: "incondicional",
-    owner: "ADR-005",
-  },
-  {
-    file: ".agents/agents/orchestrator/AGENT.md",
-    line: 542,
-    sha256: "d7693126f8b98e944ee0a2a914f87437d4a8a320490a4f115a6cb217957fcf76",
-    verdict: "incondicional",
-    owner: "ADR-005",
-  },
-  {
-    file: ".agents/agents/orchestrator/AGENT.md",
-    line: 543,
-    sha256: "1ae275297bf502eca6dbd672dd2b2125b2f5ff85511809d1e90154d5de920a8a",
-    verdict: "incondicional",
-    owner: "ADR-005",
-  },
-  {
-    file: ".agents/agents/orchestrator/AGENT.md",
     line: 611,
     sha256: "52f599dc4d605fd47b792d83bf2de30134582f70c24d255438e437f0a0e457f3",
     verdict: "incondicional",
@@ -398,13 +419,6 @@ export const BASELINE = Object.freeze([
     file: ".agents/agents/orchestrator/AGENT.md",
     line: 619,
     sha256: "10f1d906a2bfc1bccc9c70a327fc60a941fbda865c139d6fd849c23d797399dc",
-    verdict: "incondicional",
-    owner: "ADR-005",
-  },
-  {
-    file: ".agents/agents/security-engineer/AGENT.md",
-    line: 96,
-    sha256: "5b3a4c41be9d460618a3339e02207c8d2864b2b1e50c81b1504eab30d033651f",
     verdict: "incondicional",
     owner: "ADR-005",
   },
@@ -430,11 +444,32 @@ export const BASELINE = Object.freeze([
     owner: "ADR-003",
   },
   {
+    file: "@rule-axis:frontend=react#0",
+    line: 159,
+    sha256: "af686330573a7aef995ef569822668dfdc893139b6ed6c76a1c750ed7107cf1c",
+    verdict: "incondicional",
+    owner: "ADR-003",
+  },
+  {
+    file: "@rule-axis:frontend=vue#0",
+    line: 30,
+    sha256: "f3abb89eab8f3aac6c3ac38da7add70864a646143921b1a473c8add565526f9d",
+    verdict: "incondicional",
+    owner: "ADR-003",
+  },
+  {
     file: "@rule-axis:frontend=vue#0",
     line: 161,
     sha256: "459a3e39cd4b8530e1ed2ca814c0dc1b38cf112007b60dcf09f0fa7c95b7389f",
     verdict: "identity",
     owner: "ADR-003",
+  },
+  {
+    file: ".agents/rules/gate-contract.md",
+    line: 42,
+    sha256: "d73bf766389946f98b2e7d56631dd63774b67cba7b8bbeae2d12d39347de97d5",
+    verdict: "incondicional",
+    owner: "ADR-005",
   },
   {
     file: ".agents/rules/sdd-workflow-standard.md",
@@ -466,22 +501,8 @@ export const BASELINE = Object.freeze([
   },
   {
     file: ".agents/rules/workflow-rules.md",
-    line: 225,
-    sha256: "df5c5123c94c917400bd810f8846a08907f87e3c9e375d0198420c23b42ccd2c",
-    verdict: "incondicional",
-    owner: "ADR-002",
-  },
-  {
-    file: ".agents/rules/workflow-rules.md",
-    line: 359,
-    sha256: "8622470257e5345558bd65364dc1c0548d24feb56cd9923ad368dad0ba5705e2",
-    verdict: "incondicional",
-    owner: "ADR-002",
-  },
-  {
-    file: ".agents/rules/workflow-rules.md",
-    line: 424,
-    sha256: "389b3b180bd506a9fff195e5b262f1a2c2baef74cad8c029f558196b50be75fe",
+    line: 434,
+    sha256: "99b0ea6df870e437d41078898532ebb0a2dec2bceaf2f52a65764545d4da4c70",
     verdict: "incondicional",
     owner: "ADR-002",
   },
@@ -508,10 +529,52 @@ export const BASELINE = Object.freeze([
   },
   {
     file: ".agents/rules/workflow-rules.md",
+    line: 441,
+    sha256: "7141f970546e952178e7230b0f06a2e9025fc31b520f42aff3e35b6af27c7203",
+    verdict: "incondicional",
+    owner: "ADR-002",
+  },
+  {
+    file: ".agents/rules/workflow-rules.md",
     line: 442,
     sha256: "fc131278bcc3ea3e1ac01b2e580b907972d3d804ba81ee66c26cdc60f4341e9f",
     verdict: "incondicional",
     owner: "ADR-002",
+  },
+  {
+    file: ".agents/rules/workflow-rules.md",
+    line: 558,
+    sha256: "93da5033ad9e6c1f2d9e380be2de0943d3f30d31a1c17f1317abe9ffc5ed15ba",
+    verdict: "incondicional",
+    owner: "ADR-002",
+  },
+  {
+    file: ".agents/rules/workflow-rules.md",
+    line: 559,
+    sha256: "1f7f49e593a65db90a6530c466e877f5ea139aabaec619c21e6099ab28bd1221",
+    verdict: "incondicional",
+    owner: "ADR-002",
+  },
+  {
+    file: ".agents/rules/workflow-rules.md",
+    line: 563,
+    sha256: "44f7c4a09151737a604fce63afdf3d93182090058b91568b1944733cbed35e74",
+    verdict: "incondicional",
+    owner: "ADR-002",
+  },
+  {
+    file: ".agents/skills/dev-planner/SKILL.md",
+    line: 204,
+    sha256: "a8950a25fdeb7c3267c82ebb00cd8ee8bcb27e5c1f1949d2f245a01cece25866",
+    verdict: "incondicional",
+    owner: "ADR-005",
+  },
+  {
+    file: ".agents/skills/dev-planner/anti-patterns.md",
+    line: 144,
+    sha256: "221dda4ac72825b94ac106ee1aaada5feabceb5acd2352962b92e2ccb6394429",
+    verdict: "incondicional",
+    owner: "ADR-005",
   },
   {
     file: ".agents/skills/dev-planner/anti-patterns.md",
@@ -529,15 +592,15 @@ export const BASELINE = Object.freeze([
   },
   {
     file: ".agents/skills/dev-planner/anti-patterns.md",
-    line: 264,
-    sha256: "79cef6906fabf4cf2fdd207f1775ea95409f92660e6f9c76f974e137530008e5",
+    line: 227,
+    sha256: "a71c8a66d5a0682261b827ca0bd22884d1b441e9dda09ecbcb44788ddcd38877",
     verdict: "incondicional",
     owner: "ADR-005",
   },
   {
     file: ".agents/skills/dev-planner/anti-patterns.md",
-    line: 284,
-    sha256: "a38c5422475f3672f2709d80ad8747b654c5c1087842d7634eefbe39e469732d",
+    line: 267,
+    sha256: "793c92cf8bf89f034e72916510ee1269ce9f73d48c50dcbc9ce1e852a2dab932",
     verdict: "incondicional",
     owner: "ADR-005",
   },
@@ -550,64 +613,22 @@ export const BASELINE = Object.freeze([
   },
   {
     file: ".agents/skills/harness-installer/SKILL.md",
-    line: 256,
-    sha256: "741da99f2fcbdfe32fb19d3eaf262b414ee0f0d7f47f19163521d496fb033d76",
-    verdict: "incondicional",
-    owner: "ADR-005",
-  },
-  {
-    file: ".agents/skills/nestjs-architecture-specialist/SKILL.md",
-    line: 81,
-    sha256: "4154b9c42ab98afc55b0aa114e700460dcfdd41fe2bd960fc8ffece3708d99b0",
-    verdict: "incondicional",
-    owner: "ADR-005",
-  },
-  {
-    file: ".agents/skills/prompt-optimizer/SKILL.md",
-    line: 108,
-    sha256: "468d147c7b5c0e96fadc6ccfc315d6b07ef2c411b04fb4f06ba4057a1abf7901",
-    verdict: "incondicional",
-    owner: "ADR-005",
-  },
-  {
-    file: ".agents/skills/react-best-practices/AGENTS.md",
-    line: 3619,
-    sha256: "38fc325d2a5fc37a3aa612a78be36d26f4a520df473075dacd954f0c88fb24ce",
-    verdict: "incondicional",
-    owner: "ADR-005",
-  },
-  {
-    file: ".agents/skills/react-best-practices/rules/js-tosorted-immutable.md",
-    line: 45,
-    sha256: "38fc325d2a5fc37a3aa612a78be36d26f4a520df473075dacd954f0c88fb24ce",
-    verdict: "incondicional",
-    owner: "ADR-005",
-  },
-  {
-    file: ".agents/skills/react-components/SKILL.md",
-    line: 92,
-    sha256: "8fe78bd79eda580fef5e4f2308a273f92feb71907967845f848606e4431e9d38",
-    verdict: "incondicional",
-    owner: "ADR-005",
-  },
-  {
-    file: ".agents/skills/react-components/SKILL.md",
     line: 97,
-    sha256: "e035472d806dab4b9cac30298b0c08faf20054d3e9c148b1099b8da54f6baa32",
+    sha256: "ba4c796232e594c498781374d999d3ee220a5e44023f581cc1d4af50042a0925",
     verdict: "incondicional",
     owner: "ADR-005",
   },
   {
-    file: ".agents/skills/react-components/SKILL.md",
-    line: 100,
-    sha256: "001753252e0a43df2bc6cf4e60eca0323f1f9ca9efdaa5cd5fd5f7ebf8413c8c",
+    file: ".agents/skills/harness-installer/SKILL.md",
+    line: 163,
+    sha256: "3ccd3140cad0f1f3573cd5c77eed688cff26776d572221a205f5318939588d19",
     verdict: "incondicional",
     owner: "ADR-005",
   },
   {
-    file: ".agents/skills/sdd-architecture-board/SKILL.md",
-    line: 18,
-    sha256: "511be83eb5cd5a041f7459c3e1bf73691b34b695bba611b0d66ac1e57b56140a",
+    file: ".agents/skills/prompt-optimizer/references/clarifying-questions.md",
+    line: 130,
+    sha256: "a6420b60b1fcd8aaeaa453f38ce790c6a1414addc2ae53ef1b2b3c252cd72988",
     verdict: "incondicional",
     owner: "ADR-005",
   },
@@ -647,13 +668,6 @@ export const BASELINE = Object.freeze([
     owner: "ADR-005",
   },
   {
-    file: ".agents/skills/sdd-compiler/references/frontend.md",
-    line: 52,
-    sha256: "8b412daee4c43d73364a27bff241723243cfd859e648c4fbebc6d7a9bdd3d0bf",
-    verdict: "incondicional",
-    owner: "ADR-005",
-  },
-  {
     file: ".agents/skills/security-review/SKILL.md",
     line: 3,
     sha256: "74a73a24cbf5b3046f7fe01059c906920a997a7933a15c8d2e8b20af32d515d8",
@@ -678,146 +692,6 @@ export const BASELINE = Object.freeze([
     file: ".agents/skills/security-review/SKILL.md",
     line: 166,
     sha256: "43135d7b90b14367319175e509b8f866fc08cdcd6d7b4f19e17bfd0cbab2e9f0",
-    verdict: "incondicional",
-    owner: "ADR-003",
-  },
-  {
-    file: ".agents/skills/spec-review/assets/checklist.md",
-    line: 1,
-    sha256: "cdf2c902348a0f2ebf91a23b38f49248998c38b9447a7e12afbecdf9c47930d2",
-    verdict: "identity",
-    owner: "ADR-003",
-  },
-  {
-    file: ".agents/skills/spec-review/assets/checklist.md",
-    line: 48,
-    sha256: "e32a9b1cb121a7082041fed3b03e60fe56d9e79977ec0d58b5b058e57418ad74",
-    verdict: "incondicional",
-    owner: "ADR-003",
-  },
-  {
-    file: ".agents/skills/spec-review/assets/checklist.md",
-    line: 94,
-    sha256: "db800651755e751285674095b415286f39129e52ac87a373aa9e90c24814ceaa",
-    verdict: "incondicional",
-    owner: "ADR-003",
-  },
-  {
-    file: ".agents/skills/spec-review/assets/checklist.md",
-    line: 106,
-    sha256: "680978b99b403a55606797b91da8ce0b98dae0dd49f009c830e4e0dc25ee39bf",
-    verdict: "incondicional",
-    owner: "ADR-003",
-  },
-  {
-    file: ".agents/skills/spec-review/assets/checklist.md",
-    line: 117,
-    sha256: "e2d70f262a845cc4624a6fec4847838faea9a7a4c8629c642e2da2eb4a6f9c3c",
-    verdict: "incondicional",
-    owner: "ADR-003",
-  },
-  {
-    file: ".agents/skills/spec-review/assets/checklist.md",
-    line: 120,
-    sha256: "96d55f26e847b3546f7f642d5a0849deb3319f853229d8bf981beb0e59ab8126",
-    verdict: "incondicional",
-    owner: "ADR-003",
-  },
-  {
-    file: ".agents/skills/spec-review/assets/checklist.md",
-    line: 137,
-    sha256: "c0b799a7ff67e75523518a06d586200f270508fcce6ad6f984da4bdf41e3a41e",
-    verdict: "incondicional",
-    owner: "ADR-003",
-  },
-  {
-    file: ".agents/skills/spec-review/assets/checklist.md",
-    line: 159,
-    sha256: "65584ddc584de0406620025ba3cf44a52d88309f6d7f3ebc6a30b70cfb6f5bcb",
-    verdict: "incondicional",
-    owner: "ADR-003",
-  },
-  {
-    file: ".agents/skills/spec-review/assets/checklist.md",
-    line: 160,
-    sha256: "498154f79aa87f8ecb4cb60335f23e260ad700f3acf266645652676951c94934",
-    verdict: "incondicional",
-    owner: "ADR-003",
-  },
-  {
-    file: ".agents/skills/spec-review/assets/checklist.md",
-    line: 161,
-    sha256: "d574afe2370ced716fec31544b80f2f142cf6eaf6b4b0e67900631df33fd911a",
-    verdict: "incondicional",
-    owner: "ADR-003",
-  },
-  {
-    file: ".agents/skills/spec-review/assets/output-template.md",
-    line: 7,
-    sha256: "ef03f19636570329d01507ab9217524e016bab101b4d389e773fb1afcb0174db",
-    verdict: "identity",
-    owner: "ADR-003",
-  },
-  {
-    file: ".agents/skills/spec-review/assets/output-template.md",
-    line: 73,
-    sha256: "ecb0910c4ea8115ba0f151334c18347f5e24c175ce620f27747e78678fdf40d4",
-    verdict: "incondicional",
-    owner: "ADR-003",
-  },
-  {
-    file: ".agents/skills/spec-review/assets/output-template.md",
-    line: 170,
-    sha256: "86821a0623be9b82491a6d131ca91c1fa9c1763d0dc46d9490a187226348d24f",
-    verdict: "incondicional",
-    owner: "ADR-003",
-  },
-  {
-    file: ".agents/skills/spec-review/assets/output-template.md",
-    line: 192,
-    sha256: "9641aa76e71ba07b6d0afaec9648748ef6aa42c34c11d0298f9d3522f7eaab9b",
-    verdict: "incondicional",
-    owner: "ADR-003",
-  },
-  {
-    file: ".agents/skills/spec-review/assets/output-template.md",
-    line: 205,
-    sha256: "72b14a9a23b31e896103748aafd60bcf9d74f35d2760f2ab57aa2e211d8047af",
-    verdict: "incondicional",
-    owner: "ADR-003",
-  },
-  {
-    file: ".agents/skills/spec-review/assets/usage-guide.md",
-    line: 1,
-    sha256: "2d7f8cdb06d724eea0f7724f45577afe93e6c48bfebd9963c141e5710bd5eac9",
-    verdict: "identity",
-    owner: "ADR-003",
-  },
-  {
-    file: ".agents/skills/spec-review/assets/usage-guide.md",
-    line: 56,
-    sha256: "58246df6437e4a2c526c5aa1bd9a103e15e310053b928f094876207cf9750ffd",
-    verdict: "incondicional",
-    owner: "ADR-003",
-  },
-  {
-    file: ".agents/skills/spec-review/assets/usage-guide.md",
-    line: 258,
-    sha256: "b01ece55b13d200963c7dcbd098cba9d696216dc0515506b445a25b4cc7b77ae",
-    verdict: "incondicional",
-    owner: "ADR-003",
-  },
-  {
-    file: ".agents/skills/spec-review/assets/usage-guide.md",
-    line: 259,
-    sha256: "3db08edcbb65a6e0812a1551278c41e7d658ba3c1781a7b5defe4924a0097c1f",
-    verdict: "incondicional",
-    owner: "ADR-003",
-  },
-  {
-    file: ".agents/skills/spec-review/assets/usage-guide.md",
-    line: 280,
-    sha256: "0a5a82ce9bf7e8f1fa93c03d4a305a6cee1d68a7493962eb4f7e58ec82cbd35e",
     verdict: "incondicional",
     owner: "ADR-003",
   },
@@ -858,6 +732,13 @@ export const BASELINE = Object.freeze([
   },
   {
     file: ".agents/skills/spec-review/README.md",
+    line: 120,
+    sha256: "269bc5b897a9deb1cbae6ff087c4b54c082f07a4744fae64920cdcf717bae8f8",
+    verdict: "incondicional",
+    owner: "ADR-003",
+  },
+  {
+    file: ".agents/skills/spec-review/README.md",
     line: 141,
     sha256: "058ca03f7c1d8a6fac3fead1958a80fbcb3dc70511546dc6c024e834bb67dcf5",
     verdict: "incondicional",
@@ -892,13 +773,6 @@ export const BASELINE = Object.freeze([
     owner: "ADR-003",
   },
   {
-    file: ".agents/skills/spec-review/README.md",
-    line: 216,
-    sha256: "2cf42bd6ba1d040a3260b5eb56d9791bf15eddfce447f28ac2f9161ce4cb99ab",
-    verdict: "incondicional",
-    owner: "ADR-003",
-  },
-  {
     file: ".agents/skills/spec-review/SKILL.md",
     line: 3,
     sha256: "05d3757ed2b257a755aa83ca3ef98456766ad6f1ec079697c3815c66226ed188",
@@ -914,50 +788,148 @@ export const BASELINE = Object.freeze([
   },
   {
     file: ".agents/skills/spec-review/SKILL.md",
-    line: 43,
-    sha256: "ecc52cf98219a179473e31dccd409374ae8e84c2a8bc71d7af07c47af4af76d9",
+    line: 61,
+    sha256: "22dc209626d3395c2a1fb2b47ef788c1d6c356c13b27b71eb73f307f18d956ca",
     verdict: "incondicional",
     owner: "ADR-003",
   },
   {
-    file: ".agents/skills/spec-review/SKILL.md",
-    line: 44,
-    sha256: "a9e0d29f61757ee1a796106c4b623ef8648076ae6f67875316355866a8ebbb10",
+    file: ".agents/skills/spec-review/assets/checklist.md",
+    line: 1,
+    sha256: "cdf2c902348a0f2ebf91a23b38f49248998c38b9447a7e12afbecdf9c47930d2",
+    verdict: "identity",
+    owner: "ADR-003",
+  },
+  {
+    file: ".agents/skills/spec-review/assets/checklist.md",
+    line: 48,
+    sha256: "e32a9b1cb121a7082041fed3b03e60fe56d9e79977ec0d58b5b058e57418ad74",
     verdict: "incondicional",
     owner: "ADR-003",
   },
   {
-    file: ".agents/skills/spec-review/SKILL.md",
-    line: 116,
-    sha256: "4997d5f75d55008c0f7b3ec29f6b809c1b1223ea16091e41ab30cb49efb10443",
+    file: ".agents/skills/spec-review/assets/checklist.md",
+    line: 94,
+    sha256: "db800651755e751285674095b415286f39129e52ac87a373aa9e90c24814ceaa",
     verdict: "incondicional",
     owner: "ADR-003",
   },
   {
-    file: ".agents/skills/spec-review/SKILL.md",
-    line: 164,
-    sha256: "4474222d5862bc35370a334b832277176a0a16d4f8e4daf5fed6c7a71e284355",
+    file: ".agents/skills/spec-review/assets/checklist.md",
+    line: 98,
+    sha256: "14741313b631f9883db31d940f74eed23acfefc8eab6f69a548bd45c0170b6ac",
     verdict: "incondicional",
     owner: "ADR-003",
   },
   {
-    file: ".agents/skills/spec-review/SKILL.md",
-    line: 166,
-    sha256: "78427222a6d4e54d48d2e90feabff5faac4a0934894fe7ec9b7d6844c7f22316",
+    file: ".agents/skills/spec-review/assets/checklist.md",
+    line: 106,
+    sha256: "680978b99b403a55606797b91da8ce0b98dae0dd49f009c830e4e0dc25ee39bf",
     verdict: "incondicional",
     owner: "ADR-003",
   },
   {
-    file: ".agents/skills/template-best-practices/SKILL.md",
-    line: 37,
-    sha256: "b03cc63cd3302b22418c218940ee145881bab6309ffc0966821c88f476fb98c9",
+    file: ".agents/skills/spec-review/assets/checklist.md",
+    line: 117,
+    sha256: "e2d70f262a845cc4624a6fec4847838faea9a7a4c8629c642e2da2eb4a6f9c3c",
     verdict: "incondicional",
-    owner: "ADR-005",
+    owner: "ADR-003",
   },
   {
-    file: ".agents/skills/template-deepsearch/SKILL.md",
-    line: 49,
-    sha256: "a7c5f070c94577d56353fb2a23541970793be5e595d737820f42017ae4a302c7",
+    file: ".agents/skills/spec-review/assets/checklist.md",
+    line: 120,
+    sha256: "96d55f26e847b3546f7f642d5a0849deb3319f853229d8bf981beb0e59ab8126",
+    verdict: "incondicional",
+    owner: "ADR-003",
+  },
+  {
+    file: ".agents/skills/spec-review/assets/checklist.md",
+    line: 121,
+    sha256: "aa408db0ec492d129888c53541218198090b13d885a8a0b04becd3672ecfe3da",
+    verdict: "incondicional",
+    owner: "ADR-003",
+  },
+  {
+    file: ".agents/skills/spec-review/assets/checklist.md",
+    line: 137,
+    sha256: "c0b799a7ff67e75523518a06d586200f270508fcce6ad6f984da4bdf41e3a41e",
+    verdict: "incondicional",
+    owner: "ADR-003",
+  },
+  {
+    file: ".agents/skills/spec-review/assets/checklist.md",
+    line: 159,
+    sha256: "65584ddc584de0406620025ba3cf44a52d88309f6d7f3ebc6a30b70cfb6f5bcb",
+    verdict: "incondicional",
+    owner: "ADR-003",
+  },
+  {
+    file: ".agents/skills/spec-review/assets/checklist.md",
+    line: 160,
+    sha256: "498154f79aa87f8ecb4cb60335f23e260ad700f3acf266645652676951c94934",
+    verdict: "incondicional",
+    owner: "ADR-003",
+  },
+  {
+    file: ".agents/skills/spec-review/assets/checklist.md",
+    line: 161,
+    sha256: "d574afe2370ced716fec31544b80f2f142cf6eaf6b4b0e67900631df33fd911a",
+    verdict: "incondicional",
+    owner: "ADR-003",
+  },
+  {
+    file: ".agents/skills/spec-review/assets/output-template.md",
+    line: 7,
+    sha256: "ef03f19636570329d01507ab9217524e016bab101b4d389e773fb1afcb0174db",
+    verdict: "identity",
+    owner: "ADR-003",
+  },
+  {
+    file: ".agents/skills/spec-review/assets/output-template.md",
+    line: 41,
+    sha256: "a442c3759fd5041ae95d8c00dcd8ce2f0d7f7df8e84e3383e042ccc2ef8a548d",
+    verdict: "incondicional",
+    owner: "ADR-003",
+  },
+  {
+    file: ".agents/skills/spec-review/assets/output-template.md",
+    line: 73,
+    sha256: "ecb0910c4ea8115ba0f151334c18347f5e24c175ce620f27747e78678fdf40d4",
+    verdict: "incondicional",
+    owner: "ADR-003",
+  },
+  {
+    file: ".agents/skills/spec-review/assets/output-template.md",
+    line: 205,
+    sha256: "72b14a9a23b31e896103748aafd60bcf9d74f35d2760f2ab57aa2e211d8047af",
+    verdict: "incondicional",
+    owner: "ADR-003",
+  },
+  {
+    file: ".agents/skills/spec-review/assets/usage-guide.md",
+    line: 1,
+    sha256: "2d7f8cdb06d724eea0f7724f45577afe93e6c48bfebd9963c141e5710bd5eac9",
+    verdict: "identity",
+    owner: "ADR-003",
+  },
+  {
+    file: ".agents/skills/spec-review/assets/usage-guide.md",
+    line: 258,
+    sha256: "b01ece55b13d200963c7dcbd098cba9d696216dc0515506b445a25b4cc7b77ae",
+    verdict: "incondicional",
+    owner: "ADR-003",
+  },
+  {
+    file: ".agents/skills/spec-review/assets/usage-guide.md",
+    line: 259,
+    sha256: "3db08edcbb65a6e0812a1551278c41e7d658ba3c1781a7b5defe4924a0097c1f",
+    verdict: "incondicional",
+    owner: "ADR-003",
+  },
+  {
+    file: "docs/INSTALACAO.md",
+    line: 268,
+    sha256: "922b43b50b2c53cb41a2deffe45d60fd4218f879ae63d1c361e7e0fd15385048",
     verdict: "incondicional",
     owner: "ADR-005",
   },
@@ -970,12 +942,19 @@ export const BASELINE = Object.freeze([
   },
   {
     file: "spec-developed.md",
+    line: 83,
+    sha256: "4d6fd28bb8d8a851a1760a18ce1206674e9e8e79d5bf6c481821590d4a9f4636",
+    verdict: "incondicional",
+    owner: "ADR-005",
+  },
+  {
+    file: "spec-developed.md",
     line: 122,
     sha256: "e4c22b8001056a1dec50fb30828d04d1612f0ff27c2138759f41fdef9c84538f",
     verdict: "incondicional",
     owner: "ADR-005",
   },
-].map(resolveBaselineEntry));
+]);
 
 const BASELINE_VERDICTS = new Set(["incondicional", "identity"]);
 const BASELINE_OWNERS = new Set(["ADR-002", "ADR-003", "ADR-004", "ADR-005"]);
@@ -1075,6 +1054,10 @@ export function declaredAxis(artifact, exports = DEFAULT_EXPORTS, lock = null) {
 
 // --- Vocabulário: cobertura cobrada --------------------------------------
 
+// Marcador de fonte ausente (C5). Não é nome de eixo: é a declaração de que
+// ninguém injetou `exports` — e por isso o resultado é FAIL, nunca PASS.
+export const AXIS_SOURCE_MISSING = "<fonte-de-eixo-ausente>";
+
 export function axisIdsOf(exports = DEFAULT_EXPORTS, lock = {}) {
   const ids = new Set(Object.values(exports.AXIS_IDS ?? {}).flat());
   for (const entry of Object.values(lock)) {
@@ -1084,8 +1067,12 @@ export function axisIdsOf(exports = DEFAULT_EXPORTS, lock = {}) {
 }
 
 export function missingVocabulary(exports = DEFAULT_EXPORTS, lock = {}) {
+  const ids = axisIdsOf(exports, lock);
+  // Fail-closed (C5): sem fonte de eixo injetada não há cobertura a declarar —
+  // lista vazia aqui seria "verde por omissão", o defeito que RF-09 proíbe.
+  if (ids.size === 0) return [AXIS_SOURCE_MISSING];
   const missing = [];
-  for (const id of axisIdsOf(exports, lock)) {
+  for (const id of ids) {
     if (!Object.prototype.hasOwnProperty.call(exports.STACK_VOCAB ?? STACK_VOCAB, id)) {
       missing.push(id);
     }
@@ -1152,11 +1139,12 @@ const FENCE = /^\s*(?:```|~~~)/;
 const PICO_OPEN = /^\s*<(context|acceptance|task|constraints)>\s*$/i;
 const PICO_CLOSE = /^\s*<\/(context|acceptance|task|constraints)>\s*$/i;
 const BLOCKQUOTE = /^\s*>/;
+const TABLE_ROW = /^\s*\|.*\|\s*$/;
+const TABLE_SEPARATOR = /^\s*\|?[\s:|-]*-{2,}[\s:|-]*\|?\s*$/;
 
 // Marcador normativo — imperativo/modal/estado obrigatório. É o que separa
 // "instrução" de "menção" no passo 1 da rubrica.
-const NORMATIVE = new RegExp(
-  [
+const NORMATIVE_SOURCE = [
     "\\bMUST\\b", "\\bSHOULD\\b", "\\bDEVE[M]?\\b", "\\bDEVEM\\b", "\\bobrigat[óo]ri[oa]s?\\b",
     "\\bNUNCA\\b", "\\bSEMPRE\\b", "\\bnever\\b", "\\balways\\b", "\\brequired\\b",
     "\\bProibido\\b", "\\bproibid[oa]s?\\b", "\\bproibida\\b", "\\bUse\\b", "\\buse\\b",
@@ -1164,20 +1152,72 @@ const NORMATIVE = new RegExp(
     "\\bCriar\\b", "\\bcriar\\b", "\\bVerificar\\b", "\\bverificar\\b", "\\bExecutar\\b",
     "\\bexecutar\\b", "\\bRodar\\b", "\\brodar\\b", "\\bpreferencial(?:mente)?\\b",
     "\\bEvite\\b", "\\bevite\\b", "\\bEvitar\\b", "\\bevitar\\b", "\\bViola\\b",
-    "\\bNÃO\\b", "\\bnão\\b", "\\bnao\\b", "\\bNot\\b", "\\bAvoid\\b", "\\bDON'T\\b",
+    "\\bNot\\b", "\\bAvoid\\b", "\\bDON'T\\b",
     "\\bDo not\\b", "\\bFerramentas:", "\\bExecução:", "\\bTooling:", "\\bRule:",
+  ].join("|");
+
+const NORMATIVE = new RegExp(NORMATIVE_SOURCE);
+
+// Heading NORMATIVO (passo 1c): um item de lista só é prescrição quando o
+// heading que o delimita declara norma. "Item solto não basta" — o predicado v1
+// aceitava qualquer bullet, e era assim que sumário e amostra entravam como
+// dívida (ADR-001 §2.3-bis, C1/C2 do review).
+const NORMATIVE_HEADING = new RegExp(
+  [
+    "\\bregras?\\b", "\\brules?\\b", "\\bobrigat[óo]ri[oa]s?\\b",
+    "\\brequisitos?\\b", "\\brequirements?\\b", "\\bcontrato\\b", "\\bcontract\\b",
+    "\\bprotocolo\\b", "\\bprotocol\\b", "\\bpadr[ãa]o\\b", "\\bpadr[õo]es\\b",
+    "\\bstandards?\\b", "\\bconven[çc][õo]es\\b", "\\bconventions?\\b", "\\bchecklist\\b",
+    "\\bpol[íi]tica\\b", "\\bpolicy\\b", "\\bproibid[oa]s?\\b", "\\binviol[áa]ve(?:l|is)\\b",
+    "\\bnunca\\b", "\\bnever\\b", "\\bmust\\b", "\\bdeve[m]?\\b", "\\bsempre\\b",
+    "\\balways\\b", "\\bnon-negotiable\\b", "\\bprocedimento\\b", "\\bworkflow\\b",
   ].join("|"),
+  "i",
 );
 
-// Marcador de negação — D2. Tem de estar ANTES do termo, na mesma linha.
-const NEGATION = new RegExp(
-  [
-    "\\bNUNCA\\b", "\\bnever\\b", "\\bNÃO\\b", "\\bnão\\b", "\\bnao\\b", "\\bProibido\\b",
-    "\\bproibid[oa]s?\\b", "\\bsem\\b", "\\bSem\\b", "\\bDON'T\\b", "\\bDo not\\b",
-    "\\bdon't\\b", "\\bAvoid\\b", "\\bevite\\b", "\\bEvite\\b", "\\breprova\\b",
-    "\\bViola\\b", "\\bMUST NOT\\b", "\\bmust not\\b", "\\bbanido\\b",
-  ].join("|"),
+// Proibição POR TERMO (passo 2, D2, C3 do review). A negação tem de estar
+// imediatamente antes do termo — com no máximo o verbo de uso entre os dois —,
+// ou o termo tem de ser seguido de "é proibido"/"is prohibited". Caixa é
+// irrelevante: `Não`/`NÃO`/`Nunca`/`NUNCA`/`Evitar`/`Evite` valem igual.
+const PROHIBITION_NEGATION =
+  "(?:nunca|never|jamais|n[ãa]o|nao|don'?t|do not|must not|avoid|evite|evitar|proibid[oa]s?|proibido|banid[oa]s?|sem)";
+const PROHIBITION_VERB = "(?:(?:use|usar|utilize|utilizar|usa|usam|using|uses)\\s+(?:o\\s+|a\\s+)?)?";
+const NEGATION_BEFORE = new RegExp(
+  `(?:^|[\\s(*_"\`\\[,;:—–-])${PROHIBITION_NEGATION}[\\s,;:—–-]*${PROHIBITION_VERB}$`,
+  "i",
 );
+const FORBIDDEN_AFTER =
+  /^[\s`*_)"'\]]*(?:é|e|is|são)\s+(?:proibid[oa]s?|banid[oa]s?|forbidden|prohibited)\b/i;
+
+// Célula de tabela que declara stack/ferramenta/comando (passo 1d). É a forma
+// CANÔNICA de prescrever neste repo (tabelas de stack das rules e dos
+// agentes), invisível ao predicado v1.
+const TABLE_DECLARATIVE = new RegExp(
+  [
+    "\\bframework\\b", "\\bstack\\b", "\\btecnologias?\\b", "\\btechnology\\b",
+    "\\bferramentas?\\b", "\\btools?\\b", "\\bbibliotecas?\\b", "\\blibrar(?:y|ies)\\b",
+    "\\bruntime\\b", "\\blinguagens?\\b", "\\blanguages?\\b", "\\bbancos?\\b", "\\bdatabase\\b",
+    "\\borm\\b", "\\bpersist[êe]ncia\\b", "\\bpersistence\\b", "\\btestes?\\b", "\\btests?\\b",
+    "\\btesting\\b", "\\bbuild\\b", "\\bcomandos?\\b", "\\bcommands?\\b", "\\bdepend[êe]ncias?\\b",
+    "\\bdependenc(?:y|ies)\\b", "\\bpackages?\\b", "\\bpacotes?\\b",
+    "\\bfrontend\\b", "\\bbackend\\b",
+  ].join("|"),
+  "i",
+);
+const COMMAND_WORD =
+  /(?:^|[\s`($>])(?:mvn|npm|npx|pnpm|yarn|cargo|flutter|dart|gradle|dotnet|docker|git)\b/i;
+const PINNED_STACK = new RegExp(`^[\\s*_\`]*(?:${TERMS_ALTERNATION})[^,;|]{0,24}\\d`, "i");
+
+// Prosa declarativa com cópula/determinação de stack (passo 1e):
+// "A stack do destino é Spring Boot 3 com Maven." — afirma a stack, não a
+// menciona. Exige sujeito de stack + cópula/verbo na MESMA linha do termo.
+const STACK_SPECIFIER =
+  /\b(stack|backend|frontend|framework|tecnologia|technology|runtime|linguagem|language|banco(?: de dados)?|database|orm|build|test runner|ferramenta)\b/i;
+const STACK_COPULA = /\b(é|são|usa|usam|utiliza|utilizam|adota|adotam|com|using|uses|requires?)\b/i;
+
+function tableCells(line) {
+  return line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((c) => c.trim());
+}
 
 const EXAMPLE_MARKERS = /\bex\.?:|\be\.g\.|\bexemplo\b|\bfor example\b/i;
 
@@ -1220,29 +1260,81 @@ function scopeGate(ctx) {
   return false;
 }
 
-// Passo 1: a linha é prescritiva? (a) marcador normativo + termo; (b) checkbox
-// (tabela OU item de lista — checklist é prescrição por estrutura); (c) item de
-// lista que não é citação de artefato. Sem isso a linha é menção/referência —
-// não recebe veredito (A-3 é quem trata path).
-function isPrescriptive(line, ctx = {}) {
-  if (TABLE_CHECKBOX.test(line) || LIST_CHECKBOX.test(line)) return true;
-  if (NORMATIVE.test(line) && termsOf(line).length > 0) return true;
-  if (LIST_ITEM.test(line) && !REFERENCE_ITEM.test(line)) return true;
+// Cláusulas de uma linha: `;`, `. ` e ` — ` separam afirmações. O passo 1a
+// exige marcador normativo e termo na MESMA cláusula (senão "Use X. Faça Y
+// com Z" viraria uma única norma sobre Z).
+function clausesOf(line) {
+  return line.split(/;|(?<=[.!?])\s+|\s+[—–]\s+/).filter((c) => c.trim() !== "");
+}
+
+function normativeClause(line) {
+  return clausesOf(line).some((clause) => NORMATIVE.test(clause) && termsOf(clause).length > 0);
+}
+
+function tableDeclaresStack(line, ctx = {}) {
+  if (!TABLE_ROW.test(line)) return false;
+  const cells = tableCells(line);
+  if (cells.some((cell) => TABLE_DECLARATIVE.test(cell))) return true;
+  if (ctx.tableHeader && tableCells(ctx.tableHeader).some((cell) => TABLE_DECLARATIVE.test(cell))) {
+    return true;
+  }
+  // Célula que fixa versão de stack (`Spring Boot 3`, `Vue 3.5 + TypeScript`).
+  if (cells.some((cell) => PINNED_STACK.test(cell))) return true;
+  // Célula que é um COMANDO de build/execução citando tecnologia (inline code
+  // ou prompt): sem o marcador de código, `Java` no meio de prosa não é comando.
+  if (cells.some((cell) => /`[^`]+`/.test(cell) && COMMAND_WORD.test(cell))) return true;
   return false;
 }
 
-// Passo 2 (D2): negação ANTES do termo na mesma linha ⇒ fora de A-2.
+function declarativeStack(line) {
+  if (LIST_ITEM.test(line) || TABLE_ROW.test(line) || HEADING.test(line)) return false;
+  return STACK_SPECIFIER.test(line) && STACK_COPULA.test(line);
+}
+
+// Passo 1: a linha é prescritiva? (a) marcador normativo + termo na mesma
+// cláusula; (b) checkbox (tabela ou item); (c) item de lista SOB HEADING
+// NORMATIVO; (d) linha de tabela cujo cabeçalho/célula declara stack;
+// (e) prosa declarativa com cópula de stack. Sem isso a linha é
+// menção/referência — não recebe veredito (A-3 é quem trata path).
+function isPrescriptive(line, ctx = {}) {
+  if (TABLE_CHECKBOX.test(line) || LIST_CHECKBOX.test(line)) return true;
+  if (normativeClause(line)) return true;
+  if (declarativeStack(line) && termsOf(line).length > 0) return true;
+  if (tableDeclaresStack(line, ctx)) return true;
+  if (
+    LIST_ITEM.test(line)
+    && !REFERENCE_ITEM.test(line)
+    && ctx.heading
+    && (NORMATIVE_HEADING.test(ctx.heading) || namesAxis(ctx.heading))
+  ) {
+    return true;
+  }
+  return false;
+}
+
+// Passo 2 (D2): termos da linha que a própria linha PROÍBE. Avaliado termo a
+// termo (C3): `Use X; NUNCA use Y` proíbe Y e prescreve X na mesma linha —
+// cada um conta no seu lugar.
+export function prohibitedTermsOf(line) {
+  const out = [];
+  for (const { term } of termsOf(line)) {
+    const re = new RegExp(escapeRegExp(term), "g");
+    let match;
+    while ((match = re.exec(line)) !== null) {
+      const prefix = line.slice(0, match.index);
+      const tail = line.slice(match.index + match[0].length);
+      if (NEGATION_BEFORE.test(prefix) || FORBIDDEN_AFTER.test(tail)) {
+        out.push(term);
+        break;
+      }
+      re.lastIndex = match.index + 1;
+    }
+  }
+  return out;
+}
+
 export function prohibitionOf(line) {
-  const hits = termsOf(line);
-  if (!hits.length) return false;
-  const negation = new RegExp(NEGATION.source, "g");
-  const first = negation.exec(line);
-  if (!first) return false;
-  const cut = first.index;
-  return hits.some(({ term }) => {
-    const at = line.indexOf(term);
-    return at >= 0 && at > cut;
-  });
+  return prohibitedTermsOf(line).length > 0;
 }
 
 // Passo 4: catálogo. ≥2 termos de ≥2 eixos distintos na MESMA linha, ou ≥2
@@ -1282,17 +1374,22 @@ function quotedTermSpan(line) {
 
 /**
  * classifica UMA linha. `ctx` carrega o que é escopo, não julgamento:
- *   { artifact, axis: Set, heading, ancestors: string[], inFence, inPico,
- *     inQuote, catalogueFile }
+ *   { artifact, axis: Set, heading, tableHeader, ancestors: string[], inFence,
+ *     inPico, inQuote, catalogueFile }
  * Devolve UM veredito ou `null` (não-prescritiva, ou proibição por D2).
  */
 export function classifyLine(line, ctx = {}) {
   const hits = termsOf(line);
   if (!hits.length) return null;
+  // D2 avaliado POR TERMO: o termo proibido não consome veredito, o resto da
+  // linha continua sendo norma — `Use X; NUNCA use Y` prescreve X e proíbe Y,
+  // em vez de evaporar como um todo.
+  const prohibited = new Set(prohibitedTermsOf(line));
+  const allowed = hits.filter((h) => !prohibited.has(h.term));
+  if (!allowed.length) return null;
   if (!isPrescriptive(line, ctx)) return null;
   // E-2: declaração de ausência de stack não é prescrição.
   if (ctx.absenceDeclaration) return null;
-  if (prohibitionOf(line)) return null; // D2: proibição não recebe veredito
 
   // 3. exemplo
   if (
@@ -1307,7 +1404,7 @@ export function classifyLine(line, ctx = {}) {
 
   // 4. catálogo
   if (ctx.catalogueFile) return "catálogo";
-  if (isCatalogue(line, hits)) return "catálogo";
+  if (isCatalogue(line, allowed)) return "catálogo";
 
   // 5. condicional
   if (explicitGate(line) || scopeGate(ctx)) return "condicional";
@@ -1315,7 +1412,7 @@ export function classifyLine(line, ctx = {}) {
   if (declared.size > 0) {
     // Termo cross-axis (`shadcn`, `Vitest`) está coberto quando QUALQUER um
     // dos seus eixos é declarado: o artefato fala de um dos donos do termo.
-    const all = hits.every((h) => [...h.axes].some((axis) => declared.has(axis)));
+    const all = allowed.every((h) => [...h.axes].some((axis) => declared.has(axis)));
     if (all) return "condicional";
   }
 
@@ -1346,7 +1443,8 @@ function catalogueFileOf(artifact, exceptions) {
 }
 
 // Percorre a população mantendo o estado que a rubrica consome (fence, PICCO,
-// blockquote, heading delimitante, bullets ancestrais por indentação).
+// blockquote, heading delimitante, cabeçalho de tabela, bullets ancestrais por
+// indentação).
 function analyseFile(root, file, axis, exceptions, population, projectTerms = PROJECT_TERMS) {
   const lines = population.byFile.get(file) ?? [];
   const verdicts = [];
@@ -1357,6 +1455,8 @@ function analyseFile(root, file, axis, exceptions, population, projectTerms = PR
   let bullets = [];
   let inFence = false;
   let inPico = false;
+  let tableHeader = null;
+  let previousRow = null;
   const catalogue = catalogueFileOf(file, exceptions);
 
   for (let i = 0; i < lines.length; i += 1) {
@@ -1365,6 +1465,8 @@ function analyseFile(root, file, axis, exceptions, population, projectTerms = PR
 
     if (FENCE.test(line)) {
       inFence = !inFence;
+      tableHeader = null;
+      previousRow = null;
       continue;
     }
     if (PICO_OPEN.test(line)) {
@@ -1382,6 +1484,19 @@ function analyseFile(root, file, axis, exceptions, population, projectTerms = PR
       while (headings.length && headings[headings.length - 1].level >= level) headings.pop();
       headings.push({ level, text: heading[2] });
       bullets = [];
+      tableHeader = null;
+      previousRow = null;
+    }
+    // A linha separadora da tabela promove a linha anterior a CABEÇALHO: é o
+    // que permite julgar a célula pelo que a coluna declara (passo 1d).
+    if (TABLE_SEPARATOR.test(line)) {
+      tableHeader = previousRow;
+      previousRow = null;
+    } else if (TABLE_ROW.test(line)) {
+      previousRow = line;
+    } else if (line.trim() !== "") {
+      tableHeader = null;
+      previousRow = null;
     }
     const item = LIST_ITEM.exec(line);
     let ancestors = bullets.map((b) => b.text);
@@ -1412,6 +1527,7 @@ function analyseFile(root, file, axis, exceptions, population, projectTerms = PR
       artifact: file,
       axis,
       heading: headings.length ? headings[headings.length - 1].text : null,
+      tableHeader,
       ancestors,
       inFence,
       inPico,
@@ -1420,11 +1536,12 @@ function analyseFile(root, file, axis, exceptions, population, projectTerms = PR
       absenceDeclaration: Boolean(absence && absence.predicate?.type === "line-declaration"),
     };
     const verdict = classifyLine(line, ctx);
-    if (verdict) {
-      verdicts.push({ line: n, text: line, verdict });
-    } else if (!ctx.absenceDeclaration && termsOf(line).length && prohibitionOf(line)) {
-      // D2: proibição citando tecnologia não recebe veredito, mas é contada.
-      prohibitions.push({ line: n, text: line });
+    if (verdict) verdicts.push({ line: n, text: line, verdict });
+    // D2 é contada INDEPENDENTE do veredito: numa linha mista
+    // (`Use X; NUNCA use Y`) os dois contam (C3).
+    if (!ctx.absenceDeclaration) {
+      const forbidden = prohibitedTermsOf(line);
+      if (forbidden.length) prohibitions.push({ line: n, text: line, terms: forbidden });
     }
   }
   return { verdicts, identity, licence, catalogue: Boolean(catalogue), prohibitions };
@@ -1484,19 +1601,43 @@ export function derivePayload(root = process.cwd(), exports = DEFAULT_EXPORTS, l
 
 // --- Varredura -----------------------------------------------------------
 
+// Fonte de eixo injetada (ADR-001 §10-N4). `opts.exports` é o canal formal
+// (adapter → módulo); `opts.declarations` continua aceito porque é o nome que a
+// spec/fixtures usam. Sem NENHUM dos dois, `axisIdsOf` é vazio e o vocabulário
+// reprova — fail-closed, nunca verde por omissão.
+function resolveExports(opts = {}) {
+  return {
+    ...DEFAULT_EXPORTS,
+    ...(opts.exports ?? {}),
+    ...(opts.declarations ?? {}),
+  };
+}
+
+// Skill vendorizada (E-5): o arquivo pertence a uma chave do `.vendor-lock.json`.
+// Vendor é upstream — medir a linha como dívida do destino criaria dívida
+// impagável (`treeHash` congela os bytes).
+function vendoredSkillOf(file, lock) {
+  const m = /^\.agents\/skills\/([^/]+)\//.exec(posixPath(file));
+  if (!m) return null;
+  return Object.prototype.hasOwnProperty.call(lock, m[1]) ? m[1] : null;
+}
+
+// Exceção estrutural de A-1 (E-6): dívida nomeada, com dono e predicado vivo.
+// A baseline `identity` NÃO escusa estes alarmes (ADR-001 §10-N3).
+function structuralExcuse(exceptions, kind, file, line) {
+  return exceptions.find((entry) => {
+    const p = entry.predicate ?? {};
+    return p.type === "structural-offender"
+      && p.kind === kind
+      && posixPath(p.file) === file
+      && p.line === line;
+  }) ?? null;
+}
+
 // Diagnóstico/teste: a análise de UM artefato (vereditos por linha, posições
 // identitárias, `license:` e proibições) com o mesmo contexto do `runCdlChecks`.
 export function scanArtifact(root, file, opts = {}) {
-  const exports = {
-    AXIS_IDS,
-    RULES_BY_AXIS,
-    RULES_COMMON,
-    SKILLS_BY_AXIS,
-    SKILLS_COMMON,
-    STACKS_FOR_EXCEPTIONS,
-    STACK_VOCAB,
-    ...(opts.declarations ?? {}),
-  };
+  const exports = resolveExports(opts);
   const lock = lockSkills(root);
   const population = derivePopulation(root);
   const axis = declaredAxis(file, exports, lock);
@@ -1511,21 +1652,13 @@ export function scanArtifact(root, file, opts = {}) {
 }
 
 /**
- * Ponto de entrada. `opts` é injeção de fixture, nunca de corpus:
- *   { declarations?, baseline?, exceptions?, projectTerms?, axisClass? }
+ * Ponto de entrada. `opts` é injeção de fixture e de fonte de eixo, nunca de
+ * corpus: `{ exports?, declarations?, baseline?, exceptions?, projectTerms?,
+ * axisClass? }`.
  */
 export function runCdlChecks(root = process.cwd(), opts = {}) {
-  const exports = {
-    AXIS_IDS,
-    RULES_BY_AXIS,
-    RULES_COMMON,
-    SKILLS_BY_AXIS,
-    SKILLS_COMMON,
-    STACKS_FOR_EXCEPTIONS,
-    STACK_VOCAB,
-    ...(opts.declarations ?? {}),
-  };
-  const baseline = opts.baseline ?? BASELINE;
+  const exports = resolveExports(opts);
+  const baseline = (opts.baseline ?? BASELINE).map((entry) => resolveBaselineEntry(entry, exports));
   const exceptions = opts.exceptions ?? EXCEPTIONS;
   const projectTerms = opts.projectTerms ?? PROJECT_TERMS;
   const lock = lockSkills(root);
@@ -1543,8 +1676,16 @@ export function runCdlChecks(root = process.cwd(), opts = {}) {
   const identityLines = [];
   const licenceLines = [];
   const prohibitions = [];
+  const vendorFindings = [];
 
   for (const file of population.files) {
+    const vendored = vendoredSkillOf(file, lock);
+    if (vendored) {
+      // E-5: linha de skill vendorizada fica fora de A-2, de A-1 e de D2.
+      const termLines = (population.byFile.get(file) ?? []).filter((l) => termsOf(l).length);
+      if (termLines.length) vendorFindings.push({ file, skill: vendored, lines: termLines.length });
+      continue;
+    }
     const axis = declaredAxis(file, exports, lock);
     const analysis = analyseFile(root, file, axis, exceptions, population, projectTerms);
     for (const v of analysis.verdicts) prescriptions.push({ file, ...v });
@@ -1575,6 +1716,13 @@ export function runCdlChecks(root = process.cwd(), opts = {}) {
       incompleteBaseline.push(`${label} (file/line/sha256/verdict/owner)`);
       continue;
     }
+    const vendored = vendoredSkillOf(entry.file, lock);
+    if (vendored) {
+      // C6: baselinar upstream é dívida IMPAGÁVEL (E-5). Invalidação explícita,
+      // não silêncio.
+      staleBaseline.push(`${label} (vendorizada: ${vendored} — dívida impagável, E-5 upstream)`);
+      continue;
+    }
     const lines = population.byFile.get(posixPath(entry.file));
     if (!lines) {
       staleBaseline.push(`${label} (arquivo fora da população ou ausente)`);
@@ -1602,7 +1750,95 @@ export function runCdlChecks(root = process.cwd(), opts = {}) {
     }
   }
 
-  // --- 3. cdl-exception-stale --------------------------------------------
+  // --- 3. cdl-axis-vocabulary-missing ------------------------------------
+  const missing = missingVocabulary(exports, lock);
+
+  // --- 4. cdl-population-payload-gap -------------------------------------
+  const populationSet = new Set(population.files);
+  const payloadGap = payload.filter((file) => !populationSet.has(file));
+  const populationEmpty = population.files.length === 0;
+
+  // --- 5. cdl-axis-declaration-phantom -----------------------------------
+  const phantoms = [];
+  for (const [key, values] of Object.entries(exports.RULES_BY_AXIS ?? {})) {
+    for (const rule of values) {
+      if (!existsSync(join(root, ".agents", "rules", rule))) phantoms.push(`RULES_BY_AXIS['${key}'] → ${rule}`);
+    }
+  }
+  for (const [key, values] of Object.entries(exports.SKILLS_BY_AXIS ?? {})) {
+    for (const skill of values) {
+      if (!existsSync(join(root, ".agents", "skills", skill))) phantoms.push(`SKILLS_BY_AXIS['${key}'] → ${skill}`);
+    }
+  }
+
+  // --- 6. A-1: registro + DOIS alarmes estruturais (rodam ANTES da
+  //        baseline: a entrada `identity` da BASELINE não os escusa) --------
+  const identityIssues = [];
+  for (const entry of projectTerms) {
+    for (const key of ["term", "class", "proof", "owner"]) {
+      if (typeof entry[key] !== "string" || entry[key].trim() === "") {
+        identityIssues.push(`${entry.term ?? "PROJECT_TERMS"}: ${key} ausente`);
+      }
+    }
+    const m = /^(.+):(\d+)$/.exec(entry.proof ?? "");
+    if (!m) {
+      identityIssues.push(`${entry.term}: proof fora do formato arquivo:linha`);
+      continue;
+    }
+    let text;
+    try {
+      text = readFileSync(join(root, m[1]), "utf8").split("\n")[Number(m[2]) - 1];
+    } catch {
+      text = undefined;
+    }
+    if (text === undefined) identityIssues.push(`${entry.term}: proof morta (${entry.proof})`);
+    else if (!text.includes(entry.term)) identityIssues.push(`${entry.term}: proof não cita o termo (${entry.proof})`);
+    const appears = identityLines.some((l) => l.text.includes(entry.term));
+    if (!appears) identityIssues.push(`${entry.term}: nenhuma posição identitária na população`);
+  }
+
+  // Alarme (a): `license:` fora de SPDX id ou referência a arquivo empacotado.
+  const SPDX = /^(?:MIT|Apache-2\.0|BSD-[23]-Clause|ISC|GPL-[23]\.0(?:-only|-or-later)?|LGPL-[23]\.\d|MPL-2\.0|Unlicense|CC0-1\.0|CC-BY-4\.0)$/;
+  const licenceFindings = [];
+  for (const { file, line, text } of licenceLines) {
+    const value = text.replace(/^\s*license:\s*/i, "").trim().replace(/^["']|["']$/g, "");
+    if (SPDX.test(value) || /licen[cs]e/i.test(value)) continue;
+    licenceFindings.push({ file, line, value });
+  }
+  // Alarme (b): termo de stack em posição identitária fora do eixo declarado.
+  const axisFindings = [];
+  for (const { file, line, text, axis } of identityLines) {
+    if (!axis.size) continue; // comum: prescrição de stack é incondicional, não cruzada
+    for (const hit of termsOf(text)) {
+      const outside = [...hit.axes].filter((a) => !axis.has(a));
+      if (outside.length === hit.axes.size) {
+        axisFindings.push({ file, line, term: hit.term, axis: [...axis].join("/") });
+      }
+    }
+  }
+  const structuralDebt = [];
+  const licenceOffenders = [];
+  for (const finding of licenceFindings) {
+    const excuse = structuralExcuse(exceptions, "license", finding.file, finding.line);
+    if (excuse) structuralDebt.push({ kind: "license", ...finding, owner: excuse.predicate.owner ?? null });
+    else licenceOffenders.push(`${finding.file}:${finding.line} (${finding.value})`);
+  }
+  const axisOffenders = [];
+  for (const finding of axisFindings) {
+    const excuse = structuralExcuse(exceptions, "axis", finding.file, finding.line);
+    if (excuse) structuralDebt.push({ kind: "axis", ...finding, owner: excuse.predicate.owner ?? null });
+    else axisOffenders.push(`${finding.file}:${finding.line} (${finding.term} ∉ ${finding.axis})`);
+  }
+  for (const offender of licenceOffenders) identityIssues.push(`license fora de SPDX: ${offender}`);
+  for (const offender of axisOffenders) identityIssues.push(`stack fora do eixo declarado: ${offender}`);
+  // Posição identitária nova (não declarada) é dívida nova: FAIL, não silêncio.
+  for (const { file, line } of identityLines) {
+    if (!baselineAt.has(`${file}:${line}`)) {
+      identityIssues.push(`${file}:${line} (posição identitária fora da baseline)`);
+    }
+  }
+
+  // --- 7. cdl-exception-stale --------------------------------------------
   const staleExceptions = [];
   for (const entry of exceptions) {
     const p = entry.predicate ?? {};
@@ -1635,86 +1871,31 @@ export function runCdlChecks(root = process.cwd(), opts = {}) {
     } else if (p.type === "population-exclusion") {
       const found = POPULATION_EXCLUSIONS.find((x) => x.id === p.value);
       if (!found) staleExceptions.push(`${entry.id}: exclusão ${p.value} inexistente`);
+    } else if (p.type === "vendored-skill") {
+      const names = Object.keys(lock);
+      const alive = names.filter((n) => existsSync(join(root, ".agents", "skills", n)));
+      if (!names.length) staleExceptions.push(`${entry.id}: nenhuma skill no .vendor-lock.json`);
+      else if (!alive.length) staleExceptions.push(`${entry.id}: lock sem skill correspondente no disco`);
+    } else if (p.type === "structural-offender") {
+      // O predicado morre quando a linha é corrigida: dívida estrutural não
+      // vira permissão permanente.
+      if (!(p.owner && BASELINE_OWNERS.has(p.owner))) {
+        staleExceptions.push(`${entry.id}: structural-offender sem owner válido`);
+      }
+      const target = posixPath(p.file ?? "");
+      if (p.kind === "license") {
+        if (!licenceFindings.some((f) => f.file === target && f.line === p.line)) {
+          staleExceptions.push(`${entry.id}: ${target}:${p.line} deixou de ser license fora de SPDX`);
+        }
+      } else if (p.kind === "axis") {
+        if (!axisFindings.some((f) => f.file === target && f.line === p.line)) {
+          staleExceptions.push(`${entry.id}: ${target}:${p.line} deixou de ser stack fora do eixo`);
+        }
+      } else {
+        staleExceptions.push(`${entry.id}: structural-offender sem kind conhecido`);
+      }
     } else {
       staleExceptions.push(`${entry.id}: predicate tipo desconhecido`);
-    }
-  }
-
-  // --- 4. cdl-axis-vocabulary-missing ------------------------------------
-  const missing = missingVocabulary(exports, lock);
-
-  // --- 5. cdl-population-payload-gap -------------------------------------
-  const populationSet = new Set(population.files);
-  const payloadGap = payload.filter((file) => !populationSet.has(file));
-  const populationEmpty = population.files.length === 0;
-
-  // --- 6. cdl-axis-declaration-phantom -----------------------------------
-  const phantoms = [];
-  for (const [key, values] of Object.entries(exports.RULES_BY_AXIS ?? {})) {
-    for (const rule of values) {
-      if (!existsSync(join(root, ".agents", "rules", rule))) phantoms.push(`RULES_BY_AXIS['${key}'] → ${rule}`);
-    }
-  }
-  for (const [key, values] of Object.entries(exports.SKILLS_BY_AXIS ?? {})) {
-    for (const skill of values) {
-      if (!existsSync(join(root, ".agents", "skills", skill))) phantoms.push(`SKILLS_BY_AXIS['${key}'] → ${skill}`);
-    }
-  }
-
-  // --- 7. cdl-identity-term-stale (registro + dois alarmes estruturais) --
-  const identityIssues = [];
-  for (const entry of projectTerms) {
-    for (const key of ["term", "class", "proof", "owner"]) {
-      if (typeof entry[key] !== "string" || entry[key].trim() === "") {
-        identityIssues.push(`${entry.term ?? "PROJECT_TERMS"}: ${key} ausente`);
-      }
-    }
-    const m = /^(.+):(\d+)$/.exec(entry.proof ?? "");
-    if (!m) {
-      identityIssues.push(`${entry.term}: proof fora do formato arquivo:linha`);
-      continue;
-    }
-    let text;
-    try {
-      text = readFileSync(join(root, m[1]), "utf8").split("\n")[Number(m[2]) - 1];
-    } catch {
-      text = undefined;
-    }
-    if (text === undefined) identityIssues.push(`${entry.term}: proof morta (${entry.proof})`);
-    else if (!text.includes(entry.term)) identityIssues.push(`${entry.term}: proof não cita o termo (${entry.proof})`);
-    const appears = identityLines.some((l) => l.text.includes(entry.term));
-    if (!appears) identityIssues.push(`${entry.term}: nenhuma posição identitária na população`);
-  }
-  // Alarme (a): `license:` fora de SPDX id ou referência a arquivo empacotado.
-  const SPDX = /^(?:MIT|Apache-2\.0|BSD-[23]-Clause|ISC|GPL-[23]\.0(?:-only|-or-later)?|LGPL-[23]\.\d|MPL-2\.0|Unlicense|CC0-1\.0|CC-BY-4\.0)$/;
-  const licenceOffenders = [];
-  for (const { file, line, text } of licenceLines) {
-    const value = text.replace(/^\s*license:\s*/i, "").trim().replace(/^["']|["']$/g, "");
-    const admissible = SPDX.test(value) || /licen[cs]e/i.test(value);
-    if (admissible) continue;
-    const declared = baselineAt.get(`${file}:${line}`);
-    if (declared && declared.verdict === "identity") continue; // dívida com dono
-    licenceOffenders.push(`${file}:${line} (${value})`);
-  }
-  // Alarme (b): termo de stack em posição identitária fora do eixo declarado.
-  const axisOffenders = [];
-  for (const { file, line, text, axis } of identityLines) {
-    if (!axis.size) continue; // comum: prescrição de stack é incondicional, não cruzada
-    for (const hit of termsOf(text)) {
-      const outside = [...hit.axes].filter((a) => !axis.has(a));
-      if (outside.length === hit.axes.size) {
-        const declared = baselineAt.get(`${file}:${line}`);
-        if (declared && declared.verdict === "identity") continue;
-        axisOffenders.push(`${file}:${line} (${hit.term} ∉ ${[...axis].join("/")})`);
-      }
-    }
-  }
-  for (const offender of licenceOffenders) identityIssues.push(`license fora de SPDX: ${offender}`);
-  for (const offender of axisOffenders) identityIssues.push(`stack fora do eixo declarado: ${offender}`);
-  // Posição identitária nova (não declarada) é dívida nova: FAIL, não silêncio.
-  for (const { file, line } of identityLines) {
-    if (!baselineAt.has(`${file}:${line}`)) {
-      identityIssues.push(`${file}:${line} (posição identitária fora da baseline)`);
     }
   }
 
@@ -1732,6 +1913,7 @@ export function runCdlChecks(root = process.cwd(), opts = {}) {
     }
   }
 
+  const vocabularySize = Object.keys(exports.STACK_VOCAB ?? STACK_VOCAB).length;
   const counters = {
     population: { files: population.files.length, lines: population.lines },
     prescriptions: {
@@ -1754,13 +1936,22 @@ export function runCdlChecks(root = process.cwd(), opts = {}) {
       rules: Object.values(exports.RULES_BY_AXIS ?? {}).flat().length,
     },
     axisClass: opts.axisClass ?? { skills: null, rules: null },
-    vocabulary: Object.keys(exports.STACK_VOCAB ?? STACK_VOCAB).length,
+    vocabulary: vocabularySize,
     projectTerms: projectTerms.length,
     exceptions: exceptions.length,
     licenceOffenders: licenceOffenders.length,
     axisOffenders: axisOffenders.length,
+    structuralDebt: structuralDebt.length,
+    // Publicado por extenso: dívida estrutural declarada é dívida VISÍVEL, com
+    // dono — nunca um número que esconde a decisão.
+    structuralDebtEntries: structuralDebt.map(
+      (d) => `${d.kind}@${d.file}:${d.line}→${d.owner ?? "sem-dono"}`,
+    ),
+    vendorUpstream: vendorFindings.length,
+    vendorUpstreamLines: vendorFindings.reduce((sum, v) => sum + v.lines, 0),
   };
 
+  const axisSourceMissing = missing.includes(AXIS_SOURCE_MISSING);
   const results = [
     {
       id: "cdl-unconditional-unbaselined",
@@ -1789,8 +1980,11 @@ export function runCdlChecks(root = process.cwd(), opts = {}) {
       id: "cdl-axis-vocabulary-missing",
       status: missing.length ? "FAIL" : "PASS",
       detail: missing.length
-        ? `eixo(s) sem vocabulário em STACK_VOCAB: ${missing.join(", ")} (preset novo escaparia da lista)`
-        : `vocabulário com ${Object.keys(exports.STACK_VOCAB ?? STACK_VOCAB).length} chave(s) derivadas de AXIS_IDS ∪ stacks do lock; cobertura completa`,
+        ? (axisSourceMissing
+          ? `${AXIS_SOURCE_MISSING}: nenhuma fonte de eixo injetada (o adapter deve passar `
+            + `\`exports\` do instalador); fail-closed em vez de verde por omissão`
+          : `eixo(s) sem vocabulário em STACK_VOCAB: ${missing.join(", ")} (preset novo escaparia da lista)`)
+        : `vocabulário com ${vocabularySize} chave(s) derivadas de AXIS_IDS ∪ stacks do lock; cobertura completa`,
     },
     {
       id: "cdl-population-payload-gap",
@@ -1812,7 +2006,10 @@ export function runCdlChecks(root = process.cwd(), opts = {}) {
       status: identityIssues.length ? "FAIL" : "PASS",
       detail: identityIssues.length
         ? `A-1: ${identityIssues.join("; ")}`
-        : `PROJECT_TERMS=${projectTerms.length} com prova viva; identidade=${counters.identity.lines} linha(s) em ${counters.identity.files} arquivo(s), todas declaradas; license fora de SPDX=${licenceOffenders.length}; stack fora do eixo=${axisOffenders.length}`,
+        : `PROJECT_TERMS=${projectTerms.length} com prova viva; identidade=${counters.identity.lines} linha(s) em `
+          + `${counters.identity.files} arquivo(s), todas declaradas; license fora de SPDX=${licenceOffenders.length}`
+          + ` (dívida estrutural declarada=${structuralDebt.length}); stack fora do eixo=${axisOffenders.length}`
+          + `; vendor fora de A-2=${counters.vendorUpstreamLines} linha(s) (E-5)`,
     },
   ];
 
@@ -1826,12 +2023,14 @@ export function runCdlChecks(root = process.cwd(), opts = {}) {
   };
 }
 
+// Fonte de eixo vazia por design: o módulo não importa `installer/` (C5). O
+// adapter injeta; sozinho, o módulo reprova em vez de passar verde.
 const DEFAULT_EXPORTS = Object.freeze({
-  AXIS_IDS,
-  RULES_BY_AXIS,
-  RULES_COMMON,
-  SKILLS_BY_AXIS,
-  SKILLS_COMMON,
-  STACKS_FOR_EXCEPTIONS,
-  STACK_VOCAB,
+  AXIS_IDS: Object.freeze({}),
+  RULES_BY_AXIS: Object.freeze({}),
+  RULES_COMMON: Object.freeze([]),
+  SKILLS_BY_AXIS: Object.freeze({}),
+  SKILLS_COMMON: Object.freeze([]),
+  STACKS_FOR_EXCEPTIONS: Object.freeze({}),
 });
+
