@@ -28,11 +28,11 @@
     "tasks": ".spec/backend/harness-inventory-adr-004/TASKS.md",
     "superseded_cycle": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/ (superseded: SPEC prescrevia `Plugin.define`, ausente no binario v2.0.32)",
     "archive": ".spec/archive/20261028-harness-design-system-agent/",
-    "prd": ".spec/prd/prd-harness-inventory/PRD.md",
-    "research": ".spec/prd/prd-harness-inventory/RESEARCH.md",
-    "adr_index": ".spec/prd/prd-harness-inventory/ADR-INDEX.md",
-    "adr": ".spec/prd/prd-harness-inventory/ADRs/ADR-004-inventario-canonico/ADR.md",
-    "prd_lines": ".spec/prd/prd-harness-inventory/PRD.md (162 linhas, 16 secoes, PRD-01 PASS)"
+    "prd": ".spec/archive/20261111-prd-prd-harness-inventory/PRD.md",
+    "research": ".spec/archive/20261111-prd-prd-harness-inventory/RESEARCH.md",
+    "adr_index": ".spec/archive/20261111-prd-prd-harness-inventory/ADR-INDEX.md",
+    "adr": ".spec/archive/20261111-prd-prd-harness-inventory/ADRs/ADR-004-inventario-canonico/ADR.md",
+    "prd_lines": ".spec/archive/20261111-prd-prd-harness-inventory/PRD.md (191 linhas apos emendas)"
   },
   "scope": {
     "interpretation": "esteira PRD->ADR->SDD no harness (visibilidade de intencao antes do codigo)",
@@ -182,17 +182,18 @@
     },
     {
       "name": "harness-inventory",
-      "stage": "Discovery",
-      "progress": 10,
+      "stage": "Archived",
+      "progress": 100,
       "type": "refactor",
       "depends_on": [],
       "artifacts": {
-        "prd": ".spec/prd/prd-harness-inventory/PRD.md"
+        "prd": ".spec/prd/prd-harness-inventory/PRD.md",
+        "archive": ".spec/archive/20261111-prd-prd-harness-inventory"
       },
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-11T20:09:50.282Z",
+  "last_update": "2026-11-11T21:17:59.072Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -216,7 +217,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "harness-inventory-adr-004: 3 rodadas + patch dirigido; 0 criticos abertos; 2 residuais declarados com dono (N30)",
-  "sdd_stage": "harness-inventory-adr-004 CONCLUIDO (VERIFY 3/3). PRD-1 (prd-harness-inventory) fecha quando este ADR mergear: 5/5 ADRs",
+  "sdd_stage": "PRD-1 prd-harness-inventory FECHADO: 5/5 ADRs merged e PRD arquivado em .spec/archive/20261111-prd-prd-harness-inventory. Proximo: PRD-2 prd-agnostic-artifacts",
   "backlog": {
     "total": 10,
     "todo": 0,
@@ -1073,9 +1074,15 @@
   },
   "prd_adr": {
     "prd_id": "prd-harness-inventory",
-    "prd_status": "approved",
-    "active_adr": "ADR-004",
-    "adr_order": [],
+    "prd_status": "archived",
+    "active_adr": null,
+    "adr_order": [
+      "ADR-001",
+      "ADR-002",
+      "ADR-003",
+      "ADR-004",
+      "ADR-005"
+    ],
     "snapshots": [
       {
         "adr": "ADR-001",
@@ -1147,7 +1154,8 @@
     ],
     "prd_verdict": "approved_user_2026_11_11",
     "research": ".spec/prd/prd-harness-inventory/RESEARCH.md (248 linhas; 9 fontes abertas; 5 secoes de tema; §9 com 8 riscos; §11 com o ledger pronto)",
-    "adr_index_status": "materializado: 1 linha (ADR-001 in-progress) porque ADR-01 exige 1:1 indice<->disco; plano das 5 vive em adr_plan + PRD secao 16"
+    "adr_index_status": "materializado: 1 linha (ADR-001 in-progress) porque ADR-01 exige 1:1 indice<->disco; plano das 5 vive em adr_plan + PRD secao 16",
+    "prd_archived_to": ".spec/archive/20261111-prd-prd-harness-inventory"
   },
   "escalations": [
     {
@@ -1777,7 +1785,7 @@
         "id": "prd-harness-inventory",
         "ordem": 1,
         "escopo": "inventario 1:1 agentes/skills/rules + roster de agentes + agente de planejamento",
-        "status": "draft"
+        "status": "archived"
       },
       {
         "id": "prd-agnostic-artifacts",
