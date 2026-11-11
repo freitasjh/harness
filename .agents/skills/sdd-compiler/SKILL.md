@@ -19,7 +19,8 @@ Você é o compilador central da metodologia SDD (Specification-Driven Developme
    2. Analisar sistemas existentes que a feature toca (`.agents/rules/`, `AGENTS.md`, código atual).
   3. Formular hipóteses e alternativas de abordagem.
   4. Recomendar se avança para `generate-proposal` ou precisa de mais clareza.
-- **Saída**: `.spec/[feature-name]/EXPLORATION.md` (hipóteses, perguntas, alternativas).
+- **Saída**: nenhum artefato próprio — o resultado é insumo em prosa para a fase seguinte.
+- **Autoria**: investigação não produz arquivo; o documento de exploração do ciclo é escrito pelo `planner` (autor único, ADR-005 §3-C3), que este modo apenas **lê** quando ele existe.
 - **NÃO gera SPEC.md** — explore produz apenas o rascunho de entendimento.
 
 ---

@@ -282,7 +282,7 @@ Validação da esteira: `PRD-01`/`ADR-01`/`ADR-02`
 2. Invoque agentes `architect` e `product-manager` para mapear impactos e regras técnicas.
 3. Se a demanda envolver frontend/telas/UX: **registre a obrigatoriedade de invocar `ux-designer`** na análise (Fase 1).
 4. Carregue skill `brain` — health check MCP, consulte contexto via `brain_search`.
-5. Se Feature ambígua: carregue `sdd-compiler` modo explore, gere `.spec/[feature]/EXPLORATION.md`.
+5. Se a demanda estiver **fora da isenção** (`.agents/rules/prd-adr-pipeline.md` §3): delegue o pacote de planejamento ao `planner` — autor único de `EXPLORATION.md`, `CONSTRAINTS.md`, `DESIGN-DECISIONS.md` e `ARCHITECTURE.md`. Nenhum artefato de planejamento nasce no `orchestrator`, que não escreve (`permission.edit: deny`).
 6. Obtenha 100% de aprovação dos subagentes antes de prosseguir.
 7. **PORTÃO P0→P1:** Apresente classificação ao usuário. Pergunte: "Classificação como **[Feature/Bugfix/Refactor]** está correta? Posso avançar para Análise?" Aguarde resposta explícita.
 
@@ -570,6 +570,7 @@ Sempre use ferramenta `task` para delegar a subagentes:
 |-------------|-----------|----------------|
 | Validação arquitetural | `architect` | `sdd-architecture-board` |
 | Validação de negócio | `product-manager` | — |
+| **Planejamento técnico** | **`planner`** | **`dev-planner`** |
 | **Análise visual / decisão de UX** | **`ux-designer`** | **`ui-ux-pro-max`** |
 | **Design System / Templates** | **`design-system-specialist`** | **`template-structure` + `template-best-practices` + `template-deepsearch`** |
 | Auditoria de segurança | `security-engineer` | `.agents/rules/security-standard.md` |
