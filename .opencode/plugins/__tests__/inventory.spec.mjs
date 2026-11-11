@@ -81,6 +81,10 @@ function baseFiles(extra = {}) {
     ".agents/skills/skill-util/SKILL.md": "# skill-util\n",
     ".agents/skills/skill-orfa/SKILL.md": "# skill-orfa\n",
     ".agents/rules/rule-um.md": "# rule-um\n",
+    // Documento do DONO, fora do artefato do sujeito: é a forma de prova que a
+    // ADR exige (`RF-01` "fonte de evidência"). O próprio `SKILL.md` não serve
+    // — seria o sujeito citando a si mesmo (I1).
+    "docs/decisoes.md": "# decisões do fixture\n- skill-orfa: órfã deliberada (owner: fluxo de teste)\n",
     ...extra,
   };
 }
@@ -98,7 +102,7 @@ const DECISION_OK = {
   owner: "fluxo de teste (fixture)",
   decision: "keep",
   reason: "órfã deliberada deste fixture",
-  proof: ".agents/skills/skill-orfa/SKILL.md:1",
+  proof: "docs/decisoes.md:2",
   expiresWhen: ["subject-absent", "gained-consumer", "gained-axis", "gained-lock"],
 };
 
@@ -111,13 +115,15 @@ const ALL_IDS = [
   "inventory-class-ambiguous",
   "inventory-attendance-drift",
   "inventory-lock-disk-mismatch",
+  "inventory-lock-unreadable",
+  "inventory-declaration-phantom",
   "inventory-agent-prompt-unresolved",
   "owner-decision-incomplete",
   "owner-decision-stale",
 ];
 
 describe("PI-01 — módulo puro, root injetável, contrato de saída", () => {
-  it("os 7 ids da ADR §2.4 existem sempre, com status PASS|FAIL e detail string", () => {
+  it("os 9 ids da ADR §2.4 existem sempre, com status PASS|FAIL e detail string", () => {
     const report = check(fixture(baseFiles()));
     assert.deepEqual(report.results.map((r) => r.id), ALL_IDS);
     for (const r of report.results) {
@@ -216,6 +222,39 @@ describe("PI-02 — classe de skill só pelo lock; sem lock não herda vermelho"
     assert.equal(src.includes("startsWith"), false);
     assert.equal(src.includes("inferStacks"), false);
   });
+
+  it("I5 — consumer exige citação real: `harness` NÃO é consumida por `harness-report`", () => {
+    const files = baseFiles({
+      [PROMPT_A]: "# agente-a\nconsome skill-util, harness-report e rule-um.md\n",
+      ".agents/skills/harness/SKILL.md": "# harness\n",
+      "docs/harness-note.md": "harness: órfã deliberada\n",
+    });
+    const decl = { ...DECL, skillCommon: [...DECL.skillCommon, "harness"] };
+    const decisions = [
+      DECISION_OK,
+      { ...DECISION_OK, subject: "harness", proof: "docs/harness-note.md:1" },
+    ];
+    const root = fixture(files);
+    const report = check(root, { declarations: decl, decisions });
+    const row = report.artifacts.skills.find((r) => r.id === "harness");
+    assert.equal(row.cited, false, "`harness` dentro de `harness-report` não é citação");
+    assert.equal(row.class, "orphan+decision");
+    assert.equal(report.counters.skills.consumer, 1, "só skill-util é consumida");
+
+    // controle: o MESMO id citado como token isolado vira consumer.
+    const isolated = fixture(
+      baseFiles({
+        [PROMPT_A]: "# agente-a\nconsome skill-util, harness e rule-um.md\n",
+        ".agents/skills/harness/SKILL.md": "# harness\n",
+      }),
+    );
+    const isolatedRow = deriveInventory(isolated, {
+      declarations: decl,
+      decisions,
+    }).artifacts.skills.find((r) => r.id === "harness");
+    assert.equal(isolatedRow.cited, true);
+    assert.equal(isolatedRow.class, "consumer");
+  });
 });
 
 describe("PI-03 — agente medido pelo REGISTRO, não por AGENT.md", () => {
@@ -292,6 +331,31 @@ describe("PI-04 — lock↔disco nas duas direções", () => {
     assert.equal(r.status, "PASS");
     assert.match(r.detail, /1 chave\(s\) com diretório, 0 divergência/);
   });
+
+  it("I4 — lock ILEGÍVEL não é lock ausente: FAIL com id próprio", () => {
+    const cases = ["{ isto não é json", JSON.stringify({ version: "1", skills: ["skill-util"] })];
+    for (const content of cases) {
+      const report = check(
+        fixture(baseFiles({ [".agents/skills/.vendor-lock.json"]: content })),
+      );
+      const unreadable = byId(report, "inventory-lock-unreadable");
+      assert.equal(unreadable.status, "FAIL", `deveria reprovar: ${content}`);
+      assert.match(unreadable.detail, /ilegível/);
+      // input presente que mente nunca vira "lockPresent=false" silencioso.
+      assert.equal(report.counters.lockPresent, false);
+      assert.equal(report.counters.lockUnreadable, true);
+      // e o mismatch não narra "ausente" — narra a suspensão pela ilegibilidade.
+      assert.match(byId(report, "inventory-lock-disk-mismatch").detail, /ilegível/);
+      assert.equal(report.ok, false);
+    }
+    // controle: ausente é o caso legítimo do destino, e continua PASS.
+    const files = baseFiles();
+    delete files[".agents/skills/.vendor-lock.json"];
+    const absent = check(fixture(files));
+    assert.equal(byId(absent, "inventory-lock-unreadable").status, "PASS");
+    assert.equal(absent.counters.lockUnreadable, false);
+    assert.match(byId(absent, "inventory-lock-disk-mismatch").detail, /ausente/);
+  });
 });
 
 describe("PI-05/PI-06 — o registry de decisões de dono, e ele expira", () => {
@@ -346,7 +410,7 @@ describe("PI-05/PI-06 — o registry de decisões de dono, e ele expira", () => 
     const broken = { ...DECISION_OK, proof: ".agents/rules/rule-um.md:1" };
     const r = byId(check(fixture(baseFiles()), { decisions: [broken] }), "owner-decision-incomplete");
     assert.equal(r.status, "FAIL");
-    assert.match(r.detail, /não cita o sujeito/);
+    assert.match(r.detail, /não nomeia o sujeito nem o dono/);
   });
 
   it("decisão obsoleta (a): o sujeito desapareceu do disco", () => {
@@ -383,11 +447,71 @@ describe("PI-05/PI-06 — o registry de decisões de dono, e ele expira", () => 
     assert.equal(r.status, "FAIL");
     assert.match(r.detail, /entrou no vendor-lock/);
   });
+
+  it("C1 — expiresWhen estreito reprova: a entrada não escolhe a própria validade", () => {
+    const narrow = { ...DECISION_OK, expiresWhen: ["subject-absent"] };
+    const report = check(fixture(baseFiles()), { decisions: [narrow] });
+    const r = byId(report, "owner-decision-incomplete");
+    assert.equal(r.status, "FAIL");
+    assert.match(r.detail, /expiresWhen incompleto para skill: falta gained-consumer, gained-axis, gained-lock/);
+    assert.equal(report.ok, false);
+
+    // com o sujeito citado no roster a entrada continua INCOMPLETA — o FAIL vem
+    // da forma do conjunto, não do acidente de a órfã ter ganhado consumidor.
+    const cited = fixture(
+      baseFiles({ [PROMPT_A]: "# agente-a\nconsome skill-util, skill-orfa e rule-um.md\n" }),
+    );
+    const citedReport = check(cited, { decisions: [narrow] });
+    assert.equal(byId(citedReport, "owner-decision-incomplete").status, "FAIL");
+    assert.equal(byId(citedReport, "owner-decision-stale").status, "PASS");
+    assert.equal(citedReport.ok, false);
+  });
+
+  it("I1 — proof dentro do artefato do PRÓPRIO sujeito é tautológico ⇒ FAIL", () => {
+    const tautological = { ...DECISION_OK, proof: ".agents/skills/skill-orfa/SKILL.md:1" };
+    const report = check(fixture(baseFiles()), { decisions: [tautological] });
+    const r = byId(report, "owner-decision-incomplete");
+    assert.equal(r.status, "FAIL");
+    assert.match(r.detail, /artefato do próprio sujeito .*prova tautológica/);
+    assert.equal(report.ok, false);
+  });
+
+  it("I1 — proof fora do sujeito que não nomeia owner nem subject ⇒ FAIL", () => {
+    const root = fixture(baseFiles({ "docs/outra.md": "# nota\nsem menção a nada\n" }));
+    const broken = { ...DECISION_OK, proof: "docs/outra.md:1" };
+    const r = byId(check(root, { decisions: [broken] }), "owner-decision-incomplete");
+    assert.equal(r.status, "FAIL");
+    assert.match(r.detail, /não nomeia o sujeito nem o dono/);
+    // controle: a linha que nomeia o DONO também vale como lastro.
+    const ownerRoot = fixture(
+      baseFiles({ "docs/owner.md": "owner: docs/owner.md\n" }),
+    );
+    const byOwner = { ...DECISION_OK, owner: "docs/owner.md", proof: "docs/owner.md:1" };
+    assert.equal(
+      byId(check(ownerRoot, { decisions: [byOwner] }), "owner-decision-incomplete").status,
+      "PASS",
+    );
+  });
+
+  it("I2 — (class, subject) duplicado reprova", () => {
+    const duplicate = { ...DECISION_OK, reason: "duplicata da mesma decisão" };
+    const report = check(fixture(baseFiles()), { decisions: [DECISION_OK, duplicate] });
+    const r = byId(report, "owner-decision-incomplete");
+    assert.equal(r.status, "FAIL");
+    assert.match(r.detail, /skill:skill-orfa: entrada duplicada/);
+    assert.equal(report.counters.ownerDecisions, 2);
+    assert.equal(report.ok, false);
+  });
 });
 
 describe("PI-07 — órfão novo reprova, classe ambígua reprova", () => {
   it("inventory-artifact-untracked: skill nova sem classe e sem decisão ⇒ FAIL", () => {
-    const root = fixture(baseFiles({ ".agents/skills/skill-nova/SKILL.md": "# skill-nova\n" }));
+    const root = fixture(
+      baseFiles({
+        ".agents/skills/skill-nova/SKILL.md": "# skill-nova\n",
+        "docs/decisions-nova.md": "# decisões\n- skill-nova: órfã deliberada\n",
+      }),
+    );
     const decl = { ...DECL, skillCommon: [...DECL.skillCommon, "skill-nova"] };
     const report = check(root, { declarations: decl });
     const r = byId(report, "inventory-artifact-untracked");
@@ -398,7 +522,7 @@ describe("PI-07 — órfão novo reprova, classe ambígua reprova", () => {
       declarations: decl,
       decisions: [
         DECISION_OK,
-        { ...DECISION_OK, subject: "skill-nova", proof: ".agents/skills/skill-nova/SKILL.md:1" },
+        { ...DECISION_OK, subject: "skill-nova", proof: "docs/decisions-nova.md:2" },
       ],
     });
     assert.equal(byId(decided, "inventory-artifact-untracked").status, "PASS");
@@ -461,6 +585,32 @@ describe("PI-07 — fechamento aritmético (inventory-attendance-drift)", () => 
     assert.match(r.detail, /rules: disco=1 ≠ declarações do instalador \(2\)/);
   });
 
+  it("I3 — declaração fantasma tem id próprio, não só o agregado", () => {
+    const decl = {
+      ...DECL,
+      skillCommon: [...DECL.skillCommon, "fantasma-local"],
+      ruleCommon: [...DECL.ruleCommon, "rule-fantasma.md"],
+    };
+    const report = check(fixture(baseFiles()), { declarations: decl });
+    const r = byId(report, "inventory-declaration-phantom");
+    assert.equal(r.status, "FAIL");
+    assert.match(r.detail, /skill:fantasma-local .*sem diretório/);
+    assert.match(r.detail, /rule:rule-fantasma\.md .*sem arquivo/);
+    assert.equal(report.ok, false);
+  });
+
+  it("I3 — par compensatório (remove 1 real, inventa 1) não compra silêncio", () => {
+    // A equação fecha (2 declaradas, 2 no disco) mas uma das declarações não
+    // tem artefato: sem id próprio, o par compensaria e o fantasma passaria.
+    const decl = { ...DECL, skillCommon: ["skill-util", "fantasma-local"] };
+    const report = check(fixture(baseFiles()), { declarations: decl });
+    assert.equal(byId(report, "inventory-attendance-drift").status, "PASS");
+    const r = byId(report, "inventory-declaration-phantom");
+    assert.equal(r.status, "FAIL");
+    assert.match(r.detail, /skill:fantasma-local/);
+    assert.equal(report.ok, false);
+  });
+
   it("fechamento das classes fecha: disco = Σ classes (PASS narra a conta)", () => {
     const r = byId(check(fixture(baseFiles())), "inventory-attendance-drift");
     assert.equal(r.status, "PASS");
@@ -505,7 +655,7 @@ describe("PI-10 — adapter V19 no runner selado e o repo real", () => {
     assert.match(v19.detail, /inventory-attendance-drift/);
   });
 
-  it("adapter expõe os mesmos 7 ids do módulo (uma implementação, dois acessos)", () => {
+  it("adapter expõe os mesmos 9 ids do módulo (uma implementação, dois acessos)", () => {
     const ids = inventoryCheckResults().map((r) => r.id);
     assert.deepEqual(ids, ALL_IDS);
   });

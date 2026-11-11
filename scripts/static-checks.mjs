@@ -45,9 +45,12 @@ import {
   NON_DEFECT as REFS_NON_DEFECT,
 } from "../.opencode/plugins/lib/refs/checks.mjs";
 // Inventário canônico (ADR-004): the module derives the classes; V19 below only
-// registers the verdict. The axis/common structures are read from their OWNER
-// (`installer/install.mjs`) and injected — the module never copies them
-// (ADR-004 §4-C2), so a second registry of the same decision cannot rot.
+// registers the verdict. The axis/common structures are the OWNER's exported
+// bindings — this adapter IMPORTS them (`installer/install.mjs` is a module, not
+// a file to be parsed) and injects them; the module never copies them
+// (ADR-004 §4-C2), so a second registry of the same decision cannot rot. The
+// installer CLI is guarded by `import.meta.url === file://argv[1]`
+// (`install.mjs:2746`), so importing the module does not run the CLI.
 import { runInventoryChecks } from "../.opencode/plugins/lib/inventory/checks.mjs";
 import {
   SKILLS_BY_AXIS,
@@ -67,9 +70,10 @@ export {
   REPO_ROOT,
 };
 
-// The installer OWNS the axis/common declarations; this adapter only reads and
-// injects them (ADR-004 §4-C2). `common` is passed for observability — it never
-// confers a class, so adding a name to `SKILLS_COMMON` cannot buy an exemption.
+// The installer OWNS the axis/common declarations; this adapter imports the
+// owner's exported bindings and injects them (ADR-004 §4-C2). `common` is passed
+// for observability — it never confers a class, so adding a name to
+// `SKILLS_COMMON` cannot buy an exemption.
 const INVENTORY_DECLARATIONS = Object.freeze({
   skillCommon: SKILLS_COMMON,
   skillAxis: SKILLS_BY_AXIS,
