@@ -1,0 +1,299 @@
+{
+  "version": 1,
+  "demand": "harness-inventory-adr-002",
+  "agent": "qa-engineer",
+  "phase": "Testing",
+  "gitSha": "735245ae02894aeeacc683f78887489a8cdb1b14",
+  "branch": "adr/prd-harness-inventory/02-prd-adr-pipeline-modulo",
+  "range": "ac80e49..735245a",
+  "commands": [
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 306,
+      "stdoutHash": "sha256:10bbc58c1d476a8eb9f98b295311514224054d3ea681441de1f8e7e77d150a23",
+      "stdoutBytes": 52703,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-002/plugins.stdout.log",
+      "observed": "tests 379 / suites 94 / pass 379 / fail 0 / cancelled 0 / skipped 0 / todo 0",
+      "resolution": "termo 1 de commands.suiteFull, lido do harness.config.json em runtime e reexecutado nesta sessao"
+    },
+    {
+      "cmd": "node --test \"installer/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 5368,
+      "stdoutHash": "sha256:f53ab654447f3634cecfe8ecfe2095588e28e8ece1539ec7c99063408a764518",
+      "stdoutBytes": 71992,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-002/installer.stdout.log",
+      "observed": "tests 559 / suites 183 / pass 559 / fail 0 / cancelled 0 / skipped 0 / todo 0",
+      "resolution": "termo 2 de suiteFull, reexecutado nesta sessao; as linhas 'vendor-check FAIL' no stdout sao fixtures internas dos testes (CLI negativa), nao falha de suite - o contador oficial e pass 559 / fail 0"
+    },
+    {
+      "cmd": "node scripts/static-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 55,
+      "stdoutHash": "sha256:db23ee52fda33ba181cc06ed99923879ef3e0a49765b2946be8d6f47807f4d1e",
+      "stdoutBytes": 639,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-002/static.stdout.log",
+      "observed": "PASS V6, V6b, V2, V3, V7, V15, V14, PRD-01, ADR-01, ADR-02 = 10; INFO V12, LEGACY = 2; FAIL = 0",
+      "resolution": "termo 3 de suiteFull, reexecutado nesta sessao"
+    },
+    {
+      "cmd": "node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 37,
+      "stdoutHash": "sha256:e5e528c52d79fceaa1be828bd89116aa6e0be73294d2e99d39c4febe99e84516",
+      "stdoutBytes": 51,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-002/vendor.stdout.log",
+      "observed": "vendor-check OK (.agents/skills/.vendor-lock.json)",
+      "resolution": "termo 4 de suiteFull, reexecutado nesta sessao"
+    },
+    {
+      "cmd": "node scripts/sdd-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 75,
+      "stdoutHash": "sha256:db382d2ca4e0fb479697095738cf8dc358b64801641ae5c24b270ced4c27855b",
+      "stdoutBytes": 641,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-002/sdd.stdout.log",
+      "observed": "V4, R-V12, V17, SDD-01, SDD-02, SDD-03, R-NODENY, RENAME-01 = 8 PASS / 0 FAIL (grep -c FAIL = 0)",
+      "resolution": "item 12 do ADR §3, reexecutado nesta sessao (nao e termo de suiteFull)"
+    },
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node --test \"installer/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs && node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 5756,
+      "stdoutHash": "sha256:f2aa125c5ff220d23e59e6dcadfcf5da07fde144306c1194b9c0ede69158f3cf",
+      "stdoutBytes": 125388,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-002/suitefull-grouped.log",
+      "observed": "plugins 379/379 (94 suites) + installer 559/559 (183 suites) + static 10 PASS / 0 FAIL / 2 INFO + vendor-check OK; stderr 0 bytes",
+      "resolution": "commands.suiteFull literal, resolvido do harness.config.json em runtime e executado com o grupo inteiro redirecionado (o primeiro ensaio redirecionou apenas o ultimo termo por precedencia de shell e foi descartado como captura; o exit 0 do encadeamento foi o mesmo)"
+    },
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" (pos-escrita do REPORT)",
+      "exitCode": 0,
+      "durationMs": 320,
+      "stdoutHash": "sha256:fa0197b6dd27bae1183dba18d9e89f1ec272a6217d69f7b7fc0ae4b82c80d73b",
+      "stdoutBytes": 52704,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-002/plugins-postwrite.stdout.log",
+      "observed": "tests 379 / suites 94 / pass 379 / fail 0 / skipped 0",
+      "resolution": "execucao de fechamento: report-schema.spec.mjs valida TODO harness/*.json real contra o schema, logo a suite de plugins roda DEPOIS de este arquivo existir (C-1). Os campos acima sao desta execucao pos-escrita; o arquivo foi revalidado contra o schema e a suite foi reexecutada apos a ultima edicao deste item"
+    },
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node --test \"installer/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs && node scripts/vendor-skills.mjs --check (fechamento, apos a ultima edicao deste REPORT)",
+      "exitCode": 0,
+      "durationMs": 5748,
+      "stdoutHash": "sha256:f772e7e8d18dcfca10d5543d0b8cff680bd61f85a7140a050dfd8f5a3e6339a7",
+      "stdoutBytes": 125375,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-002/suitefull-final.log",
+      "observed": "plugins 379/379 + installer 559/559 + static 0 FAIL + vendor OK; exit 0; report-schema.spec.mjs isolado: 9/9 pass com o REPORT deste ciclo incluido na varredura C-1",
+      "resolution": "suiteFull literal reexecutado depois da ultima edicao do REPORT, para que o proprio REPORT nao escape do schema (C-1 valida todo harness/*.json real)"
+    }
+  ],
+  "counts": {
+    "unit": { "passed": 379, "failed": 0, "skipped": 0 },
+    "it": { "passed": 559, "failed": 0, "skipped": 0 },
+    "frontend": { "passed": 0, "failed": 0, "skipped": 0 }
+  },
+  "countsNote": "Numeros MEDIDOS nesta sessao no stdout literal dos comandos acima (plugins 379/379 em 94 suites; installer 559/559 em 183 suites; 0 failed / 0 skipped / 0 todo em ambos). `unit` = suite de plugins (commands.unit do config); `it` = suite do instalador; `frontend` 0/0/0 porque stack.frontend = N/A no harness.config.json. Nada foi copiado do developer, do reviewer ou do relatorio do ciclo anterior: o 559 do instalador contrasta com o 516 registrado no ciclo garantias-runtime-adr-001, o que so aparece em medicao propria.",
+  "e2e": {
+    "status": "N/A",
+    "justification": "harness.config.json: stack.backend/stack.frontend = N/A, infra.composeFile = null, infra.ports.backend/frontend = null. Nao ha URL alvo para o MCP chrome-devtools (mcp.required = [\"chrome-devtools\"]); H3 (wipe + re-cadastro em browser) nao tem objeto. O equivalente observavel deste repo - instalacao real em diretorio temporario + suite completa - foi executado (ver verification.adrItems.item_1 e verification.checklist.p2).",
+    "escalateOnRisk": "nao dispara: nenhum arquivo do range casa riskPaths (\"**/security/**\", \"**/acl/**\", \"**/*Permission*\", \"**/auth/**\", \"**/i18n/**\"). git diff --name-status ac80e49..HEAD nao tem nenhum path dessas classes."
+  },
+  "evaluation": {
+    "telas": "n/a-sem-UI. O equivalente observavel e a saida dos checks: static 10 PASS / 0 FAIL / 2 INFO e sdd-checks 8 PASS / 0 FAIL, ambos reexecutados nesta sessao.",
+    "negocio": "ok-ADR-002 entregue e medido item a item: 5 arquivos migrados por git mv (R099 + 4x R100, zero D no range), 2 imports reapontados, 4 paths de template derivando de LIB, guard de pureza relendo o path novo, SKILLS_COMMON 23->22 com RULES_COMMON :384 intacto, prosa expirada morta nos 3 sitios, 12/12 presets entregando 5 no path novo e 0 no antigo.",
+    "logica": "ok-suiteFull literal exit 0 (plugins 379/379, installer 559/559, static 10 PASS/0 FAIL, vendor OK, sdd 8 PASS/0 FAIL, stderr 0 bytes). Contraprova de propagacao independente do relatorio: collectIncoming no HEAD devolve 5/0 em 12 presets e a mesma funcao na arvore de ac80e49 devolve 0/5 - o teste nao e vacuo.",
+    "perf": "suiteFull ~5.8 s somando os termos (plugins ~0.3 s, installer ~5.4 s, static 55 ms, vendor 37 ms). Mesma ordem de grandeza dos ciclos anteriores (5.8-6.2 s). Repo de tooling: sem latencia de aplicacao a medir."
+  },
+  "h3": {
+    "status": "N/A com justificativa",
+    "why": "H3 pressupoe UI + banco + servidores locais; aqui stack = N/A e infra = null. Tela branca, rota duplicada, i18n faltando e CORS/auth de browser nao tem como ocorrer em repo de plugins/instalador/rules.",
+    "substitute": "Reexecucao independente de cada um dos 12 itens do ADR §3 pelo comando do proprio ADR + os 8 pontos do briefing P4 + instalacao real em /tmp (5 arquivos no destino, 0 no path antigo, 0 de __tests__) + suite completa reexecutada depois da escrita do REPORT."
+  },
+  "verification": {
+    "method": "Cada item do ADR §3 foi reexecutado pelo comando que o proprio item declara, nesta sessao, com saida capturada em /tmp/opencode/qa-harness-inventory-adr-002/*.log. Nenhum valor foi herdado do developer, do reviewer ou do relatorio do ciclo anterior (harness/harness-inventory.json foi lido so como FORMA).",
+    "adrItems": {
+      "item_0_rederivacao_do_contexto": {
+        "cmd": "ls -d .agents/skills/*/ | wc -l; laco [ -f \"$d/SKILL.md\" ]; find .agents/skills/prd-adr-pipeline -type f; find .opencode/plugins/lib/prd-adr-pipeline -type f; grep -rn \"prd-adr-pipeline\" .agents/agents/; grep -n \"prd-adr-pipeline\" installer/install.mjs; SKILLS_COMMON.length",
+        "measured": "dirs=48; sem SKILL.md=0; arquivos no path antigo=0 (diretorio ausente); arquivos no path novo=5; agentes=4 linhas em 3 arquivos (product-manager:10, orchestrator:251, orchestrator:273, architect:11); installer=1 linha (384); SKILLS_COMMON=22",
+        "verdict": "PASSA"
+      },
+      "item_1_propagacao_5_0_por_eixo_e_instalacao_real": {
+        "cmd": "collectIncoming('.', {stack}) para java+vue|java+react|node|flutter + main() real em mktemp -d + find | wc -l",
+        "measured": "4 linhas: java+vue 5 0 / java+react 5 0 / node 5 0 / flutter 5 0; instalacao real exitCode 0, 5 arquivos em .opencode/plugins/lib/prd-adr-pipeline (checks.mjs + 4 templates), path antigo ABSENT, 0 arquivos de __tests__ entregues, diretorio temporario removido",
+        "contraprova": "a MESMA funcao na arvore de ac80e49 (git archive para /tmp) devolve novo=0 velho=5 nos 4 stacks - a inversao e real, nao assercao de prosa",
+        "verdict": "PASSA"
+      },
+      "item_2_namespace_uniforme": {
+        "cmd": "ls -d .agents/skills/*/ | wc -l ; laco SKILL.md ; test ! -e .agents/skills/prd-adr-pipeline",
+        "measured": "48 / 0 sem SKILL.md / ABSENT",
+        "verdict": "PASSA"
+      },
+      "item_3_imports_reapontados": {
+        "cmd": "grep -rn \"skills/prd-adr-pipeline\" --include=*.mjs . | wc -l ; import dinamico do checks.mjs ; static-checks | grep -c '^PASS PRD-01' ; node --test prd-checks.spec.mjs",
+        "measured": "0 ; function ; 1 ; tests 119 / pass 119 / fail 0 (40 suites)",
+        "verdict": "PASSA"
+      },
+      "item_4_paths_de_template_derivam_de_LIB": {
+        "cmd": "grep -c \"templates/PRD.md|templates/RESEARCH.md|templates/ADR.md|templates/ADR-INDEX.md\" prd-checks.spec.mjs ; node --test prd-checks.spec.mjs",
+        "measured": "4 (linhas 1126-1131: LIB = REPO/.opencode/plugins/lib; PRD_TPL/RESEARCH_TPL/INDEX_TPL/ADR_TPL saem de LIB; SKILLS permanece so para sdd-architecture-board); 119/119 pass",
+        "verdict": "PASSA"
+      },
+      "item_5_guard_de_pureza_no_path_novo": {
+        "cmd": "grep -c 'node:fs|node:path' checks.mjs ; node --test prd-checks.spec.mjs ; git diff do spec",
+        "measured": "5 ocorrencias; 119/119 pass; o diff mostra MODULE trocando .agents/skills por .opencode/plugins/lib e a suite tem 8 sub-testes de discriminacao (import node:child_process, import() dinamico, multi-linha, export-from, 4 tokens ambiente, bloqueio por /* em string), todos verdes",
+        "non_blindness": "provado por (a) MODULE reapontado no diff, (b) o path antigo NAO existe mais - um MODULE obsoleto lancaria ENOENT e o spec inteiro nao coletaria, (c) os sub-testes 'discriminates' injetam e exigem rejeicao, executados nesta sessao",
+        "non_blindness_limit": "mutacao ao vivo do arquivo foi TENTADA e NEGADA pelo gate (protected-path-write ao editar copia em /tmp, porque o parse casa o texto do comando) e o escopo de escrita deste papel e harness/ - nao houve evasao do gate. A prova de mutacao executada por mim foi a de N12 (SKILLS_COMMON), na copia de /tmp (ver checklist.p7)",
+        "verdict": "PASSA"
+      },
+      "item_6_prosa_expirada_morta": {
+        "cmd": "grep -c \"only path the installer propagates\" checks.mjs scripts/static-checks.mjs ; grep -rn \"skills/prd-adr-pipeline\" docs/ README.md .agents/ | wc -l",
+        "measured": "0 e 0 (grep exit 1 por zero match); 0 referencias vivas; docs/FUNCIONAMENTO.md:110 lista o modulo como modulo em .opencode/plugins/lib/prd-adr-pipeline/",
+        "verdict": "PASSA"
+      },
+      "item_7_registro_do_instalador": {
+        "cmd": "SKILLS_COMMON.length + includes ; node --test installer/__tests__/*.spec.mjs ; enumeracao bidirecional; literais",
+        "measured": "22 false; 559/559 pass; medicao propria do oraculo do teste: dirs=48, vendor=25, locais=23, SKILLS_COMMON=22, unclassified=[], phantoms=[]; 0 ocorrencias de 'prd-adr-pipeline' e 0 do literal 24 em installer/__tests__/**",
+        "N11": "confirmado por medicao: 23->22 em SKILLS_COMMON e 24->23 em realLocalSkills (48 dirs - 25 vendorizadas)",
+        "N12": "confirmado por mutacao na copia de /tmp (git archive HEAD): removendo 'context-compressor' de SKILLS_COMMON => 557 pass / 2 fail, exatamente 'disco -> lista: toda skill LOCAL esta em SKILLS_COMMON ou em SKILLS_BY_AXIS' e 'SANGRA: skill local nova nao classificada e reportada'; o guarda 'fantasma' nao sentiu a remocao",
+        "verdict": "PASSA"
+      },
+      "item_8_rule_continua_registrada": {
+        "cmd": "grep -c \"prd-adr-pipeline\" installer/install.mjs ; grep -c \"'prd-adr-pipeline.md'\" installer/install.mjs ; collectIncoming por preset",
+        "measured": "1 ; 1 (:384 em RULES_COMMON) ; 12/12 presets entregam rule=1 e module=5; git diff --numstat do instalador = 0 insercao / 1 remocao (exatamente a linha 'prd-adr-pipeline,' de SKILLS_COMMON)",
+        "verdict": "PASSA"
+      },
+      "item_9_citacoes_de_agente": {
+        "cmd": "grep -c \"skills/prd-adr-pipeline\" nos 3 AGENT.md ; grep -rc \"prd-adr-pipeline\" .agents/agents/*/AGENT.md",
+        "measured": "0 0 0 ; 3 arquivos (orchestrator=2, product-manager=1, architect=1); orchestrator:273 cita o path novo",
+        "verdict": "PASSA"
+      },
+      "item_10_rules_com_path_novo_e_orcamento": {
+        "cmd": "grep -c \"skills/prd-adr-pipeline\" .agents/rules/*.md ; wc -l prd-adr-pipeline.md ; cat .agents/rules/*.md | wc -l ; git log trailers",
+        "measured": "0 em todas as 8 rules; 79 linhas (<=80); 1290 (<=1705); trailer Harness-Gate-Change presente no commit 9ccc3a2 (implementacao); as 2 rules citam .opencode/plugins/lib/prd-adr-pipeline",
+        "note": "sdd-checks V4 conta rules lines=1291 contra 1290 do `cat | wc -l` - dois contadores com convencao de final de linha diferente, ambos dentro do orcamento",
+        "verdict": "PASSA"
+      },
+      "item_11_runtime_de_gate_intacto_e_selo": {
+        "cmd": "git diff --stat ac80e49..HEAD -- gate.js config.mjs seal.mjs harness.config.json ; git diff harness.config.json | grep -c suiteFull ; static-checks V2/V3/V7 ; sealCommands(commands)",
+        "measured": "vazio (0 bytes) nos 4 arquivos; 0 no grep de suiteFull; PASS V2/V3/V7; SCAN_DIRS inclui .opencode/plugins/lib; selo suiteFull = sha256 c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2 e unit = daba8c5465bffe061738235b274c497a4e8e761e41c5e79d4c671a72231cffc7",
+        "seal": "identico ao registrado nos ciclos anteriores (harness/garantias-runtime-adr-001.json.verification.sealComputedLocally) => nenhum comando novo, selo nao precisa ser republicado",
+        "verdict": "PASSA"
+      },
+      "item_12_suite_completa_verde": {
+        "cmd": "os 4 termos de suiteFull + node scripts/sdd-checks.mjs | grep -c FAIL",
+        "measured": "exit 0 nos 4 termos (encadeados exit 0); 379/379, 559/559, static 0 FAIL, vendor OK; sdd 8 PASS / 0 FAIL, grep -c FAIL = 0",
+        "verdict": "PASSA"
+      }
+    },
+    "checklist": {
+      "p1_12_itens_do_adr": "PASSA - 12/12 reexecutados pelo comando declarado no proprio item, ver adrItems",
+      "p2_propagacao_12_presets": "PASSA - STACK_PROFILES tem 12 chaves (node-esm, node, java+vue, java+react, rust, nestjs, node+react, nestjs+react, rust+react, outra, flutter, dart); cada uma devolve novo=5 (checks.mjs + ADR.md, ADR-INDEX.md, PRD.md, RESEARCH.md), velho=0, __tests__=0; a instalacao real em /tmp confirmou 5 arquivos e 0 no path antigo",
+      "p3_renames_e_zero_delete": "PASSA - git diff --name-status --find-renames ac80e49..HEAD: R099 checks.mjs->lib/prd-adr-pipeline/checks.mjs, R100 x4 templates, 0 arquivos com status D",
+      "p4_diff_dos_protegidos_vazio": "PASSA - git diff --stat ac80e49..HEAD -- .opencode/plugins/gate.js .opencode/plugins/lib/config.mjs .opencode/plugins/lib/seal.mjs harness.config.json => vazio (0 bytes)",
+      "p5_um_unico_checks_mjs": "PASSA - find . -path ./.git -prune -o -name checks.mjs -print => 1 resultado (.opencode/plugins/lib/prd-adr-pipeline/checks.mjs)",
+      "p6_skills_48_48_0": "PASSA - 48 diretorios, 0 sem SKILL.md, path antigo ausente, 5 arquivos no path novo",
+      "p7_grep_do_instalador": "PASSA - grep -c \"prd-adr-pipeline\" installer/install.mjs = 1 (:384); grep -c \"'prd-adr-pipeline.md'\" = 1",
+      "p8_sem_referencia_viva_nova": "PASSA - baseline do PRD §3.5 recomputada: 20 paths de rule citados, 13 ausentes, 52 citacoes - IDENTICO ao PRD; o conjunto dos 13 ausentes e byte-igual entre ac80e49 e HEAD (diff vazio); as linhas adicionadas pelo range citam apenas .opencode/plugins/lib/prd-adr-pipeline/checks.mjs e caminhos relativos que resolvem (static-checks.mjs:29 '../.opencode/...', spec:29 '../../../.opencode/...'); nenhuma linha adicionada menciona frontend/DESIGN.md, 'planejador' ou as rules ausentes"
+    }
+  },
+  "divergences": {
+    "d1_contadores_de_linha_de_rules": {
+      "severity": "informativo",
+      "what": "sdd-checks V4 conta .agents/rules com 1291 linhas; `cat .agents/rules/*.md | wc -l` devolve 1290. O ADR item 10 publica 1290 (<=1705).",
+      "impact": "nenhum: os dois contadores estao dentro do orcamento de 1705. Diferenca de convencao de final de linha, nao de conteudo.",
+      "action": "nenhuma"
+    },
+    "d2_docs_aponta_range_de_linhas_do_modulo": {
+      "severity": "informativo (pre-existente, nao introduzido por este ciclo)",
+      "what": "docs/FUNCIONAMENTO.md:110 cita `checks.mjs:417-495`; runPrdChecks vai de 417 a 504 (fim do arquivo).",
+      "evidence": "o MESMO range ja aparecia em ac80e49 (docs/FUNCIONAMENTO.md:138 entao) e o arquivo tem 504 linhas antes e depois do move (R099 muda 2 linhas de cabecalho, nao o numero de linhas)",
+      "impact": "o item 6 do ADR pede que o docs deixe de tratar o modulo como skill - cumprido; a imprecisao de range e anterior e nao mente sobre o path",
+      "action": "nenhuma (qa-engineer nao corrige documentos); candidato ao PRD 2 (prosa)"
+    },
+    "d3_selo_nao_observavel_no_worktree": {
+      "severity": "informativo",
+      "what": "O selo publicado vive em HARNESS_SEAL_JSON no host, fora deste worktree; so o valor computado e observavel aqui.",
+      "measured": "sealCommands(commands) = c904f1c5... / daba8c54..., identico ao registrado no ciclo garantias-runtime-adr-001",
+      "impact": "nenhum: commands.suiteFull nao mudou, logo republicar seria no-op",
+      "action": "nenhuma"
+    },
+    "d4_mutacao_ao_vivo_bloqueada_pelo_gate": {
+      "severity": "declarado (limite de escopo, nao defeito)",
+      "what": "A tentativa de mutar checks.mjs numa copia em /tmp foi negada pelo gate (protected-path-write) e o escopo de escrita deste papel e harness/. Nao houve evasao (nem bash -c, nem path montado por variavel).",
+      "substitute": "A nao-cegueira do guard de pureza foi provada por: diff do MODULE, ausencia do path antigo (MODULE obsoleto = ENOENT) e os 8 sub-testes 'discriminates' executados verdes. A mutacao N12 foi executada com sucesso na copia de /tmp (installer/ nao e protected) e deu exatamente 2 falhas, como o ADR afirma.",
+      "action": "nenhuma"
+    },
+    "d5_alegacoes_do_briefing_vs_medicao": {
+      "severity": "informativo",
+      "what": "Todas as alegacoes do briefing foram reproduzidas: R099/R100, 48/48, 2 imports, guard nao cego, 5 arquivos em 12 presets e 0 no antigo, 1 linha removida com :384 intacto, 0 linhas em gate.js/harness.config.json, selo inalterado, 379 + 559 verdes. Nenhuma divergencia de numero.",
+      "note": "O briefing pede 12 presets; o ADR §3 item 1 escreve 4 stacks. As duas medicoes foram feitas e concordam (o item 1 do ADR e um subconjunto)."
+    }
+  },
+  "findings": {
+    "f1_contraprova_de_propagacao_invertida": {
+      "severity": "positivo",
+      "what": "A prova do item 1 nao e vacua: a mesma collectIncoming, na arvore de ac80e49, devolve 0 no path novo e 5 no antigo. Teste que so olhasse o HEAD passaria mesmo se a propagacao nunca tivesse funcionado.",
+      "evidence": "git archive ac80e49 -> /tmp; collectIncoming nos 4 stacks = novo 0 / velho 5"
+    },
+    "f2_n12_confirmado_por_mutacao": {
+      "severity": "positivo",
+      "what": "Remover 'context-compressor' de SKILLS_COMMON na copia de /tmp quebra exatamente 2 testes (disco->lista e SANGRA novo-nao-classificado); o guarda fantasma nao dispara.",
+      "evidence": "/tmp/opencode/qa-harness-inventory-adr-002/n12-mutation.log: tests 559 / pass 557 / fail 2"
+    },
+    "f3_checks_mjs_entrou_no_scan_estatico": {
+      "severity": "positivo (declarado pelo ADR como C4)",
+      "what": "SCAN_DIRS inclui .opencode/plugins/lib; V2/V3/V7 passam a varrer o modulo movido e seguem em 0 - cobertura maior sem comando novo na suite.",
+      "evidence": "scripts/static-checks.mjs:48 + PASS V2/V3/V7"
+    },
+    "f4_relatorio_anterior_nao_reaproveitado": {
+      "severity": "informativo",
+      "what": "harness/harness-inventory.json (ciclo ADR-001) foi lido apenas como forma; os numeros deste relatorio vem dos logs desta sessao.",
+      "evidence": "capture paths e hashes sha256 proprios desta execucao"
+    }
+  },
+  "brainStore": [
+    "sessoes/projetos/harness/2026-11-11-qa-harness-inventory-adr-002-p4"
+  ],
+  "brainNote": "Nota gravada nesta sessao via brain_store (layer sessoes, scope projetos) com o veredito P4, as 2 medidas novas (N12 por mutacao, inversao 5/0 na baseline) e o limite de mutacao ao vivo. Nenhuma nota de regras/estudos/arquitetura foi reescrita por este papel.",
+  "cleanup": {
+    "ports": [],
+    "processes": [],
+    "note": "Nenhum servidor subido: infra null e stack N/A. Zero `pkill -f`. Todos os comandos foram spawn sincrono; nenhum node --test residual. Diretorios temporarios criados por mim foram removidos: /tmp/opencode/adr002-install-* (mktemp do instalador real), /tmp/opencode/adr002-mutation (copia mutada), /tmp/opencode/adr002-baseline (arvore de ac80e49). Logs mantidos em /tmp/opencode/qa-harness-inventory-adr-002/.",
+    "verifiedRemoved": "rm -rf executado e conferido com test -e => REMOVED (item 1); as copias de comparacao sao removidas ao fim do portao"
+  },
+  "gitState": {
+    "head": "735245ae02894aeeacc683f78887489a8cdb1b14",
+    "range": "ac80e49..735245a",
+    "commits": [
+      { "sha": "9ccc3a2", "subject": "refactor(prd-adr-pipeline): mover checks + 4 templates para .opencode/plugins/lib (ADR-002)", "trailer": "Harness-Gate-Change: ADR-002 (modulo prd-adr-pipeline) — move codigo+4 templates para .opencode/plugins/lib; norma segue na rule; 1 linha de SKILLS_COMMON" },
+      { "sha": "9c5a6c4", "subject": "docs(adr): N11 no ADR-002 — SKILLS_COMMON era 23, nao 24 (medido 23->22)", "trailer": "(nenhum; so .spec/**)" },
+      { "sha": "735245a", "subject": "docs(adr): corrigir o numero do item 7 (SKILLS_COMMON 23->22), N12 e registrar supersessao do ADR-002 anterior", "trailer": "(nenhum; so .spec/**)" }
+    ],
+    "filesInRange": 20,
+    "protectedDiff": "git diff ac80e49..HEAD -- .opencode/plugins/gate.js .opencode/plugins/lib/config.mjs .opencode/plugins/lib/seal.mjs harness.config.json => 0 bytes",
+    "worktreeAtStart": "clean (git status --porcelain=v1 -b: apenas a linha de branch)"
+  },
+  "residual_risks": [
+    "ADR-002 segue com status in-progress: o merge e humano (1 ADR = 1 PR = 1 revisao) e nenhum push foi feito por este papel",
+    "Selo publicado em HARNESS_SEAL_JSON nao e observavel daqui; a evidencia e o valor computado, identico ao dos ciclos anteriores",
+    "docs/FUNCIONAMENTO.md:110 mantem um range de linhas impreciso (417-495 vs 417-504), pre-existente e classificado como prosa para o PRD 2",
+    "O guard de pureza continua sendo allowlist de specifiers + denylist de tokens (declarado no proprio spec): nao prova pureza contra aliasing/reflection"
+  ],
+  "selfReported": true,
+  "selfReportedNote": "true por honestidade: numeros e hashes foram medidos pelo proprio executor desta sessao, com spawn sincrono e captura de stdout. A observacao independente e a contraprova do gate, que reexecuta commands.suiteFull selado (selo c904f1c5... inalterado).",
+  "notes": [
+    "Nenhum codigo, config, rule, agente, ADR, SPEC, TASKS ou workflow-state.json foi corrigido: este papel so verifica e reporta.",
+    "Os comandos de suite foram resolvidos do harness.config.json em runtime ou do item 12 do ADR - nenhum literal copiado de prosa.",
+    "A suite de plugins foi reexecutada DEPOIS da criacao deste arquivo porque report-schema.spec.mjs valida todo harness/*.json real contra o schema.",
+    "O primeiro ensaio do encadeamento suiteFull redirecionou apenas o ultimo termo por precedencia de shell; foi descartado como captura e refeito com o grupo inteiro redirecionado (exit 0 nos dois)."
+  ]
+}
