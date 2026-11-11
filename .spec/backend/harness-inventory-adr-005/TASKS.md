@@ -138,3 +138,64 @@ Inventário dos 13 paths ausentes, classificado pelo mecanismo (0 não classific
   distinguia atribuição de autoria. Ambos foram reescritos sem o token (`SPEC →
   planejamento → TASKS` / "plano de implementação"), preservando o autor `sdd-compiler`;
   o item 8 fecha em 0 sem perder a atribuição. Nenhum outro comando do ADR mudou.
+
+## Correções do code review (F1–F6) — 2026-11-11
+
+| Item | Antes (medido) | Depois (medido) |
+|---|---|---|
+| **F1** — `PLAN` com 2º autor vivo | `grep -rn "SPEC, PLAN, TASKS" .agents/` ⇒ **3** hits: `workflow-rules.md:91` (orchestrator como autor), `:161` (rótulo de fase), `developer-engineer/AGENT.md:103` | a célula do orchestrator passa a nomear o que ele faz (triagem, governança, delegação, `workflow-state.json`, code review, brain); `:161` vira `SPEC → PLAN → TASKS` (rótulo, não autoria); `:103` nomeia `SPEC.md`/`PLAN.md`/`TASKS.md` com autor `sdd-compiler`/`planner`. `grep` ⇒ **vazio** |
+| **F2** — tabela §0.1 com 7 de 10 | set-diff roster − §0.1 ⇒ `design-system-specialist`, `planner`, `ux-designer` | 10/10; set-diff ⇒ **vazio** |
+| **F3** — item 11 media sopa de tokens | `grep -oE '`[a-z-]+`'` na seção inteira; controle negativo (papel fora da coluna `Subagente`, token na coluna de skills) ⇒ **falso verde** | `awk -F'|'` na coluna `Subagente`; o mesmo controle negativo ⇒ detecta `planner` |
+| **F4** — `NON_DEFECT` sem modo `stale` | 4 ids; só `NON_DEFECT[0]` tinha a prova verificada (no teste) | 5º id `stale-nondefect-entry` (path existente, proof ausente/fora do arquivo, linha que não cita o path), verificado em **todas** as entradas; 4 fixtures novas |
+| **F5** — baseline viva por citação vendorizada | silenciosa | limite declarado no cabeçalho do módulo + detalhe `sustentadas só por citação vendorizada=N` em `stale-baseline-entry` (não falha). Medido no repo: **0** |
+| **F6** — SPEC RF-02 omitia `prd` | `path`, `class`, `reason`, `owner` | `path/class/reason/owner/prd` (alinhada ao `validateBaseline`) |
+
+O modo novo morde — árvores descartáveis em `/tmp`, via o adapter selado:
+
+```
+(c1) path da lista passou a existir: FAIL stale-nondefect-entry: NON_DEFECT com 1 entrada(s) obsoleta(s): rules/exemplo.md (o arquivo passou a existir no disco)
+(c2) proof com a linha fora do arquivo: FAIL stale-nondefect-entry: NON_DEFECT com 1 entrada(s) obsoleta(s): rules/exemplo.md (proof .agents/skills/harness-installer/SKILL.md:68 fora do arquivo: 3 linha(s))
+(c3) proof existe mas não cita o path: FAIL stale-nondefect-entry: NON_DEFECT com 1 entrada(s) obsoleta(s): rules/exemplo.md (proof .agents/skills/harness-installer/SKILL.md:68 não cita o path)
+(c4) proof ausente no disco: FAIL stale-nondefect-entry: NON_DEFECT com 1 entrada(s) obsoleta(s): rules/exemplo.md (proof ausente no disco: .agents/skills/harness-installer/SKILL.md)
+FAIL V18: stale-nondefect-entry: NON_DEFECT com 1 entrada(s) obsoleta(s): rules/exemplo.md (o arquivo passou a existir no disco)
+```
+
+Controle negativo de F3 (a mesma tabela com o papel fora da coluna e o token na coluna de skills):
+
+```
+$ # predicado antigo (sopa de tokens)
+$ comm -23 <(roster − orchestrator) <(sed … | grep -oE '`[a-z-]+`' | sort -u)
+(exit 0, saída vazia)          # FALSO VERDE: `planner` só aparece na coluna de skills
+
+$ # predicado novo (coluna Subagente)
+$ comm -3 <(roster − orchestrator) <(sed … | awk -F'|' '{ c=$3; … gsub(/[^a-z0-9-]/,"",c); print c }' | sort -u)
+planner                        # detecta a ausência na coluna que importa
+```
+
+Saída literal das 5 suítes depois das correções:
+
+```
+$ node --test ".opencode/plugins/__tests__/*.spec.mjs"
+ℹ tests 409
+ℹ suites 103
+ℹ pass 409
+ℹ fail 0
+
+$ node --test "installer/__tests__/*.spec.mjs"
+ℹ tests 559
+ℹ suites 183
+ℹ pass 559
+ℹ fail 0
+
+$ node scripts/static-checks.mjs
+PASS V18: refs vivas: missing-and-unclassified=ok, stale-baseline-entry=ok, baseline-entry-incomplete=ok, nondefect-entry-incomplete=ok, stale-nondefect-entry=ok (baseline=7, non-defect=1)
+exit 0
+
+$ node scripts/vendor-skills.mjs --check
+vendor-check OK (.agents/skills/.vendor-lock.json)
+exit 0
+
+$ node scripts/sdd-checks.mjs
+PASS V4: rules lines=1289 (budget 1705)
+0 FAIL, exit 0
+```

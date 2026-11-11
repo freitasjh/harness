@@ -88,11 +88,14 @@ Contrato de saída e exemplos (bons e ruins): `.agents/skills/prompt-optimizer/r
 
 | Role | Responsabilidade |
 |------|------------------|
-| **Orchestrator** (este agente) | Triagem, governance, SPEC, PLAN, TASKS, code review, brain, workflow-state.json |
+| **Orchestrator** (este agente) | Triagem, governança, delegação via `task`, `workflow-state.json`, code review, brain |
+| **planner** | Planejamento técnico: `EXPLORATION.md`, `CONSTRAINTS.md`, `DESIGN-DECISIONS.md`, `ARCHITECTURE.md` + parecer |
+| **architect** | Decisões arquiteturais e ADRs (validação) |
+| **product-manager** | Validação de negócio |
+| **ux-designer** | Parecer de UX/interface (vinculante no escopo visual) |
+| **design-system-specialist** | Templates de componentes reutilizáveis do design system |
 | **developer-engineer** | **Implementação de código** (Java/Vue/SQL/tests) |
 | **code-reviewer** | Code review após cada batch |
-| **architect** | Decisões arquiteturais (validação) |
-| **product-manager** | Validação de negócio |
 | **qa-engineer** | Cobertura de testes |
 | **security-engineer** | Auditoria de segurança |
 
@@ -158,7 +161,7 @@ O **estado canônico** é o de `sdd-workflow-standard.md` (é o que vive em
 | Etapa (rótulo) | `current_phase` canônico |
 |---|---|
 | Explore, Proposal | Discovery |
-| SPEC, PLAN, TASKS | Planning |
+| SPEC → PLAN → TASKS | Planning |
 | PRD, RESEARCH | Discovery |
 | ADR-INDEX, ADR | Planning |
 | P0 (triagem) | Discovery |

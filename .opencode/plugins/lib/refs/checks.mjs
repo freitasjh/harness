@@ -3,7 +3,8 @@
 // Contract (SPEC RF-01/RF-03): `runRefsChecks(root)` →
 //   { ok: boolean, results: [{ id, status: "PASS"|"FAIL", detail }] }
 // com os ids `missing-and-unclassified`, `stale-baseline-entry`,
-// `baseline-entry-incomplete`, `nondefect-entry-incomplete`.
+// `baseline-entry-incomplete`, `nondefect-entry-incomplete`,
+// `stale-nondefect-entry`.
 //
 // A decisão que este arquivo executa é a régua, não a lista de casos: cada
 // referência ausente cai numa classe por predicado de PATH, nunca por conteúdo
@@ -32,6 +33,12 @@
 // `docs/`, `harness/` e `.spec/` são registro datado — o walker os percorre de
 // propósito e o predicado os descarta, para que a exclusão seja provada e não
 // apenas presumida por não olhar.
+//
+// Limite declarado na BASELINE (ADR-005 §8-N13): uma entrada cuja ÚNICA citação
+// viva está numa skill do `.vendor-lock.json` nunca expira pelo modo (b) — a
+// citação existe, o lock só a suprime em C4. Não é classe nova nem FAIL: o
+// número sai no detalhe de `stale-baseline-entry` (`sustentadas só por citação
+// vendorizada=N`) para a dívida não ficar silenciosa.
 //
 // Purity (SPEC I1): `node:fs`/`node:path` read-only; sem rede, sem MCP, sem
 // child process, sem gravação. Vive em `.opencode/plugins/lib/**`, caminho que
@@ -193,6 +200,51 @@ export function validateNonDefect(entries) {
   return issues;
 }
 
+// C3 — a supressão apodrece como a baseline (ADR-005 §8-N11). `proof` é
+// `arquivo:linha`; a entrada só suprime enquanto o arquivo existir, a linha
+// estiver no arquivo e essa linha citar o path. Verificada em TODAS as entradas.
+export function parseProof(proof) {
+  if (typeof proof !== "string") return null;
+  const m = /^(.+):(\d+)$/.exec(proof.trim());
+  if (!m) return null;
+  return { file: m[1], line: Number(m[2]) };
+}
+
+export function validateNonDefectStale(entries, root) {
+  const issues = [];
+  for (const e of entries) {
+    // `path` ausente já é issue de `validateNonDefect` — aqui não duplica.
+    if (!e || typeof e.path !== "string" || e.path.trim() === "") continue;
+    const target = posixPath(e.path);
+    if (existsSync(join(root, diskPathOf(target)))) {
+      issues.push(`${target} (o arquivo passou a existir no disco)`);
+      continue;
+    }
+    const parsed = parseProof(e.proof);
+    if (!parsed) {
+      issues.push(`${target} (proof fora do formato arquivo:linha: "${e.proof ?? ""}")`);
+      continue;
+    }
+    let lines;
+    try {
+      lines = readFileSync(join(root, parsed.file), "utf8").split("\n");
+    } catch {
+      issues.push(`${target} (proof ausente no disco: ${parsed.file})`);
+      continue;
+    }
+    if (parsed.line < 1 || parsed.line > lines.length) {
+      issues.push(
+        `${target} (proof ${parsed.file}:${parsed.line} fora do arquivo: ${lines.length} linha(s))`,
+      );
+      continue;
+    }
+    if (!lines[parsed.line - 1].includes(target)) {
+      issues.push(`${target} (proof ${parsed.file}:${parsed.line} não cita o path)`);
+    }
+  }
+  return issues;
+}
+
 // --- Varredura ------------------------------------------------------------
 
 function collectCandidateFiles(root) {
@@ -283,6 +335,7 @@ function vacuous(detail) {
       { id: "stale-baseline-entry", status: "PASS", detail },
       { id: "baseline-entry-incomplete", status: "PASS", detail },
       { id: "nondefect-entry-incomplete", status: "PASS", detail },
+      { id: "stale-nondefect-entry", status: "PASS", detail },
     ],
   };
 }
@@ -312,7 +365,10 @@ export function runRefsChecks(root = process.cwd()) {
 
   // Modo (b): a classificação apodreceu — o path passou a existir ou perdeu
   // toda citação viva. Baseline que não encolhe nunca é dívida (SPEC E4).
+  // Limite declarado (N13): entrada sustentada SÓ por citação vendorizada não
+  // expira aqui — é contada e nomeada no detalhe, nunca escondida.
   const stale = [];
+  const vendorOnly = [];
   for (const entry of BASELINE) {
     const target = posixPath(entry.path);
     if (existsSync(join(root, diskPathOf(target)))) {
@@ -320,11 +376,20 @@ export function runRefsChecks(root = process.cwd()) {
       continue;
     }
     const cites = citations.get(target) ?? [];
-    if (cites.length === 0) stale.push(`${target} (0 citações vivas)`);
+    if (cites.length === 0) {
+      stale.push(`${target} (0 citações vivas)`);
+    } else if (cites.every((c) => isVendorCiter(c.citer, lockSkills))) {
+      vendorOnly.push(`${target} ← ${citeList(cites)}`);
+    }
   }
+  const vendorNote =
+    `sustentadas só por citação vendorizada=${vendorOnly.length}`
+    + (vendorOnly.length ? ` (${vendorOnly.join("; ")})` : "");
 
   const baselineIssues = validateBaseline(BASELINE);
   const nonDefectIssues = validateNonDefect(NON_DEFECT);
+  // Modo (c): a supressão de C3 apodreceu (ADR-005 §8-N11).
+  const nonDefectStale = validateNonDefectStale(NON_DEFECT, root);
 
   const results = [
     {
@@ -339,8 +404,8 @@ export function runRefsChecks(root = process.cwd()) {
       id: "stale-baseline-entry",
       status: stale.length ? "FAIL" : "PASS",
       detail: stale.length
-        ? `BASELINE com ${stale.length} entrada(s) obsoleta(s): ${stale.join("; ")}`
-        : `BASELINE com ${BASELINE.length} entrada(s) ainda ausente(s) e citada(s)`,
+        ? `BASELINE com ${stale.length} entrada(s) obsoleta(s): ${stale.join("; ")}; ${vendorNote}`
+        : `BASELINE com ${BASELINE.length} entrada(s) ainda ausente(s) e citada(s); ${vendorNote}`,
     },
     {
       id: "baseline-entry-incomplete",
@@ -355,6 +420,13 @@ export function runRefsChecks(root = process.cwd()) {
       detail: nonDefectIssues.length
         ? `NON_DEFECT inválida: ${nonDefectIssues.join("; ")}`
         : `NON_DEFECT com ${NON_DEFECT.length} entrada(s), com reason/proof`,
+    },
+    {
+      id: "stale-nondefect-entry",
+      status: nonDefectStale.length ? "FAIL" : "PASS",
+      detail: nonDefectStale.length
+        ? `NON_DEFECT com ${nonDefectStale.length} entrada(s) obsoleta(s): ${nonDefectStale.join("; ")}`
+        : `NON_DEFECT com ${NON_DEFECT.length} entrada(s), todas com proof vivo (arquivo:linha cita o path)`,
     },
   ];
 

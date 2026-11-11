@@ -25,8 +25,10 @@ import {
   REF_RE,
   isLiveCiter,
   diskPathOf,
+  parseProof,
   validateBaseline,
   validateNonDefect,
+  validateNonDefectStale,
   runRefsChecks,
   runRefChecks,
 } from "../lib/refs/checks.mjs";
@@ -47,13 +49,28 @@ function byId(report, id) {
 }
 
 // Uma árvore "limpa": lock vazio + um citante vivo que cita as 7 entradas da
-// BASELINE (nenhum dos arquivos citados existe) ⇒ status quo declarado.
-function cleanTree(extra = {}) {
+// BASELINE (nenhum dos arquivos citados existe) + o arquivo de prova do
+// NON_DEFECT, com a linha `proof` citando o path ⇒ status quo declarado.
+const PROOF_FILE = NON_DEFECT[0].proof.split(":")[0];
+const PROOF_LINE = Number(NON_DEFECT[0].proof.split(":")[1]);
+
+function proofSource(path = NON_DEFECT[0].path) {
+  const pad = Array.from({ length: PROOF_LINE - 1 }, (_, i) => `linha ${i + 1}`);
+  pad.push(`    '${path}': '# regra\\n',`);
+  return pad.join("\n") + "\n";
+}
+
+function treeWithLock(lockSkills, extra = {}) {
   return {
-    ".agents/skills/.vendor-lock.json": JSON.stringify({ version: "1", skills: {} }),
+    ".agents/skills/.vendor-lock.json": JSON.stringify({ version: "1", skills: lockSkills }),
     ".agents/rules/_baseline.md": BASELINE.map((e) => `- \`${e.path}\``).join("\n") + "\n",
+    [PROOF_FILE]: proofSource(),
     ...extra,
   };
+}
+
+function cleanTree(extra = {}) {
+  return treeWithLock({}, extra);
 }
 
 const CITED = "rules/nao-existe.md";
@@ -193,11 +210,12 @@ describe("PO-02/PO-03 — os dois modos de falha (RF-03)", () => {
 
   it("modo (b): entrada sem nenhuma citação viva reprova (texto corrigido, entrada ficou)", () => {
     const dropped = BASELINE[0].path;
-    const root = fixture({
-      ".agents/skills/.vendor-lock.json": JSON.stringify({ version: "1", skills: {} }),
-      ".agents/rules/_baseline.md":
-        BASELINE.filter((e) => e.path !== dropped).map((e) => `- \`${e.path}\``).join("\n") + "\n",
-    });
+    const root = fixture(
+      cleanTree({
+        ".agents/rules/_baseline.md":
+          BASELINE.filter((e) => e.path !== dropped).map((e) => `- \`${e.path}\``).join("\n") + "\n",
+      }),
+    );
     const report = runRefsChecks(root);
     const r = byId(report, "stale-baseline-entry");
     assert.equal(r.status, "FAIL");
@@ -205,7 +223,7 @@ describe("PO-02/PO-03 — os dois modos de falha (RF-03)", () => {
     assert.match(r.detail, /0 citações vivas/);
   });
 
-  it("baseline intacta e citada ⇒ PASS nos 4 ids", () => {
+  it("baseline intacta e citada ⇒ PASS nos 5 ids", () => {
     const report = runRefsChecks(fixture(cleanTree()));
     assert.equal(report.ok, true, JSON.stringify(report.results));
     for (const id of [
@@ -213,9 +231,56 @@ describe("PO-02/PO-03 — os dois modos de falha (RF-03)", () => {
       "stale-baseline-entry",
       "baseline-entry-incomplete",
       "nondefect-entry-incomplete",
+      "stale-nondefect-entry",
     ]) {
       assert.equal(byId(report, id).status, "PASS");
     }
+  });
+});
+
+describe("PO-03/review F4 — NON_DEFECT não é permissão permanente (stale-nondefect-entry)", () => {
+  it("entrada cujo path passou a existir no disco reprova", () => {
+    const root = fixture(cleanTree({ ".agents/rules/exemplo.md": "# a rule apareceu\n" }));
+    const report = runRefsChecks(root);
+    const r = byId(report, "stale-nondefect-entry");
+    assert.equal(r.status, "FAIL");
+    assert.match(r.detail, /exemplo\.md .*passou a existir/);
+    assert.equal(report.ok, false);
+  });
+
+  it("proof cuja linha deixou de existir reprova (o arquivo encolheu)", () => {
+    const root = fixture(cleanTree({ [PROOF_FILE]: "linha 1\nlinha 2\n" }));
+    const r = byId(runRefsChecks(root), "stale-nondefect-entry");
+    assert.equal(r.status, "FAIL");
+    assert.match(r.detail, /proof .*fora do arquivo/);
+  });
+
+  it("proof que aponta para linha sem o path reprova (prova morta)", () => {
+    const semCitacao = Array.from({ length: PROOF_LINE }, (_, i) => `texto ${i + 1}`).join("\n") + "\n";
+    const root = fixture(cleanTree({ [PROOF_FILE]: semCitacao }));
+    const r = byId(runRefsChecks(root), "stale-nondefect-entry");
+    assert.equal(r.status, "FAIL");
+    assert.match(r.detail, /não cita o path/);
+  });
+
+  it("proof cujo arquivo não existe no disco reprova", () => {
+    const tree = cleanTree();
+    delete tree[PROOF_FILE]; // ÚNICA diferença para a árvore limpa
+    const r = byId(runRefsChecks(fixture(tree)), "stale-nondefect-entry");
+    assert.equal(r.status, "FAIL");
+    assert.match(r.detail, /proof ausente no disco/);
+  });
+
+  it("a prova é verificada em TODAS as entradas, não só na primeira", () => {
+    const entries = [
+      { path: NON_DEFECT[0].path, reason: "r", proof: NON_DEFECT[0].proof },
+      { path: "rules/segunda.md", reason: "r", proof: ".agents/rules/segunda.md:1" },
+    ];
+    const issues = validateNonDefectStale(entries, fixture(cleanTree()));
+    assert.equal(issues.length, 1, `só a 2ª entrada está morta: ${issues.join("; ")}`);
+    assert.match(issues[0], /rules\/segunda\.md .*proof ausente no disco/);
+    assert.deepEqual(parseProof(NON_DEFECT[0].proof), { file: PROOF_FILE, line: PROOF_LINE });
+    assert.equal(parseProof("sem-linha"), null);
   });
 });
 
@@ -223,19 +288,11 @@ describe("PO-04 — supressões separadas por mecanismo (C3/C4)", () => {
   it("C4: skill do lock suprime; o MESMO texto com lock sem a chave reprova", () => {
     const vendorPath = "rules/security-validate-all-input.md";
     const citer = ".agents/skills/nestjs-best-practices/SKILL.md";
-    const locked = fixture({
-      ".agents/skills/.vendor-lock.json": JSON.stringify({ version: "1", skills: { "nestjs-best-practices": {} } }),
-      ".agents/rules/_baseline.md": BASELINE.map((e) => `- \`${e.path}\``).join("\n") + "\n",
-      [citer]: `cita \`${vendorPath}\`\n`,
-    });
+    const locked = fixture(treeWithLock({ "nestjs-best-practices": {} }, { [citer]: `cita \`${vendorPath}\`\n` }));
     assert.equal(runRefsChecks(locked).ok, true, "citação vendor-internal não reprova");
 
     // Mutação de 1 token: o lock deixa de derivar a skill.
-    const unlocked = fixture({
-      ".agents/skills/.vendor-lock.json": JSON.stringify({ version: "1", skills: { outro: {} } }),
-      ".agents/rules/_baseline.md": BASELINE.map((e) => `- \`${e.path}\``).join("\n") + "\n",
-      [citer]: `cita \`${vendorPath}\`\n`,
-    });
+    const unlocked = fixture(treeWithLock({ outro: {} }, { [citer]: `cita \`${vendorPath}\`\n` }));
     const r = byId(runRefsChecks(unlocked), "missing-and-unclassified");
     assert.equal(r.status, "FAIL");
     assert.match(r.detail, /nestjs-best-practices/);
@@ -256,6 +313,27 @@ describe("PO-04 — supressões separadas por mecanismo (C3/C4)", () => {
     const r = byId(runRefsChecks(badRoot), "missing-and-unclassified");
     assert.equal(r.status, "FAIL");
     assert.match(r.detail, /exemplo-2\.md/);
+  });
+});
+
+describe("PO-04/review F5 — baseline viva por citação vendorizada é visível, não silenciosa", () => {
+  it("única citação vendorizada: PASS, mas o detalhe nomeia a entrada (limite N13)", () => {
+    const alvo = BASELINE.find((e) => e.class === "C1").path;
+    const tree = treeWithLock({ "react-best-practices": {} }, {
+      ".agents/rules/_baseline.md":
+        BASELINE.filter((e) => e.path !== alvo).map((e) => `- \`${e.path}\``).join("\n") + "\n",
+      ".agents/skills/react-best-practices/SKILL.md": `cita \`${alvo}\`\n`,
+    });
+    const r = byId(runRefsChecks(fixture(tree)), "stale-baseline-entry");
+    assert.equal(r.status, "PASS");
+    assert.match(r.detail, /sustentadas só por citação vendorizada=1/);
+    assert.match(r.detail, new RegExp(alvo.replace(/[.]/g, "\\.")));
+  });
+
+  it("nenhuma entrada nessa condição ⇒ contador zerado (limite medido, não presumido)", () => {
+    const r = byId(runRefsChecks(fixture(cleanTree())), "stale-baseline-entry");
+    assert.equal(r.status, "PASS");
+    assert.match(r.detail, /sustentadas só por citação vendorizada=0/);
   });
 });
 

@@ -5,8 +5,8 @@
 ## 1. Requisitos funcionais
 
 - **RF-01 (itens 1–3)** — `.opencode/plugins/lib/refs/checks.mjs` existe, puro (`node:fs`/`node:path` read-only, sem rede/child/escrita), exporta `runRefsChecks(root)` devolvendo `{ ok, results: [{ id, status, detail }] }`.
-- **RF-02 (item 4)** — `BASELINE` contém exatamente **7** entradas (2 `live-orphan` + 5 `foreign-baseline`), cada uma com `path`, `class`, `reason`, `owner`; `NON_DEFECT` contém **1** (`exemplo.md`), com `reason` e `proof`.
-- **RF-03 (itens 5–7)** — o check falha em **2 modos**: (a) referência viva a path ausente **fora** do `BASELINE`; (b) entrada do `BASELINE` que **deixou** de ser ausente (baseline obsoleto). Nenhum dos dois pode passar verde.
+- **RF-02 (item 4)** — `BASELINE` contém exatamente **7** entradas (2 `live-orphan` + 5 `foreign-baseline`), cada uma com `path`, `class`, `reason`, `owner`, `prd` (as 5 colunas do registro: `path/class/reason/owner/prd`); `NON_DEFECT` contém **1** (`exemplo.md`), com `reason` e `proof`.
+- **RF-03 (itens 5–7)** — o check falha em **3 modos**: (a) referência viva a path ausente **fora** do `BASELINE`; (b) entrada do `BASELINE` que **deixou** de ser ausente (baseline obsoleto); (c) entrada de `NON_DEFECT` cuja supressão apodreceu — `proof` (`arquivo:linha`) morto, linha que não cita o path, ou path que passou a existir no disco (`stale-nondefect-entry`, verificada em **todas** as entradas). Nenhum dos três pode passar verde.
 - **RF-04 (item 8)** — predicado de escopo exato: vivo = citante casa `^(\.agents/|opencode\.json$)`; `docs/`, `harness/`, `.spec/` são registro e não entram. Provado por fixture com o **mesmo** texto nos dois lados.
 - **RF-05 (itens 9–11)** — `refs.spec.mjs` com ≥3 fixtures de escopo e ≥2 de falha de baseline; `node --test` verde.
 - **RF-06 (item 12)** — adapter `V18` em `scripts/static-checks.mjs`: um `record("V18", …)`, **sem** comando novo em `commands.suiteFull` e sem alterar `harness.config.json`.
