@@ -121,6 +121,28 @@ Aplicada **linha a linha** sobre a população. A ordem é fixa (o primeiro pass
 
 **D2 é medida, não presumida.** Linha de proibição **não recebe veredito** e entra no contador `prohibition-cited` (30 hoje). Isso é o que sustenta `harness-installer/SKILL.md:161-164` sem transformar a exceção em buraco: uma proibição que deixe de citar tecnologia **sai** do contador, e o contador publicado mostra a variação — não há como apagar a exceção em silêncio, nem como usá-la para esconder uma prescrição (o passo 2 exige o marcador de negação **antes** do termo; "NUNCA use X" é proibição, "use X sempre que…" é prescrição).
 
+
+## 2.3-bis Emenda do predicado (obrigatória, 2026-11-11)
+
+O review do SDD mediu o predicado em uso e a rubrica original **não cobre a forma canônica de prescrever stack neste repo**: linha de **tabela**. Consequência medida: `| Framework | Spring Boot 3 |` passava verde, e a baseline de 101 nasceu com **30% de ruído** (TOC, amostra de template, fato, anti-pattern invertido, registro datado) e **≥17 prescrições reais fora**. O predicado do passo 1 passa a ser:
+
+```
+1. a linha é PRESCRITIVA?
+   (a) marcador normativo + termo na MESMA cláusula
+   (b) linha de tabela com checkbox `[ ]`/`[x]`
+   (c) item de lista SOB HEADING NORMATIVO (o heading é consultado; item solto não basta)
+   (d) linha de TABELA cujo cabeçalho ou célula declara stack/ferramenta/comando
+       (é a forma canônica aqui: frontend-coding-standards.md:11, workflow-rules.md:558-563)
+   (e) prosa declarativa com cópula/determinação de stack ("A stack é X", "usa X", "com X")
+2. a linha é PROIBIÇÃO? (D2) — avaliada POR TERMO, não "algum termo depois de alguma negação":
+   negação imediatamente antes do termo, OU "X é proibido", "evitar X", "não usar X";
+   comparação insensível a caixa (`Não`/`NÃO`/`Nunca`/`NUNCA`/`Evitar`/`Evite`)
+```
+
+Corolário: `- Use Spring Boot; NUNCA use Lombok.` deixa de evaporar (a prescrição de Spring Boot conta; a proibição de Lombok conta à parte), e `- Não use Lombok.` conta como proibição em vez de virar dívida.
+
+**Baseline re-derivada:** com o predicado acima, a baseline **volta a ser dívida**: entradas que não são prescrição (TOC, template, fato, registro datado) **saem**, e linhas de tabela prescritivas **entram**. O número final é o que a medição der — e o ADR **não** fixa valor: fixa o predicado. O valor publicado no `detail` é o oráculo, com `sha256` por linha e `owner`.
+
 ### 2.4 R3 resolvido — a fonte de eixo é o **export do instalador**; o `V19` mede outra coisa
 
 As duas leituras e o que cada uma é:
@@ -408,3 +430,12 @@ Nesta ordem:
 5. Publicar a **lista literal** da baseline no módulo (não neste ADR): divergência entre os 32/15 medidos aqui e a lista do SDD é **drift a registrar** (`PRD` §5-M-8), nunca a esconder.
 
 **Fora do SDD (declarado):** corrigir qualquer uma das 32+15 linhas (ADR-002..005), mover/renomear artefato no instalador (PRD-3), decidir `DESIGN.md`/`Pulse` (ADR-004/PRD-5), o segundo regex de A-3 (ADR-004) e qualquer alteração em `gate.js`.
+
+## 10. Notas de correção do SDD (rodada 1 do review)
+
+- **N1 — predicado divergia do contrato (C1/C2 do review).** Ver §2.3-bis: o código aceitava qualquer item de lista e nenhuma tabela, produzindo 308 prescrições onde o ADR media 91, e deixando a forma canônica de prescrever stack invisível ao guarda. Corrigido no predicado, não no número.
+- **N2 — proibição avaliada por termo (C3).** `NEGATION` por caixa exata deixava `Não`/`Nunca`/`Evitar` escaparem; e o predicado antigo ("negação antes de **algum** termo") apagava prescrição em linha mista. Passa a ser por termo, insensível a caixa.
+- **N3 — `license`/eixo não podem ser escusados por entrada `identity` da baseline (C4).** Era o único modo de o alarme criado para pegar `license: TaskFlow Security Standard` desligar-se justamente ali.
+- **N4 — item 1: o módulo não importa `installer/` (C5).** `installer/` não propaga (`install.mjs:1689`), logo módulo que importa de lá morre no destino com `ERR_MODULE_NOT_FOUND`. A fonte de eixo é **injetada pelo adapter** (que roda neste repo); o módulo segue puro e importável no destino, mesmo que inerte.
+- **N5 — linha de skill vendorizada não entra na baseline (C6).** `treeHash` congela bytes: baselinar linha vendorizada cria dívida **impagável** (editar quebra `vendor-skills --check`; upstream novo quebra `cdl-baseline-stale`). Vendorizada entra em **E-5** (upstream, fora de A-2), não em dívida.
+- **N6 — `axis-class` é publicação, não veredito.** Confirmado pelo review (`declaredAxis` não recebe `axisClass`); segue como contador informativo.
