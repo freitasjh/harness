@@ -14,7 +14,7 @@
 - [x] `.agents/rules/sdd-workflow-standard.md:50` → `planner` + `Fase 5 — Valide`; `.agents/agents/qa-engineer/AGENT.md:9` → `orchestrator`; `grep -rn "planejador" .agents/` = 0 (RF-05, E1).
 
 ### PL-04
-- [x] Remover as 2 ocorrências de `PLAN.md` da skill `dev-planner` (`:139`, `:161`) e declarar o `sdd-compiler` como autor (RF-04, I2, E2).
+- [x] Remover as 2 ocorrências de `PLAN.md` do `SKILL.md` da skill `dev-planner` (`:139`, `:161`) e declarar o `sdd-compiler` como autor (RF-04, E2). **I2 fica 🟡 deferida ao ADR-005**: `workflow.md:20-21,420,434` ainda descrevem `PLAN` (ver ADR-003 §10).
 
 ### PL-05
 - [x] `config-dual-parity.spec.mjs:124-137`: ROSTER literal ganha `planner` (10 nomes) (RF-08, E3).
@@ -81,7 +81,7 @@ $ echo $?
 0
 
 $ node scripts/sdd-checks.mjs
-PASS V4: rules lines=1291 (budget 1705)
+PASS V4: rules lines=1289 (budget 1705)
 PASS R-V12: orphan refs=0
 PASS V17: canonical vocab + conversion table present
 PASS SDD-01: refs-ok=true non-bypass=true no-orphan-promise=true

@@ -17,8 +17,8 @@
 ## 2. Invariantes
 
 - **I1** — o `planner` **consome** a skill `dev-planner`; não copia fase nem metodologia para o prompt.
-- **I2** — `PLAN.md` tem **um** autor (`sdd-compiler`). Nenhum outro papel o escreve.
-- **I3** — `DESIGN-DECISIONS.md` é insumo de decisão, **não** decisão: não carrega `status`, `depende-de` nem "interface congelada".
+- **I2** — `PLAN.md` tem **um** autor (`sdd-compiler`). Nenhum outro papel o escreve. → 🟡 **DEFERIDA ao ADR-005**: o `SKILL.md` foi corrigido, mas `.agents/skills/dev-planner/workflow.md` (diagrama `:20-21`, `:420`, `:434`) ainda prescreve `PLAN`; a métrica por token do ADR item 8 passa sem que a invariante seja verdadeira.
+- **I3** — `DESIGN-DECISIONS.md` é insumo de decisão, **não** decisão: não carrega `status`, `depende-de` nem "interface congelada". → 🟡 **DEFERIDA ao ADR-005** quanto à skill: `workflow.md:199-225` ainda tem template de ADR com `### Status`.
 - **I4** — nenhuma linha de código de gate, instalador ou config de suíte é tocada.
 - **I5** — toda citação reapontada nomeia o papel que **realmente** executa a ação (não basta trocar o token).
 
