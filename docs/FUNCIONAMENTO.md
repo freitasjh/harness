@@ -105,7 +105,7 @@ ele re-executa.
 | `.agents/rules/prd-adr-pipeline.md` | Contrato da esteira PRD → RESEARCH → ADR-INDEX → ADR | `1-79` |
 | `.agents/rules/sdd-workflow-standard.md` | Layout `.spec/**` + campos canônicos de `workflow-state.json` | `1-50` |
 | `.agents/rules/brain-context.md` | Ponte para o repo `brain` (dono da regra) | `1-15` |
-| `.agents/agents/*/AGENT.md` | 9 diretórios de agente — 8 com `AGENT.md` + `code-reviewer/PROMPT.md` — e o `opencode.json` registra os mesmos 9: registro↔disco em paridade (ADR-001) | `opencode.json:12-94`; `orchestrator/AGENT.md:213-235`, `:426-457` |
+| `.agents/agents/*/AGENT.md` | 10 diretórios de agente — 9 com `AGENT.md` + `code-reviewer/PROMPT.md` — e o `opencode.json` registra os mesmos 10: registro↔disco em paridade (ADR-001) | `opencode.json:12-102`; `orchestrator/AGENT.md:220-245`, `:439-472` |
 | `.agents/skills/` | Playbooks: `prompt-optimizer`, `sdd-compiler`, `harness-report`, `harness-installer` | — |
 | `.opencode/plugins/lib/prd-adr-pipeline/` | Módulo da esteira PRD→ADR: `checks.mjs` + 4 templates (norma fica na rule) | `checks.mjs:417-495` |
 | `.agents/schemas/harness-report.schema.json` | Schema canônico do relatório de evidência | `7-19`, `40-48` |
@@ -385,7 +385,7 @@ flowchart TD
 
 ### 5.2 SDD P0..P6
 
-`.agents/agents/orchestrator/AGENT.md:213-235` define os portões; `workflow-rules.md:144-328`
+`.agents/agents/orchestrator/AGENT.md:220-245` define os portões; `workflow-rules.md:144-328`
 define as fases; o vocabulário **canônico** de `current_phase` está em `workflow-rules.md:150-174`
 e é o único validado pelo gate (`gate-contract.md:15`, V17).
 
@@ -403,13 +403,13 @@ flowchart TD
 
 | Portão | Momento | Artefato/produção | Registro | Nível |
 |---|---|---|---|---|
-| P0→P1 | fim da triagem | classificação Feature/Bugfix/Refactor | `workflow-state.json` | 🟡 humano (`orchestrator/AGENT.md:229`) |
-| P1→P2 | fim da Fase 1 | `PROPOSAL.md` + `SPEC.md` (com Delta Specs) | `artifacts.spec` | 🟡 humano (`orchestrator/AGENT.md:230`) |
+| P0→P1 | fim da triagem | classificação Feature/Bugfix/Refactor | `workflow-state.json` | 🟡 humano (`orchestrator/AGENT.md:239`) |
+| P1→P2 | fim da Fase 1 | `PROPOSAL.md` + `SPEC.md` (com Delta Specs) | `artifacts.spec` | 🟡 humano (`orchestrator/AGENT.md:240`) |
 | P2→P3 | fim da Fase 2 | `PLAN.md` + `TASKS.md` (TDD-ready) | `gates.P1_P2`, `gates.P2_P3` | 🟡 humano, com check mecânico (`sdd-checks.mjs:406-407`) |
-| P3→P4 | fim da Fase 3 | código + code review + security review | `code_review_status` | 🟡 humano (`orchestrator/AGENT.md:232`) |
+| P3→P4 | fim da Fase 3 | código + code review + security review | `code_review_status` | 🟡 humano (`orchestrator/AGENT.md:242`) |
 | P4→P5 | fim da Fase 4 | `harness/<demand>.json` + H4 | `harness_status` | 🟠 parcial — o gate reexecuta o comando selado (`gate.js:761`) |
-| P5→P6 | fim da Fase 5 | `VERIFY.md` (3 dimensões) | `verify` | 🟡 humano (`orchestrator/AGENT.md:234`) |
-| P6→fim | fim da Fase 6 | move para `.spec/archive/` + lições no Brain | `archive`, `lessons` | 🟡 humano (`orchestrator/AGENT.md:235`) |
+| P5→P6 | fim da Fase 5 | `VERIFY.md` (3 dimensões) | `verify` | 🟡 humano (`orchestrator/AGENT.md:244`) |
+| P6→fim | fim da Fase 6 | move para `.spec/archive/` + lições no Brain | `archive`, `lessons` | 🟡 humano (`orchestrator/AGENT.md:245`) |
 
 Fases do SDD, resumidas: Fase 0 Exploração/Planejamento (opcional, `dev-planner`), Fase 1
 Análise + SPEC, Fase 2 Implementação, Fase 3 Review, Fase 4 Verify, Fase 5 Archive
@@ -421,7 +421,7 @@ Traceability antes do archive (`workflow-rules.md:302-316`).
 
 ### 5.3 Bugfix B1..B4
 
-`.agents/agents/orchestrator/AGENT.md:426-457` define as 4 fases do fast-track de bug;
+`.agents/agents/orchestrator/AGENT.md:439-472` define as 4 fases do fast-track de bug;
 `workflow-rules.md:330-371` define as regras mandatórias R1..R4.
 
 ```mermaid
@@ -440,9 +440,9 @@ flowchart TD
 | Fase | O que produz | Regra | Nível |
 |---|---|---|---|
 | **B1** Análise | reprodução com evidência, causa raiz com `arquivo:linha`, `.spec/bugs/{contexto}/TASKS.md` | R1 (ver o erro real na tela antes de codificar) + portão B1→B2 | 🟡 processo (`workflow-rules.md:334-356`) |
-| **B2** Implementação | correção + testes, via `developer-engineer` | compilar/testar a cada task | 🟡 processo (`orchestrator/AGENT.md:435-443`) |
-| **B3** Revisão | parecer do `code-reviewer`; se 🔴/🟡, volta a B2 (máx 3 ciclos) | Chrome DevTools obrigatório em bug de UI | 🟡 processo (`orchestrator/AGENT.md:445-449`) |
-| **B4** Finalização | suite completa, `current_phase = Completed`, lições no Brain, débito técnico | portão final humano | 🟡 processo (`orchestrator/AGENT.md:451-457`) |
+| **B2** Implementação | correção + testes, via `developer-engineer` | compilar/testar a cada task | 🟡 processo (`orchestrator/AGENT.md:448-456`) |
+| **B3** Revisão | parecer do `code-reviewer`; se 🔴/🟡, volta a B2 (máx 3 ciclos) | Chrome DevTools obrigatório em bug de UI | 🟡 processo (`orchestrator/AGENT.md:458-462`) |
+| **B4** Finalização | suite completa, `current_phase = Completed`, lições no Brain, débito técnico | portão final humano | 🟡 processo (`orchestrator/AGENT.md:464-472`) |
 
 ### 5.4 Archive e Brain
 
@@ -458,9 +458,9 @@ flowchart TD
 
 ### 5.5 PRD → ADR → SDD
 
-`.agents/rules/prd-adr-pipeline.md` (contrato) e `.agents/agents/orchestrator/AGENT.md:239-262`.
+`.agents/rules/prd-adr-pipeline.md` (contrato) e `.agents/agents/orchestrator/AGENT.md:249-274`.
 Esta esteira **entra antes** do ciclo SDD para features; os portões P0..P6 continuam valendo
-depois dela, não no lugar dela (`orchestrator/AGENT.md:243`).
+depois dela, não no lugar dela (`orchestrator/AGENT.md:253`).
 
 ```mermaid
 flowchart TD
@@ -672,10 +672,10 @@ de garantia. Nada aqui propõe implementação.
 | # | Fato | Lastro | Nível |
 |---|---|---|---|
 | d1 | `workflow-state.json` tem **81 chaves de topo**; só um subconjunto é canônico (`current_feature`, `current_phase`, `previous_phase`, `next_phase`, `artifacts`, `type`, `last_update`) | `workflow-state.json` (raiz); `.agents/rules/sdd-workflow-standard.md` §2 | 🟡 processo — risco de estado paralelo |
-| d2 | `orchestrator` é o único orquestrador registrado; os checks SDD-01 e SDD-03 leem o `AGENT.md` dele | `opencode.json:12-94`; `scripts/sdd-checks.mjs:131-136`, `:383-393` | 🟡 processo |
+| d2 | `orchestrator` é o único orquestrador registrado; os checks SDD-01 e SDD-03 leem o `AGENT.md` dele | `opencode.json:12-102`; `scripts/sdd-checks.mjs:131-136`, `:383-393` | 🟡 processo |
 | d3 | `gate-contract.md` (I6) **citava** `hitl-guardrail.js` como bloqueante e a fronteira via `chat.message` — o código diz que esse plugin é **no-op** e que `chat.message` não existe no v2. **Corrigido em 2026-10-22**: a linha I6 foi reescrita com o mecanismo real (GATE-04 `gateHitlBatch` + event stream) | `.agents/rules/gate-contract.md:19`; `.opencode/plugins/hitl-guardrail.js:1`, `:27-32`; `gate.js:1218-1222`, `:1096`, `:1178`, `:1183`, `:1270`, `:1288-1297`, `:1451-1473` | 🟢 runtime (mecanismo documentado = o que o codigo faz) |
 | d4 | `gate-contract.md` (I11) **afirmava** que o mapa `sessionID → agente` é alimentado por `chat.message`/`chat.params` e que `tool.execute.before` não traz o agente — no v2 o agente vem do payload do hook, e a tabela v1→v2 documenta a substituição. **Corrigido em 2026-10-22**: a linha I11 foi reescrita com o mecanismo real (agente pelo payload do hook `execute.before`) | `.agents/rules/gate-contract.md:24`; `gate.js:1253-1257`, `:1346`, `:410-427`, `:405-408` | 🟢 runtime (mecanismo documentado = o que o codigo faz) |
-| d5 | `orchestrator/AGENT.md` **afirmava** que `harness-validator.js` injeta a regra H1..H7 em todos os agentes via system prompt; o plugin não registra hook nenhum desde FIX-01. **Corrigido em 2026-10-22**: a linha agora cita o mecanismo real (`opencode.json` → `instructions` global + prompt por agente; enforcement = `gate.js`) | `.agents/agents/orchestrator/AGENT.md:465`; `.opencode/plugins/harness-validator.js:1-12`, `:26-31`; `opencode.json:6-8`, `:12-94` | 🟢 runtime (mecanismo documentado = o que o codigo faz) |
+| d5 | `orchestrator/AGENT.md` **afirmava** que `harness-validator.js` injeta a regra H1..H7 em todos os agentes via system prompt; o plugin não registra hook nenhum desde FIX-01. **Corrigido em 2026-10-22**: a linha agora cita o mecanismo real (`opencode.json` → `instructions` global + prompt por agente; enforcement = `gate.js`) | `.agents/agents/orchestrator/AGENT.md:478`; `.opencode/plugins/harness-validator.js:1-12`, `:26-31`; `opencode.json:6-8`, `:12-102` | 🟢 runtime (mecanismo documentado = o que o codigo faz) |
 | d6 | `harness-validator.js` e `hitl-guardrail.js` permanecem como módulos no-op no diretório de plugins — files vivos que não exercem nada | `.opencode/plugins/harness-validator.js:22-31`; `.opencode/plugins/hitl-guardrail.js:23-32` | 🟡 processo |
 | d7 | O `current_feature` é a chave de **nome** do arquivo de evidência procurado pelo gate; se o nome do arquivo e a feature divergirem, o gate não encontra o relatório e nega `completed-no-evidence` | `gate.js:1035-1047`; `harness.config.json:56-58` | 🟢 comportamento, 🟡 ergonomia |
 | d8 | A decisão "novo ciclo?" (âncora B) é heurística por substring do nome da feature no prompt — o gate não tem conceito estruturado de ciclo | `gate.js:1002-1021`; `gate-contract.md:15` (I2, 🟠 parcial) | 🟠 parcial |
@@ -752,10 +752,10 @@ de garantia. Nada aqui propõe implementação.
 | `.agents/rules/prd-adr-pipeline.md:49-54` | branch/PR sem `gh`; merge humano |
 | `.agents/rules/sdd-workflow-standard.md` §1-2 | layout `.spec/**` e campos canônicos do state |
 | `.agents/rules/brain-context.md:8-11` | busca antes, registro depois |
-| `.agents/agents/orchestrator/AGENT.md:213-235` | portões P0..P6 |
-| `.agents/agents/orchestrator/AGENT.md:239-262` | esteira PRD → ADR → SDD |
-| `.agents/agents/orchestrator/AGENT.md:426-457` | fases B1..B4 |
-| `.agents/agents/orchestrator/AGENT.md:465` | regra H1..H7: carregada por `opencode.json` (`instructions` global + prompt por agente; alcance por config, não medido no binário); enforcement em `gate.js` |
+| `.agents/agents/orchestrator/AGENT.md:220-245` | portões P0..P6 |
+| `.agents/agents/orchestrator/AGENT.md:249-274` | esteira PRD → ADR → SDD |
+| `.agents/agents/orchestrator/AGENT.md:439-472` | fases B1..B4 |
+| `.agents/agents/orchestrator/AGENT.md:478` | regra H1..H7: carregada por `opencode.json` (`instructions` global + prompt por agente; alcance por config, não medido no binário); enforcement em `gate.js` |
 | `.agents/skills/harness-report/SKILL.md:10-24` | relatório auto-declarado × contraprova |
 | `.agents/schemas/harness-report.schema.json:7-19`, `:40-52` | campos obrigatórios e condicionais |
 | `scripts/static-checks.mjs:42-47` | escopo de V2/V3/V7 |

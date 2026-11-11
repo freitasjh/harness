@@ -475,7 +475,7 @@ Para correções de bug, NÃO execute SDD completo. Siga este workflow comprimid
 
 ## Harness de Testes & Validação (NON-NEGOTIABLE — H1-H7)
 
-> 🚨 **REGRA MÁXIMA.** Fonte da verdade: `workflow-rules.md §5`. A regra H1-H7 é carregada pelo array global `instructions` (`opencode.json:6-8` → `.agents/rules/*.md`) e o texto de cada agente vem de `agent.<nome>.prompt` (`opencode.json:12-94`) — alcance por config, não medido no binário; esta citação é a do orquestrador. O **enforcement** (negação) vive em `.opencode/plugins/gate.js` (GATE-01..GATE-05) — `harness-validator.js` é no-op desde FIX-01 e não injeta nada. Em conflito, o §5 prevalece.
+> 🚨 **REGRA MÁXIMA.** Fonte da verdade: `workflow-rules.md §5`. A regra H1-H7 é carregada pelo array global `instructions` (`opencode.json:6-8` → `.agents/rules/*.md`) e o texto de cada agente vem de `agent.<nome>.prompt` (`opencode.json:12-102`) — alcance por config, não medido no binário; esta citação é a do orquestrador. O **enforcement** (negação) vive em `.opencode/plugins/gate.js` (GATE-01..GATE-05) — `harness-validator.js` é no-op desde FIX-01 e não injeta nada. Em conflito, o §5 prevalece.
 
 ### Pre-Delegation Gate (ORQUESTRADOR executa ANTES de delegar)
 
