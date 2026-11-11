@@ -17,7 +17,7 @@ plugins never hardcode its values (SPEC ADR-003). Enforcement lives in
 | `infra` | nulls — no compose file, no local servers in this repo (E2E targets consumers via MCP) |
 | `mcp.required` | `["chrome-devtools"]` (SPEC §5.1; RF-06) |
 | `protectedPaths` | canonical list, identical to SPEC ADR-007 |
-| `gates.*` | never disables the suite; downgrades one gate to `warn` — see below |
+| `gates.*` | informative/audited only: no key changes a gate's effective mode; a per-gate downgrade lives in the host-process env (`HARNESS_GATE_<GATE>` + `_REASON`) — see below. 🟢 runtime: `modeForGate` takes no config (`gate.js:126`); the config is only audited (`gate.js:252`) |
 | `riskPaths` / `escalateOnRisk` | identical to SPEC §5.1; declared as escalating `e2eGreenfield` to `enforce` and requiring E2E evidence of the affected flow — declarative: no runtime consumer in `gate.js` (see `docs/FUNCIONAMENTO.md` §10a2) |
 | `contraproveTimeoutMs` | identical to SPEC §5.1; re-execution past this timeout is a `contraprove-timeout` deny (ADR-002) |
 | `evidence` | `harness/` + report schema path |
@@ -35,16 +35,16 @@ never from prose. Covered by `config-loader.spec.mjs`.
 
 ## Kill-switch (ADR-009)
 
-`gates.*` never switches the whole suite off — the only kill-switch is the
-host-process env `HARNESS_GATES=off` (`configGatesDisableEnforcement` always
-false); but it does downgrade one gate: any value ≠ `"enforce"` ⇒ `"warn"` (log+allow).
+`gates.*` never switches the whole suite off and never downgrades a gate — it is audited only: one WARN per (key, value) pair whose value is not `"enforce"`, naming the key, its value and whether the key names a registered gate (`auditConfigGates`, `gate.js:252`); a key that names no registered gate is declared inert — 🟢 runtime: the mode resolver takes no config (`modeForGate`, `gate.js:126`).
+The suite kill-switch is the host-process env `HARNESS_GATES=off` (`KILL_SWITCH_ENV`/`KILL_SWITCH_OFF`, `gate.js:61-62`; `isKillSwitchOff`, `gate.js:77`; early return before any mode resolution, `gate.js:1366`) — under the cut no MODE is resolved or announced, but the config audit (`gate.js:1358`) runs before the cut and may still warn; `configGatesDisableEnforcement` is always false — 🟢 by construction: the cut is an env read (`gate.js:77`).
+A per-gate downgrade is a different channel and lives in the host-process env: `HARNESS_GATE_<GATE>=warn` plus a non-empty `HARNESS_GATE_<GATE>_REASON`, resolved by the pure `resolveGateMode` (`gate.js:98`) and announced once per (gate, motive) (`gate.js:278`) — `warn` turns a `DenyError` into log+allow — 🟢 runtime: pure resolution + one announcement per process; the env belongs to the host operator.
 
 ## Command seal (ADR-002, U6=b)
 
 `suiteFull` is sealed: `.opencode/plugins/lib/seal.mjs` exposes
 `sha256` / `sealCommands` / `verifySeal`. `gate.js` (Batch 4, GATE-01)
 **reads the published seal from `HARNESS_SEAL_JSON`** (rollout step 1 = the
-trust root, *not* the worktree — U6=b; `loadPublishedSeal`, `gate.js:753-764`)
+trust root, *not* the worktree — U6=b; `loadPublishedSeal`, `gate.js:918-929`)
 and compares it at runtime against the value read from the config;
 divergence ⇒ `DenyError sealed-command-mismatch`; **seal absent ⇒ fail-closed**
 (`cause: "empty-seal"`) — never allow. Regenerate with `sealCommands(commands)`

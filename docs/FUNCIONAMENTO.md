@@ -50,12 +50,12 @@ runtime *aplica*. O README declara o lema que estrutura o repo inteiro
 
 | Camada | O que é | Onde vive | Quem aplica | Nível típico |
 |---|---|---|---|---|
-| **Runtime** | Negações disparadas por tool call: PICCO ausente, conclusão sem contraprova, ciclo anterior aberto, 3º `task` sem turno humano, escrita em path protegido, `pkill -f` | `.opencode/plugins/gate.js` (1303 linhas) | hook `ctx.tool.hook("execute.before", …)` (`gate.js:1066`, `:1268`) | 🟢 / 🟠 |
+| **Runtime** | Negações disparadas por tool call: PICCO ausente, conclusão sem contraprova, ciclo anterior aberto, 3º `task` sem turno humano, escrita em path protegido, `pkill -f` | `.opencode/plugins/gate.js` (1482 linhas) | hook `ctx.tool.hook("execute.before", …)` (`gate.js:1231`, `:1447`) | 🟢 / 🟠 |
 | **Processo** | Prompt Gate, ciclo SDD, portões humanos P0..P6, bugfix B1..B4, H1..H7, code review | `.agents/rules/workflow-rules.md`, `.agents/agents/*/AGENT.md` | agentes obedecendo prosa + o usuário aprovando portões | 🟡 |
 
-O **Runtime** nega em exatamente **5 gates core** (`gate.js:1010-1014`); 4 têm `gateName`
-(`gate.js:1015-1018`) — o de higiene não tem e cai no `DEFAULT_MODE` (`gate.js:52`,
-`:99-103`). Cada gate é uma função pura `async (ctx) => void` que nega lançando `DenyError` (`gate.js:61-68`).
+O **Runtime** nega em exatamente **5 gates core** (`gate.js:1175-1179`); 4 têm `gateName`
+(`gate.js:1180-1183`) — o de higiene não tem e cai no `DEFAULT_MODE` (`gate.js:59`,
+`:126-130`). Cada gate é uma função pura `async (ctx) => void` que nega lançando `DenyError` (`gate.js:68-75`).
 
 O **Processo** não nega nada por si só: `.agents/rules/gate-contract.md:35-38` é explícito
 ("Prosa não é negada"), e o check `R-NODENY` (`scripts/sdd-checks.mjs:409-413`) falha se
@@ -93,7 +93,7 @@ ele re-executa.
 |---|---|---|
 | `harness.config.json` | Fonte única de dados do projeto: comandos, `moduleMap`, `infra`, `mcp.required`, `protectedPaths`, `gates`, `riskPaths`, `escalateOnRisk`, `contraproveTimeoutMs`, `evidence` | `13-16`, `27-37`, `38-43`, `55-59` |
 | `opencode.json` | Config v2-only do opencode: `permission.task = "ask"`, 9 agentes com `permission.edit`/`permission.bash` | `9-11`, `12-94` |
-| `.opencode/plugins/gate.js` | Núcleo de enforcement: `DenyError`, dispatcher, 5 gates, contrato v2 do plugin | `52`, `61`, `89`, `161`, `199-212`, `1010-1018`, `1261`, `1303` |
+| `.opencode/plugins/gate.js` | Núcleo de enforcement: `DenyError`, dispatcher, 5 gates, contrato v2 do plugin | `59`, `68-75`, `98-130`, `318-334`, `356-369`, `1175-1183`, `1440`, `1482` |
 | `.opencode/plugins/lib/config.mjs` | Loader fail-closed do config + `resolveCommand` + `configGatesDisableEnforcement` | `13-25`, `27-33`, `38-40` |
 | `.opencode/plugins/lib/seal.mjs` | `sha256` / `sealCommands` / `verifySeal` do comando canônico | `9-29` |
 | `.opencode/plugins/harness-validator.js` | **No-op** desde FIX-01 (mantido como placeholder) | `1`, `22-31` |
@@ -126,21 +126,21 @@ enforcement que o gate implementa.
 
 | # | O quê | Como | Onde está | Nível |
 |---|---|---|---|---|
-| 1 | **Gates bloqueantes** — delegação sem PICCO nega; conclusão sem contraprova nega; 3º `task` sem turno humano nega; higiene de shell nega; escrita em path protegido nega | `DenyError` lançado no hook `execute.before` | `gate.js:1010-1014` (registro), `gate.js:199-212` (motivos) | 🟢 runtime |
-| 2 | **Evidência machine-checkable** — conclusão exige relatório válido + re-execução do comando canônico (verificador ≠ executor) | schema + selo `sha256` + cache | `gate.js:574-641`, `.agents/schemas/harness-report.schema.json`, `seal.mjs:14-29` | 🟠 parcial — o executor padrão só observa exit code (`gate.js:561-572`) |
+| 1 | **Gates bloqueantes** — delegação sem PICCO nega; conclusão sem contraprova nega; 3º `task` sem turno humano nega; higiene de shell nega; escrita em path protegido nega | `DenyError` lançado no hook `execute.before` | `gate.js:1175-1179` (registro), `gate.js:356-369` (motivos) | 🟢 runtime |
+| 2 | **Evidência machine-checkable** — conclusão exige relatório válido + re-execução do comando canônico (verificador ≠ executor) | schema + selo `sha256` + cache | `gate.js:739-806`, `.agents/schemas/harness-report.schema.json`, `seal.mjs:14-29` | 🟠 parcial — o executor padrão só observa exit code (`gate.js:726-737`) |
 | 3 | **Zero path hardcoded** — comandos, paths e módulos vêm do config do projeto | check estático V3 + loader do config | `scripts/static-checks.mjs:42-47`, `:274-275`, `config.mjs:13-33` | 🟠 parcial — V3 varre 3 arquivos + 2 diretórios, não o `gate.js` |
-| 4 | **Portão de prompt** — 6 elementos PICCO; sem eles o orquestrador pergunta em vez de adivinhar | skill `prompt-optimizer` + GATE-02 | `gate.js:324-356`, `.agents/rules/workflow-rules.md:12-55` | 🟢 para a tag obrigatória · 🟡 para E3..E6 (só aviso, `gate.js:335-340`) |
+| 4 | **Portão de prompt** — 6 elementos PICCO; sem eles o orquestrador pergunta em vez de adivinhar | skill `prompt-optimizer` + GATE-02 | `gate.js:489-521`, `.agents/rules/workflow-rules.md:12-55` | 🟢 para a tag obrigatória · 🟡 para E3..E6 (só aviso, `gate.js:500-505`) |
 | 5 | **SDD governado** — SPEC → PLAN → TASKS → execução → VERIFY → archive, com portões humanos | skills `sdd-compiler`/`spec-review` + `scripts/sdd-checks.mjs` | `.agents/rules/workflow-rules.md:144-328`, `scripts/sdd-checks.mjs:367-421` | 🟡 processo |
 | 6 | **Cobertura de risco** — mudança em `riskPaths` sobe o E2E a `enforce` | `escalateOnRisk` no config | `harness.config.json:44-54` | 🔴 declarado-aberto no runtime — nenhum gate consome `riskPaths` (ver §10a) |
-| 7 | **Kill-switch fora do worktree** — `HARNESS_GATES=off` no processo host desliga a suíte; o config não desliga a suíte (mas rebaixa um gate isolado para `warn`) | env do host + `configGatesDisableEnforcement` | `gate.js:54-55`, `:70-72`, `:76-80`, `config.mjs:35-40` | 🟢 por construção |
+| 7 | **Kill-switch e modo fora do worktree** — `HARNESS_GATES=off` no host desliga a suíte; o modo por gate vem de `HARNESS_GATE_<GATE>` (com `_REASON` não vazio para rebaixar); o config não decide modo, só é auditado | env do host + `resolveGateMode`/`auditConfigGates` | `gate.js:61-62`, `:77-79`, `:98-117`, `:252-272`, `:1366`, `config.mjs:35-40` | 🟢 por construção |
 | 8 | **Memória persistente** — decisões, erros e lições no Brain (busca antes, registra depois) | skill `brain` (MCP) | `.agents/rules/brain-context.md:1-15`, `workflow-rules.md:402-414` | 🟡 processo |
 | 9 | **Instalador** — leva o harness a outro repo sem copiar domínio alheio | `installer/install.mjs` por eixo + manifesto | `installer/install.mjs:218-309`, `:643-669` | 🟢 neste repo (suite própria) · 🟡 no destino |
 | 10 | **Esteira PRD→ADR→SDD** — 1 ADR = 1 branch = 1 ciclo SDD, sem deny novo no runtime | `PRD-01`/`ADR-01`/`ADR-02` dentro do `suiteFull` | `.agents/skills/prd-adr-pipeline/checks.mjs:417-495`, `static-checks.mjs:361-363` | 🟢 neste repo (CI) · 🟡 no destino |
-| 11 | **Contraprova com selo** — o comando canônico é selado por `sha256`; divergência nega | `seal.mjs` + `verifySealOrDeny` | `gate.js:120-135`, `:583-584`, `:753-764` | 🟢 runtime (fail-closed: selo ausente ⇒ `empty-seal`) |
-| 12 | **Escopo de escrita por papel** — orquestrador só em `.spec/**` + state; qa-engineer só em `harness/`; reviewer e ux-designer não escrevem | `checkWriteAccess` | `gate.js:391-403`, `:487-516` | 🟠 parcial — depende da identidade de agente no payload (ver §10b) |
-| 13 | **Pausa HITL entre batches** — 3º `task` consecutivo sem turno humano nega | contador por sessão + fronteira de turno do event stream | `gate.js:894-937`, `:1105-1132` | 🟠 parcial (fronteira depende do stream emitir) |
-| 14 | **Higiene de shell** — `pkill -f` nega; redirect/`tee` em path protegido nega | parse de comando | `gate.js:962-1004` | 🟠 parcial — parse evadível (`gate-contract.md:20`) |
-| 15 | **Config fail-closed** — config ausente/inválido nega com `config-unavailable` **nos gates que leem o config** (âncora A e higiene); `task` não toca o config e segue permitido; chave de comando desconhecida lança | loader + `loadConfigOrDeny` | `config.mjs:13-33`, `gate.js:220-236`, `:771`, `:993` | 🟠 parcial — o deny depende de o gate pedir o config (ver §10a8) |
+| 11 | **Contraprova com selo** — o comando canônico é selado por `sha256`; divergência nega | `seal.mjs` + `verifySealOrDeny` | `gate.js:146-161`, `:748-749`, `:918-929` | 🟢 runtime (fail-closed: selo ausente ⇒ `empty-seal`) |
+| 12 | **Escopo de escrita por papel** — orquestrador só em `.spec/**` + state; qa-engineer só em `harness/`; reviewer e ux-designer não escrevem | `checkWriteAccess` | `gate.js:556-568`, `:652-681` | 🟠 parcial — depende da identidade de agente no payload (ver §10b) |
+| 13 | **Pausa HITL entre batches** — 3º `task` consecutivo sem turno humano nega | contador por sessão + fronteira de turno do event stream | `gate.js:1059-1102`, `:1270-1297` | 🟠 parcial (fronteira depende do stream emitir) |
+| 14 | **Higiene de shell** — `pkill -f` nega; redirect/`tee` em path protegido nega | parse de comando | `gate.js:1127-1169` | 🟠 parcial — parse evadível (`gate-contract.md:20`) |
+| 15 | **Config fail-closed** — config ausente/inválido nega com `config-unavailable` **nos gates que leem o config** (âncora A e higiene); `task` não toca o config e segue permitido; chave de comando desconhecida lança | loader + `loadConfigOrDeny` | `config.mjs:13-33`, `gate.js:377-401`, `:936`, `:1158` | 🟠 parcial — o deny depende de o gate pedir o config (ver §10a8) |
 
 ---
 
@@ -149,26 +149,26 @@ enforcement que o gate implementa.
 ### 4.1 Ciclo de vida do plugin
 
 O módulo default exporta **um objeto** `{ id, setup }` — o loader v2 rejeita função default
-(`gate.js:1299-1303`, e a medição está documentada em `gate.js:1036-1048`).
+(`gate.js:1478-1482`, e a medição está documentada em `gate.js:1201-1213`).
 
-`setup(ctx)` (`gate.js:1261-1297`) faz exatamente três coisas:
+`setup(ctx)` (`gate.js:1440-1476`) faz exatamente três coisas:
 
 1. **Registra um único hook de tool**: `ctx.tool.hook("execute.before", runGatesShim)`
-   (`gate.js:1268`). Se `ctx.tool.hook` não for função → `throw new Error("HOOK-NO-EQUIV:ctx.tool.hook")`
-   (`gate.js:1264-1266`); se a registro for rejeitado → `throw new Error("GATE-ABSENT:execute.before")`
-   (`gate.js:1269-1271`). Ambos são **visíveis**, nunca silêncio.
-2. **Assina o event stream** para a fronteira de turno (`gate.js:1272-1294`), de forma
+   (`gate.js:1447`). Se `ctx.tool.hook` não for função → `throw new Error("HOOK-NO-EQUIV:ctx.tool.hook")`
+   (`gate.js:1443-1445`); se a registro for rejeitado → `throw new Error("GATE-ABSENT:execute.before")`
+   (`gate.js:1448-1450`). Ambos são **visíveis**, nunca silêncio.
+2. **Assina o event stream** para a fronteira de turno (`gate.js:1451-1473`), de forma
    *detached* — a assinatura vive no escopo do plugin e não bloqueia a ativação. Um stream
-   descartado só perde o reset do contador HITL (`gate.js:1277-1278`).
-3. **Retorna `undefined`** (`gate.js:1296`). Isso é obrigatório: o runtime entrega o valor
+   descartado só perde o reset do contador HITL (`gate.js:1456-1457`).
+3. **Retorna `undefined`** (`gate.js:1475`). Isso é obrigatório: o runtime entrega o valor
    de retorno ao `acquireRelease` e um objeto truthy seria *chamado como função* — o
-   `TypeError` que desligou o enforcement 58× desde 2026-10-15 (`gate.js:1044-1047`).
+   `TypeError` que desligou o enforcement 58× desde 2026-10-15 (`gate.js:1209-1212`).
 
-O hook cobre os tools listados em `V2_TOOL_KEYS` (`gate.js:1069`):
+O hook cobre os tools listados em `V2_TOOL_KEYS` (`gate.js:1234`):
 `task, write, edit, apply_patch, patch, bash, shell`. O filtro por tool mora nos **cores
-puros**, não no hook (`gate.js:1063-1065`).
+puros**, não no hook (`gate.js:1228-1230`).
 
-Hooks proibidos estão declarados em `V2_FORBIDDEN_HOOKS = ["ask"]` (`gate.js:1074`) — o
+Hooks proibidos estão declarados em `V2_FORBIDDEN_HOOKS = ["ask"]` (`gate.js:1239`) — o
 `permission.ask` não existe no runtime (`gate-contract.md:39-41`).
 
 Os módulos `harness-validator.js` e `hitl-guardrail.js` são **no-op**: registram zero hooks
@@ -176,23 +176,24 @@ e não registram nada (`harness-validator.js:26-31`, `hitl-guardrail.js:27-32`).
 eles não re-injetam prosa nem escutam eventos de bus inexistentes
 (`harness-validator.js:3-12`, `hitl-guardrail.js:3-13`).
 
-A identidade do agente chega pelo **payload do próprio hook** (`gate.js:1181`:
+A identidade do agente chega pelo **payload do próprio hook** (`gate.js:1346`:
 `if (agent) recordSessionAgent(sessionID, agent)`), alimentando o mapa
-`sessionID → agente` com teto de 1000 entradas (`gate.js:245-262`). Sem entrada no mapa,
-nenhuma regra por agente se aplica — fail-open explícito (`gate.js:240-243`).
+`sessionID → agente` com teto de 1000 entradas (`gate.js:410-427`). Sem entrada no mapa,
+nenhuma regra por agente se aplica — fail-open explícito (`gate.js:405-408`).
 
 ### 4.2 Dispatcher
 
-`decide()` (`gate.js:161-177`) é puro e testável sem runtime:
+`decide()` (`gate.js:318-334`) é puro e testável sem runtime:
 
 ```mermaid
 flowchart TD
     TC[Chamada de tool] --> HK[Hook execute.before: runGatesShim]
-    HK --> KS{env HARNESS_GATES igual a off}
-    KS -->|sim| ALW[Allow via kill-switch]
-    KS -->|nao| CFG[Carrega harness.config.json]
-    CFG -->|ausente ou invalido| D0[Denial config-unavailable so nos gates que leem o config]
-    CFG -->|ok| LP[Para cada um dos 5 gates core: decide]
+    HK --> CFG[Carrega config e audita cada chave de gates.*]
+    CFG -->|ausente ou invalido| D0[config-unavailable so nos gates que leem o config]
+    CFG --> KS{env HARNESS_GATES igual a off}
+    KS -->|sim| ALW[Allow via kill-switch, sem resolver nem anunciar modo]
+    KS -->|nao| MOD[announceGateMode resolve pelo env do host e anuncia]
+    MOD --> LP[Para cada um dos 5 gates core: decide]
     LP --> EX{Excecao lancada pelo gate}
     EX -->|DenyError e modo enforce| DENY[Propaga o throw: a tool call e negada]
     EX -->|DenyError e modo warn| WARN[Log em warn e allow]
@@ -202,37 +203,36 @@ flowchart TD
 
 Regras do dispatcher, com lastro:
 
-- **DenyError ⇒ deny**; qualquer outro erro ⇒ **allow + log `error`** (`gate.js:166-170`,
+- **DenyError ⇒ deny**; qualquer outro erro ⇒ **allow + log `error`** (`gate.js:323-327`,
   ADR-006). Um plugin que quebra não paralisa o loop de desenvolvimento
   (`gate.js:20-22`).
 - O log carrega **só a mensagem**; `DenyError.details` (paths, contagens) fica no objeto
-  lançado, nunca na linha de log (`gate.js:145-156`).
-- Modo por gate: `resolveMode` honra apenas `"enforce"`; qualquer outro valor (inclusive
-  `"off"`) cai para `"warn"` (`gate.js:76-80`). `modeForGate` só resolve chaves de
-  `GATE_NAME_TO_CONFIG_KEY` (`gate.js:89-93`); gates sem chave caem no `DEFAULT_MODE =
-  "enforce"` (`gate.js:52`, `:99-103`).
-- O `gates.*` do config **nunca** desliga a suíte: `configGatesDisableEnforcement`
-  retorna `false` (`config.mjs:38-40`) — mas rebaixa um gate isolado (`resolveMode`, `gate.js:76-80`).
-- Ordem de execução: os 5 gates rodam **em sequência** e cada um passa pelo próprio
-  `decide` (`gate.js:1213-1225`). O primeiro `throw` de um `DenyError` em modo enforce
-  aborta a chamada.
+  lançado, nunca na linha de log (`gate.js:171-182`).
+- Modo por gate: `resolveGateMode` (`gate.js:98-117`) é **puro** e lê só o env do host —
+  `HARNESS_GATE_<GATE>` = `"enforce"`/`"warn"`, com `_REASON` não vazio obrigatório para
+  `"warn"`; ausente/inválido ⇒ `"enforce"` (fail-closed). `modeForGate` (`gate.js:126-130`)
+  é o resolvedor de referência; o loop usa `announceGateMode` (`gate.js:278-313`).
+- O `gates.*` do config **não decide modo**: é auditado 1× por (chave, valor) por processo
+  (`auditConfigGates`, `gate.js:252-272`); chave que não nomeia gate é inerte (`:260-264`).
+- Ordem: carga + auditoria do config → corte `HARNESS_GATES=off` (`gate.js:1366`) → resolução
+  de modo → loop (`gate.js:1390-1404`); sob o corte nenhum modo é resolvido nem anunciado — a auditoria do config (`gate.js:1358`) roda antes do corte e ainda pode emitir WARN.
 
 ### 4.3 GATE-02 — PICCO
 
-`gatePiccoTask` (`gate.js:344-356`) só age sobre `tool === "task"` (`gate.js:345`).
+`gatePiccoTask` (`gate.js:509-521`) só age sobre `tool === "task"` (`gate.js:510`).
 
-Contrato exato (`gate.js:324-342`):
+Contrato exato (`gate.js:489-507`):
 
 | Situação | Veredito | Motivo |
 |---|---|---|
-| Nenhuma tag PICCO **e** o texto começa com prefixo de consulta (`show status`, `o que`, `onde`, `qual`, `existe`, `list`, `read`, `get`, `status`) | allow | `via: "query"` (`gate.js:303`, `:327-329`) |
-| `<open_questions>` **ausente** | **deny** | `picco-tag-absent` (`gate.js:330-331`, motivo em `gate.js:199`) |
-| `<open_questions>` com conteúdo não-vazio (após remover comentários HTML) | **deny** | `picco-tag-nonempty` (`gate.js:332-334`, motivo em `gate.js:200`) |
-| `<open_questions>` vazio, mas `<role>/<task>/<context>/<constraints>/<acceptance>` incompletos | allow + **aviso** | `picco-warning: <tag> absent` (`gate.js:335-340`) |
+| Nenhuma tag PICCO **e** o texto começa com prefixo de consulta (`show status`, `o que`, `onde`, `qual`, `existe`, `list`, `read`, `get`, `status`) | allow | `via: "query"` (`gate.js:468`, `:492-494`) |
+| `<open_questions>` **ausente** | **deny** | `picco-tag-absent` (`gate.js:495-496`, motivo em `gate.js:356`) |
+| `<open_questions>` com conteúdo não-vazio (após remover comentários HTML) | **deny** | `picco-tag-nonempty` (`gate.js:497-499`, motivo em `gate.js:357`) |
+| `<open_questions>` vazio, mas `<role>/<task>/<context>/<constraints>/<acceptance>` incompletos | allow + **aviso** | `picco-warning: <tag> absent` (`gate.js:500-505`) |
 
 Ou seja: **E1/E2 são deny; E3..E6 são advisory** (`gate-contract.md:14`, I1). O texto
 efetivo é extraído de `prompt`, `description`, `task`, `message`, `text`, `content` — ou de
-qualquer string nos args (`gate.js:305-318`).
+qualquer string nos args (`gate.js:470-483`).
 
 O gate `permission.task = "ask"` do runtime (`opencode.json:9-11`) actua **antes** do gate
 custom: o opencode já pergunta ao usuário antes de cada `task`.
@@ -241,103 +241,103 @@ custom: o opencode já pergunta ao usuário antes de cada `task`.
 
 Duas âncoras independentes.
 
-**Âncora A — via estruturada (`gateCompletionAnchorA`, `gate.js:766-791`).**
+**Âncora A — via estruturada (`gateCompletionAnchorA`, `gate.js:931-956`).**
 
-1. Só tools de escrita entram (`WRITE_TOOLS = write, edit, apply_patch, patch`, `gate.js:411`,
-   filtragem em `gate.js:768`).
+1. Só tools de escrita entram (`WRITE_TOOLS = write, edit, apply_patch, patch`, `gate.js:576`,
+   filtragem em `gate.js:933`).
 2. Os alvos são extraídos do args em **dois shapes**: `{filePath,…}`/`{path,…}` para
    `write`/`edit` e texto de patch (`patchText`/`patch`/`diff`/`content`) para
-   `apply_patch`/`patch` (`gate.js:432-453`). Paths de patch são extraídos por 4 regexes
-   heurísticos (`parsePatchPaths`, `gate.js:413-429`).
-3. `checkWriteAccess` roda **antes** de qualquer outra coisa (`gate.js:772-777`) — ver §4.6.
+   `apply_patch`/`patch` (`gate.js:597-618`). Paths de patch são extraídos por 4 regexes
+   heurísticos (`parsePatchPaths`, `gate.js:578-594`).
+3. `checkWriteAccess` roda **antes** de qualquer outra coisa (`gate.js:937-942`) — ver §4.6.
 4. A escrita só é "de conclusão" se toca `workflow-state.json` **e** o conteúdo tem
-   `current_phase === "Completed"` (`isCompletionWrite`, `gate.js:526-540`).
-5. Aí a contraprova roda (`gate.js:781-789`).
+   `current_phase === "Completed"` (`isCompletionWrite`, `gate.js:691-705`).
+5. Aí a contraprova roda (`gate.js:946-954`).
 
-**Contraprova (`runContraprova`, `gate.js:574-641`).**
+**Contraprova (`runContraprova`, `gate.js:739-806`).**
 
 | Passo | Comportamento | Lastro |
 |---|---|---|
-| Selo primeiro | `verifySealOrDeny(commands, seal)` — comando adulterado nega **antes** de executar | `gate.js:583-584`, `:120-135` |
-| Evidência ausente | `demand` ou `report` ausente ⇒ deny `completed-no-evidence` | `gate.js:585-590` |
-| Cache | só vale com `treeHash` real; `"unknown"` (default) desabilita o cache | `gate.js:113-115`, `:591-593`, `:788` |
-| Execução | `execFileSync(commands.suiteFull, { shell: "/bin/sh", timeout })` | `gate.js:561-572`, `:596` |
-| Timeout | `ETIMEDOUT` ⇒ deny `contraprove-timeout` | `gate.js:598-610`, `:203` |
-| Exit code divergente | esperado ≠ observado ⇒ deny `contraprove-divergent` | `gate.js:611-618`, `:202` |
-| Contagens | se **ambos** os lados declaram e divergem ⇒ deny; se o executor não observa contagens ⇒ allow `via: "counts-unverifiable"` | `gate.js:619-639` |
+| Selo primeiro | `verifySealOrDeny(commands, seal)` — comando adulterado nega **antes** de executar | `gate.js:748-749`, `:146-161` |
+| Evidência ausente | `demand` ou `report` ausente ⇒ deny `completed-no-evidence` | `gate.js:750-755` |
+| Cache | só vale com `treeHash` real; `"unknown"` (default) desabilita o cache | `gate.js:139-141`, `:756-758`, `:953` |
+| Execução | `execFileSync(commands.suiteFull, { shell: "/bin/sh", timeout })` | `gate.js:726-737`, `:761` |
+| Timeout | `ETIMEDOUT` ⇒ deny `contraprove-timeout` | `gate.js:763-775`, `:360` |
+| Exit code divergente | esperado ≠ observado ⇒ deny `contraprove-divergent` | `gate.js:776-783`, `:359` |
+| Contagens | se **ambos** os lados declaram e divergem ⇒ deny; se o executor não observa contagens ⇒ allow `via: "counts-unverifiable"` | `gate.js:784-804` |
 
-O executor padrão observa **apenas exit code** (`counts: null`, `gate.js:564`, `:570`) —
+O executor padrão observa **apenas exit code** (`counts: null`, `gate.js:729`, `:735`) —
 por isso, no caminho real, a comparação de contagens é não-comparável e o allow sai
-declarando o motivo (`gate.js:636-639`). A branch de divergência de contagens existe e é
-testada, mas exige um `execFn` que as observe (`gate.js:628-634`).
+declarando o motivo (`gate.js:801-804`). A branch de divergência de contagens existe e é
+testada, mas exige um `execFn` que as observe (`gate.js:793-799`).
 
-**Âncora B — ciclo anterior fechado (`gatePhaseAnchorB`, `gate.js:858-865`).**
+**Âncora B — ciclo anterior fechado (`gatePhaseAnchorB`, `gate.js:1023-1030`).**
 
 Um novo `task` só passa se `workflow-state.json` tiver `current_phase === "Completed"` **e**
 `harness_status === "passed"` **e** `code_review_status === "passed"` (`checkAnchorB`,
-`gate.js:818-832`). Caso contrário ⇒ deny `prev-cycle-not-completed` (`gate.js:204`).
+`gate.js:983-997`). Caso contrário ⇒ deny `prev-cycle-not-completed` (`gate.js:361`).
 
 A decisão "isso é um novo ciclo?" é **heurística declarada**: se o prompt contém o nome de
-`current_feature`, é continuação; senão, é novo ciclo (`inferNewCycle`, `gate.js:837-856`).
+`current_feature`, é continuação; senão, é novo ciclo (`inferNewCycle`, `gate.js:1002-1021`).
 
-Estado ausente (`ENOENT`) é bootstrap ⇒ allow (`gate.js:798-800`); estado ilegível ou
-corrompido ⇒ deny `state-corrupt` (`gate.js:804-815`).
+Estado ausente (`ENOENT`) é bootstrap ⇒ allow (`gate.js:963-965`); estado ilegível ou
+corrompido ⇒ deny `state-corrupt` (`gate.js:969-980`).
 
 ### 4.5 GATE-04 — pausa HITL
 
-`gateHitlBatch` (`gate.js:931-937`) conta `task` por sessão. No **3º** `task` consecutivo
-sem turno humano intermediário ⇒ deny `hitl-pause-required` (`gate.js:909-914`, motivo em
-`gate.js:205`).
+`gateHitlBatch` (`gate.js:1096-1102`) conta `task` por sessão. No **3º** `task` consecutivo
+sem turno humano intermediário ⇒ deny `hitl-pause-required` (`gate.js:1074-1079`, motivo em
+`gate.js:362`).
 
 A exceção do loop obrigatório `developer-engineer → code-reviewer` (2 chamadas) é
-**estrutural**, não um caso especial: 2 < 3 (`gate.js:886-891`).
+**estrutural**, não um caso especial: 2 < 3 (`gate.js:1051-1056`).
 
 O reset do contador é feito pela fronteira de turno, que no v2 vem do **event stream**:
 `session.idle`, `message.updated` com `role` de usuário, ou `session.step.ended` com
-`finish === "stop"` (`V2_TURN_BOUNDARY_TYPES`, `gate.js:1105`; `isTurnBoundaryEvent`,
-`gate.js:1107-1119`; `noteTurnBoundary`, `gate.js:1123-1132`).
+`finish === "stop"` (`V2_TURN_BOUNDARY_TYPES`, `gate.js:1270`; `isTurnBoundaryEvent`,
+`gate.js:1272-1284`; `noteTurnBoundary`, `gate.js:1288-1297`).
 
 ### 4.6 GATE-05 — higiene, path protegido e escopo do qa-engineer
 
-`gateShellHygiene` (`gate.js:989-1004`) age sobre `bash`/`shell` (`SHELL_TOOLS`,
-`gate.js:949`):
+`gateShellHygiene` (`gate.js:1154-1169`) age sobre `bash`/`shell` (`SHELL_TOOLS`,
+`gate.js:1114`):
 
-- `pkill -f` ⇒ deny `pkill-f` (`isPkillF`, `gate.js:962-964`; motivo `gate.js:206`).
+- `pkill -f` ⇒ deny `pkill-f` (`isPkillF`, `gate.js:1127-1129`; motivo `gate.js:363`).
 - Redirect (`>`/`>>`) ou `tee` para path protegido ⇒ deny `protected-path-write`
-  (`bashProtectedWrites`, `gate.js:966-987`; motivo `gate.js:207`).
+  (`bashProtectedWrites`, `gate.js:1131-1152`; motivo `gate.js:364`).
 
-`checkWriteAccess` (`gate.js:487-516`) rege a escrita por tool:
+`checkWriteAccess` (`gate.js:652-681`) rege a escrita por tool:
 
 | Agente | Regra | Lastro |
 |---|---|---|
-| qualquer um, exceto `developer-engineer` | path protegido ⇒ deny `protected-path-write` | `gate.js:491-500` (exceção em `:494`) |
-| `orchestrator` | fora de `.spec/**` e `workflow-state.json` ⇒ deny `orch-write-outside-allowlist` | `gate.js:391-398` (allowlist), `:501-503` (motivo `gate.js:208`) |
-| `qa-engineer` | fora de `harness/` ⇒ deny `qa-scope-violation` | `gate.js:400-403` (escopo), `:504-506` (motivo `gate.js:209`) |
-| `code-reviewer`, `ux-designer` | qualquer escrita ⇒ deny `write-denied-for-role` | `gate.js:507-513` (motivo `gate.js:210`) |
+| qualquer um, exceto `developer-engineer` | path protegido ⇒ deny `protected-path-write` | `gate.js:656-665` (exceção em `:659`) |
+| `orchestrator` | fora de `.spec/**` e `workflow-state.json` ⇒ deny `orch-write-outside-allowlist` | `gate.js:556-563` (allowlist), `:666-668` (motivo `gate.js:365`) |
+| `qa-engineer` | fora de `harness/` ⇒ deny `qa-scope-violation` | `gate.js:565-568` (escopo), `:669-671` (motivo `gate.js:366`) |
+| `code-reviewer`, `ux-designer` | qualquer escrita ⇒ deny `write-denied-for-role` | `gate.js:672-678` (motivo `gate.js:367`) |
 
-O path protegido é testado com um **glob próprio** (`matchGlob`, `gate.js:372-386`), não com
+O path protegido é testado com um **glob próprio** (`matchGlob`, `gate.js:537-551`), não com
 a biblioteca de glob do runtime; os padrões vêm de `harness.config.json:27-37`.
 
 Nos detalhes do deny, paths são reduzidos a **basename** e o agente a um enum conhecido
-(`sanitizePathForDetails`, `gate.js:483-485`; `sanitizeAgent`, `gate.js:479-481`;
-`KNOWN_AGENTS`, `gate.js:470-477`) — nada de path absoluto vaza para o log.
+(`sanitizePathForDetails`, `gate.js:648-650`; `sanitizeAgent`, `gate.js:644-646`;
+`KNOWN_AGENTS`, `gate.js:635-642`) — nada de path absoluto vaza para o log.
 
 ### 4.7 Config fail-closed, kill-switch e selo
 
-- **Config fail-closed**: `loadHarnessConfig` lança `Error` se o arquivo não existe ou o
-  JSON é inválido (`config.mjs:13-25`); `loadConfigOrDeny` converte isso em
-  `DenyError("config-unavailable")` (`gate.js:220-231`, motivo `gate.js:211`) — sem o qual
-  o fail-open do dispatcher tornaria o RF-01 em allow (`gate.js:214-218`).
-- **Comandos**: `resolveCommand` lança para chave desconhecida ou valor vazio
-  (`config.mjs:27-33`); `verifySealOrDeny` também nega `empty-commands`/`empty-command`
-  (`gate.js:120-128`).
-- **Kill-switch**: **apenas** `HARNESS_GATES=off` no processo host (`gate.js:54-55`,
-  `isKillSwitchOff`, `gate.js:70-72`; aplicado em `gate.js:162`). O `gates.*` do config não
-  desliga a suíte — mas rebaixa um gate isolado (`resolveMode`, `gate.js:76-80`; `gate-contract.md:28`).
-- **Selo**: `sealCommands`/`verifySeal` (`seal.mjs:14-29`). O gate lê o selo **publicado
-  fora do worktree**, da env `HARNESS_SEAL_JSON` (`loadPublishedSeal`, `gate.js:753-764`).
-  Selo ausente ⇒ deny `sealed-command-mismatch` com `cause: "empty-seal"` (`gate.js:129-131`);
-  divergência ⇒ mesmo motivo com a lista de chaves divergentes (`gate.js:132-133`).
+- **Config fail-closed**: `loadHarnessConfig` lança se o arquivo falta ou o JSON é inválido
+  (`config.mjs:13-25`); `loadConfigOrDeny` converte em `DenyError("config-unavailable")`
+  (`gate.js:377-388`, motivo `gate.js:368`) — sem isso o fail-open tornaria o RF-01 em allow
+  (`gate.js:371-375`). `resolveCommand` lança para chave ou valor inválidos (`config.mjs:27-33`).
+- **Modo por gate (ADR-001)**: só o env do host decide — `HARNESS_GATE_<GATE>` = `"enforce"`/
+  `"warn"` com `_REASON` não vazio para rebaixar; ausente/inválido ⇒ `enforce` (`resolveGateMode`,
+  `gate.js:98-117`). O `gates.*` do config não decide modo: é auditado 1× por (chave, valor)
+  (`auditConfigGates`, `gate.js:252-272`), e chave sem gate registrado é inerte (`:260-264`).
+- **Anúncio (INV-3) e kill-switch**: rebaixamento/recusa saem em `warn` 1× por (gate, motivo)/
+  (gate, tipo) por processo (`announceGateMode`, `gate.js:278-313`); em `warn` o `DenyError` vira
+  log + allow (`gate.js:328-331`). Só `HARNESS_GATES=off` no host (`gate.js:61-62`, `:77-79`) corta
+  em `:1366`, antes de resolver modo e antes do loop — sob o corte nenhum modo é resolvido (a auditoria do config ainda pode emitir WARN).
+- **Selo**: de `HARNESS_SEAL_JSON` fora do worktree (`loadPublishedSeal`, `gate.js:918-929`);
+  ausente ⇒ `empty-seal` (`:155-157`), divergência ⇒ lista de chaves (`:158-159`).
 
 ---
 
@@ -406,7 +406,7 @@ flowchart TD
 | P1→P2 | fim da Fase 1 | `PROPOSAL.md` + `SPEC.md` (com Delta Specs) | `artifacts.spec` | 🟡 humano (`orchestrator/AGENT.md:230`) |
 | P2→P3 | fim da Fase 2 | `PLAN.md` + `TASKS.md` (TDD-ready) | `gates.P1_P2`, `gates.P2_P3` | 🟡 humano, com check mecânico (`sdd-checks.mjs:406-407`) |
 | P3→P4 | fim da Fase 3 | código + code review + security review | `code_review_status` | 🟡 humano (`orchestrator/AGENT.md:232`) |
-| P4→P5 | fim da Fase 4 | `harness/<demand>.json` + H4 | `harness_status` | 🟠 parcial — o gate reexecuta o comando selado (`gate.js:596`) |
+| P4→P5 | fim da Fase 4 | `harness/<demand>.json` + H4 | `harness_status` | 🟠 parcial — o gate reexecuta o comando selado (`gate.js:761`) |
 | P5→P6 | fim da Fase 5 | `VERIFY.md` (3 dimensões) | `verify` | 🟡 humano (`orchestrator/AGENT.md:234`) |
 | P6→fim | fim da Fase 6 | move para `.spec/archive/` + lições no Brain | `archive`, `lessons` | 🟡 humano (`orchestrator/AGENT.md:235`) |
 
@@ -500,13 +500,13 @@ Validação mecânica: `PRD-01` (7 seções obrigatórias), `ADR-01` (1:1 índic
 | Quem escreve | o executor (developer-engineer / qa-engineer). O `qa-engineer` é justamente o papel com `edit: allow` porque precisa gravar o REPORT (`gate-contract.md:18`) |
 
 O gate encontra o relatório por `state.current_feature` — o **nome do arquivo** é o da
-feature corrente (`readEvidenceReport`, `gate.js:870-882`). Relatório ausente ⇒ deny
-`completed-no-evidence` (`gate.js:780`).
+feature corrente (`readEvidenceReport`, `gate.js:1035-1047`). Relatório ausente ⇒ deny
+`completed-no-evidence` (`gate.js:945`).
 
 O validador de schema embutido no gate cobre **apenas** o subconjunto
-`$ref/type/required/properties/items/minItems/minimum` (`gate.js:664-672`, `:684-723`) e
+`$ref/type/required/properties/items/minItems/minimum` (`gate.js:829-837`, `:849-888`) e
 tolera uma chave `required` ausente **somente** se o relatório a declara como omissão
-intencional (`isDeclaredDeviation`, `gate.js:731-742`).
+intencional (`isDeclaredDeviation`, `gate.js:896-907`).
 
 **H1..H7** (`workflow-rules.md:373-431`):
 
@@ -601,24 +601,24 @@ Detalhes de uso (wizard W0..W7, `init`/`doctor`, diagnóstico, checklist final):
 ## 9. Agentes e permissões
 
 Permissões nativas vêm de `opencode.json:12-94`. O gate acrescenta regras por papel em
-`checkWriteAccess` (`gate.js:487-516`), que são **mais estreitas** que a permissão nativa.
+`checkWriteAccess` (`gate.js:652-681`), que são **mais estreitas** que a permissão nativa.
 
 | Agente | Papel | `edit` | `bash` | O que pode escrever (regra efetiva) |
 |---|---|---|---|---|
-| `orchestrator` | Triagem, governance, SPEC/PLAN/TASKS; não implementa | deny | allow | só `.spec/**` e `workflow-state.json` — fora disso, deny `orch-write-outside-allowlist` (`gate.js:391-398`, `:501-503`) |
-| `developer-engineer` | Implementa código e testes sob delegação | allow | allow | qualquer path, **inclusive protegido** (`gate.js:494`) — o trailer é exigido fora do runtime, pelo CI |
+| `orchestrator` | Triagem, governance, SPEC/PLAN/TASKS; não implementa | deny | allow | só `.spec/**` e `workflow-state.json` — fora disso, deny `orch-write-outside-allowlist` (`gate.js:556-563`, `:666-668`) |
+| `developer-engineer` | Implementa código e testes sob delegação | allow | allow | qualquer path, **inclusive protegido** (`gate.js:659`) — o trailer é exigido fora do runtime, pelo CI |
 | `codebase-analyzer` | Análise estática; não escreve | deny | allow | nada (`opencode.json:36`) |
 | `product-manager` | Validação de negócio; escreve o PRD | allow | allow | `.spec/prd/**` (gate-contract.md:18) |
-| `qa-engineer` | Execução do harness; grava o relatório | allow | allow | **só** `harness/` — fora disso, deny `qa-scope-violation` (`gate.js:400-403`, `:504-506`) |
+| `qa-engineer` | Execução do harness; grava o relatório | allow | allow | **só** `harness/` — fora disso, deny `qa-scope-violation` (`gate.js:565-568`, `:669-671`) |
 | `architect` | ADRs e integridade estrutural | allow | allow | `.spec/**` (gate-contract.md:18) |
 | `security-engineer` | Auditoria OWASP/ASVS | deny | allow | nada (`opencode.json:72`) |
-| `code-reviewer` | Parecer de review | deny | allow | nada — e o gate nega escrita explícita (`gate.js:507-513`) |
-| `ux-designer` | Parecer de UX | deny | allow | nada — idem (`gate.js:507-513`) |
+| `code-reviewer` | Parecer de review | deny | allow | nada — e o gate nega escrita explícita (`gate.js:672-678`) |
+| `ux-designer` | Parecer de UX | deny | allow | nada — idem (`gate.js:672-678`) |
 
 Notas:
 
 - `permission.bash = "allow"` em **todos** os 9 agentes. O gate cobre `bash` só por parse
-  (`gate.js:949-1004`); o backstop real é CI + pre-commit (§10b).
+  (`gate.js:1114-1169`); o backstop real é CI + pre-commit (§10b).
 - `permission.task = "ask"` (`opencode.json:9-11`) — o opencode pergunta ao usuário antes de
   cada delegação, independentemente do PICCO.
 - `sdd-orquestrador` tem pasta em `.agents/agents/` (10 diretórios) mas **não** está
@@ -637,35 +637,35 @@ de garantia. Nada aqui propõe implementação.
 
 | # | Fato | Lastro | Nível |
 |---|---|---|---|
-| a1 | `gates.e2eGreenfield: "warn"` **não tem gate runtime**: `GATE_NAME_TO_CONFIG_KEY` mapeia apenas `picco`, `evidence`, `hitlBatch` e nenhum gate declara `gateName = "e2eGreenfield"` | `harness.config.json:42`; `gate.js:89-93`; `gate.js:1015-1018` | 🟡 processo — chave informativa sem efeito |
+| a1 | `gates.e2eGreenfield: "warn"` **não tem efeito no runtime**: nenhum gate declara `gateName = "e2eGreenfield"` e o gate não cria modo a partir do config; `auditConfigGates` declara a chave **inerte** (1 WARN por chave/valor) | `harness.config.json:42`; `gate.js:1180-1183`; `gate.js:252-272`, `:260-264` | 🟡 processo — chave auditada como inerte, sem efeito |
 | a2 | `riskPaths` e `escalateOnRisk` **não têm consumidor no runtime**: a única ocorrência fora de regras/schema é o gerador do instalador | `harness.config.json:44-54`; `installer/install.mjs:664-666`; `gate-contract.md:48-51` | 🔴 declarado-aberto no runtime |
 | a3 | O check V3 ("zero literal hardcoded") escaneia **3 arquivos + 2 diretórios** — `harness.config.json`, `opencode.json`, `.agents/rules/harness-config.md`, `.agents/schemas/**`, `.opencode/plugins/lib/**`. O próprio `gate.js` e as demais rules **não** são escopados | `scripts/static-checks.mjs:42-47`, `:274-275`; `gate-contract.md:16` (I3) | 🟠 parcial |
 | a4 | V12 é **INFO** (não falha o build); a enforcing real do mesmo item é R-V12, em outro script | `scripts/static-checks.mjs:320`; `scripts/sdd-checks.mjs:374-376` | 🟢 / 🟠 |
 | a5 | O schema do report tem campo `e2e` "required when escalateOnRisk fires", mas a regra que dispara o `escalateOnRisk` não é executável por máquina | `.agents/schemas/harness-report.schema.json:49-52`; `harness.config.json:51-54` | 🟡 processo |
-| a6 | A comparação de contagens da contraprova é inalcançável no caminho real: o executor padrão devolve `counts: null` e o schema **exige** `counts` | `gate.js:561-572`, `:619-639`; `.agents/schemas/harness-report.schema.json:40-48` | 🟠 parcial |
-| a7 | `resolveMode` **rebaixa** um gate específico: só honra o valor literal `"enforce"` e qualquer outro valor — inclusive `"warn"` ou `"off"` — cai para `"warn"`, e em modo `warn` o `DenyError` vira log + allow. Trocar `gates.picco` de `"enforce"` para `"warn"` desliga o deny daquele gate sem tocar em código. **Prosa corrigida em 2026-10-22**: o comentário do código (`gate.js:74-75`) e a regra (`gate-contract.md:26`, `:28`) já descrevem o downgrade — nenhum dos dois afirma mais que `gates.*` "nunca desliga" | `gate.js:74-75` (comentário), `:76-80` (`resolveMode`), `:95-104` (`modeForGate`), `:171-174` (modo warn ⇒ allow); `config.mjs:38-40`; `harness.config.json:38-43`; `gate-contract.md:26` (RF-01/RF-02), `:28` (KILL) | 🟠 parcial — o config é gravável por `bash` (`gate.js:949-1004`), então é surface de rebaixamento |
-| a8 | **Config ausente não nega `task`**: `runGatesShim` engole o erro de load do config (`gate.js:1182-1189`, `config = null`) e o `DenyError("config-unavailable")` só nasce *lazy*, dentro dos gates que pedem o config — âncora A (`gate.js:771`) e higiene (`gate.js:993`). Medido: `task` + config ausente ⇒ **allow**; `write`/`bash` + config ausente ⇒ deny `config-unavailable`. `gatePiccoTask`, `gatePhaseAnchorB` e `gateHitlBatch` nunca pedem o config | `gate.js:1182-1189`, `:771`, `:993`, `:220-236` | 🟠 parcial — a garantia "config fail-closed" cobre os gates que leem o config, não a tool call inteira |
+| a6 | A comparação de contagens da contraprova é inalcançável no caminho real: o executor padrão devolve `counts: null` e o schema **exige** `counts` | `gate.js:726-737`, `:784-804`; `.agents/schemas/harness-report.schema.json:40-48` | 🟠 parcial |
+| a7 | **Modo por gate agora vem do env do host (ADR-001, implementado em 2026-10-22)**: `HARNESS_GATE_<GATE>` = `"enforce"`/`"warn"`; `"warn"` exige `_REASON` não vazio; ausente ou fora do domínio ⇒ `"enforce"` (fail-closed). `resolveGateMode` (`gate.js:98-117`) é puro; `modeForGate` (`:126-130`) é o resolvedor de referência e o dispatcher usa `announceGateMode` (`:278-313`). O antigo `resolveMode` **foi removido** (ADR-001 item 4) e o `gates.*` do config **não decide modo** — é auditado 1× por (chave, valor) (`:252-272`) e chave sem gate registrado é inerte (`:260-264`); em `warn` o `DenyError` vira log + allow (`:328-331`). O corte vem depois da carga+auditoria do config e antes de qualquer resolução de modo (`:1366`) | `gate.js:98-117`, `:126-130`, `:252-272`, `:278-313`, `:328-331`, `:1366`; `config.mjs:38-40`; `harness.config.json:38-43`; `gate-contract.md:26` (RF-01/RF-02), `:28` (KILL) | 🟢 runtime — o canal é o env do processo host, não o worktree; rebaixamento/recusa são anunciados (ADR-001) |
+| a8 | **Config ausente não nega `task`**: `runGatesShim` engole o erro de load do config (`gate.js:1347-1354`, `config = null`) e o `DenyError("config-unavailable")` só nasce *lazy*, dentro dos gates que pedem o config — âncora A (`gate.js:936`) e higiene (`gate.js:1158`). Medido: `task` + config ausente ⇒ **allow**; `write`/`bash` + config ausente ⇒ deny `config-unavailable`. `gatePiccoTask`, `gatePhaseAnchorB` e `gateHitlBatch` nunca pedem o config | `gate.js:1347-1354`, `:936`, `:1158`, `:377-401` | 🟠 parcial — a garantia "config fail-closed" cobre os gates que leem o config, não a tool call inteira |
 
 ### (b) Evasão
 
 | # | Fato | Lastro | Nível |
 |---|---|---|---|
-| b1 | A proteção de path protegido e a higiene de shell são **parse de string**: `bashProtectedWrites` só casa redirect e `tee`; `isPkillF` é regex. Formas indiretas (interpretador, comando codificado, variável) não casam | `gate.js:962-987`; `gate-contract.md:20` (I7) | 🟠 parcial — CI é a rede final |
-| b2 | O ban de `pkill -f` é parse-based e, portanto, evadível | `gate.js:962-964`; `gate-contract.md:20` | 🟠 parcial |
+| b1 | A proteção de path protegido e a higiene de shell são **parse de string**: `bashProtectedWrites` só casa redirect e `tee`; `isPkillF` é regex. Formas indiretas (interpretador, comando codificado, variável) não casam | `gate.js:1127-1152`; `gate-contract.md:20` (I7) | 🟠 parcial — CI é a rede final |
+| b2 | O ban de `pkill -f` é parse-based e, portanto, evadível | `gate.js:1127-1129`; `gate-contract.md:20` | 🟠 parcial |
 | b3 | `permission.bash = "allow"` para os 9 agentes; o gate só enxerga `bash` por parse. A própria escrita de governança pelo orquestrador é registrada como **evasão declarada** | `opencode.json:19,28,37,46,55,64,73,82,91`; `workflow-state.json` → `enforcement_status.pendente` | 🟠 — backstop é CI/pre-commit (`gate-contract.md:22`, I9) |
-| b4 | A detecção de path em patch é **heurística por 4 regexes**, e o glob de path protegido é implementação própria | `gate.js:413-429`, `:372-386` | 🟠 parcial |
-| b5 | As regras por papel dependem da identidade de agente, que vem do payload do hook. Sem a entrada no mapa `sessionID → agente`, **nenhuma** regra por agente se aplica (fail-open) | `gate.js:240-243`, `:245-262`, `:1181` | 🟠 parcial |
+| b4 | A detecção de path em patch é **heurística por 4 regexes**, e o glob de path protegido é implementação própria | `gate.js:578-594`, `:537-551` | 🟠 parcial |
+| b5 | As regras por papel dependem da identidade de agente, que vem do payload do hook. Sem a entrada no mapa `sessionID → agente`, **nenhuma** regra por agente se aplica (fail-open) | `gate.js:405-408`, `:410-427`, `:1346` | 🟠 parcial |
 | b6 | O check de rede V15 declara 9 escapes (E1..E9), entre eles comando em variável, alias de `fetch`, specifier construído e padrão dividido entre linhas | `scripts/static-checks.mjs:144-175`; `gate-contract.md:31` | 🟠 parcial |
 
 ### (c) Custos de operação
 
 | # | Fato | Lastro | Nível |
 |---|---|---|---|
-| c1 | A contraprova depende do selo publicado na env `HARNESS_SEAL_JSON`, **fora do worktree**. Selo ausente ⇒ deny `sealed-command-mismatch` (`cause: "empty-seal"`) — a contraprova nunca roda | `gate.js:753-764`, `:129-131`, `:120-135` | 🟢 runtime (fail-closed), mas pré-requisito operacional pouco visível |
-| c2 | A fronteira de turno do HITL vem do event stream. Se o stream não emitir `session.idle` / `message.updated` / `session.step.ended`, o contador de 3 `task` **não reseta** e o 3º `task` é negado indefinidamente | `gate.js:1105-1132`, `:1272-1294`, `:909-914` | 🟠 parcial |
-| c3 | O cache da contraprova só vale com `treeHash` real; o default do runtime é `"unknown"`, que **desabilita** o cache (re-execução a cada vez) | `gate.js:113-115`, `:591-593`, `:788` | 🟢 comportamento declarado |
-| c4 | A re-execução usa o comando canônico do config com timeout de 900000 ms; o executor padrão usa `shell: "/bin/sh"` e `stdio: "pipe"` | `harness.config.json:55`; `gate.js:561-572` | 🟢 |
-| c5 | `permission.task = "ask"` pede confirmação ao usuário **antes** de cada delegação, sobrepondo-se ao gate PICCO — duas camadas de interrupção no mesmo ponto | `opencode.json:9-11`; `gate.js:344-356` | 🟡 processo |
+| c1 | A contraprova depende do selo publicado na env `HARNESS_SEAL_JSON`, **fora do worktree**. Selo ausente ⇒ deny `sealed-command-mismatch` (`cause: "empty-seal"`) — a contraprova nunca roda | `gate.js:918-929`, `:155-157`, `:146-161` | 🟢 runtime (fail-closed), mas pré-requisito operacional pouco visível |
+| c2 | A fronteira de turno do HITL vem do event stream. Se o stream não emitir `session.idle` / `message.updated` / `session.step.ended`, o contador de 3 `task` **não reseta** e o 3º `task` é negado indefinidamente | `gate.js:1270-1297`, `:1451-1473`, `:1074-1079` | 🟠 parcial |
+| c3 | O cache da contraprova só vale com `treeHash` real; o default do runtime é `"unknown"`, que **desabilita** o cache (re-execução a cada vez) | `gate.js:139-141`, `:756-758`, `:953` | 🟢 comportamento declarado |
+| c4 | A re-execução usa o comando canônico do config com timeout de 900000 ms; o executor padrão usa `shell: "/bin/sh"` e `stdio: "pipe"` | `harness.config.json:55`; `gate.js:726-737` | 🟢 |
+| c5 | `permission.task = "ask"` pede confirmação ao usuário **antes** de cada delegação, sobrepondo-se ao gate PICCO — duas camadas de interrupção no mesmo ponto | `opencode.json:9-11`; `gate.js:509-521` | 🟡 processo |
 
 ### (d) Estado e drift
 
@@ -673,14 +673,14 @@ de garantia. Nada aqui propõe implementação.
 |---|---|---|---|
 | d1 | `workflow-state.json` tem **81 chaves de topo**; só um subconjunto é canônico (`current_feature`, `current_phase`, `previous_phase`, `next_phase`, `artifacts`, `type`, `last_update`) | `workflow-state.json` (raiz); `.agents/rules/sdd-workflow-standard.md` §2 | 🟡 processo — risco de estado paralelo |
 | d2 | `sdd-orquestrador` tem diretório em `.agents/agents/` (10 papéis) mas **não** está registrado em `opencode.json` (9 agentes); os checks SDD-01 e SDD-03 leem o `AGENT.md` dele | `.agents/agents/` (10 diretórios); `opencode.json:12-94`; `scripts/sdd-checks.mjs:131-136`, `:383-393` | 🟡 processo |
-| d3 | `gate-contract.md` (I6) **citava** `hitl-guardrail.js` como bloqueante e a fronteira via `chat.message` — o código diz que esse plugin é **no-op** e que `chat.message` não existe no v2. **Corrigido em 2026-10-22**: a linha I6 foi reescrita com o mecanismo real (GATE-04 `gateHitlBatch` + event stream) | `.agents/rules/gate-contract.md:19`; `.opencode/plugins/hitl-guardrail.js:1`, `:27-32`; `gate.js:1053-1057`, `:931`, `:1013`, `:1018`, `:1105`, `:1123-1132`, `:1272-1294` | 🟢 runtime (mecanismo documentado = o que o codigo faz) |
-| d4 | `gate-contract.md` (I11) **afirmava** que o mapa `sessionID → agente` é alimentado por `chat.message`/`chat.params` e que `tool.execute.before` não traz o agente — no v2 o agente vem do payload do hook, e a tabela v1→v2 documenta a substituição. **Corrigido em 2026-10-22**: a linha I11 foi reescrita com o mecanismo real (agente pelo payload do hook `execute.before`) | `.agents/rules/gate-contract.md:24`; `gate.js:1088-1092`, `:1181`, `:245-262`, `:240-243` | 🟢 runtime (mecanismo documentado = o que o codigo faz) |
+| d3 | `gate-contract.md` (I6) **citava** `hitl-guardrail.js` como bloqueante e a fronteira via `chat.message` — o código diz que esse plugin é **no-op** e que `chat.message` não existe no v2. **Corrigido em 2026-10-22**: a linha I6 foi reescrita com o mecanismo real (GATE-04 `gateHitlBatch` + event stream) | `.agents/rules/gate-contract.md:19`; `.opencode/plugins/hitl-guardrail.js:1`, `:27-32`; `gate.js:1218-1222`, `:1096`, `:1178`, `:1183`, `:1270`, `:1288-1297`, `:1451-1473` | 🟢 runtime (mecanismo documentado = o que o codigo faz) |
+| d4 | `gate-contract.md` (I11) **afirmava** que o mapa `sessionID → agente` é alimentado por `chat.message`/`chat.params` e que `tool.execute.before` não traz o agente — no v2 o agente vem do payload do hook, e a tabela v1→v2 documenta a substituição. **Corrigido em 2026-10-22**: a linha I11 foi reescrita com o mecanismo real (agente pelo payload do hook `execute.before`) | `.agents/rules/gate-contract.md:24`; `gate.js:1253-1257`, `:1346`, `:410-427`, `:405-408` | 🟢 runtime (mecanismo documentado = o que o codigo faz) |
 | d5 | `orchestrator/AGENT.md` **afirmava** que `harness-validator.js` injeta a regra H1..H7 em todos os agentes via system prompt; o plugin não registra hook nenhum desde FIX-01. **Corrigido em 2026-10-22**: a linha agora cita o mecanismo real (`opencode.json` → `instructions` global + prompt por agente; enforcement = `gate.js`) | `.agents/agents/orchestrator/AGENT.md:465`; `.opencode/plugins/harness-validator.js:1-12`, `:26-31`; `opencode.json:6-8`, `:12-94` | 🟢 runtime (mecanismo documentado = o que o codigo faz) |
 | d6 | `harness-validator.js` e `hitl-guardrail.js` permanecem como módulos no-op no diretório de plugins — files vivos que não exercem nada | `.opencode/plugins/harness-validator.js:22-31`; `.opencode/plugins/hitl-guardrail.js:23-32` | 🟡 processo |
-| d7 | O `current_feature` é a chave de **nome** do arquivo de evidência procurado pelo gate; se o nome do arquivo e a feature divergirem, o gate não encontra o relatório e nega `completed-no-evidence` | `gate.js:870-882`; `harness.config.json:56-58` | 🟢 comportamento, 🟡 ergonomia |
-| d8 | A decisão "novo ciclo?" (âncora B) é heurística por substring do nome da feature no prompt — o gate não tem conceito estruturado de ciclo | `gate.js:837-856`; `gate-contract.md:15` (I2, 🟠 parcial) | 🟠 parcial |
-| d9 | **Hook v1 citado como vivo em 3 lugares**: `tool.execute.before` aparecia como o hook de negação em `README.md:11`, `gate-contract.md:14` e `sdd-orquestrador/AGENT.md:17` — no v2 o hook e `ctx.tool.hook("execute.before", …)` (`gate.js:1066`, `:1268`) e a entry v1 foi removida (gate.js:1020-1031). **Corrigido em 2026-10-22** | `gate.js:1066`, `:1268`, `:1020-1031`, `:1080-1099`; `README.md:11`; `gate-contract.md:14`; `.agents/agents/sdd-orquestrador/AGENT.md:17` | 🟢 runtime — mecanismo documentado = o que o codigo faz |
-| d10 | **Pré-requisito de opencode na era v1**: o README exigia `opencode ≥ 1.18.31` num repo que e v2-only e cujo contrato foi medido contra o binario v2.0.32. **Corrigido em 2026-10-22** (README agora exige opencode v2) | `README.md:39`; `opencode.json:3`; `gate.js:1034-1036` | 🟢 runtime — contrato medido |
+| d7 | O `current_feature` é a chave de **nome** do arquivo de evidência procurado pelo gate; se o nome do arquivo e a feature divergirem, o gate não encontra o relatório e nega `completed-no-evidence` | `gate.js:1035-1047`; `harness.config.json:56-58` | 🟢 comportamento, 🟡 ergonomia |
+| d8 | A decisão "novo ciclo?" (âncora B) é heurística por substring do nome da feature no prompt — o gate não tem conceito estruturado de ciclo | `gate.js:1002-1021`; `gate-contract.md:15` (I2, 🟠 parcial) | 🟠 parcial |
+| d9 | **Hook v1 citado como vivo em 3 lugares**: `tool.execute.before` aparecia como o hook de negação em `README.md:11`, `gate-contract.md:14` e `sdd-orquestrador/AGENT.md:17` — no v2 o hook e `ctx.tool.hook("execute.before", …)` (`gate.js:1231`, `:1447`) e a entry v1 foi removida (gate.js:1185-1196). **Corrigido em 2026-10-22** | `gate.js:1231`, `:1447`, `:1185-1196`, `:1245-1264`; `README.md:11`; `gate-contract.md:14`; `.agents/agents/sdd-orquestrador/AGENT.md:17` | 🟢 runtime — mecanismo documentado = o que o codigo faz |
+| d10 | **Pré-requisito de opencode na era v1**: o README exigia `opencode ≥ 1.18.31` num repo que e v2-only e cujo contrato foi medido contra o binario v2.0.32. **Corrigido em 2026-10-22** (README agora exige opencode v2) | `README.md:39`; `opencode.json:3`; `gate.js:1199-1201` | 🟢 runtime — contrato medido |
 
 ---
 
@@ -688,46 +688,46 @@ de garantia. Nada aqui propõe implementação.
 
 | Fonte | Sustenta |
 |---|---|
-| `.opencode/plugins/gate.js:52` | `DEFAULT_MODE = "enforce"` |
-| `.opencode/plugins/gate.js:54-55`, `:70-72`, `:162` | kill-switch por env `HARNESS_GATES=off` |
-| `.opencode/plugins/gate.js:61-68` | classe `DenyError` (reason + details) |
-| `.opencode/plugins/gate.js:76-80`, `:95-104` | modos por gate; `GATE_NAME_TO_CONFIG_KEY` |
-| `.opencode/plugins/gate.js:171-174` | modo `warn` converte `DenyError` em log + allow |
-| `.opencode/plugins/gate.js:113-115`, `:591-593` | cache da contraprova só com `treeHash` real |
-| `.opencode/plugins/gate.js:120-135` | selo: `empty-commands`, `empty-command`, `empty-seal`, divergência |
-| `.opencode/plugins/gate.js:137-156` | log só com a mensagem (I10) |
-| `.opencode/plugins/gate.js:161-177` | dispatcher: DenyError ⇒ deny; outro erro ⇒ allow + log |
-| `.opencode/plugins/gate.js:199-212` | catálogo dos 14 motivos de deny |
-| `.opencode/plugins/gate.js:220-236` | config fail-closed (`config-unavailable`) |
-| `.opencode/plugins/gate.js:240-279` | mapa `sessionID → agente`, teto de 1000 |
-| `.opencode/plugins/gate.js:299-342` | contrato PICCO: tag obrigatória, vazia; E3..E6 advisory |
-| `.opencode/plugins/gate.js:344-356` | GATE-02 sobre `task` |
-| `.opencode/plugins/gate.js:372-386` | glob próprio `matchGlob` |
-| `.opencode/plugins/gate.js:391-403` | allowlist do orquestrador; escopo `harness/` do qa-engineer |
-| `.opencode/plugins/gate.js:411-453` | tools de escrita e extração de alvos (dois shapes) |
-| `.opencode/plugins/gate.js:465-485` | sanitização de path/agente nos detalhes |
-| `.opencode/plugins/gate.js:487-516` | `checkWriteAccess` (path protegido, allowlist, escopo, papéis) |
-| `.opencode/plugins/gate.js:526-540` | escrita de conclusão = `workflow-state.json` + `current_phase: Completed` |
-| `.opencode/plugins/gate.js:561-641` | execução da contraprova, timeout, divergência, contagens |
-| `.opencode/plugins/gate.js:664-749` | validador de schema (subconjunto) + desvio declarado |
-| `.opencode/plugins/gate.js:753-764` | selo publicado em `HARNESS_SEAL_JSON` |
-| `.opencode/plugins/gate.js:766-791` | GATE-03 âncora A |
-| `.opencode/plugins/gate.js:793-832` | leitura do state (ENOENT allow, erro deny) e âncora B |
-| `.opencode/plugins/gate.js:837-865` | heurística de novo ciclo + GATE-03 âncora B |
-| `.opencode/plugins/gate.js:870-882` | busca do relatório por `current_feature` |
-| `.opencode/plugins/gate.js:894-937` | contador HITL e deny no 3º `task` |
-| `.opencode/plugins/gate.js:949-1004` | higiene de shell: `pkill -f`, redirect, `tee` |
-| `.opencode/plugins/gate.js:1010-1018` | registro dos 5 gates e seus `gateName` |
-| `.opencode/plugins/gate.js:1036-1061` | contrato v2 medido (setup, hook único, hooks proibidos) |
-| `.opencode/plugins/gate.js:1066-1074` | nome do hook, tools cobertos, `ask` proibido |
-| `.opencode/plugins/gate.js:1080-1099` | tabela v1→v2 (agente pela payload, fronteira pelo stream) |
-| `.opencode/plugins/gate.js:1105-1132` | eventos de fronteira de turno |
-| `.opencode/plugins/gate.js:1139-1227` | `runGatesShim`: normalização do payload e loop dos gates |
-| `.opencode/plugins/gate.js:1261-1297` | `setup`: hook, assinatura do stream, retorno `undefined` |
-| `.opencode/plugins/gate.js:1303` | `export default { id: "harness-gate", setup }` |
+| `.opencode/plugins/gate.js:59` | `DEFAULT_MODE = "enforce"` |
+| `.opencode/plugins/gate.js:61-62`, `:77-79`, `:319` | kill-switch por env `HARNESS_GATES=off` |
+| `.opencode/plugins/gate.js:68-75` | classe `DenyError` (reason + details) |
+| `.opencode/plugins/gate.js:98-117`, `:126-130`, `:252-272`, `:278-313` | modos por gate: env do host + resolvedor puro + auditoria do config + anúncio |
+| `.opencode/plugins/gate.js:328-331` | modo `warn` converte `DenyError` em log + allow |
+| `.opencode/plugins/gate.js:139-141`, `:756-758` | cache da contraprova só com `treeHash` real |
+| `.opencode/plugins/gate.js:146-161` | selo: `empty-commands`, `empty-command`, `empty-seal`, divergência |
+| `.opencode/plugins/gate.js:163-182` | log só com a mensagem (I10) |
+| `.opencode/plugins/gate.js:318-334` | dispatcher: DenyError ⇒ deny; outro erro ⇒ allow + log |
+| `.opencode/plugins/gate.js:356-369` | catálogo dos 14 motivos de deny |
+| `.opencode/plugins/gate.js:377-401` | config fail-closed (`config-unavailable`) |
+| `.opencode/plugins/gate.js:405-444` | mapa `sessionID → agente`, teto de 1000 |
+| `.opencode/plugins/gate.js:464-507` | contrato PICCO: tag obrigatória, vazia; E3..E6 advisory |
+| `.opencode/plugins/gate.js:509-521` | GATE-02 sobre `task` |
+| `.opencode/plugins/gate.js:537-551` | glob próprio `matchGlob` |
+| `.opencode/plugins/gate.js:556-568` | allowlist do orquestrador; escopo `harness/` do qa-engineer |
+| `.opencode/plugins/gate.js:576-618` | tools de escrita e extração de alvos (dois shapes) |
+| `.opencode/plugins/gate.js:630-650` | sanitização de path/agente nos detalhes |
+| `.opencode/plugins/gate.js:652-681` | `checkWriteAccess` (path protegido, allowlist, escopo, papéis) |
+| `.opencode/plugins/gate.js:691-705` | escrita de conclusão = `workflow-state.json` + `current_phase: Completed` |
+| `.opencode/plugins/gate.js:726-806` | execução da contraprova, timeout, divergência, contagens |
+| `.opencode/plugins/gate.js:829-914` | validador de schema (subconjunto) + desvio declarado |
+| `.opencode/plugins/gate.js:918-929` | selo publicado em `HARNESS_SEAL_JSON` |
+| `.opencode/plugins/gate.js:931-956` | GATE-03 âncora A |
+| `.opencode/plugins/gate.js:958-997` | leitura do state (ENOENT allow, erro deny) e âncora B |
+| `.opencode/plugins/gate.js:1002-1030` | heurística de novo ciclo + GATE-03 âncora B |
+| `.opencode/plugins/gate.js:1035-1047` | busca do relatório por `current_feature` |
+| `.opencode/plugins/gate.js:1059-1102` | contador HITL e deny no 3º `task` |
+| `.opencode/plugins/gate.js:1114-1169` | higiene de shell: `pkill -f`, redirect, `tee` |
+| `.opencode/plugins/gate.js:1175-1183` | registro dos 5 gates e seus `gateName` |
+| `.opencode/plugins/gate.js:1201-1226` | contrato v2 medido (setup, hook único, hooks proibidos) |
+| `.opencode/plugins/gate.js:1231-1239` | nome do hook, tools cobertos, `ask` proibido |
+| `.opencode/plugins/gate.js:1245-1264` | tabela v1→v2 (agente pela payload, fronteira pelo stream) |
+| `.opencode/plugins/gate.js:1270-1297` | eventos de fronteira de turno |
+| `.opencode/plugins/gate.js:1304-1406` | `runGatesShim`: normalização do payload e loop dos gates |
+| `.opencode/plugins/gate.js:1440-1476` | `setup`: hook, assinatura do stream, retorno `undefined` |
+| `.opencode/plugins/gate.js:1482` | `export default { id: "harness-gate", setup }` |
 | `.opencode/plugins/lib/config.mjs:13-25` | loader fail-closed |
 | `.opencode/plugins/lib/config.mjs:27-33` | `resolveCommand` |
-| `.opencode/plugins/lib/config.mjs:35-40` | `gates.*` não desliga a suíte; rebaixa um gate isolado |
+| `.opencode/plugins/lib/config.mjs:35-40` | `gates.*` não desliga a suíte nem decide modo; `configGatesDisableEnforcement` sempre `false` |
 | `.opencode/plugins/lib/seal.mjs:9-29` | `sha256`, `sealCommands`, `verifySeal` |
 | `.opencode/plugins/harness-validator.js:1-31` | no-op desde FIX-01 |
 | `.opencode/plugins/hitl-guardrail.js:1-32` | no-op desde FIX-01 |

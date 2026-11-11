@@ -12,7 +12,7 @@
 
 | order | id | title | status | depends_on | dir | branch | merge |
 |---|---|---|---|---|---|---|---|
-| 1 | ADR-001 | O modo efetivo de um gate vive no env do processo host | todo | — | ADRs/ADR-001-modo-gate-no-env/ | adr/prd-garantias-runtime/01-modo-gate-no-env | — |
+| 1 | ADR-001 | O modo efetivo de um gate vive no env do processo host | in-progress | — | ADRs/ADR-001-modo-gate-no-env/ | adr/prd-garantias-runtime/01-modo-gate-no-env | — |
 | 2 | ADR-002 | Config indisponível nega toda tool call (fail-closed no dispatcher) | todo | ADR-001 | ADRs/ADR-002-config-indisponivel-nega-toda-tool/ | adr/prd-garantias-runtime/02-config-indisponivel-nega-toda-tool | — |
 | 3 | ADR-003 | A contraproveva declara o que verificou (counts opcional no schema) | todo | — | ADRs/ADR-003-contraprova-declara-verificacao/ | adr/prd-garantias-runtime/03-contraprova-declara-verificacao | — |
 | 4 | ADR-004 | Check estático de conformidade da prosa de garantia (`V18`) | todo | ADR-003 | ADRs/ADR-004-check-estatico-prosa-de-garantia/ | adr/prd-garantias-runtime/04-check-estatico-prosa-de-garantia | — |

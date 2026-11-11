@@ -31,9 +31,12 @@
 //
 //   DEFAULT_MODE is "enforce" since DOG-01 (Batch 8/8, flip): a DenyError
 //   denies the tool call. Pre-flip history ("warn": log + allow) is kept in
-//   git history. Per-gate modes resolve via modeForGate(config, gateFn) from
-//   harness.config.json gates.* (FU-06); DEFAULT_MODE is the fallback for
-//   gates without a gates.* key (hygiene) and for missing/invalid config.
+//   git history. ADR-001: the effective mode lives in the host-process env —
+//   HARNESS_GATE_<GATE>=[enforce|warn] plus HARNESS_GATE_<GATE>_REASON —
+//   resolved+announced by announceGateMode (MODO-04, gate.js:278) over the pure
+//   resolveGateMode (MODO-01, gate.js:98); modeForGate (gate.js:126) is the frozen
+//   reference (SPEC 3.3). DEFAULT_MODE is the fallback for gates without gateName
+//   (hygiene) and envs absent/out of domain (fail-closed); config gates.* decides no mode (RF-01).
 //   Flip record (DOG-01): gate.spec.mjs green in BOTH modes (helpers
 //   deniesBothModes/allowsBothModes) + dogfood.spec.mjs S1-S4 + runbook
 //   .spec/governance/harness-v7/FLIP-RUNBOOK.md. Rollback: HARNESS_GATES=off
@@ -41,8 +44,12 @@
 //
 // Kill-switch (ADR-009):
 //   ONLY the host-process env HARNESS_GATES=off disables enforcement.
-//   gates.* in harness.config.json never disables the SUITE, but it DOWNGRADES
-//   a gate to "warn" (log+allow, no deny) — see resolveMode + configGatesDisableEnforcement.
+//   gates.* in harness.config.json neither disables the SUITE nor downgrades a
+//   gate (ADR-001) — the per-gate downgrade channel is the env above, and a
+//   motive is required. Every downgrade and every refusal is announced with one
+//   WARN per (gate, motive) / (gate, kind) per process (announceGateMode,
+//   MODO-04); every `gates.*` key that has no effect is audited once per (key,
+//   value) (auditConfigGates, MODO-03). resolveGateMode itself stays pure.
 import { readFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { join } from "node:path";
@@ -71,36 +78,55 @@ export function isKillSwitchOff(env = process.env) {
   return env?.[KILL_SWITCH_ENV] === KILL_SWITCH_OFF;
 }
 
-// ADR-009: gates.* never disables the SUITE (only the host env HARNESS_GATES=off);
-// per gate it DOES downgrade: only "enforce" is honored, any other value ⇒ "warn" (log+allow).
-export function resolveMode(config, _gateName) {
-  const raw = config?.gates?.[_gateName];
-  if (raw === "enforce") return "enforce";
-  return "warn";
+// ADR-001 item 4 (MODO-06): the legacy config→mode resolver is gone. The
+// config never decides a mode (RF-01); the effective mode comes from the
+// host-process env through resolveGateMode/modeForGate below.
+
+// ---------------------------------------------------------------------------
+// ADR-001 (MODO-01): the effective mode of a gate lives in the host-process
+// env, never in harness.config.json (RF-01). Pure: no I/O, no logging — the
+// caller announces refusals and downgrades through announceGateMode (MODO-04).
+// Domain is strict {enforce, warn}; everything else is fail-closed to
+// enforce/default.
+//   HARNESS_GATE_<GATE>            = "enforce" | "warn"
+//   HARNESS_GATE_<GATE>_REASON     = non-empty motive for a downgrade
+// ---------------------------------------------------------------------------
+
+const GATE_MODE_ENV_PREFIX = "HARNESS_GATE_";
+const GATE_MODE_REASON_SUFFIX = "_REASON";
+
+export function resolveGateMode(gateName, env) {
+  const envVar = `${GATE_MODE_ENV_PREFIX}${String(gateName).toUpperCase()}`;
+  const raw = env?.[envVar];
+  if (raw === undefined) {
+    return { mode: "enforce", source: "default", envVar: null, reason: null };
+  }
+  if (raw === "enforce") return { mode: "enforce", source: "env", envVar, reason: null };
+  if (raw === "warn") {
+    const reason = env?.[`${envVar}${GATE_MODE_REASON_SUFFIX}`];
+    if (typeof reason === "string" && reason.trim().length > 0) {
+      return { mode: "warn", source: "env", envVar, reason };
+    }
+    // Downgrade refused (RF-05/INV-3). This resolver is pure (SPEC 3.1) and
+    // emits nothing; the caller announces the refusal (announceGateMode).
+    return { mode: "enforce", source: "default", envVar, reason: null };
+  }
+  // Out of domain — null, "ENFORCE", "off", 42, ...: fail-closed. A present but
+  // invalid value keeps envVar (it names the key that was refused).
+  return { mode: "enforce", source: "default", envVar, reason: null };
 }
 
 // ---------------------------------------------------------------------------
-// FU-06: per-gate modes. Each core gate carries a gateName; modeForGate
-// resolves it through resolveMode(config, key). Gates without a gates.* key
-// (hygiene: no such key in harness.config.json) fall back to DEFAULT_MODE.
-// Unknown gate functions fall back too — never "off" (ADR-009).
+// FU-06/ADR-001: per-gate modes. Each core gate carries a gateName; modeForGate
+// resolves it from the host-process env through resolveGateMode (MODO-02). A
+// gate without its own gateName (hygiene) falls back to DEFAULT_MODE — there is
+// no env lookup for it. The config never participates (RF-01).
 // ---------------------------------------------------------------------------
 
-const GATE_NAME_TO_CONFIG_KEY = {
-  picco: "picco",
-  evidence: "evidence",
-  hitlBatch: "hitlBatch",
-};
-
-export function modeForGate(gateFn, config) {
-  // No config (missing/unreadable): fail-closed needs the deny to stick, so
-  // fall back to DEFAULT_MODE (enforce post-flip), never to warn. The gate
-  // itself still throws config-unavailable from inside decide() (FU-05).
-  if (!config || typeof config !== "object") return DEFAULT_MODE;
-  const gateName = gateFn?.gateName ?? gateFn?.name;
-  const key = GATE_NAME_TO_CONFIG_KEY[gateName];
-  if (!key) return DEFAULT_MODE;
-  return resolveMode(config, key);
+export function modeForGate(gateFn, env) {
+  const gateName = gateFn?.gateName;
+  if (typeof gateName !== "string" || gateName.length === 0) return DEFAULT_MODE;
+  return resolveGateMode(gateName, env).mode;
 }
 
 // ---------------------------------------------------------------------------
@@ -153,6 +179,137 @@ function logError(logger, err) {
   } catch {
     // Logging is best-effort; it never changes the verdict.
   }
+}
+
+// ---------------------------------------------------------------------------
+// ADR-001 (MODO-03/MODO-04) — observability of the mode decision (RF-05,
+// SPEC 3.2/3.4, INV-3). Two facts must never be silent:
+//
+//   - a downgrade in force, or a downgrade that was REFUSED (missing motive /
+//     out-of-domain value) — the resolver above stays pure (SPEC 3.1), so the
+//     caller announces it through announceGateMode;
+//   - a `gates.*` key that has no effect, because the config never decides a
+//     mode (RF-01) — a silent `"warn"` sitting there reads as a downgrade that
+//     is not one.
+//
+// Dedupe is per process, per FACT (this runs on the hot path, every tool call):
+//
+//   audit      -> (key, value)   — re-reading the same config is the same fact;
+//                                  a new value for the same key is a new one.
+//   downgrade  -> (gate, motive) — `evidence` names two anchors; one line.
+//   refusal    -> (gate, kind)   — one line per kind, never one per call.
+//
+// I10 scope of these lines, stated honestly: they add NO path (none of the
+// fields below is a path, and no argument/state file path is ever read here).
+// They DO echo, verbatim, the config key + value and the downgrade motive —
+// SPEC 3.4 and 3.2 require exactly those fields, and the motive is the
+// operator's own declaration. What is deliberately NOT echoed is the raw ENV
+// value behind a refusal (a mistyped secret would land in the log): a refusal
+// names the env and the enum cause only. The config VALUE is echoed because it
+// is the config's declared content, not a secret-bearing free-form env.
+// ---------------------------------------------------------------------------
+
+const auditedConfigGates = new Set();
+const announcedDowngrades = new Set();
+const announcedRefusals = new Set();
+
+export const REFUSAL_MISSING_MOTIVE = "motivo ausente";
+export const REFUSAL_INVALID_VALUE = "valor inválido";
+
+// Test seam and consumer reset: the dedupe sets are process-scoped state.
+export function resetGateObservability() {
+  auditedConfigGates.clear();
+  announcedDowngrades.clear();
+  announcedRefusals.clear();
+}
+
+function announceOnce(seen, fact, logger, message) {
+  if (seen.has(fact)) return false;
+  seen.add(fact);
+  logWarn(logger, message);
+  return true;
+}
+
+function formatGateValue(value) {
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+}
+
+function isRegisteredGateName(name) {
+  return CORE_GATES.some((gateFn) => gateFn?.gateName === name);
+}
+
+// SPEC 3.4: exactly one WARN per (key, value) with value != "enforce", naming
+// the key, its value, whether the key names a registered gate, and the
+// remediation that depends on that answer. It never states the RESOLVED mode:
+// the env may downgrade the same gate in the same run, and claiming "the
+// effective mode is enforce" would then contradict the downgrade line in the
+// unsafe direction. What it states is the mechanism — the config does not
+// change the effective mode. "enforce" is silent: there is nothing to say.
+export function auditConfigGates(config, logger) {
+  const gates = config?.gates;
+  if (!gates || typeof gates !== "object" || Array.isArray(gates)) return 0;
+  let announced = 0;
+  for (const [key, value] of Object.entries(gates)) {
+    if (value === DEFAULT_MODE) continue;
+    const envName = `${GATE_MODE_ENV_PREFIX}${String(key).toUpperCase()}`;
+    const registered = isRegisteredGateName(key);
+    // An inert key cannot be REMEDIED through an env: no gate carries its
+    // name, so HARNESS_GATE_<KEY> would do nothing either (SPEC 3.4).
+    const remediation = registered
+      ? `o canal é ${envName} + ${envName}${GATE_MODE_REASON_SUFFIX}`
+      : "chave inerte: nenhum gate tem esse nome; remover a chave ou registrar o gate";
+    const message =
+      `config gates.${key}=${formatGateValue(value)} não altera o modo efetivo ` +
+      `(gate registrado: ${registered ? "sim" : "não"}) — ${remediation}`;
+    const fact = `${key}\u0000${formatGateValue(value)}`;
+    if (announceOnce(auditedConfigGates, fact, logger, message)) announced += 1;
+  }
+  return announced;
+}
+
+// SPEC 3.2: resolve the gate mode AND announce the outcome. Returns the mode,
+// so `decide()` keeps its shape and its semantics (INV-6). The cause of a
+// refusal is re-derived from the raw env value (option (a) of MODO-04): the
+// frozen resolveGateMode contract stays 4 fields, no cause field added.
+export function announceGateMode(gateFn, env, logger) {
+  const gateName = gateFn?.gateName;
+  if (typeof gateName !== "string" || gateName.length === 0) return DEFAULT_MODE;
+  const resolved = resolveGateMode(gateName, env);
+  if (resolved.mode === "warn") {
+    announceOnce(
+      announcedDowngrades,
+      `${gateName}\u0000${resolved.reason}`,
+      logger,
+      `gate "${gateName}" rebaixado para "warn" por ${resolved.envVar}: ${resolved.reason}`,
+    );
+    return resolved.mode;
+  }
+  // SPEC 3.2: a refusal exists ONLY when the resolution fell back
+  // (source === "default") on a present env key. `"enforce"` resolves with
+  // source "env" — a normal resolution that logs nothing. Gating on `envVar`
+  // alone turned the most valid value of the domain into a false "valor
+  // inválido" WARN.
+  if (resolved.source === "default" && resolved.envVar) {
+    // The two remaining refusal causes: "warn" without a non-empty motive, or
+    // a value out of {enforce,warn}. Only the enum cause is named — the raw
+    // env value is not echoed (it may be a mistyped secret).
+    const kind = env?.[resolved.envVar] === "warn" ? REFUSAL_MISSING_MOTIVE : REFUSAL_INVALID_VALUE;
+    const detail =
+      kind === REFUSAL_MISSING_MOTIVE
+        ? `${resolved.envVar}=warn exige ${resolved.envVar}${GATE_MODE_REASON_SUFFIX} não vazio`
+        : `${resolved.envVar} fora do domínio {enforce,warn}`;
+    announceOnce(
+      announcedRefusals,
+      `${gateName}\u0000${kind}`,
+      logger,
+      `gate "${gateName}": rebaixamento recusado (${kind}) — ${detail}; modo efetivo "${DEFAULT_MODE}"`,
+    );
+  }
+  return resolved.mode;
 }
 
 // ADR-006 dispatcher. Pure and hook-agnostic so it is unit-testable without
@@ -231,8 +388,16 @@ export function loadConfigOrDeny(path) {
 }
 
 export function ensureConfig(ctx = {}) {
-  if (ctx?.config) return ctx.config;
-  return loadConfigOrDeny(ctx?.configPath);
+  // MODO-03: the config is read at three points (runGatesShim, here, and
+  // readEvidenceReport). The audit runs at the two that have a logger and is
+  // deduped by (key, value), so a second read in the same run adds no line.
+  if (ctx?.config) {
+    auditConfigGates(ctx.config, ctx.logger);
+    return ctx.config;
+  }
+  const config = loadConfigOrDeny(ctx?.configPath);
+  auditConfigGates(config, ctx?.logger);
+  return config;
 }
 
 // ---------------------------------------------------------------------------
@@ -1004,9 +1169,9 @@ export async function gateShellHygiene(ctx = {}) {
 }
 
 // Gate registration (Batch 4/7). GATE-03 contributes both anchors.
-// FU-06: each gate carries a gateName so modeForGate(config, gateFn) can
-// resolve its mode. Hygiene has no gates.* key on purpose:
-// it falls back to DEFAULT_MODE (declared in modeForGate).
+// FU-06/ADR-001: each gate carries a gateName so modeForGate(gateFn, env) can
+// resolve its mode from HARNESS_GATE_<GATE>. Hygiene carries no gateName on
+// purpose: it falls back to DEFAULT_MODE (declared in modeForGate).
 registerCoreGate(gatePiccoTask);
 registerCoreGate(gateCompletionAnchorA);
 registerCoreGate(gatePhaseAnchorB);
@@ -1187,6 +1352,18 @@ export async function runGatesShim(v2Payload = {}, v2Output) {
       config = null;
     }
   }
+  // MODO-03: whatever config this run is about to use — injected or loaded —
+  // is audited before any gate reads it. Deduped per (key, value), so the
+  // ensureConfig audit inside a gate adds nothing for the same config.
+  auditConfigGates(config, logger);
+  // ADR-001 (MODO-05, SPEC 3.5/INV-4): order is config load + audit → suite
+  // kill-switch → per-gate mode resolution. The audit above is a config FACT,
+  // not a mode resolution, so it stays before this cut. With HARNESS_GATES=off
+  // nothing below runs: no resolveGateMode, no announceGateMode (zero
+  // downgrade/refusal WARN) and no gate execution. Same verdict shape decide()
+  // returns for the kill-switch, which stays there as the second line of
+  // defence.
+  if (isKillSwitchOff(base.env)) return { verdict: "allow", via: "kill-switch" };
   const ctx = {
     ...base,
     config: config ?? undefined,
@@ -1213,7 +1390,9 @@ export async function runGatesShim(v2Payload = {}, v2Output) {
   for (const gateFn of CORE_GATES) {
     const result = await decide({
       gateFn,
-      mode: config ? modeForGate(gateFn, config) : DEFAULT_MODE,
+      // MODO-04: resolve AND announce (one WARN per gate+motive / gate+kind,
+      // per process). decide() itself is untouched (INV-6).
+      mode: announceGateMode(gateFn, base.env, logger),
       ctx,
       env: base.env,
       logger,

@@ -32,9 +32,9 @@ export function resolveCommand(config, key) {
   return cmd;
 }
 
-// ADR-009: gates.* in the config never disables the SUITE (only the host env
-// HARNESS_GATES=off does); per gate it downgrades — resolveMode honors only
-// "enforce"; other values fall back to "warn" (log+allow, no deny). Executable, not prose.
+// ADR-009: gates.* in the config never disables the SUITE and never picks a mode;
+// the downgrade lives in the host-process env (HARNESS_GATE_<GATE> + _REASON) and
+// requires a motive; configGatesDisableEnforcement stays false. Executable, not prose.
 export function configGatesDisableEnforcement(_gates) {
   return false;
 }

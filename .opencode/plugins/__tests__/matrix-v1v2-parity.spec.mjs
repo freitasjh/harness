@@ -19,7 +19,7 @@
 //   GATE-03B phase anchor B (gatePhaseAnchorB) — row ANCHOR-B.
 //   GATE-04 HITL pause (gateHitlBatch) — row HITL.
 //   GATE-05 shell hygiene (gateShellHygiene) — rows PKILL-DENY / BASH-ALLOW
-//     + row GATES-OFF (hygiene has no gates.* key ⇒ still denies).
+//     + row GATES-OFF (gates.*=off changes no mode; the env is the channel).
 import { describe, it, after } from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
@@ -194,17 +194,50 @@ describe("PL-07 V2-VAL-10 — matrix deny/allow through the v2 entry (setup → 
     assert.equal(row.via, "kill-switch");
   });
 
-  it("GATES-OFF (GATE-01/ADR-009): gates.*=off downgrades to warn, never off — hygiene still denies", async () => {
-    // gateShellHygiene carries no gates.* key by design, so modeForGate falls
-    // back to DEFAULT_MODE (enforce) even when every gates.* is off.
-    const row = await runV2({
+  it("GATES-OFF (GATE-01/ADR-001): gates.*=off changes no mode — hygiene still denies and the only channel is the env", async () => {
+    // ADR-001 (MODO-06): gates.* no longer downgrades anything. This row used
+    // to prove "off downgrades to warn, never off"; it now proves the opposite
+    // contract, in two halves inside the same row:
+    //   (a) with every gates.* = off, the hygiene gate still DENIES a pkill -f.
+    //       This half is a REGRESSION GUARD only: hygiene carries no gateName,
+    //       so it resolves to DEFAULT_MODE and never consulted the config —
+    //       neither before nor after ADR-001. It does NOT prove that the config
+    //       is ignored;
+    //   (b) this is the half that proves it: the PICCO-less task the config can
+    //       never relax denies without env and is allowed when
+    //       HARNESS_GATE_PICCO downgrades it with a motive — the env is the
+    //       real channel.
+    const hygieneRow = await runV2({
       tool: "bash",
       sessionID: freshSid("v2-gates-off"),
       args: { command: "pkill -f worker" },
       config: GATES_OFF,
     });
-    assert.equal(row.outcome, "deny", "gates.*=off must still deny (hygiene enforce fallback)");
-    assert.equal(row.reason, "pkill-f");
+    assert.equal(
+      hygieneRow.outcome,
+      "deny",
+      "gates.*=off must still deny (hygiene carries no gateName ⇒ DEFAULT_MODE)",
+    );
+    assert.equal(hygieneRow.reason, "pkill-f");
+
+    const closed = tempStatePath(CLOSED);
+    const baseEnvelope = {
+      tool: "task",
+      args: { prompt: "no picco block; config gates.*=off must not relax this" },
+      config: GATES_OFF,
+      statePath: closed,
+    };
+    const configOnly = await runV2({ ...baseEnvelope, sessionID: freshSid("v2-gates-off-cfg") });
+    assert.equal(configOnly.outcome, "deny", "gates.picco=off cannot downgrade the PICCO gate");
+    assert.equal(configOnly.reason, "picco-tag-absent");
+
+    const viaEnv = await runV2({
+      ...baseEnvelope,
+      sessionID: freshSid("v2-gates-off-env"),
+      env: { HARNESS_GATE_PICCO: "warn", HARNESS_GATE_PICCO_REASON: "debug" },
+    });
+    assert.equal(viaEnv.outcome, "allow", "the env is the downgrade channel");
+    assert.equal(viaEnv.via, "warn");
   });
 
   it("ANCHOR-A (GATE-03A): orchestrator write outside allowlist denies", async () => {
