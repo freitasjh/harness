@@ -39,9 +39,12 @@
 //     `absent` e a classificação escolhia a própria validade (R1).
 //   - `proof` do sujeito `agent` não pode ser o `opencode.json` (é o próprio
 //     registro do sujeito) e nenhuma prova pode vir de `.spec/**` — snapshot
-//     datado não é autoritativo (R2, ADR-004 §2.1).
+//     datado não é autoritativo (R2, ADR-004 §2.1). O ref é NORMALIZADO contra
+//     o root antes da comparação (e `..` que sai do root é rejeitado): o alias
+//     `docs/../.spec/x` não contorna nenhuma das duas proibições.
 //   - Citação em comentário HTML não compra `consumer`: o corpus do roster é
-//     lido sem `<!-- … -->` antes de `citesToken` (R3).
+//     lido sem `<!-- … -->` antes de `citesToken` (R3), inclusive quando o
+//     comentário não fecha — CommonMark esconde até o EOF.
 //   - `orphan+decision` é alcançável em verde: a equação de agentes desconta o
 //     órfão DECIDIDO; sem decisão ele continua quebrando o fechamento (R4).
 //   - `decision` é enum fechado `{keep, remove}`: `remove` é válido, mas o
@@ -105,7 +108,7 @@
 // o instalador propaga (`install.mjs:107`) — e recebe `root` injetável, então
 // o destino herda o código, não um veredito falso.
 import { readFileSync, readdirSync, existsSync, statSync, lstatSync } from "node:fs";
-import { join } from "node:path";
+import { join, posix } from "node:path";
 
 // --- Layout declarado -----------------------------------------------------
 // Paths do ARTEFATO inventariado (não do projeto-cliente): são a gramática do
@@ -195,8 +198,12 @@ export function citesToken(text, token) {
 // prompt do roster tornava a órfã `consumer` e dispensava a decisão de dono.
 // A remoção é do CORPUS, não do token: quem escreve em prosa normal continua
 // citando, quem esconde em comentário não.
+//
+// Um comentário NÃO FECHADO esconde até o EOF (CommonMark): exigir `-->` deixava
+// `<!-- skill-orfa` comprar a isenção que a forma fechada perdia. O `$` fecha a
+// alternância no fim do corpus, e o `*?` mantém o casamento no PRIMEIRO `-->`.
 export function stripHtmlComments(text) {
-  return String(text ?? "").replace(/<!--[\s\S]*?-->/g, "");
+  return String(text ?? "").replace(/<!--[\s\S]*?(?:-->|$)/g, "");
 }
 
 function readText(file) {
@@ -281,8 +288,21 @@ export function ownerRefs(owner) {
 }
 
 // `./.agents/x` e `.agents/x` são o mesmo alvo; o roster escreve as duas.
+// E `docs/../.spec/x` é `.spec/x` (R2): comparar o texto CRU deixava o alias
+// `..` comprar a proibição e o artefato do sujeito — o arquivo era lido do
+// alvo certo e a checagem via outro path. A normalização é POSIX e RELATIVA
+// ao `root` injetado, não ao cwd do processo; `..` que sobe ACIMA do root não
+// é colapsado, e é esse resíduo que `escapesRoot` rejeita.
 export function normalizeRef(ref) {
-  return String(ref).replace(/^\.\//, "");
+  return posix.normalize(String(ref));
+}
+
+// Escape do root não é ref nem prova: o alvo não pertence ao repositório que
+// está sendo medido. `posix.normalize` preserva o prefixo `..` exatamente para
+// que este caso continue distinguível de um caminho interno.
+export function escapesRoot(ref) {
+  const file = String(ref);
+  return file === ".." || file.slice(0, 3) === "../";
 }
 
 // Eixos são PAR `{eixo, id}` no dono (`install.mjs:370`, `:396`): o mesmo id
@@ -371,6 +391,10 @@ function loadRoster(root) {
       continue;
     }
     const file = normalizeRef(ref[1]);
+    if (escapesRoot(file)) {
+      unresolved.push({ name, reason: `prompt escapa do root: ${ref[1]}` });
+      continue;
+    }
     if (!isFile(join(root, file))) {
       unresolved.push({ name, reason: `prompt ausente no disco: ${file}` });
       continue;
@@ -497,6 +521,10 @@ function reviewEntryProof(entry, root) {
     return issues;
   }
   const file = normalizeRef(parsed.file);
+  if (escapesRoot(file)) {
+    issues.push(`proof ${parsed.file} escapa do root — a prova é caminho do repositório (R2)`);
+    return issues;
+  }
   // R2: `.spec/**` é snapshot datado e NÃO autoritativo (ADR-004 §2.1). Uma
   // prova ali citaria a fotografia, não o fluxo — o snapshot envelhece e o
   // registry passaria a se apoiar na cópia que ele existe para substituir.

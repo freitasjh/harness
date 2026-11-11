@@ -592,6 +592,64 @@ describe("PI-05/PI-06 — o registry de decisões de dono, e ele expira", () => 
     assert.equal(report.ok, false);
   });
 
+  it("R2 — alias `..` não compra a proibição de .spec/**: o path é normalizado contra o root", () => {
+    const files = baseFiles({
+      ".spec/prd/x/ADR.md": "# ADR (snapshot)\n- skill-orfa: órfã deliberada\n",
+    });
+    const decision = { ...DECISION_OK, proof: "docs/../.spec/prd/x/ADR.md:2" };
+    const report = check(fixture(files), { decisions: [decision] });
+    const r = byId(report, "owner-decision-incomplete");
+    assert.equal(r.status, "FAIL");
+    assert.match(r.detail, /\.spec\/\*\* .*snapshot datado não é fonte autoritativa/);
+    assert.equal(report.ok, false);
+  });
+
+  it("R2 — alias `..` não compra o artefato do sujeito (opencode.json e o próprio SKILL.md)", () => {
+    const files = baseFiles({ ".agents/agents/agente-orfao/AGENT.md": "# sem chave no registro\n" });
+    const agentDecision = {
+      subject: "agente-orfao",
+      class: "agent",
+      owner: "fluxo de teste (fixture)",
+      decision: "keep",
+      reason: "órfão deliberado deste fixture",
+      proof: "docs/../opencode.json:1",
+      expiresWhen: ["subject-absent", "gained-registry"],
+    };
+    const agentReport = check(fixture(files), { decisions: [agentDecision] });
+    const agentFail = byId(agentReport, "owner-decision-incomplete");
+    assert.equal(agentFail.status, "FAIL");
+    assert.match(agentFail.detail, /opencode\.json é o artefato do próprio sujeito .*prova tautológica/);
+    assert.equal(agentReport.ok, false);
+
+    const tautological = { ...DECISION_OK, proof: "docs/../.agents/skills/skill-orfa/SKILL.md:1" };
+    const skillReport = check(fixture(baseFiles()), { decisions: [tautological] });
+    const skillFail = byId(skillReport, "owner-decision-incomplete");
+    assert.equal(skillFail.status, "FAIL");
+    assert.match(skillFail.detail, /artefato do próprio sujeito .*prova tautológica/);
+    assert.equal(skillReport.ok, false);
+  });
+
+  it("R2 — prova que escapa do root reprova; referência interna normal continua PASS (controle)", () => {
+    const escaping = { ...DECISION_OK, proof: "../fora-do-repo.md:1" };
+    const escapeReport = check(fixture(baseFiles()), { decisions: [escaping] });
+    const escapeFail = byId(escapeReport, "owner-decision-incomplete");
+    assert.equal(escapeFail.status, "FAIL");
+    assert.match(escapeFail.detail, /escapa do root/);
+    assert.equal(escapeReport.ok, false);
+
+    // controle: `./docs/decisoes.md` e `docs/../docs/decisoes.md` são o MESMO
+    // alvo interno — normalizar não pode transformar caminho legítimo em FAIL.
+    for (const proof of ["docs/decisoes.md:2", "./docs/decisoes.md:2", "docs/../docs/decisoes.md:2"]) {
+      const report = check(fixture(baseFiles()), { decisions: [{ ...DECISION_OK, proof }] });
+      assert.equal(
+        byId(report, "owner-decision-incomplete").status,
+        "PASS",
+        `${proof}: ${byId(report, "owner-decision-incomplete").detail}`,
+      );
+      assert.equal(report.ok, true);
+    }
+  });
+
   it("R3 — citação em comentário HTML não compra `consumer`; com decisions=[] a órfã reprova", () => {
     const files = baseFiles({
       [PROMPT_A]: "# agente-a\n<!-- skill-orfa --> consome skill-util e rule-um.md\n",
@@ -614,6 +672,33 @@ describe("PI-05/PI-06 — o registry de decisões de dono, e ele expira", () => 
     assert.equal(realRow.class, "consumer");
     assert.equal(realReport.ok, true, JSON.stringify(realReport.results.filter((r) => r.status === "FAIL")));
     assert.equal(stripHtmlComments("a <!-- x --> b"), "a  b");
+  });
+
+  it("R3 — comentário não FECHADO esconde até o EOF e não compra `consumer`; fechado e prosa continuam valendo", () => {
+    // Mutação: `<!-- skill-orfa` sem `-->`. CommonMark esconde até o EOF, então
+    // a órfã NÃO pode ganhar consumidor por um comentário que nunca fecha.
+    const files = baseFiles({
+      [PROMPT_A]: "# agente-a\nconsome skill-util e rule-um.md\n<!-- skill-orfa\n",
+    });
+    const report = check(fixture(files), { decisions: [] });
+    const row = report.artifacts.skills.find((r) => r.id === "skill-orfa");
+    assert.equal(row.cited, false, "comentário não fechado não é citação viva");
+    assert.equal(row.class, "orphan+decision");
+    const r = byId(report, "inventory-artifact-untracked");
+    assert.equal(r.status, "FAIL");
+    assert.match(r.detail, /skill:skill-orfa/);
+    assert.equal(report.ok, false);
+    // shapes irmãos: o texto ANTES do comentário continua citando, e o
+    // comentário FECHADO não come o resto.
+    const before = fixture(
+      baseFiles({ [PROMPT_A]: "# agente-a\n<!-- nota --> consome skill-util, skill-orfa e rule-um.md\n" }),
+    );
+    const beforeRow = check(before, { decisions: [] }).artifacts.skills.find((x) => x.id === "skill-orfa");
+    assert.equal(beforeRow.cited, true);
+    assert.equal(beforeRow.class, "consumer");
+    assert.equal(stripHtmlComments("a <!-- x --> b"), "a  b");
+    assert.equal(stripHtmlComments("a <!-- x"), "a ");
+    assert.equal(stripHtmlComments("a <!-- x -->b <!-- y"), "a b ");
   });
 
   it("R4 — agente órfão COM decisão fecha a equação (orphan+decision alcançável em verde)", () => {
