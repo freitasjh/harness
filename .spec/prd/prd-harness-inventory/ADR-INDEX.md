@@ -32,4 +32,4 @@
 
 | order | id | title | status | depends_on | dir | branch | merge |
 |---|---|---|---|---|---|---|---|
-| 1 | ADR-001 | Roster de agentes: 1 primário, `codebase-analyzer` absorvido pelo `architect`, stub do `code-reviewer` removido e saída do `sdd-orquestrador` | in-progress | — | ADRs/ADR-001-roster-de-agentes/ | adr/prd-harness-inventory/01-roster-de-agentes | — |
+| 1 | ADR-001 | Roster de agentes: 1 primário, `codebase-analyzer` absorvido pelo `architect`, stub do `code-reviewer` removido e saída do `sdd-orquestrador` | merged | — | ADRs/ADR-001-roster-de-agentes/ | adr/prd-harness-inventory/01-roster-de-agentes | feat(#4) `fe7c408` — merge humano 2026-11-11 |

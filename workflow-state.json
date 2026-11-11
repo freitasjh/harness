@@ -1,7 +1,7 @@
 {
-  "current_feature": "harness-inventory",
-  "current_phase": "Testing",
-  "previous_phase": "Planning",
+  "current_feature": "harness-inventory-adr-002",
+  "current_phase": "Planning",
+  "previous_phase": "Completed",
   "next_phase": "Completed",
   "type": "refactor",
   "layer": "agents/skills/rules",
@@ -11,26 +11,27 @@
     "bug_report": "harness/harness-eixos-stack-p2.json",
     "source_tech_debt": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
     "previous_archive": ".spec/archive/20261018-harness-eixos-stack/",
-    "verify": ".spec/backend/harness-inventory-adr-001/VERIFY.md",
+    "verify": null,
     "harness_evidence": ".spec/archive/20261018-harness-eixos-stack/harness/",
     "harness_report": "harness/harness-inventory.json",
     "tech_debt_p2": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
     "previous_cycle": {
-      "archive": ".spec/archive/20261016-prd-adr-pipeline/",
-      "prd_adr": ".spec/prd/prd-adr-pipeline/",
-      "harness_report": "harness/prd-adr-pipeline.json"
+      "cycle": ".spec/backend/harness-inventory-adr-001/",
+      "merge": "fe7c408",
+      "verify": ".spec/backend/harness-inventory-adr-001/VERIFY.md",
+      "harness_report": "harness/harness-inventory.json"
     },
     "c1_previous_bug": ".spec/bugs/harness-eixos-stack-p2/TASKS.md",
-    "proposal": ".spec/backend/harness-inventory-adr-001/PROPOSAL.md",
-    "spec": ".spec/backend/harness-inventory-adr-001/SPEC.md",
-    "plan": ".spec/backend/harness-inventory-adr-001/PLAN.md",
-    "tasks": ".spec/backend/harness-inventory-adr-001/TASKS.md",
+    "proposal": null,
+    "spec": null,
+    "plan": null,
+    "tasks": null,
     "superseded_cycle": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/ (superseded: SPEC prescrevia `Plugin.define`, ausente no binario v2.0.32)",
     "archive": ".spec/archive/20261028-harness-design-system-agent/",
     "prd": ".spec/prd/prd-harness-inventory/PRD.md",
     "research": ".spec/prd/prd-harness-inventory/RESEARCH.md",
     "adr_index": ".spec/prd/prd-harness-inventory/ADR-INDEX.md",
-    "adr": ".spec/prd/prd-harness-inventory/ADRs/ADR-001-roster-de-agentes/ADR.md",
+    "adr": null,
     "prd_lines": ".spec/prd/prd-harness-inventory/PRD.md (162 linhas, 16 secoes, PRD-01 PASS)"
   },
   "scope": {
@@ -59,7 +60,7 @@
     "P3_P4": "approved_auto_evidence_batches_2026_11_11 (commits 1c8062b + 2b80685 + e63c464; code review 3 rodadas 0 criticos; correcoes de governanca aplicadas)",
     "P4_P5": "approved_auto_evidence_QA_2026_11_11 (REPORT harness/harness-inventory.json schema-valido; suite 379+559 = 938 testes, 0 falhas; static exit 0; sdd-checks 0 FAIL; vendor OK; selo inalterado)",
     "P5_P6": "approved_user_2026_11_11 (VERIFY 3/3 PASS; traceability 100%; 4 residuos declarados; owner aprovou)",
-    "P6_fim": "pushed_pending_human_merge (branch adr/prd-harness-inventory/01-roster-de-agentes; merge humano; PR por URL de compare, sem gh)",
+    "P6_fim": "done_merge_fe7c408 (PR #4 merged na main pelo owner via web; 6 commits; verify 3/3 PASS)",
     "B1_B2": "approved_user_2026_09_29",
     "FU32": "closed_approved_decision_B",
     "_previous_cycle_opencode_v2_only": {
@@ -74,7 +75,7 @@
       "B1_B2": "approved_user_2026_09_29",
       "FU32": "closed_approved_decision_B"
     },
-    "G2_ADR": "approved_user_2026_11_11 (ADR-001 interface congelada de 16 itens)",
+    "G2_ADR": "approved_user_2026_11_11 (ADR-001 merged em fe7c408; proximo G2 = ADR-002)",
     "G1_PRD": "approved_user_2026_11_11 (PRD-1 harness-inventory; D1-D7 fechadas; nenhum ADR criado antes do veredito)"
   },
   "code_review": {
@@ -191,7 +192,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-11T15:40:25.156Z",
+  "last_update": "2026-11-11T15:43:30.146Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -215,28 +216,15 @@
   "harness_evidence": "harness/harness-inventory.json — 6 comandos com exitCode e sha256 do stdout; ADR-001 16/16 itens verificados por comando; gate.js e harness.config.json com 0 linhas no range 5dcc0e0..HEAD; selo suiteFull c904f1c5 inalterado",
   "code_review_status": "passed",
   "code_review_status_ciclo": "harness-inventory-adr-001: 3 rodadas, 0 criticos; ultimas 3 atencao fechadas em bookkeeping do workflow-state (backlog, artifacts, gates, harness_status)",
-  "sdd_stage": "harness-inventory-adr-001 CONCLUIDO (VERIFY 3/3, push feito, merge humano pendente). Proximo do PRD-1: ADR-002 (prd-adr-pipeline como modulo)",
+  "sdd_stage": "ADR-001 MERGED (fe7c408). Ciclo seguinte: ADR-002 — prd-adr-pipeline como modulo (branch 02-prd-adr-pipeline-modulo)",
   "backlog": {
-    "total": 12,
+    "total": 0,
     "todo": 0,
     "doing": 0,
-    "done": 12,
-    "ids": [
-      "RV-01",
-      "RV-02",
-      "RV-03",
-      "RV-04",
-      "RV-05",
-      "RV-06",
-      "RV-07",
-      "RV-08",
-      "RV-09",
-      "RV-10",
-      "RV-11",
-      "RV-12"
-    ]
+    "done": 0,
+    "ids": []
   },
-  "next_task": null,
+  "next_task": "ADR-002",
   "plan_score": 1,
   "tasks_score": 1,
   "active_batch": {
@@ -1075,7 +1063,7 @@
   "prd_adr": {
     "prd_id": "prd-harness-inventory",
     "prd_status": "approved",
-    "active_adr": "ADR-001",
+    "active_adr": "ADR-002",
     "adr_order": [],
     "snapshots": [
       {
@@ -1101,10 +1089,10 @@
         "titulo": "Roster de agentes: 1 primario, fusao codebase-analyzer->architect, remocao do stub, saida do sdd-orquestrador (10 refs)",
         "depende_de": [],
         "branch": "adr/prd-harness-inventory/01-roster-de-agentes",
-        "status": "in-progress",
+        "status": "merged",
         "commit": "5dcc0e0",
         "gate": "G2 pendente (interface congelada de 16 itens)",
-        "merge": "pending_human"
+        "merge": "fe7c408 (PR #4, merge humano 2026-11-11)"
       },
       {
         "order": 2,
