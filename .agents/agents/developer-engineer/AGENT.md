@@ -100,7 +100,7 @@ skill("template-deepsearch")
 - NUNCA use Options API no Vue
 - NUNCA use MapStruct
 - NUNCA pule testes
-- NUNCA altere SPEC, PLAN, TASKS, ou workflow-state.json — isso é responsabilidade do orchestrator
+- NUNCA altere os artefatos de planejamento (`SPEC.md`, `PLAN.md`, `TASKS.md`) nem `workflow-state.json` — o planejamento é do `sdd-compiler`/`planner`; o estado é do `orchestrator`
 - SEMPRE carregue as skills obrigatórias antes de implementar
 - SEMPRE siga as regras de `AGENTS.md` e `.agents/rules/*.md`
 

@@ -10,6 +10,9 @@
 // pre-existing plugins are reported as INFO for history, never as green.
 // V12 is INFO until the rules diet lands (owner DOC-02, Batch 5/6).
 // V14 FAILs honestly while no git remote exists (REMOTE_URL_PENDING).
+// V18 (ADR-005) FAILs on live prose citing a missing `rules/*.md` that is not
+// declared in the `BASELINE` of `.opencode/plugins/lib/refs/checks.mjs`, and on
+// a baseline entry that went stale. Pure core, no new command in the seal.
 import { readFileSync, existsSync, readdirSync, statSync, lstatSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -27,6 +30,12 @@ import {
 // same report the sealed `commands.suiteFull` already runs — the command itself
 // is NOT touched.
 import { runPrdChecks } from "../.opencode/plugins/lib/prd-adr-pipeline/checks.mjs";
+// Prosa órfã (ADR-005): the rubric is the module; V18 below only registers it.
+import {
+  runRefsChecks,
+  BASELINE as REFS_BASELINE,
+  NON_DEFECT as REFS_NON_DEFECT,
+} from "../.opencode/plugins/lib/refs/checks.mjs";
 
 // Re-exported so the tested loader interface stays stable after the
 // Batch 3/7 relocation (GATE-01/FIX-01 scope). Canonical home is
@@ -363,6 +372,27 @@ function checkPrd(root = REPO_ROOT) {
   for (const r of prdCheckResults(root)) record(r.id, r.status, r.detail);
 }
 
+// ADR-005 / RF-06: one `record("V18", …)` — the verdict is `ok` (the exit code),
+// not just the console line. `root` is injectable so the adapter's bar is
+// testable against a fixture tree without touching the repo's real `.agents/**`.
+export function refsCheckResults(root = REPO_ROOT) {
+  return runRefsChecks(root).results;
+}
+
+function checkRefs(root = REPO_ROOT) {
+  const { ok, results: refs } = runRefsChecks(root);
+  // A dívida vendorizada é contada no módulo e precisa aparecer TAMBÉM em PASS:
+  // o ramo verde era o único consumidor que roda e ele descartava o detalhe
+  // (ADR-005 §8-N18). O contador sai do campo estruturado, não de regex na prosa.
+  const vendorOnly = refs.find((r) => r.id === "stale-baseline-entry")?.counters?.vendorOnly ?? 0;
+  const detail = ok
+    ? `refs vivas: ${refs
+        .map((r) => (r.id === "stale-baseline-entry" ? `${r.id}=ok[vendor-only=${vendorOnly}]` : `${r.id}=ok`))
+        .join(", ")} (baseline=${REFS_BASELINE.length}, non-defect=${REFS_NON_DEFECT.length})`
+    : refs.filter((r) => r.status === "FAIL").map((r) => `${r.id}: ${r.detail}`).join("; ");
+  record("V18", ok ? "PASS" : "FAIL", detail);
+}
+
 // PAP-04 (🟡3): `root` is injectable so the ADAPTER's verdict — the `ok` flag that
 // defines the process exit code, not just the console line — is testable against
 // a malformed fixture without touching the repo's real `.spec/**`. Production
@@ -376,6 +406,7 @@ export function runStaticChecks(root = REPO_ROOT) {
   checkV15();
   checkV12();
   checkV14();
+  checkRefs(root);
   checkPrd(root);
   reportLegacyBaseline();
   const failed = results.filter((r) => r.status === "FAIL");

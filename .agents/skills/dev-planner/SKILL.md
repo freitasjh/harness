@@ -141,12 +141,12 @@ Esta skill se encaixa no ciclo SDD existente:
 ├─────────────────────────────────────────────────────────────┤
 │  SDD Fase 2+ (Geração)                                      │
 │  ┌─────────────────────────────────────────────────────┐    │
-│  │  sdd-compiler: SPEC → PLAN → TASKS                  │    │
+│  │  sdd-compiler: SPEC → planejamento → TASKS          │    │
 │  └─────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-**Handoff:** Ao finalizar, a skill gera artefatos que alimentam o `sdd-compiler` para gerar SPEC/PLAN/TASKS.
+**Handoff:** Ao finalizar, a skill gera artefatos que alimentam o `sdd-compiler`, que produz **SPEC**, o **plano de implementação** e **TASKS**.
 
 ---
 

@@ -88,11 +88,14 @@ Contrato de saída e exemplos (bons e ruins): `.agents/skills/prompt-optimizer/r
 
 | Role | Responsabilidade |
 |------|------------------|
-| **Orchestrator** (este agente) | Triagem, governance, SPEC, PLAN, TASKS, code review, brain, workflow-state.json |
+| **Orchestrator** (este agente) | Triagem, governança, delegação via `task`, `workflow-state.json`, code review, brain |
+| **planner** | Planejamento técnico: `EXPLORATION.md`, `CONSTRAINTS.md`, `DESIGN-DECISIONS.md`, `ARCHITECTURE.md` + parecer |
+| **architect** | Decisões arquiteturais e ADRs (validação) |
+| **product-manager** | Validação de negócio |
+| **ux-designer** | Parecer de UX/interface (vinculante no escopo visual) |
+| **design-system-specialist** | Templates de componentes reutilizáveis do design system |
 | **developer-engineer** | **Implementação de código** (Java/Vue/SQL/tests) |
 | **code-reviewer** | Code review após cada batch |
-| **architect** | Decisões arquiteturais (validação) |
-| **product-manager** | Validação de negócio |
 | **qa-engineer** | Cobertura de testes |
 | **security-engineer** | Auditoria de segurança |
 
@@ -158,7 +161,7 @@ O **estado canônico** é o de `sdd-workflow-standard.md` (é o que vive em
 | Etapa (rótulo) | `current_phase` canônico |
 |---|---|
 | Explore, Proposal | Discovery |
-| SPEC, PLAN, TASKS | Planning |
+| SPEC → PLAN → TASKS | Planning |
 | PRD, RESEARCH | Discovery |
 | ADR-INDEX, ADR | Planning |
 | P0 (triagem) | Discovery |
@@ -173,7 +176,7 @@ O **estado canônico** é o de `sdd-workflow-standard.md` (é o que vive em
 | Revisão de bug | BugReview |
 
 ### Fase 0 — Exploração & Planejamento Técnico
-> Para features com escopo claro, pular direto para Fase 1. Para features complexas/inovações, **delegar o planejamento ao subagente `planner`** (não executar as 6 fases localmente).
+> Gatilho único: a lista de isenção de `.agents/rules/prd-adr-pipeline.md` §3. Demanda **isenta** ⇒ sem pacote de planejamento (seguir direto para a Fase 1). Demanda **fora da isenção** ⇒ **delegar o planejamento ao subagente `planner`** (não executar as 6 fases localmente).
 
 1. Carregar `brain` — health check MCP automático, consultar memória de longo prazo
 2. Classificar demanda: **Feature**, **Bugfix** ou **Refactor**
@@ -184,10 +187,7 @@ O **estado canônico** é o de `sdd-workflow-standard.md` (é o que vive em
    - `ARCHITECTURE.md` — modelo de dados, API, fluxos
    - **parecer** no retorno do subagente (estimativa, dependências, riscos) — texto, não arquivo
    - **Portão:** aprovação explícita do usuário sobre o parecer antes de avançar
-4. **Se Feature simples** (CRUD básico, ajuste pontual):
-   - Carregar `sdd-compiler` modo `explore`
-   - Levantar perguntas, hipóteses e alternativas de abordagem
-   - Gerar `.spec/[feature]/EXPLORATION.md`
+4. **Demanda isenta** — sem pacote de planejamento e sem artefato de exploração: perguntas, hipóteses e alternativas seguem em prosa no pedido de delegação (`EXPLORATION.md` tem autor único, o `planner`).
 5. Avançar para Fase 1 somente após clareza suficiente e aprovação do usuário
 
 ### Fase 1 — Análise (Requirements + Design)
