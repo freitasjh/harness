@@ -2,7 +2,7 @@
 
 > **prd-id**: `prd-harness-inventory` (casa com `.spec/prd/prd-harness-inventory/`)
 > **Dono da aprovação**: owner do harness
-> **Status**: draft — aguardando veredito do owner em `§16`; nenhum `ADRs/**` pode existir antes disso (INV-3 do contrato PRD-01)
+> **Status**: **aprovado** em 2026-11-11 (§16) — `ADRs/**` liberado somente após o veredito (INV-3 do contrato PRD-01 honrado)
 > **Tipo de rota**: Refactor (programa multi-PRD `harness-refactor-2026-11`, ordem 1 — registrado em `workflow-state.json.program.prds[0]`)
 > **Mapa das 16 seções**: §1, §2, §5, §6, §7, §9 e §16 são obrigatórias; §3, §4, §8, §10–§15 são recomendadas.
 > **Itens do owner neste PRD**: 2 (levantamento dos agentes), 3 (levantamento das skills), 10 (agente especialista em planejamento). Itens 1, 4, 5, 6, 7, 8 e 9 pertencem a outros PRDs do programa (§7 e §12).
@@ -187,4 +187,4 @@ Sem tela. A experiência é de leitura e decisão: (a) o inventário precisa ser
   - **D6 = `planner`**, modo `subagent`, **consome** a skill `dev-planner`; as 3 citações de `planejador` são reapontadas.
   - **D7 = fechada pelo orquestrador**: a lista canônica tem **10 itens** (o "8" do bloco PICCO foi erro de contagem do orquestrador, corrigido em `workflow-state.json.program`).
 - **Nota**: o agente redigiu; o veredito é do owner. Nenhum `ADRs/**` foi criado (INV-3 satisfeito: `ADRs/` inexistente).
-> ❓ Validação: o owner aprovou (veredito + data) antes de qualquer ADR? **Não ainda** — este bloco está em `draft`; as 7 decisões acima são o que o portão G1 precisa fechar.
+> ❓ Validação: o owner aprovou (veredito + data) antes de qualquer ADR? **Sim** — veredito de 2026-11-11 no topo deste bloco; D1–D7 fechadas antes da criação de qualquer `ADRs/**`.

@@ -24,7 +24,7 @@
 - **I2** — os itens 9 e 10 são os únicos a tocar `.agents/rules/**`; o commit leva trailer `Harness-Gate-Change` com motivo.
 - **I3** — nenhuma referência é apontada para arquivo inexistente (a nova referência é `orchestrator/AGENT.md`, que existe).
 - **I4** — nenhuma policy muda: só caminho de referência e 1 contagem (I5 6→5).
-- **I5** — o roster final não abre escrita nova: os 4 `edit: allow` continuam os mesmos 4 nomes, mais o `architect` que já era `allow` e absorve a capacidade do `codebase-analyzer`.
+- **I5** — o roster final não abre escrita nova: o conjunto `edit: allow` continua **exatamente** `developer-engineer`, `product-manager`, `qa-engineer`, `architect` (4 nomes; o `architect` já era `allow` e apenas absorve a capacidade do `codebase-analyzer`).
 - **I6** — `sdd-checks.mjs` continua lendo um arquivo existente (fail-closed implícito: se `existsSync` falhar, `SDD-01` reprova).
 
 ## 3. Edge cases

@@ -1,10 +1,10 @@
 {
-  "current_feature": "harness-design-system-agent",
-  "current_phase": "Completed",
-  "previous_phase": "Testing",
-  "next_phase": null,
-  "type": "feature",
-  "layer": "installer",
+  "current_feature": "harness-inventory",
+  "current_phase": "Execution",
+  "previous_phase": "Planning",
+  "next_phase": "Testing",
+  "type": "refactor",
+  "layer": "agents/skills/rules",
   "repo": "harness",
   "artifacts": {
     "bug_tasks": ".spec/bugs/gate-counts-observation/TASKS.md",
@@ -21,16 +21,17 @@
       "harness_report": "harness/prd-adr-pipeline.json"
     },
     "c1_previous_bug": ".spec/bugs/harness-eixos-stack-p2/TASKS.md",
-    "proposal": ".spec/backend/harness-design-system-agent/PROPOSAL.md",
-    "spec": ".spec/backend/harness-design-system-agent/SPEC.md",
-    "plan": ".spec/backend/harness-design-system-agent/PLAN.md",
-    "tasks": ".spec/backend/harness-design-system-agent/TASKS.md",
+    "proposal": ".spec/backend/harness-inventory-adr-001/PROPOSAL.md",
+    "spec": ".spec/backend/harness-inventory-adr-001/SPEC.md",
+    "plan": ".spec/backend/harness-inventory-adr-001/PLAN.md",
+    "tasks": ".spec/backend/harness-inventory-adr-001/TASKS.md",
     "superseded_cycle": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/ (superseded: SPEC prescrevia `Plugin.define`, ausente no binario v2.0.32)",
     "archive": ".spec/archive/20261028-harness-design-system-agent/",
-    "prd": ".spec/prd/prd-garantias-runtime/PRD.md",
+    "prd": ".spec/prd/prd-harness-inventory/PRD.md",
     "research": ".spec/prd/prd-garantias-runtime/RESEARCH.md",
     "adr_index": ".spec/prd/prd-garantias-runtime/ADR-INDEX.md",
-    "adr": ".spec/prd/prd-garantias-runtime/ADRs/ADR-001-modo-gate-no-env/ADR.md"
+    "adr": ".spec/prd/prd-harness-inventory/ADRs/ADR-001-roster-de-agentes/ADR.md",
+    "prd_lines": ".spec/prd/prd-harness-inventory/PRD.md (162 linhas, 16 secoes, PRD-01 PASS)"
   },
   "scope": {
     "interpretation": "esteira PRD->ADR->SDD no harness (visibilidade de intencao antes do codigo)",
@@ -51,11 +52,11 @@
     "rigor": "E1/E2 bloqueiam"
   },
   "gates": {
-    "P0_P1": "approved_user_2026_10_22 (PRD do ciclo prd-garantias-runtime aprovado no portao G1; ADR-001 aprovado no portao G2)",
+    "P0_P1": "approved_user_2026_11_11 (Refactor; bloco PICCO confirmado; 1o ciclo = levantamento + roster de agentes + agente de planejamento)",
     "G2_PRD": "approved_user_2026_10_22 (PRD prd-garantias-runtime aprovado sem ressalvas; §16 do PRD.md; 3 decisoes do owner)",
-    "P1_P2": "pending_user_approval (SPEC do ciclo garantias-runtime-adr-001: 140 linhas, 4 requisitos normativos, 6 invariantes, Delta Specs com 5 docs, 5 itens N/A justificados)",
-    "P2_P3": "pending_user_approval (PLAN + TASKS do ciclo garantias-runtime-adr-001: 10 tasks MODO-01..MODO-10 (MODO-10 nasceu do code review do batch 1 — prosa residual sem dono), SDD-02 1:1 10/10, 4 fases, caminho critico MODO-01->02->06->07->08)",
-    "P3_P4": "approved_auto_evidence_batches1-5 (14/14 tasks; review APPROVED 0 criticos)",
+    "P1_P2": "approved_user_2026_11_11 (SPEC 49 linhas, 12 RF mapeados aos 16 itens do ADR-001, 6 invariantes)",
+    "P2_P3": "approved_user_2026_11_11 (PLAN 57 linhas, TASKS 12 microtasks RV-01..RV-12)",
+    "P3_P4": "pending_user_approval (implementacao atomica em 2b80685; code review rodada 2 CHANGES_REQUIRED com 6 atencao de governanca, 0 criticos; correcoes aplicadas)",
     "P4_P5": "pending_user_approval (QA P4: gate PASSA na substancia; 831/831; 0 writes nos 2 presets; transcript byte-identico; 2 P2 novos registrados em .spec/tech-debts/harness-eixos-stack-p2/)",
     "P5_P6": "approved_user_2026_10_18 (VERIFY APPROVED 3/3 dimensoes; traceability 100%; ciclo arquivado; commit ab66c40 com trailer)",
     "P6_fim": "done_commit_63660a7 (trailer Harness-Gate-Change aceito; bugfix harness-eixos-stack-p2; push PENDENTE — 3 commits a frente de origin/main)",
@@ -73,14 +74,15 @@
       "B1_B2": "approved_user_2026_09_29",
       "FU32": "closed_approved_decision_B"
     },
-    "G2_ADR": "approved_user_2026_10_22 (4 ADRs aprovados; ADR-001 in-progress na branch adr/prd-garantias-runtime/01-modo-gate-no-env; merge humano)"
+    "G2_ADR": "approved_user_2026_11_11 (ADR-001 interface congelada de 16 itens)",
+    "G1_PRD": "approved_user_2026_11_11 (PRD-1 harness-inventory; D1-D7 fechadas; nenhum ADR criado antes do veredito)"
   },
   "code_review": {
-    "last_invoked_at": "2026-10-28T17:15:29.045891Z",
-    "last_status": "passed",
+    "last_invoked_at": "2026-11-11T00:00:00Z",
+    "last_status": "changes_required",
     "critical_issues": 0,
-    "attention_issues": 0,
-    "reviewer_notes": "CHANGES_REQUIRED corrigido: contagem 9->10, I3 deny-edit estendido, gate-contract I5 6 sem edit, workflow-rules padronizado, SKILLS_COMMON reordenado. Suites verdes."
+    "attention_issues": 6,
+    "reviewer_notes": "ADENDO 2026-11-11 (ciclo harness-inventory-adr-001): rodada 1 = APROVADO COM RESSALVAS (0 criticos, 3 atencao); rodada 2 apos correcao de prosa = CHANGES_REQUIRED com 6 atencao, todas em artefatos de governanca (ADR itens 5/12/14, N10, TASKS 'commit unico'/RV-12, este workflow-state com campos do ciclo anterior). Campos do ciclo anterior: batch 1 APPROVED, batch 2 APPROVED (re-review), batch 3 APPROVED."
   },
   "overrides": [
     {
@@ -176,9 +178,20 @@
         "adr": ".spec/prd/prd-garantias-runtime/ADRs/ADR-001-modo-gate-no-env/ADR.md"
       },
       "created": "2026-10-22T00:00:00Z"
+    },
+    {
+      "name": "harness-inventory",
+      "stage": "Discovery",
+      "progress": 10,
+      "type": "refactor",
+      "depends_on": [],
+      "artifacts": {
+        "prd": ".spec/prd/prd-harness-inventory/PRD.md"
+      },
+      "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-10-28T17:15:33.164594Z",
+  "last_update": "2026-11-11T15:29:10.821Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -198,34 +211,34 @@
     "U5": "c - dois ancoras",
     "U6": "b - selo de hash"
   },
-  "harness_status": "passed",
+  "harness_status": "pending (P4: qa-engineer deve produzir harness/harness-inventory.json antes de Completed)",
   "harness_evidence": "Batches 1-5 do ciclo harness-eixos-stack (2026-10-18) — 14/14 tasks. Estado final: plugins 352/352, installer 479/479, static 10 PASS/0 FAIL, vendor-check OK; dry-run 0 writes nos 2 presets web; transcript do wizard (escolha React) em .spec/backend/harness-eixos-stack/harness/; REPORT em harness/harness-eixos-stack.json (com desvio declarado C-1: counts omitido). Historico dos batches 1-2: Batch 1 (EX-BE-01/EX-VAL-02/EX-BE-03): plugins 352/352, installer 398/398, static exit 0, vendor OK; mutacao axes.frontend vue->react => 1 fail. Batch 2 (EX-BE-04/EX-BE-05/EX-VAL-06): plugins 352/352, installer 439/439, static 10 PASS/0 FAIL, vendor OK; provas do orquestrador: chave 'backend=node' (valida) => 2 fail; 'backend=react' (id invalido) => BAD_DECLARATION na carga; 'backend=none' sintetica => 0 fail (matcher por par). Nao-regressao vs HEAD: node/node-esm/outra/flutter/dart/java+vue com keys+bodies byte-identicos (129/129/129/151/141/129); so java+react difere pela exclusao pretendida. Refs penduradas do destino react congeladas em 12. gate.js/harness.config.json/.vendor-lock.json/.agents/rules = 0 linhas. I9 respeitado: apenas 2 imports + assert estrutural de chaves reescopado para superconjunto.",
-  "code_review_status": "passed",
-  "code_review_status_ciclo": "opencode-v2-only: batch 1 APPROVED, batch 2 APPROVED (re-review), batch 3 APPROVED (review final) — pareceres do code-reviewer, nao bloqueio (o bloqueio e a ancora B)",
-  "sdd_stage": "garantias-runtime-adr-001 (ADR-001) EXECUTION COMPLETA — 10/10 tasks MODO-01..MODO-10 implementadas e revisadas; proximo: VERIFY (fase 5, 3 dimensoes) + harness REPORT + PR (merge humano)",
+  "code_review_status": "changes_required (rodada 2 do ciclo harness-inventory-adr-001: 6 atencao em governanca; nenhum critico; correcoes de contrato aplicadas pelo orquestrador em 2026-11-11, pendente re-verificacao)",
+  "code_review_status_ciclo": "harness-inventory-adr-001: rodada 1 APPROVED_WITH_RESERVATIONS (3 atencao) -> rodada 2 CHANGES_REQUIRED (6 atencao, 0 criticos) -> correcoes de contrato pelo orquestrador; QA P4 pendente",
+  "sdd_stage": "harness-inventory-adr-001 EXECUTION: 11/12 microtasks implementadas (commits 1c8062b + 2b80685); RV-12 pendente (harness/harness-inventory.json). Proximo: P4 (qa-engineer) -> re-verificacao do code review -> P5 verify",
   "backlog": {
-    "total": 14,
-    "todo": 0,
+    "total": 13,
+    "todo": 1,
     "doing": 0,
-    "done": 14,
+    "done": 12,
     "ids": [
-      "IM-BE-01",
-      "IM-BE-02",
-      "IM-BE-03",
-      "IM-BE-04",
-      "IM-VAL-01",
-      "IM-BE-05",
-      "IM-BE-06",
-      "IM-VAL-02",
-      "IM-VAL-03",
-      "IM-VAL-04",
-      "IM-BE-07",
-      "IM-VAL-05",
-      "IM-DOC-01",
-      "IM-VAL-06"
+      "RV-01",
+      "RV-02",
+      "RV-03",
+      "RV-04",
+      "RV-05",
+      "RV-06",
+      "RV-07",
+      "RV-08",
+      "RV-09",
+      "RV-10",
+      "RV-11"
+    ],
+    "pendente": [
+      "RV-12 (harness report)"
     ]
   },
-  "next_task": null,
+  "next_task": "RV-12",
   "plan_score": 1,
   "tasks_score": 1,
   "active_batch": {
@@ -708,6 +721,38 @@
       "texto": "P3: (a) o residual de `outra` nao e travado por teste (so comentario) — um teste que congele `defaultSuiteFor('outra') === ''` converteria decisao em guarda; (b) a nao-regressao do incoming INTEIRO (skills+rules nos 7 presets) foi medida ad-hoc pelo QA/reviewer, nao pela suite — a suite cobre so skills locais.",
       "bloqueia": false,
       "severidade": "P3"
+    },
+    {
+      "id": "FU-63",
+      "created_at": "2026-11-11T15:04:48.840Z",
+      "origem": "architect RESEARCH PRD-1",
+      "texto": "CONTRADICAO NORMATIVA: .agents/rules/prd-adr-pipeline.md secao 1 manda PRD->RESEARCH->ADR-INDEX->ADR, mas .agents/skills/prd-adr-pipeline/checks.mjs exige 1:1 indice<->disco (ADR-01). O intervalo indice escrito sem 1o ADR e inexequivel com suite verde. Decidir: (a) indice nasce junto do 1o ADR (precedente 02e7f96), (b) aceitar vermelho ate G2, (c) emendar a rule.",
+      "bloqueia": false,
+      "severidade": "P2"
+    },
+    {
+      "id": "FU-64",
+      "created_at": "2026-11-11T15:04:48.840Z",
+      "origem": "orquestrador PRD-1",
+      "texto": "PRD-1 publicou 2 contagens erradas corrigidas pelo orquestrador em 2026-11-11: refs a sdd-orquestrador 7->10; paths de rule citados 13->20 (13 ausentes de 20). Licao: contar antes de filtrar.",
+      "bloqueia": false,
+      "severidade": "P3"
+    },
+    {
+      "id": "FU-65",
+      "created_at": "2026-11-11T15:09:55.312Z",
+      "origem": "architect ADR-001",
+      "texto": "C7 do ADR-001: gate.js KNOWN_AGENTS (gate.js:635-643) lista 6 nomes + unknown, mas o roster tem 9 agentes; 4 registrados hoje caem em unknown nos DenyError.details. Alinhar e mudanca em .opencode/plugins/** (protectedPath).",
+      "bloqueia": false,
+      "severidade": "P3"
+    },
+    {
+      "id": "FU-66",
+      "created_at": "2026-11-11T15:09:55.312Z",
+      "origem": "architect ADR-001",
+      "texto": "ADR-001 itens 9 e 10 tocam .agents/rules/** (protectedPaths) => o SDD do ADR exige trailer Harness-Gate-Change e passa pelo CI.",
+      "bloqueia": false,
+      "severidade": "P2"
     }
   ],
   "batches": [
@@ -1029,16 +1074,64 @@
     "env": "HARNESS_GATES=off (host)"
   },
   "prd_adr": {
-    "prd_id": "prd-garantias-runtime",
+    "prd_id": "prd-harness-inventory",
     "prd_status": "approved",
     "active_adr": "ADR-001",
-    "adr_order": [
-      "ADR-001",
-      "ADR-002",
-      "ADR-003",
-      "ADR-004"
+    "adr_order": [],
+    "snapshots": [],
+    "decisions_closed": {
+      "D1_D2": "retirar sdd-orquestrador + consolidar roster (funde codebase-analyzer em architect, remove stub code-reviewer/AGENT.md)",
+      "D3": "manter vendor-by-axis (25 vendorizadas classificadas pelo .vendor-lock.json, sem exigir agente consumidor)",
+      "D4": "reclassificar prd-adr-pipeline como modulo de checks+rules, reapontar 4 agentes",
+      "D5": "classificar prosa orfa neste ciclo; corrigir o texto no PRD 2",
+      "D6": "agente planner, modo subagent, consome skill dev-planner; 3 refs de planejador reapontadas",
+      "D7": "fechada: lista canonica = 10 itens"
+    },
+    "adr_plan": [
+      {
+        "order": 1,
+        "id": "ADR-001",
+        "titulo": "Roster de agentes: 1 primario, fusao codebase-analyzer->architect, remocao do stub, saida do sdd-orquestrador (10 refs)",
+        "depende_de": [],
+        "branch": "adr/prd-harness-inventory/01-roster-de-agentes",
+        "status": "in-progress",
+        "commit": "5dcc0e0",
+        "gate": "G2 pendente (interface congelada de 16 itens)"
+      },
+      {
+        "order": 2,
+        "id": "ADR-002",
+        "titulo": "prd-adr-pipeline reclassificado como modulo (path, formato, 4 reapontamentos, impacto no installer)",
+        "depende_de": [],
+        "branch": "adr/prd-harness-inventory/02-prd-adr-pipeline-modulo"
+      },
+      {
+        "order": 3,
+        "id": "ADR-003",
+        "titulo": "Agente planner (subagent, consome dev-planner, fronteira com 4 vizinhos)",
+        "depende_de": [
+          "ADR-001"
+        ],
+        "branch": "adr/prd-harness-inventory/03-agente-planner"
+      },
+      {
+        "order": 4,
+        "id": "ADR-004",
+        "titulo": "Inventario canonico re-derivavel + classificacao das 49 skills (vendor-by-axis)",
+        "depende_de": [],
+        "branch": "adr/prd-harness-inventory/04-inventario-canonico"
+      },
+      {
+        "order": 5,
+        "id": "ADR-005",
+        "titulo": "Classificacao da prosa orfa (8 paths acionaveis, 5 vendor-internal, .doc, AGENTS.md, frontend/DESIGN.md)",
+        "depende_de": [],
+        "branch": "adr/prd-harness-inventory/05-prosa-orfa"
+      }
     ],
-    "snapshots": []
+    "prd_verdict": "approved_user_2026_11_11",
+    "research": ".spec/prd/prd-harness-inventory/RESEARCH.md (248 linhas; 9 fontes abertas; 5 secoes de tema; §9 com 8 riscos; §11 com o ledger pronto)",
+    "adr_index_status": "materializado: 1 linha (ADR-001 in-progress) porque ADR-01 exige 1:1 indice<->disco; plano das 5 vive em adr_plan + PRD secao 16"
   },
   "escalations": [
     {
@@ -1658,5 +1751,55 @@
     "branch": "adr/prd-garantias-runtime/01-modo-gate-no-env",
     "pr": "pendente (merge humano)",
     "commits": 6
+  },
+  "program": {
+    "nome": "harness-refactor-2026-11",
+    "origem": "demanda do owner 2026-11-11 (10 itens enumerados: 1 rust-cli, 2 agentes, 3 skills, 4 agnosticismo, 5 frontend-fusion, 6 instalacao-sem-invencao, 7 axes-split, 8 mobile, 9 forge, 10 agente-de-planejamento)",
+    "aceite_global": "D = suiteFull verde + golden por preset + dogfood byte-a-byte + H3 com screenshots",
+    "prds": [
+      {
+        "id": "prd-harness-inventory",
+        "ordem": 1,
+        "escopo": "inventario 1:1 agentes/skills/rules + roster de agentes + agente de planejamento",
+        "status": "draft"
+      },
+      {
+        "id": "prd-agnostic-artifacts",
+        "ordem": 2,
+        "escopo": "agnosticizacao de skills/rules (FU-47) + levantamento de skills",
+        "status": "planned"
+      },
+      {
+        "id": "prd-installer-rust",
+        "ordem": 3,
+        "escopo": "CLI Rust, reescrita completa do instalador, paridade dos 12 presets, TUI",
+        "status": "planned"
+      },
+      {
+        "id": "prd-axes-split",
+        "ordem": 4,
+        "escopo": "backend/frontend separados sem combo + perfis go/rust (FU-46) + mobile flutter/dart (FU-53)",
+        "status": "planned"
+      },
+      {
+        "id": "prd-frontend-harness-fusion",
+        "ordem": 5,
+        "escopo": "incorporar o harness de frontend ao projeto",
+        "status": "planned"
+      },
+      {
+        "id": "prd-forge-integration",
+        "ordem": 6,
+        "escopo": "commit/push/PR + issues em forge (github ou outro)",
+        "status": "planned"
+      }
+    ],
+    "fora_deste_ciclo": [
+      "CLI Rust",
+      "separacao backend/frontend",
+      "fusao do harness de frontend",
+      "forge/commit/push/issues"
+    ],
+    "d7": "closed_orquestrador_2026_11_11 (contagem 8 era erro do orquestrador no bloco PICCO; canonico = 10 itens)"
   }
 }
