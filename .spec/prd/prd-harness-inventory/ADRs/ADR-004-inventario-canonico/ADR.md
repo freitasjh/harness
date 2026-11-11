@@ -139,7 +139,7 @@ Cada item é verificável por comando, da raiz do repo. Onde a verificação dep
 5. **Fechamento aritmético por tipo, publicado em PASS.** `counters` carrega `agents`, `skills.{vendor-by-axis,consumer,axis,orphan}`, `rules.{consumer,axis,orphan}`, `vendorCited`, `lockPresent` — o detalhe do `V19` narra a mesma conta que o `RF-04` exige (`48 = 25 + 22 + 1`, `8 = 7 + 1 + 0`, `10 = 10 + 0`).
    *Verificação (SDD)*: `node --test .opencode/plugins/__tests__/inventory.spec.mjs` ⇒ 0 fail; `node scripts/static-checks.mjs | grep V19` ⇒ a linha de PASS contém `skills=48` e `vendorCited=`.
 
-6. **Registry com 5 campos obrigatórios, e ele é o único literal.** Toda entrada de `OWNER_DECISIONS` tem `{ id, kind, owner, decision, reason, proof }`; `proof` é `path:line`.
+6. **Registry com 7 campos obrigatórios, e ele é o único literal.** Toda entrada de `OWNER_DECISIONS` tem `{ subject, class, owner, decision, reason, proof, expiresWhen }`; `proof` é `path:line` que **nomeia o `owner` ou o `subject`** e **não é o artefato do próprio sujeito**; `expiresWhen` é **superset** de `EXPIRY_CONDITIONS[class]` (conjunto fechado e executado — N21/N23).
    *Verificação*: `node -e 'import("./.opencode/plugins/lib/inventory/checks.mjs").then(m=>console.log(m.OWNER_DECISIONS.length, m.OWNER_DECISIONS.every(e=>e.owner&&e.decision&&e.reason&&e.proof)))'` ⇒ `1 true` no pós-SDD; hoje o valor equivalente é a contagem de órfãos: `1`.
 
 7. **Órfão novo reprova; órfão decidido passa.** Uma skill/rule/agente criado sem classe e sem decisão ⇒ `inventory-artifact-untracked` FAIL. Com entrada completa ⇒ PASS.
@@ -176,7 +176,7 @@ Cada item é verificável por comando, da raiz do repo. Onde a verificação dep
 
 **C4 — O lock ausente no destino é comportamento declarado, não bug pendente.** Se o PRD 3/4 quiser que o destino derive a classe de skill, isso exige **propagar o `.vendor-lock.json`** — mudança no instalador (`install.mjs:1739`) e, por consequência, decisão sobre expor `source`/`commit` de terceiros no destino. **Fora deste ADR**, registrado aqui para não ser decidido por acidente.
 
-**C5 — Custo de manutenção recorrente: 1 linha por órfão novo, 0 por artefato classificado.** Adicionar uma skill com consumidor não toca nada. Adicionar uma skill sem consumidor custa **1 entrada de 6 campos** em `OWNER_DECISIONS` — e essa é a fricção desejada: a decisão é humana, e o preço de não decidir é a suíte vermelha.
+**C5 — Custo de manutenção recorrente: 1 linha por órfão novo, 0 por artefato classificado.** Adicionar uma skill com consumidor não toca nada. Adicionar uma skill sem consumidor custa **1 entrada de 7 campos** em `OWNER_DECISIONS` — e essa é a fricção desejada: a decisão é humana, e o preço de não decidir é a suíte vermelha.
 
 **C6 — 🟠 Escape declarado.** O adapter em `scripts/static-checks.mjs` não é `protectedPaths`; remover a chamada de `checkInventory()` desliga o check sem trailer. Ancora final é CI + diff revisado (mesmo estatuto do `ADR-005`), não runtime.
 
@@ -289,3 +289,5 @@ node --test .opencode/plugins/__tests__/inventory.spec.mjs
 - **N25 — lock ilegível era tratado como ausente (I4 do review).** `loadLock` devolvia `null` para arquivo **ausente** e para arquivo **inválido**, publicando `lockPresent=false` — mentira sobre um input presente. Passa a distinguir: ausente ⇒ `lockPresent=false` (legítimo no destino); **inválido ⇒ FAIL**.
 - **N26 — declaração fantasma só falava pelo agregado (I3 do review).** `SKILLS_COMMON` com nome sem diretório não tinha id de causa; o fechamento aceitava par compensatório (remove 1, inventa 1). Id próprio `inventory-declaration-phantom` acrescentado.
 - **N27 — a justificativa escrita do import estava errada (achado do review).** O código faz `import { SKILLS_BY_AXIS, RULES_BY_AXIS, … } from "../installer/install.mjs"`; o comentário descrevia "leitura de arquivo/parse de fonte". Não há parse: `install.mjs` é **módulo**, o CLI é guardado por `import.meta.url === file://${process.argv[1]}` (`install.mjs:2746`), e o import custa ~17ms sem efeito colateral. O desenho **está correto** (contrato do dono em vez de gramática de código); a prosa é que mentia. Corrigida no código (`static-checks.mjs:47-54,73-76`; `checks.mjs:268-272`). É o mesmo defeito DOC-01 que este PRD vem caçando: descrição de mecanismo inexistente.
+
+- **N28 — R6 do review: N23 afirmou emenda que o item 6 não tinha.** O item 6 continuava dizendo "5 campos" e enumerando 6, enquanto o código usa 7. Corrigido agora no próprio item 6 e em C5. Lição repetida do ADR-003: **nota que descreve emenda não é emenda** — o texto normativo tem de mudar.
