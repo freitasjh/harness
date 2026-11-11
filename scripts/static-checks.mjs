@@ -439,7 +439,7 @@ function inventoryClosure(c) {
   return `skills=${c.skills.total} (vendor-by-axis=${c.skills["vendor-by-axis"]}, consumer=${c.skills.consumer}, axis=${c.skills.axis}, orphan=${c.skills.orphan})`
     + `, rules=${c.rules.total} (consumer=${c.rules.consumer}, axis=${c.rules.axis}, orphan=${c.rules.orphan})`
     + `, agents=${c.agents.registered + c.agents.orphan}/${c.agents.registry} (registered=${c.agents.registered}, orphan=${c.agents.orphan})`
-    + `, vendorCited=${c.vendorCited}, lockPresent=${c.lockPresent}, owner-decisions=${c.ownerDecisions}`;
+    + `, vendorCited=${c.vendorCited}, lockPresent=${c.lockPresent}, owner-decisions=${c.ownerDecisions}, pendingRemoval=${c.pendingRemoval}`;
 }
 
 function checkInventory(root = REPO_ROOT) {

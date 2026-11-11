@@ -2,7 +2,7 @@
 //
 // Contract (SPEC RF-01/RF-12): `runInventoryChecks(root, options)` devolve
 //   { ok, results: [{ id, status, detail, counters }], counters }
-// com os 7 ids da ADR-004 §2.4 e `counters` de fechamento em PASS e em FAIL.
+// com os 10 ids da ADR-004 §2.4 e `counters` de fechamento em PASS e em FAIL.
 //
 // Regra desta spec, herdada de `refs.spec.mjs`: cada modo de falha é provado
 // por FIXTURE QUE O DERRUBA — árvore em `tempScope`, mutação REAL (um arquivo,
@@ -19,13 +19,14 @@
 // decidida), 8 rules (7 + 1 de eixo), 10 agentes registrados.
 import { describe, it, after, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, symlinkSync } from "node:fs";
 import { join } from "node:path";
 import { tempScope } from "../../../scripts/test-temp.mjs";
 import { REPO_ROOT } from "../lib/config.mjs";
 import {
   CLASS_LABELS,
   DECISION_FIELDS,
+  DECISION_VALUES,
   EXPIRY_CONDITIONS,
   OWNER_DECISIONS,
   PROMPT_REF_RE,
@@ -37,6 +38,7 @@ import {
   normalizeRef,
   parseProof,
   runInventoryChecks,
+  stripHtmlComments,
 } from "../lib/inventory/checks.mjs";
 import { inventoryCheckResults, runStaticChecks } from "../../../scripts/static-checks.mjs";
 import {
@@ -115,6 +117,7 @@ const ALL_IDS = [
   "inventory-class-ambiguous",
   "inventory-attendance-drift",
   "inventory-lock-disk-mismatch",
+  "inventory-skill-without-manifest",
   "inventory-lock-unreadable",
   "inventory-declaration-phantom",
   "inventory-agent-prompt-unresolved",
@@ -123,7 +126,7 @@ const ALL_IDS = [
 ];
 
 describe("PI-01 — módulo puro, root injetável, contrato de saída", () => {
-  it("os 9 ids da ADR §2.4 existem sempre, com status PASS|FAIL e detail string", () => {
+  it("os 10 ids da ADR §2.4 existem sempre, com status PASS|FAIL e detail string", () => {
     const report = check(fixture(baseFiles()));
     assert.deepEqual(report.results.map((r) => r.id), ALL_IDS);
     for (const r of report.results) {
@@ -316,9 +319,12 @@ describe("PI-04 — lock↔disco nas duas direções", () => {
       ".agents/skills/skill-util/README.md": "# sem SKILL.md\n",
     });
     delete files[".agents/skills/skill-util/SKILL.md"]; // ÚNICA diferença
-    const r = byId(check(fixture(files)), "inventory-lock-disk-mismatch");
+    const report = check(fixture(files));
+    const r = byId(report, "inventory-lock-disk-mismatch");
     assert.equal(r.status, "FAIL");
     assert.match(r.detail, new RegExp(`skill-util .*sem ${SKILL_ENTRY_NAME}`));
+    // R7 (shape irmão): o mesmo diretório também não é skill — o manifesto faltou.
+    assert.equal(byId(report, "inventory-skill-without-manifest").status, "FAIL");
   });
 
   it("chave do lock com diretório e SKILL.md ⇒ PASS (controle do par)", () => {
@@ -355,6 +361,59 @@ describe("PI-04 — lock↔disco nas duas direções", () => {
     assert.equal(byId(absent, "inventory-lock-unreadable").status, "PASS");
     assert.equal(absent.counters.lockUnreadable, false);
     assert.match(byId(absent, "inventory-lock-disk-mismatch").detail, /ausente/);
+  });
+
+  it("R1 — lock como DIRETÓRIO é input presente ilegível, nunca ausente", () => {
+    const files = baseFiles();
+    delete files[".agents/skills/.vendor-lock.json"];
+    // o path do lock existe, mas é diretório: `isFile()` devolvia false ⇒ absent.
+    files[".agents/skills/.vendor-lock.json/placeholder"] = "não é lock\n";
+    const report = check(fixture(files));
+    const r = byId(report, "inventory-lock-unreadable");
+    assert.equal(r.status, "FAIL", r.detail);
+    assert.match(r.detail, /ilegível/);
+    assert.equal(report.counters.lockPresent, false);
+    assert.equal(report.counters.lockUnreadable, true);
+    assert.match(byId(report, "inventory-lock-disk-mismatch").detail, /ilegível/);
+    assert.equal(report.ok, false);
+  });
+
+  it("R1 — symlink QUEBRADO no path do lock também é presente, não ausente", () => {
+    const files = baseFiles();
+    delete files[".agents/skills/.vendor-lock.json"];
+    const root = fixture(files);
+    // `existsSync` segue o link e diria `false`; o elo existe no disco.
+    symlinkSync("alvo-inexistente.json", join(root, ".agents/skills/.vendor-lock.json"));
+    const report = check(root);
+    const r = byId(report, "inventory-lock-unreadable");
+    assert.equal(r.status, "FAIL", r.detail);
+    assert.match(r.detail, /ilegível/);
+    assert.equal(report.counters.lockUnreadable, true);
+    assert.equal(report.ok, false);
+  });
+});
+
+describe("PI-04b — R7: skill é o diretório COM SKILL.md", () => {
+  it("diretório só com README não é skill e tem id próprio ⇒ FAIL", () => {
+    const root = fixture(
+      baseFiles({ ".agents/skills/skill-sem-manifesto/README.md": "# só README\n" }),
+    );
+    const report = check(root);
+    const r = byId(report, "inventory-skill-without-manifest");
+    assert.equal(r.status, "FAIL");
+    assert.match(r.detail, /skill-sem-manifesto/);
+    assert.match(r.detail, /sem SKILL\.md/);
+    // a contagem continua medindo o manifesto: as 2 skills reais, não o diretório.
+    assert.equal(report.counters.skills.total, 2);
+    assert.equal(report.ok, false);
+  });
+
+  it("controle: diretório COM SKILL.md continua skill e o id fica PASS", () => {
+    const report = check(fixture(baseFiles()));
+    const r = byId(report, "inventory-skill-without-manifest");
+    assert.equal(r.status, "PASS");
+    assert.match(r.detail, /sem SKILL\.md=0 \(2 skill\(s\)/);
+    assert.equal(report.counters.skills.total, 2);
   });
 });
 
@@ -501,6 +560,121 @@ describe("PI-05/PI-06 — o registry de decisões de dono, e ele expira", () => 
     assert.match(r.detail, /skill:skill-orfa: entrada duplicada/);
     assert.equal(report.counters.ownerDecisions, 2);
     assert.equal(report.ok, false);
+  });
+
+  it("R2 — proof de agente em opencode.json é o artefato do próprio sujeito ⇒ FAIL", () => {
+    const files = baseFiles({ ".agents/agents/agente-orfao/AGENT.md": "# sem chave no registro\n" });
+    const decision = {
+      subject: "agente-orfao",
+      class: "agent",
+      owner: "fluxo de teste (fixture)",
+      decision: "keep",
+      reason: "órfão deliberado deste fixture",
+      proof: "opencode.json:1",
+      expiresWhen: ["subject-absent", "gained-registry"],
+    };
+    const report = check(fixture(files), { decisions: [decision] });
+    const r = byId(report, "owner-decision-incomplete");
+    assert.equal(r.status, "FAIL");
+    assert.match(r.detail, /opencode\.json é o artefato do próprio sujeito .*prova tautológica/);
+    assert.equal(report.ok, false);
+  });
+
+  it("R2 — proof em .spec/** reprova: snapshot datado não é fonte autoritativa", () => {
+    const files = baseFiles({
+      ".spec/prd/x/ADR.md": "# ADR (snapshot)\n- skill-orfa: órfã deliberada\n",
+    });
+    const decision = { ...DECISION_OK, proof: ".spec/prd/x/ADR.md:2" };
+    const report = check(fixture(files), { decisions: [decision] });
+    const r = byId(report, "owner-decision-incomplete");
+    assert.equal(r.status, "FAIL");
+    assert.match(r.detail, /\.spec\/\*\* .*snapshot datado não é fonte autoritativa/);
+    assert.equal(report.ok, false);
+  });
+
+  it("R3 — citação em comentário HTML não compra `consumer`; com decisions=[] a órfã reprova", () => {
+    const files = baseFiles({
+      [PROMPT_A]: "# agente-a\n<!-- skill-orfa --> consome skill-util e rule-um.md\n",
+    });
+    const report = check(fixture(files), { decisions: [] });
+    const row = report.artifacts.skills.find((r) => r.id === "skill-orfa");
+    assert.equal(row.cited, false, "comentário HTML não é citação viva");
+    assert.equal(row.class, "orphan+decision");
+    const r = byId(report, "inventory-artifact-untracked");
+    assert.equal(r.status, "FAIL");
+    assert.match(r.detail, /skill:skill-orfa/);
+    assert.equal(report.ok, false);
+    // shape irmão: a citação REAL movida para fora do comentário continua valendo.
+    const real = fixture(
+      baseFiles({ [PROMPT_A]: "# agente-a\nconsome skill-util, skill-orfa e rule-um.md\n" }),
+    );
+    const realReport = check(real, { decisions: [] });
+    const realRow = realReport.artifacts.skills.find((r) => r.id === "skill-orfa");
+    assert.equal(realRow.cited, true);
+    assert.equal(realRow.class, "consumer");
+    assert.equal(realReport.ok, true, JSON.stringify(realReport.results.filter((r) => r.status === "FAIL")));
+    assert.equal(stripHtmlComments("a <!-- x --> b"), "a  b");
+  });
+
+  it("R4 — agente órfão COM decisão fecha a equação (orphan+decision alcançável em verde)", () => {
+    const files = baseFiles({
+      ".agents/agents/agente-orfao/AGENT.md": "# sem chave no registro\n",
+      "docs/decisoes.md":
+        "# decisões do fixture\n- skill-orfa: órfã deliberada (owner: fluxo de teste)\n- agente-orfao: órfão deliberado (owner: fluxo de teste)\n",
+    });
+    const decision = {
+      subject: "agente-orfao",
+      class: "agent",
+      owner: "fluxo de teste (fixture)",
+      decision: "keep",
+      reason: "órfão deliberado deste fixture",
+      proof: "docs/decisoes.md:3",
+      expiresWhen: ["subject-absent", "gained-registry"],
+    };
+    const report = check(fixture(files), { decisions: [DECISION_OK, decision] });
+    assert.equal(byId(report, "inventory-attendance-drift").status, "PASS", byId(report, "inventory-attendance-drift").detail);
+    assert.equal(byId(report, "inventory-artifact-untracked").status, "PASS");
+    assert.equal(report.counters.agents.orphan, 1);
+    assert.equal(report.counters.agents.decided, 1);
+    assert.equal(report.ok, true, JSON.stringify(report.results.filter((r) => r.status === "FAIL")));
+  });
+
+  it("R4 — o inverso: o MESMO órfão sem decisão quebra a equação e reprova", () => {
+    const files = baseFiles({ ".agents/agents/agente-orfao/AGENT.md": "# sem chave no registro\n" });
+    const report = check(fixture(files));
+    const drift = byId(report, "inventory-attendance-drift");
+    assert.equal(drift.status, "FAIL");
+    assert.match(drift.detail, /agents: registro=2 .*orphan\(non-decided\)=1/);
+    assert.equal(byId(report, "inventory-artifact-untracked").status, "FAIL");
+    assert.equal(report.ok, false);
+  });
+
+  it("R5 — decision fora do enum fechado reprova (TBD não é decisão)", () => {
+    const broken = { ...DECISION_OK, decision: "TBD" };
+    const report = check(fixture(baseFiles()), { decisions: [broken] });
+    const r = byId(report, "owner-decision-incomplete");
+    assert.equal(r.status, "FAIL");
+    assert.match(r.detail, new RegExp(`decision fora do enum \\{${DECISION_VALUES.join(", ")}\\}`));
+
+    const inverted = { ...DECISION_OK, decision: "REMOVE" };
+    assert.equal(
+      byId(check(fixture(baseFiles()), { decisions: [inverted] }), "owner-decision-incomplete").status,
+      "FAIL",
+      "o enum é case-sensitive: o valor executado é literal",
+    );
+    assert.deepEqual([...DECISION_VALUES], ["keep", "remove"]);
+  });
+
+  it("R5 — decision `remove` é válida e publica pendingRemoval=1", () => {
+    const remove = { ...DECISION_OK, decision: "remove" };
+    const report = check(fixture(baseFiles()), { decisions: [remove] });
+    const r = byId(report, "owner-decision-incomplete");
+    assert.equal(r.status, "PASS");
+    assert.match(r.detail, /pendingRemoval=1/);
+    assert.equal(report.counters.pendingRemoval, 1);
+    assert.equal(report.ok, true, JSON.stringify(report.results.filter((x) => x.status === "FAIL")));
+    // shape irmão: `keep` é válido e NÃO entra na dívida de remoção.
+    assert.equal(check(fixture(baseFiles())).counters.pendingRemoval, 0);
   });
 });
 
@@ -655,7 +829,7 @@ describe("PI-10 — adapter V19 no runner selado e o repo real", () => {
     assert.match(v19.detail, /inventory-attendance-drift/);
   });
 
-  it("adapter expõe os mesmos 9 ids do módulo (uma implementação, dois acessos)", () => {
+  it("adapter expõe os mesmos 10 ids do módulo (uma implementação, dois acessos)", () => {
     const ids = inventoryCheckResults().map((r) => r.id);
     assert.deepEqual(ids, ALL_IDS);
   });

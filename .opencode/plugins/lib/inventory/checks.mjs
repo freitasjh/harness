@@ -1,7 +1,7 @@
 // checks.mjs — inventário canônico (ADR-004): superfície derivada, não documento.
 //
 // Contract (SPEC RF-01/RF-03): `deriveInventory(root, options)` deriva o
-// inventário; `runInventoryChecks(root, options)` transforma os achados nos 9
+// inventário; `runInventoryChecks(root, options)` transforma os achados nos 10
 // vereditos da ADR-004 §2.4 e devolve
 //   { ok: boolean, results: [{ id, status: "PASS"|"FAIL", detail, counters }],
 //     counters, artifacts, findings }
@@ -34,6 +34,20 @@
 //   - `(class, subject)` único — duplicata reprova (I2).
 //   - `proof` só de arquivo legível: lock existente e ilegível é FAIL próprio
 //     (`inventory-lock-unreadable`), nunca `lockPresent=false` (I4/N25).
+//   - Input PRESENTE que não é arquivo — diretório, symlink quebrado — também é
+//     `inventory-lock-unreadable`: `isFile()` como primeiro filtro devolvia
+//     `absent` e a classificação escolhia a própria validade (R1).
+//   - `proof` do sujeito `agent` não pode ser o `opencode.json` (é o próprio
+//     registro do sujeito) e nenhuma prova pode vir de `.spec/**` — snapshot
+//     datado não é autoritativo (R2, ADR-004 §2.1).
+//   - Citação em comentário HTML não compra `consumer`: o corpus do roster é
+//     lido sem `<!-- … -->` antes de `citesToken` (R3).
+//   - `orphan+decision` é alcançável em verde: a equação de agentes desconta o
+//     órfão DECIDIDO; sem decisão ele continua quebrando o fechamento (R4).
+//   - `decision` é enum fechado `{keep, remove}`: `remove` é válido, mas o
+//     check publica `pendingRemoval` — decisão não executada não é decisão (R5).
+//   - Skill é diretório COM `SKILL.md`; diretório sem manifesto tem id próprio
+//     (`inventory-skill-without-manifest`), nunca conta como skill (R7).
 //
 // Duas derivações que o agregado escondia e agora nomeiam a causa: declaração
 // do instalador sem artefato no disco (`inventory-declaration-phantom`, I3/N26)
@@ -90,7 +104,7 @@
 // child process, sem gravação. Vive em `.opencode/plugins/lib/**` — caminho que
 // o instalador propaga (`install.mjs:107`) — e recebe `root` injetável, então
 // o destino herda o código, não um veredito falso.
-import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync, statSync, lstatSync } from "node:fs";
 import { join } from "node:path";
 
 // --- Layout declarado -----------------------------------------------------
@@ -135,6 +149,12 @@ export const DECISION_FIELDS = Object.freeze([
   "expiresWhen",
 ]);
 
+// `decision` é enum FECHADO (R5). `keep` mantém o artefato e a entrada é a
+// justificativa; `remove` declara que o dono VAI remover — a entrada continua
+// válida (o órfão não vira untracked no meio da remoção), mas o check publica
+// `pendingRemoval` para que "decidido" não seja confundido com "resolvido".
+export const DECISION_VALUES = Object.freeze(["keep", "remove"]);
+
 // --- Registry: a ÚNICA literal do inventário -----------------------------
 // Uma entrada por artefato `orphan+decision`. `subject`/`class` nomeiam
 // `id`/`kind` do ADR-004 §3 item 6 e `decision` carrega o veredito do dono
@@ -169,6 +189,14 @@ export function citesToken(text, token) {
   if (typeof text !== "string" || typeof token !== "string" || token === "") return false;
   const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return new RegExp(`(?<![A-Za-z0-9_-])${escaped}(?![A-Za-z0-9_-])`).test(text);
+}
+
+// Comentário HTML não é citação viva (R3): `<!-- harness-installer -->` num
+// prompt do roster tornava a órfã `consumer` e dispensava a decisão de dono.
+// A remoção é do CORPUS, não do token: quem escreve em prosa normal continua
+// citando, quem esconde em comentário não.
+export function stripHtmlComments(text) {
+  return String(text ?? "").replace(/<!--[\s\S]*?-->/g, "");
 }
 
 function readText(file) {
@@ -231,11 +259,13 @@ export function parseProof(proof) {
 // `proof: .agents/skills/<id>:1` satisfazia a letra da regra e provava nada.
 // Prefixo por tipo, derivado do layout declarado acima — sem heurística de
 // nome: o layout já é a gramática do check, não um palpite sobre o artefato.
+// Para `agent` o registro É o artefato do sujeito (R2): `opencode.json` é o
+// lugar onde o agente existe, então citá-lo como prova é tautologia.
 export function ownArtifactPrefixes(kind, subject) {
   const id = String(subject ?? "");
   if (kind === "skill") return [`${SKILLS_DIR}/${id}/`];
   if (kind === "rule") return [`${RULES_DIR}/${id}`];
-  if (kind === "agent") return [`${AGENTS_DIR}/${id}/`];
+  if (kind === "agent") return [`${AGENTS_DIR}/${id}/`, REGISTRY_FILE];
   return [];
 }
 
@@ -355,9 +385,28 @@ function loadRoster(root) {
 // única forma de classificar skill. Devolver `null` para ausente **e** inválido
 // publicava `lockPresent=false` sobre um arquivo que existe — mentira sobre
 // input presente, e a mentira escolhia a própria validade.
+//
+// `existsSync` sozinho não basta (R1): ele segue o link e devolve `false` para
+// symlink QUEBRADO, e `isFile()` devolve `false` para diretório — os dois casos
+// caíam em `absent` com 48 skills suspensas e `V19` verde. O primeiro teste é
+// `lstat` (o elo existe?), e "presente mas não arquivo" é `unreadable`.
 function loadLock(root) {
   const file = join(root, SKILLS_DIR, VENDOR_LOCK_NAME);
-  if (!isFile(file)) return { status: "absent", skills: null };
+  let entry;
+  try {
+    entry = lstatSync(file);
+  } catch {
+    return { status: "absent", skills: null };
+  }
+  if (!entry.isFile()) {
+    let readableFile = false;
+    try {
+      readableFile = statSync(file).isFile(); // symlink válido aponta para arquivo
+    } catch {
+      readableFile = false; // symlink quebrado
+    }
+    if (!readableFile) return { status: "unreadable", skills: null };
+  }
   const lock = readJson(file);
   const skills = lock && lock.skills && typeof lock.skills === "object" && !Array.isArray(lock.skills) ? lock.skills : null;
   if (!skills) return { status: "unreadable", skills: null };
@@ -367,7 +416,9 @@ function loadLock(root) {
 function corpusOf(root, roster) {
   const parts = roster.prompts.map((p) => (p.file ? readText(join(root, p.file)) : ""));
   parts.push(readText(join(root, REGISTRY_FILE)));
-  return parts.join("\n");
+  // R3: comentário HTML morre ANTES da citação — senão a isenção era comprada
+  // por um `<!-- id -->` no prompt (e o mesmo vale para o texto do registry).
+  return stripHtmlComments(parts.join("\n"));
 }
 
 function findRow(rows, subject) {
@@ -400,6 +451,17 @@ function reviewEntryShape(entry, index) {
   }
   if (!isKind(entry.class)) {
     issues.push(`class fora do enum {skill, rule, agent} ("${entry.class ?? ""}")`);
+  }
+  // R5: `decision` não é adjetivo livre. Valor fora do enum é decisão que
+  // ninguém executa — a forma exata da "supressão permanente com outro nome".
+  if (
+    typeof entry.decision === "string" &&
+    entry.decision.trim() !== "" &&
+    !DECISION_VALUES.includes(entry.decision)
+  ) {
+    issues.push(
+      `decision fora do enum {${DECISION_VALUES.join(", ")}} ("${entry.decision}") — decisão não executada não isenta`,
+    );
   }
   if (!Array.isArray(entry.expiresWhen) || entry.expiresWhen.length === 0) {
     issues.push("expiresWhen ausente (decisão sem prazo de validade)");
@@ -435,8 +497,17 @@ function reviewEntryProof(entry, root) {
     return issues;
   }
   const file = normalizeRef(parsed.file);
-  const isOwnArtifact = ownArtifactPrefixes(entry.class, entry.subject).some(
-    (prefix) => file === prefix || file.slice(0, prefix.length) === prefix,
+  // R2: `.spec/**` é snapshot datado e NÃO autoritativo (ADR-004 §2.1). Uma
+  // prova ali citaria a fotografia, não o fluxo — o snapshot envelhece e o
+  // registry passaria a se apoiar na cópia que ele existe para substituir.
+  if (file === ".spec" || file.slice(0, 6) === ".spec/") {
+    issues.push(
+      `proof ${parsed.file} está em .spec/** — snapshot datado não é fonte autoritativa (ADR-004 §2.1)`,
+    );
+    return issues;
+  }
+  const isOwnArtifact = ownArtifactPrefixes(entry.class, entry.subject).some((prefix) =>
+    prefix.slice(-1) === "/" ? file.slice(0, prefix.length) === prefix : file === prefix,
   );
   if (isOwnArtifact) {
     issues.push(
@@ -490,6 +561,7 @@ function reviewDecisions(decisions, ctx) {
   const stale = [];
   const effective = new Set();
   const seen = new Map();
+  const pendingRemoval = [];
   decisions.forEach((entry, index) => {
     const { label, issues } = reviewEntryShape(entry, index);
     if (issues.length > 0) {
@@ -518,8 +590,11 @@ function reviewDecisions(decisions, ctx) {
       return;
     }
     effective.add(`${entry.class}:${entry.subject}`);
+    // R5: `remove` é decisão válida e EXECUTÁVEL — a saída do artefato do disco
+    // é o que fecha a entrada. Até lá o contador publicado é a dívida visível.
+    if (entry.decision === "remove") pendingRemoval.push(`${entry.class}:${entry.subject}`);
   });
-  return { incomplete, stale, effective };
+  return { incomplete, stale, effective, pendingRemoval };
 }
 
 function zeroCounters() {
@@ -532,6 +607,8 @@ function zeroCounters() {
     lockUnreadable: false,
     declarationPhantoms: 0,
     ownerDecisions: 0,
+    // R5: entradas `decision:"remove"` ainda no disco — decididas, não resolvidas.
+    pendingRemoval: 0,
   };
 }
 
@@ -540,6 +617,7 @@ function emptyFindings() {
     untracked: [],
     ambiguous: [],
     lockMismatch: [],
+    skillWithoutManifest: [],
     lockUnreadable: [],
     declarationPhantom: [],
     unresolvedPrompts: [],
@@ -574,12 +652,21 @@ export function deriveInventory(root = process.cwd(), options = {}) {
   const findings = emptyFindings();
   if (lockState.status === "unreadable") {
     findings.lockUnreadable.push(
-      `${SKILLS_DIR}/${VENDOR_LOCK_NAME} existe e não é JSON legível com .skills objeto — input presente não pode virar "ausente" (I4)`,
+      `${SKILLS_DIR}/${VENDOR_LOCK_NAME} existe e não é arquivo JSON legível com .skills objeto — input presente não pode virar "ausente" (I4/R1)`,
     );
   }
 
   // --- skills ------------------------------------------------------------
-  const skillDirs = listDirs(join(root, SKILLS_DIR));
+  // R7: o artefato é medido por `SKILL.md` (ADR-004 §1), não pelo diretório.
+  // Diretório sem manifesto não é skill e ganha id próprio — antes ele entrava
+  // na contagem e a declaração do instalador "encontrava" um artefato que não
+  // existe na forma que o ADR canoniza.
+  const allSkillDirs = listDirs(join(root, SKILLS_DIR));
+  const skillDirs = allSkillDirs.filter((id) => isFile(join(root, SKILLS_DIR, id, SKILL_ENTRY_NAME)));
+  const skillsWithoutManifest = allSkillDirs.filter((id) => !skillDirs.includes(id));
+  for (const id of skillsWithoutManifest) {
+    findings.skillWithoutManifest.push(id);
+  }
   const skillRows = skillDirs.map((id) => {
     const vendor = lockPresent && lock.has(id);
     // I5: citação por TOKEN — substring dava consumidor a `harness` por causa
@@ -600,9 +687,12 @@ export function deriveInventory(root = process.cwd(), options = {}) {
     return { kind: "skill", id, class: cls, cited, axis, vendor, registered: false };
   });
 
-  // `checkVendor` só anda lock→disco; a outra direção é deste check.
-  const lockMissingDir = lockPresent ? [...lock].filter((id) => !skillDirs.includes(id)).sort() : [];
-  const lockMissingEntry = lockPresent ? skillDirs.filter((id) => lock.has(id) && !isFile(join(root, SKILLS_DIR, id, SKILL_ENTRY_NAME))) : [];
+  // `checkVendor` só anda lock→disco; a outra direção é deste check. O lock
+  // promete diretório com manifesto: as duas direções usam `allSkillDirs` para
+  // que o diretório sem `SKILL.md` continue sendo divergência do lock além de
+  // ter o id próprio acima.
+  const lockMissingDir = lockPresent ? [...lock].filter((id) => !allSkillDirs.includes(id)).sort() : [];
+  const lockMissingEntry = lockPresent ? allSkillDirs.filter((id) => lock.has(id) && !isFile(join(root, SKILLS_DIR, id, SKILL_ENTRY_NAME))) : [];
   for (const id of lockMissingDir) findings.lockMismatch.push(`${id} (chave do lock sem diretório no disco)`);
   for (const id of lockMissingEntry) findings.lockMismatch.push(`${id} (diretório do lock sem ${SKILL_ENTRY_NAME} legível)`);
 
@@ -637,7 +727,7 @@ export function deriveInventory(root = process.cwd(), options = {}) {
   for (const u of roster.unresolved) findings.unresolvedPrompts.push(`${u.name} (${u.reason})`);
 
   // --- registry: expira ou se justifica ---------------------------------
-  const { incomplete, stale, effective } = reviewDecisions(decisions, { root, rows: { skill: skillRows, rule: ruleRows, agent: agentRows } });
+  const { incomplete, stale, effective, pendingRemoval } = reviewDecisions(decisions, { root, rows: { skill: skillRows, rule: ruleRows, agent: agentRows } });
   findings.decisionIncomplete = incomplete;
   findings.decisionStale = stale;
 
@@ -652,6 +742,7 @@ export function deriveInventory(root = process.cwd(), options = {}) {
   counters.lockUnreadable = lockState.status === "unreadable";
   counters.declarationPhantoms = findings.declarationPhantom.length;
   counters.ownerDecisions = decisions.length;
+  counters.pendingRemoval = pendingRemoval.length;
   counters.vendorCited = skillRows.filter((r) => r.vendor && r.cited).length;
 
   counters.skills.total = skillRows.length;
@@ -718,9 +809,13 @@ export function deriveInventory(root = process.cwd(), options = {}) {
   }
   {
     const a = counters.agents;
-    if (a.registered + a.orphan !== a.registry) {
+    // R4: a equação conta `orphan+decision` DECIDIDO à parte — a decisão de dono
+    // é o que explica o registro que cresce sem chave; o órfão sem decisão é que
+    // quebra o fechamento. Antes `registered + orphan` reprovava o caso decidido
+    // e a classe só era alcançável em vermelho.
+    if (a.registered + a.undecided !== a.registry) {
       findings.attendance.push(
-        `agents: registro=${a.registry} ≠ Σ classes=${a.registered + a.orphan} (registered=${a.registered} + orphan=${a.orphan}; unresolved=${a.unresolved})`,
+        `agents: registro=${a.registry} ≠ Σ classes=${a.registered + a.undecided} (registered=${a.registered} + orphan(non-decided)=${a.undecided}; orphan+decision=${a.decided}; unresolved=${a.unresolved})`,
       );
     }
   }
@@ -747,6 +842,7 @@ export function runInventoryChecks(root = process.cwd(), options = {}) {
       "inventory-class-ambiguous",
       "inventory-attendance-drift",
       "inventory-lock-disk-mismatch",
+      "inventory-skill-without-manifest",
       "inventory-lock-unreadable",
       "inventory-declaration-phantom",
       "inventory-agent-prompt-unresolved",
@@ -784,7 +880,7 @@ export function runInventoryChecks(root = process.cwd(), options = {}) {
       status: f.attendance.length ? "FAIL" : "PASS",
       detail: f.attendance.length
         ? `fechamento quebrado: ${f.attendance.join("; ")}`
-        : `fechamento: skills ${c.skills.total}=${c.skills["vendor-by-axis"]}+${c.skills.consumer}+${c.skills.axis}+${c.skills.orphan}; rules ${c.rules.total}=${c.rules.consumer}+${c.rules.axis}+${c.rules.orphan}; agents ${c.agents.registry}=${c.agents.registered}+${c.agents.orphan}`,
+        : `fechamento: skills ${c.skills.total}=${c.skills["vendor-by-axis"]}+${c.skills.consumer}+${c.skills.axis}+${c.skills.orphan}; rules ${c.rules.total}=${c.rules.consumer}+${c.rules.axis}+${c.rules.orphan}; agents ${c.agents.registry}=${c.agents.registered}+${c.agents.undecided} (registered + orphan sem decisão; orphan+decision=${c.agents.decided})`,
       counters: c,
     },
     {
@@ -798,6 +894,14 @@ export function runInventoryChecks(root = process.cwd(), options = {}) {
             ? `lock↔disco: ${VENDOR_LOCK_NAME} ilegível — avaliação suspensa (${c.skills.suspended} skill(s)); a causa é inventory-lock-unreadable, nunca "ausente"`
             : `lock↔disco: ${VENDOR_LOCK_NAME} ausente — classificação de skill suspensa (${c.skills.suspended} skill(s)), nunca FAIL por ausência de input`,
       counters: { mismatches: f.lockMismatch.length, lockPresent: c.lockPresent },
+    },
+    {
+      id: "inventory-skill-without-manifest",
+      status: f.skillWithoutManifest.length ? "FAIL" : "PASS",
+      detail: f.skillWithoutManifest.length
+        ? `${f.skillWithoutManifest.length} diretório(s) em ${SKILLS_DIR} sem ${SKILL_ENTRY_NAME}: ${f.skillWithoutManifest.join("; ")} — diretório não é skill; o inventário mede o manifesto (ADR-004 §1)`
+        : `diretórios em ${SKILLS_DIR} sem ${SKILL_ENTRY_NAME}=0 (${c.skills.total} skill(s) medidas pelo manifesto)`,
+      counters: { withoutManifest: f.skillWithoutManifest.length, skills: c.skills.total },
     },
     {
       id: "inventory-lock-unreadable",
@@ -830,8 +934,8 @@ export function runInventoryChecks(root = process.cwd(), options = {}) {
       status: f.decisionIncomplete.length ? "FAIL" : "PASS",
       detail: f.decisionIncomplete.length
         ? `OWNER_DECISIONS com ${f.decisionIncomplete.length} entrada(s) incompleta(s): ${f.decisionIncomplete.join("; ")}`
-        : `OWNER_DECISIONS com ${c.ownerDecisions} entrada(s), todas com ${DECISION_FIELDS.join("/")} e proof vivo`,
-      counters: { entries: c.ownerDecisions, incomplete: f.decisionIncomplete.length },
+        : `OWNER_DECISIONS com ${c.ownerDecisions} entrada(s), todas com ${DECISION_FIELDS.join("/")} e proof vivo; pendingRemoval=${c.pendingRemoval}`,
+      counters: { entries: c.ownerDecisions, incomplete: f.decisionIncomplete.length, pendingRemoval: c.pendingRemoval },
     },
     {
       id: "owner-decision-stale",
