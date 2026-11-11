@@ -15,17 +15,18 @@
 > **O plano completo dos 5 ADRs não se perde:** vive em `workflow-state.json.prd_adr.adr_plan` (5 entradas
 > com `order`, `id`, `titulo`, `depende_de`, `branch`) e em `PRD.md` §16 (fatiamento aprovado pelo owner
 > em 2026-11-11). Este arquivo é o ledger **do que existe**, não o plano do que existirá. A regra não
-> proíbe buraco de `order` (a continuidade não é imposta por `ADR-01`/`ADR-02`); as linhas `order 1`, `2`,
-> `3` e `5` existem porque os quatro `ADR.md` existem no disco, e a `order 4` (`ADR-004`) ainda não tem
-> linha nem diretório.
+> proíbe buraco de `order` (a continuidade não é imposta por `ADR-01`/`ADR-02`); as linhas `order 1` a `5`
+> existem porque os cinco `ADR.md` existem no disco — a `order 4` (`ADR-004`) entrou junto do seu
+> diretório em 2026-11-11, última do fatiamento a nascer.
 >
-> **Estado:** `ADR-001` **merged** (`fe7c408`), `ADR-002` **merged** (`67e8162`, merge do PR #5) e
-> `ADR-003` **merged** (`f9c5ca2`, merge do PR #6) — os três por merge humano em 2026-11-11. `ADR-005`
-> está `in-progress` (branch `adr/prd-harness-inventory/05-prosa-orfa` criada de `main` @ `f9c5ca2`,
-> `ADR.md` escrito, nenhum merge). `merge` fica `—` em toda linha com `status ≠ merged`.
-> A linha de `ADR-004` entra junto do seu diretório — nunca antes.
-> No máximo **1** linha `in-progress` por vez (`checks.mjs:378-379`): a promoção do `ADR-003` a `merged`
-> no mesmo commit em que o `ADR-005` nasce é o que mantém `ADR-02` verde.
+> **Estado:** `ADR-001` **merged** (`fe7c408`), `ADR-002` **merged** (`67e8162`, merge do PR #5),
+> `ADR-003` **merged** (`f9c5ca2`, merge do PR #6) e `ADR-005` **merged** (`cb0f08d`, merge do PR #7) —
+> os quatro por merge humano em 2026-11-11. `ADR-004` está `in-progress` (branch
+> `adr/prd-harness-inventory/04-inventario-canonico` criada de `main` @ `cb0f08d`, `ADR.md` escrito,
+> nenhum merge). `merge` fica `—` em toda linha com `status ≠ merged`.
+> No máximo **1** linha `in-progress` por vez (`checks.mjs:378-379`): a promoção do `ADR-005` a `merged`
+> no mesmo commit em que o `ADR-004` nasce é o que mantém `ADR-02` verde (mesmo padrão da promoção do
+> `ADR-003` quando o `ADR-005` nasceu).
 >
 > **Ordem de merge:** `ADR-003` declara `depends_on: ADR-001` (o `planner` entra no roster que o ADR-001
 > define e herda a decisão de primário único). `ADR-004` não tem dependência declarada (decisão do owner,
@@ -45,4 +46,5 @@
 | 1 | ADR-001 | Roster de agentes: 1 primário, `codebase-analyzer` absorvido pelo `architect`, stub do `code-reviewer` removido e saída do `sdd-orquestrador` | merged | — | ADRs/ADR-001-roster-de-agentes/ | adr/prd-harness-inventory/01-roster-de-agentes | feat(#4) `fe7c408` — merge humano 2026-11-11 |
 | 2 | ADR-002 | `prd-adr-pipeline` como módulo de regra/checks: `checks.mjs` + 4 templates saem de `.agents/skills/` para `.opencode/plugins/lib/`, norma fica na rule | merged | — | ADRs/ADR-002-prd-adr-pipeline-modulo/ | adr/prd-harness-inventory/02-prd-adr-pipeline-modulo | feat(#5) `67e8162` — merge humano 2026-11-11 |
 | 3 | ADR-003 | Agente `planner` (`subagent`, consome a skill `dev-planner`): escrita limitada a 4 artefatos de planejamento do ciclo SDD e zero poder de decisão | merged | ADR-001 | ADRs/ADR-003-agente-planner/ | adr/prd-harness-inventory/03-agente-planner | feat(#6) `f9c5ca2` — merge humano 2026-11-11 |
+| 4 | ADR-004 | Inventário canônico: superfície derivada (`V19` no runner selado, sem comando novo) e não documento; a única literal é o registry de decisões de órfão, que expira quando o sujeito desaparece ou deixa de ser órfão | in-progress | — | ADRs/ADR-004-inventario-canonico/ | adr/prd-harness-inventory/04-inventario-canonico | — |
 | 5 | ADR-005 | Prosa órfã: *rubric* de 6 classes derivadas por comando (não lista de casos) + resolução das 5 divergências herdadas do ADR-003; correção de texto no PRD 2 | merged | ADR-003 | ADRs/ADR-005-prosa-orfa/ | adr/prd-harness-inventory/05-prosa-orfa | feat(#7) `cb0f08d` — merge humano 2026-11-11 |
