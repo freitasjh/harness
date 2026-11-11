@@ -39,7 +39,7 @@ O arquivo `workflow-state.json` deve residir na **raiz do projeto**. Ele é a ú
 O arquivo `spec-developed.md` na **raiz do projeto** deve listar cronologicamente todas as funcionalidades desenvolvidas e suas respectivas etapas concluídas.
 
 ## 4. Portão de Aprovação e Feedback
-Antes de avançar entre as fases (SPEC -> PLAN -> TASKS), o `sdd-orquestrador` deve obrigatoriamente:
+Antes de avançar entre as fases (SPEC -> PLAN -> TASKS), o `orchestrator` deve obrigatoriamente:
 1. Validar o artefato contra os `asserts` da skill `sdd-compiler`.
 2. Invocar skill `spec-review` para revisar SPEC.md contra regras do projeto.
 3. Gerar relatório de gaps e conformidade (com scorecard por categoria).
