@@ -26,7 +26,7 @@ import assert from "node:assert/strict";
 import { readFileSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tempScope } from "../../../scripts/test-temp.mjs";
-import { runPrdChecks } from "../../../.agents/skills/prd-adr-pipeline/checks.mjs";
+import { runPrdChecks } from "../../../.opencode/plugins/lib/prd-adr-pipeline/checks.mjs";
 import { runStaticChecks, prdCheckResults } from "../../../scripts/static-checks.mjs";
 
 const TMP = tempScope({ label: "prd-checks" });
@@ -917,8 +917,9 @@ describe("checks.mjs module-loading guard (RF-02/NFR-1)", () => {
     "..",
     "..",
     "..",
-    ".agents",
-    "skills",
+    ".opencode",
+    "plugins",
+    "lib",
     "prd-adr-pipeline",
     "checks.mjs",
   );
@@ -1123,10 +1124,11 @@ describe("checks.mjs module-loading guard (RF-02/NFR-1)", () => {
 // ---------------------------------------------------------------------------
 const REPO = join(import.meta.dirname, "..", "..", "..");
 const SKILLS = join(REPO, ".agents", "skills");
-const PRD_TPL = join(SKILLS, "prd-adr-pipeline", "templates", "PRD.md");
-const RESEARCH_TPL = join(SKILLS, "prd-adr-pipeline", "templates", "RESEARCH.md");
-const INDEX_TPL = join(SKILLS, "prd-adr-pipeline", "templates", "ADR-INDEX.md");
-const ADR_TPL = join(SKILLS, "prd-adr-pipeline", "templates", "ADR.md");
+const LIB = join(REPO, ".opencode", "plugins", "lib");
+const PRD_TPL = join(LIB, "prd-adr-pipeline", "templates", "PRD.md");
+const RESEARCH_TPL = join(LIB, "prd-adr-pipeline", "templates", "RESEARCH.md");
+const INDEX_TPL = join(LIB, "prd-adr-pipeline", "templates", "ADR-INDEX.md");
+const ADR_TPL = join(LIB, "prd-adr-pipeline", "templates", "ADR.md");
 const ADR_BOARD_TPL = join(SKILLS, "sdd-architecture-board", "templates", "ADR_TEMPLATE.md");
 const BOARD_SKILL = join(SKILLS, "sdd-architecture-board", "SKILL.md");
 

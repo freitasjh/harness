@@ -3,6 +3,8 @@
 > Unidade de decisão: 1 ADR = 1 branch = 1 PR (merge humano). **Neste meta-ciclo a branch não foi criada**: a realização foi por `PAP-03` na branch única `feat/prd-adr-pipeline` — a coluna `branch` do `ADR-INDEX.md` registra o **nome planejado**, não um fato consumado (convenção no topo do índice).
 > **Realizado por**: `PAP-03` — commit `1feb05c` (convenção de `status`/`merge` no `ADR-INDEX.md`).
 > **Ref da SPEC**: `ADR-P02` · **Requisitos**: `RF-02`, `NFR-4`.
+>
+> ⚠️ **SUPERSEDED em 2026-11-11** por `.spec/prd/prd-harness-inventory/ADRs/ADR-002-prd-adr-pipeline-modulo/ADR.md` (PRD `prd-harness-inventory`, D4 do G1): o módulo de checks saiu de `.agents/skills/prd-adr-pipeline/checks.mjs` para `.opencode/plugins/lib/prd-adr-pipeline/checks.mjs`. A decisão abaixo **continua historicamente correta** (o módulo precisava viver em path propagável) e está **materialmente superada** quanto ao path. Os `status: merged` deste ledger registram o merge de 2026-10, não o estado atual do disco.
 
 - **Decisão**: os checks `PRD-01`/`ADR-01`/`ADR-02` são implementados em `.agents/skills/prd-adr-pipeline/checks.mjs` (módulo puro, exporta `runPrdChecks(root)`); `scripts/static-checks.mjs` apenas importa e chama. Nada de lógica nova sob `scripts/`.
 - **Motivo**: `INCOMING_ROOTS` do installer propaga `.agents/agents`, `.agents/rules`, `.agents/skills`, `.opencode/plugins` e `opencode.json` — **não** propaga `scripts/` nem `.github/`. Check que viva só em `scripts/` vira **gate órfão** no repo-destino: a regra propaga prometendo enforcement que não existe lá.

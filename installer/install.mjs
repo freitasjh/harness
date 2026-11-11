@@ -416,7 +416,6 @@ export const SKILLS_COMMON = [
   'jira-microtask-breaker',
   'nestjs-architecture-specialist',
   'node-architecture-specialist',
-  'prd-adr-pipeline',
   'prompt-optimizer',
   'sdd-architecture-board',
   'sdd-compiler',
