@@ -1,0 +1,431 @@
+{
+  "version": 1,
+  "demand": "harness-inventory-adr-004",
+  "agent": "qa-engineer",
+  "phase": "Testing",
+  "gitSha": "b2b419e5887b955445b1b6dd446caa24ace09494",
+  "branch": "adr/prd-harness-inventory/04-inventario-canonico",
+  "range": "cb0f08d..b2b419e",
+  "commands": [
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 1472,
+      "stdoutHash": "sha256:59694f152c964662314fa93c9b40e319c09c6fea2e037ce1022d6f054decbfc5",
+      "stdoutBytes": 91809,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-004/plugins.stdout.log",
+      "observed": "tests 468 / suites 112 / pass 468 / fail 0 / cancelled 0 / skipped 0 / todo 0",
+      "resolution": "termo 1 de commands.suiteFull, lido do harness.config.json em runtime e reexecutado nesta sessao"
+    },
+    {
+      "cmd": "node --test \"installer/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 5870,
+      "stdoutHash": "sha256:b402ded2245e815df91b985c2c88b9673d16fc4c6c045e610743e5432e3fd01f",
+      "stdoutBytes": 72250,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-004/installer.stdout.log",
+      "observed": "tests 559 / suites 183 / pass 559 / fail 0 / cancelled 0 / skipped 0 / todo 0",
+      "resolution": "termo 2 de suiteFull, reexecutado nesta sessao; as linhas de FAIL internas de fixture (vendor-check em tmp) nao alteram o contador oficial pass 559 / fail 0"
+    },
+    {
+      "cmd": "node scripts/static-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 170,
+      "stdoutHash": "sha256:6d44ab45ec89fff70b28f2e84161b63627896f83567333cad37cbb30c15bba18",
+      "stdoutBytes": 1086,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-004/static.stdout.log",
+      "observed": "11 PASS (V6, V6b, V2, V3, V7, V15, V14, V18, V19, PRD-01, ADR-01, ADR-02) + 2 INFO (V12, LEGACY) / 0 FAIL / exit 0; grep -c '^PASS V19' = 1",
+      "resolution": "termo 3 de suiteFull, reexecutado nesta sessao; a linha literal do V19 esta em verification.briefingChecklist.p2"
+    },
+    {
+      "cmd": "node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 67,
+      "stdoutHash": "sha256:e5e528c52d79fceaa1be828bd89116aa6e0be73294d2e99d39c4febe99e84516",
+      "stdoutBytes": 51,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-004/vendor.stdout.log",
+      "observed": "vendor-check OK (.agents/skills/.vendor-lock.json)",
+      "resolution": "termo 4 de suiteFull, reexecutado nesta sessao"
+    },
+    {
+      "cmd": "node scripts/sdd-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 155,
+      "stdoutHash": "sha256:1dd672652a775f838b7b8413af6f94151c5aa0873a0df8e678585f7a9dcaf5e7",
+      "stdoutBytes": 641,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-004/sdd.stdout.log",
+      "observed": "8 PASS (V4, R-V12, V17, SDD-01, SDD-02, SDD-03, R-NODENY, RENAME-01) / 0 FAIL (grep -c FAIL = 0)",
+      "resolution": "verificacao de SDD do ADR item 14, reexecutada nesta sessao; nao e termo de suiteFull"
+    },
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node --test \"installer/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs && node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 6143,
+      "stdoutHash": "sha256:fcbdb58026957a54b8da95d9be137eedaea4e26ef55c17ae3c6b11d1e557b8f4",
+      "stdoutBytes": 164741,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-004/suitefull.stdout.log",
+      "observed": "plugins 468/468 (112 suites) + installer 559/559 (183 suites) + static exit 0 (0 FAIL) + vendor-check OK; exit 0. O stdout contem linhas FAIL V19 de FIXTURE (inventory.spec exercita o adapter contra arvores temporarias) e uma unica linha do runner real: 'PASS V19: inventario derivado: skills=48 (vendor-by-axis=25, consumer=22, axis=0, orphan=1), rules=8 (consumer=7, axis=1, orphan=0), agents=10/10 (registered=10, orphan=0), vendorCited=0, lockPresent=true, owner-decisions=1, pendingRemoval=0'",
+      "resolution": "commands.suiteFull literal, resolvido do harness.config.json em runtime e executado como grupo; os FAIL V19 de fixture nao mudam o exit 0 nem o contador de testes"
+    },
+    {
+      "cmd": "git diff --stat cb0f08d..HEAD -- .opencode/plugins/gate.js harness.config.json installer/ .opencode/plugins/lib/config.mjs .opencode/plugins/lib/seal.mjs .opencode/plugins/lib/prd-adr-pipeline/ .opencode/plugins/lib/refs/",
+      "exitCode": 0,
+      "durationMs": 12,
+      "stdoutHash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutBytes": 0,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-004/protected-diff.log",
+      "observed": "saida vazia (0 bytes); diff completo dos mesmos paths = 0 bytes; EXIT=0",
+      "resolution": "constraint 4 do briefing, reexecutado nesta sessao em duas formas (--stat e bytes)"
+    },
+    {
+      "cmd": "git diff --stat cb0f08d..HEAD -- <protegidos> ; sha256sum harness.config.json ; git show cb0f08d:harness.config.json | sha256sum ; sha256sum .opencode/plugins/lib/seal.mjs ; git show cb0f08d:.opencode/plugins/lib/seal.mjs | sha256sum",
+      "exitCode": 0,
+      "durationMs": 6,
+      "stdoutHash": "sha256:f9d262f051a013a02234d87afb20135f02a42b5e5d1105437ac825b28f724cd6",
+      "stdoutBytes": 332,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-004/seal-config.out",
+      "observed": "diff_bytes=0; harness.config.json = 94fe55c78f518e2c55b1d4eb3dc79b051623b2a0788d624831a7cfe45d36f585 nas duas arvores; seal.mjs = b698703d3a27249d5f92e79050854de1645dc0124f12290c9d06904a89a595a6 nas duas arvores; commands.suiteFull byte-identico (sha256 da string = 578d67e724578976d4de1c9122ebfaf47cb2d5f29b57d8c82ded55a78d84b31c nas duas)",
+      "resolution": "constraint 5 do briefing (selo), reexecutado nesta sessao"
+    },
+    {
+      "cmd": "copia /tmp (fora do repo) + node scripts/static-checks.mjs -- .agents/skills/skill-sem-dono/SKILL.md criado (orfa nova)",
+      "exitCode": 1,
+      "durationMs": 185,
+      "stdoutHash": "sha256:a332b41790764b58c9c422b3f5c616ea392a400fea08dbd09f38bed0709a69dd",
+      "stdoutBytes": 1363,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-004/mut1-orfa-nova.out",
+      "observed": "FAIL V19: inventory-artifact-untracked: 1 artefato(s) no disco sem classe derivavel e sem decisao de dono: skill:skill-sem-dono; inventory-attendance-drift: skills: disco=49 != lock^disco (25) + declaracoes locais (23)",
+      "resolution": "mutacao 1 do briefing, em copia fora do repo; exit 1 esperado"
+    },
+    {
+      "cmd": "copia /tmp (fora do repo) + .agents/skills/.vendor-lock.json trocado por DIRETORIO (lock como diretorio)",
+      "exitCode": 1,
+      "durationMs": 245,
+      "stdoutHash": "sha256:dfecd2d1a29d3958ae3e893dcad3d40310ccf6d466c2ac6f216e711d7c43907c",
+      "stdoutBytes": 1770,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-004/mut2-lock-diretorio.out",
+      "observed": "FAIL V19: inventory-lock-unreadable: lock ilegivel: .agents/skills/.vendor-lock.json existe e nao e arquivo JSON legivel com .skills objeto; inventory-skill-without-manifest: 1 diretorio sem SKILL.md: .vendor-lock.json",
+      "resolution": "mutacao 2 do briefing, em copia fora do repo; exit 1 esperado"
+    },
+    {
+      "cmd": "copia /tmp (fora do repo) + proof = \"installer/../.spec/prd/prd-harness-inventory/PRD.md:1\" (alias ..)",
+      "exitCode": 1,
+      "durationMs": 184,
+      "stdoutHash": "sha256:ac9960ac6cc3f8f55d6b08ca20121f6c9c7bf44a36c4cc57e173cfcd7bec0797",
+      "stdoutBytes": 1489,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-004/mut3-proof-alias.out",
+      "observed": "FAIL V19: owner-decision-incomplete: skill:harness-installer: proof installer/../.spec/prd/prd-harness-inventory/PRD.md esta em .spec/**; inventory-artifact-untracked: skill:harness-installer (decisao nao efetiva)",
+      "resolution": "mutacao 3 do briefing, em copia fora do repo; normalizeRef contra o root rejeita o alias; exit 1 esperado"
+    },
+    {
+      "cmd": "copia /tmp (fora do repo) + skill nova + '<!-- skill-comentario' NAO FECHADO no prompt do orchestrator",
+      "exitCode": 1,
+      "durationMs": 195,
+      "stdoutHash": "sha256:3e0906e605584e57e81443459bf54ff348c3f79d9780740f660c5bea720b8e41",
+      "stdoutBytes": 1365,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-004/mut4-comentario-nao-fechado.out",
+      "observed": "FAIL V19: inventory-artifact-untracked: 1 artefato(s) sem classe e sem decisao: skill:skill-comentario; inventory-attendance-drift: skills: disco=49 != 25 + 23",
+      "resolution": "mutacao 4 do briefing, em copia fora do repo; comentario nao fechado nao compra consumer; exit 1 esperado"
+    },
+    {
+      "cmd": "copia /tmp (fora do repo) + .agents/skills/dir-sem-manifesto/ criado SEM SKILL.md",
+      "exitCode": 1,
+      "durationMs": 216,
+      "stdoutHash": "sha256:9cd0a8aa09404a7dca36b74eb07a9746e7c2f43c844766c4bde78ca8b1726376",
+      "stdoutBytes": 1264,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-004/mut5-dir-sem-manifesto.out",
+      "observed": "FAIL V19: inventory-skill-without-manifest: 1 diretorio(s) em .agents/skills sem SKILL.md: dir-sem-manifesto — diretorio nao e skill; o inventario mede o manifesto",
+      "resolution": "mutacao 5 do briefing, em copia fora do repo; exit 1 esperado"
+    },
+    {
+      "cmd": "copia /tmp (fora do repo) + symlink .agents/skills/skill-link -> dart-add-unit-test",
+      "exitCode": 0,
+      "durationMs": 236,
+      "stdoutHash": "sha256:6d44ab45ec89fff70b28f2e84161b63627896f83567333cad37cbb30c15bba18",
+      "stdoutBytes": 1086,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-004/mut6-symlink-skill.out",
+      "observed": "PASS V19 identico ao repo real (hash igual ao static.stdout.log): o symlink de skill e IGNORADO por listDirs (isDirectory() && !isSymbolicLink()); exit 0",
+      "resolution": "vetor extra do backlog (listDirs descarta symlink); mede o silencio, nao uma falha do ciclo"
+    },
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" ; node scripts/static-checks.mjs (pos-escrita do REPORT)",
+      "exitCode": 0,
+      "durationMs": 1232,
+      "stdoutHash": "sha256:d1f16b090be2f512d395ef28d41b310bb0bd2153c8870593aeb24476d0ad4294",
+      "stdoutBytes": 91665,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-004/plugins-postwrite.stdout.log + static-postwrite.stdout.log (static sha256:6d44ab45ec89fff70b28f2e84161b63627896f83567333cad37cbb30c15bba18, identico ao pre-write)",
+      "observed": "plugins 468/468 / fail 0 e static exit 0 com PASS V19 = 1 apos a criacao deste arquivo",
+      "resolution": "report-schema.spec.mjs valida todo harness/*.json real contra o schema (C-1); a execucao pos-escrita incluiu este REPORT e o arquivo foi validado diretamente por reportSchemaViolations (0 violacoes)"
+    }
+  ],
+  "counts": {
+    "unit": { "passed": 468, "failed": 0, "skipped": 0 },
+    "it": { "passed": 559, "failed": 0, "skipped": 0 },
+    "frontend": { "passed": 0, "failed": 0, "skipped": 0 }
+  },
+  "countsNote": "Numeros MEDIDOS nesta sessao no stdout literal dos comandos acima. `unit` = suite de plugins (commands.unit do config): 468/468 em 112 suites. `it` = suite do instalador: 559/559 em 183 suites. `frontend` 0/0/0 porque stack.frontend = N/A. O TASKS.md publica 445/445 — era o plugins no commit 8041733, quando inventory.spec.mjs tinha 33 testes; no HEAD sao 56 testes no inventory.spec e 468 no agregado (delta de 23 testes de fixture R1-R7). Contagem de ids: 10 ids unicos medidos no modulo (o TASKS e a §2.4 do ADR listam 7).",
+  "e2e": {
+    "status": "N/A",
+    "justification": "harness.config.json: infra.composeFile = null, ports backend/frontend = null; stack.backend/frontend = 'N/A'. Nao existe URL alvo para o MCP chrome-devtools; H3 (wipe + re-cadastro em browser real) nao tem objeto em repo de tooling Node ESM. Equivalente observavel executado: 14 itens da ADR §3 + 10 microtasks PI-01..PI-10 + 5 vetores de mordida do V19 + 1 vetor de silencio (symlink) + suiteFull literal.",
+    "escalateOnRisk": "nao dispara: os paths tocados no range sao .opencode/plugins/{lib/inventory,__tests__}, .spec/**, scripts/static-checks.mjs e workflow-state.json; nenhum casa riskPaths (security/acl/*Permission*/auth/i18n)."
+  },
+  "evaluation": {
+    "telas": "n/a-sem-UI. Equivalente observavel: static-checks 0 FAIL com V19 PASS unico e counters de fechamento; sdd-checks 8 PASS / 0 FAIL.",
+    "negocio": "ADR-004 aplicado por item: 14/14 PASSA pelo comando do proprio item (item 14 reproduz no commit do batch a789003 — divergencia d3). 10/10 microtasks com evidencia no disco. O registry OWNER_DECISIONS tem 1 entrada com 7 campos e expiresWhen superset; o fechamento fecha 48 = 25+22+0+1, 8 = 7+1+0, 10 = 10+0.",
+    "logica": "suiteFull literal exit 0 (468 + 559 + static 0 FAIL + vendor OK). Contraprova nao-vacua: o V19 foi derrubado em 5 vetores independentes, cada um com o id de causa esperado. O vetor do symlink mostra o limite silencioso (PASS identico ao repo), nao uma falha do ciclo.",
+    "perf": "suiteFull ~6,14 s somando os termos (plugins ~1,47 s, installer ~5,87 s, static 170 ms, vendor 67 ms). Mesma ordem dos ciclos anteriores; repo de tooling sem latencia de aplicacao."
+  },
+  "h3": {
+    "status": "N/A com justificativa",
+    "why": "H3 pressupoe UI + banco + servidores locais; aqui infra = null e stack = N/A. Tela branca, rota duplicada, i18n e CORS/auth de browser nao tem como ocorrer.",
+    "substitute": "Reexecucao independente dos 14 itens da ADR §3, das 10 microtasks de TASKS.md, dos 6 pontos do briefing P4 e de 6 vetores de copia descartavel (5 de mordida + 1 de silencio)."
+  },
+  "verification": {
+    "method": "Cada item foi reexecutado pelo comando que o proprio ADR/TASKS declara, nesta sessao, com saida literal em /tmp/opencode/qa-harness-inventory-adr-004/*.log|out. Nenhum valor herdado do developer, do reviewer ou do TASKS.md: o bloco do TASKS foi confrontado com medicao propria (445 vs 468; 7 vs 10). harness/harness-inventory-adr-005.json foi lido SO como forma.",
+    "adrItems": {
+      "item_1_modulo_puro_propagavel": {
+        "cmd": "git ls-files .opencode/plugins/lib/inventory/ ; grep -c export de deriveInventory/runInventoryChecks/OWNER_DECISIONS/CLASS_LABELS",
+        "measured": ".opencode/plugins/lib/inventory/checks.mjs (1 arquivo tracked); deriveInventory=1; runInventoryChecks=1; OWNER_DECISIONS=1; CLASS_LABELS=1; imports estaticos {node:fs,node:path}",
+        "verdict": "PASSA"
+      },
+      "item_2_um_record_v19_sem_comando_novo": {
+        "cmd": "node scripts/static-checks.mjs | grep -c '^PASS V19' ; grep -c 'record(\"V19\"' scripts/static-checks.mjs ; git diff --exit-code -- harness.config.json .opencode/plugins/lib/seal.mjs",
+        "measured": "1 ; 1 ; exit 0 (diff vazio)",
+        "verdict": "PASSA"
+      },
+      "item_3_selo_intocado": {
+        "cmd": "node -e 'console.log(require(\"./harness.config.json\").commands.suiteFull)' ; git diff --exit-code -- harness.config.json .opencode/plugins/lib/seal.mjs",
+        "measured": "string identica a cb0f08d (sha256 578d67e7...); harness.config.json sha256 94fe55c7... nas duas arvores; seal.mjs sha256 b698703d... nas duas; diff vazio",
+        "verdict": "PASSA"
+      },
+      "item_4_classe_de_skill_do_lock": {
+        "cmd": "node -e 'Object.keys(require(\"./.agents/skills/.vendor-lock.json\").skills).length' ; grep -c startsWith ; grep -c inferStacks",
+        "measured": "25 ; 0 ; 0",
+        "verdict": "PASSA"
+      },
+      "item_5_fechamento_publicado_em_pass": {
+        "cmd": "node scripts/static-checks.mjs | grep V19 ; node --test .opencode/plugins/__tests__/inventory.spec.mjs",
+        "measured": "PASS V19: skills=48 (vendor-by-axis=25, consumer=22, axis=0, orphan=1), rules=8 (consumer=7, axis=1, orphan=0), agents=10/10 (registered=10, orphan=0), vendorCited=0, lockPresent=true, owner-decisions=1, pendingRemoval=0 ; inventory.spec 56/56 fail 0",
+        "verdict": "PASSA"
+      },
+      "item_6_registry_7_campos": {
+        "cmd": "node -e 'import(checks.mjs).then(m=>console.log(m.OWNER_DECISIONS.length, m.OWNER_DECISIONS.every(e=>F.every(f=>e[f]!==undefined)), m.OWNER_DECISIONS.every(e=>m.EXPIRY_CONDITIONS[e.class].every(c=>e.expiresWhen.includes(c)))))'",
+        "measured": "1 true true; proof = installer/install.mjs:413; expiresWhen = [subject-absent, gained-consumer, gained-axis, gained-lock] = superset de EXPIRY_CONDITIONS.skill",
+        "verdict": "PASSA"
+      },
+      "item_7_orfa_nova_reprova_orfa_decidida_passa": {
+        "cmd": "mutacao real (orfa nova) + inventory.spec fixtures",
+        "measured": "FAIL inventory-artifact-untracked para skill:skill-sem-dono; suite prova o par PASS/FAIL com a mesma arvore e 1 arquivo de diferenca (testes 'inventory-artifact-untracked: skill nova...' e o PASS do repo real)",
+        "verdict": "PASSA"
+      },
+      "item_8_decisao_obsoleta_reprova": {
+        "cmd": "node --test inventory.spec.mjs (casos dedicados)",
+        "measured": "3 casos PASS: sujeito ausente; sujeito ganhou consumidor; sujeito entrou no lock — todos FAIL owner-decision-stale",
+        "verdict": "PASSA"
+      },
+      "item_9_ambiguidade_de_classe_reprova": {
+        "cmd": "node --test inventory.spec.mjs (caso dedicado)",
+        "measured": "'inventory-class-ambiguous: lock diz vendorizada, mapa de eixo diz local => FAIL' e controle 'vendorizada E citada NAO e ambiguidade — e a precedencia declarada'",
+        "verdict": "PASSA"
+      },
+      "item_10_agente_pelo_registro": {
+        "cmd": "node -e '...opencode.json.agent + prompt resolvido...' ; ls .agents/agents/*/AGENT.md | wc -l",
+        "measured": "10 10 10 ; 9",
+        "verdict": "PASSA"
+      },
+      "item_11_lock_disco_nas_duas_direcoes": {
+        "cmd": "node -e 'lock keys sem diretorio e sem SKILL.md' ; node --test inventory.spec.mjs",
+        "measured": "0 ; 0 ; testes das duas direcoes (chave sem diretorio FAIL; diretorio sem SKILL.md legivel FAIL; par PASS)",
+        "verdict": "PASSA"
+      },
+      "item_12_destino_sem_lock_nao_herda_vermelho": {
+        "cmd": "node --test inventory.spec.mjs (caso sem lock) ; grep -c VENDOR_LOCK_NAME",
+        "measured": "teste 'lock ausente => lockPresent=false, classificacao suspensa, ok=true (ADR §2.2)' PASS; VENDOR_LOCK_NAME refs=6",
+        "verdict": "PASSA"
+      },
+      "item_13_pureza": {
+        "cmd": "grep -cE 'child_process|fetch\\(|https?:' .opencode/plugins/lib/inventory/checks.mjs ; node --test inventory.spec.mjs",
+        "measured": "0 ; o spec roda contra tempScope e tem teste 'pureza: imports estaticos = {node:fs,node:path}; sem require/child process/rede'",
+        "verdict": "PASSA"
+      },
+      "item_14_zero_edicao_fora_de_spec_no_batch_do_adr": {
+        "cmd": "git show --stat --name-only a789003 ; node scripts/static-checks.mjs",
+        "measured": "a789003 toca exatamente .spec/prd/prd-harness-inventory/ADR-INDEX.md + ADRs/ADR-004-inventario-canonico/ADR.md; static exit 0. O literal 'git show HEAD' no HEAD b2b419e mostra o commit de implementacao, nao o do batch do ADR (divergencia d3, sem impacto)",
+        "verdict": "PASSA"
+      }
+    },
+    "tasksItems": {
+      "PI-01": "PASSA — checks.mjs tracked, deriveInventory/runInventoryChecks/CLASS_LABELS exportados, root injetavel; teste 'PI-01 — modulo puro, root injetavel, contrato de saida'.",
+      "PI-02": "PASSA — classe so pelo lock; lockPresent=false sem lock; startsWith=0, inferStacks=0; testes 'vendor-by-axis vem do lock...' e 'lock ausente => lockPresent=false...'.",
+      "PI-03": "PASSA — agente pelo registro; 10 10 10; AGENT.md=9; id inventory-agent-prompt-unresolved com teste de prompt ausente.",
+      "PI-04": "PASSA — lock^disco nas duas direcoes (0 divergencias reais; testes de chave sem dir e dir sem SKILL.md; id inventory-lock-disk-mismatch).",
+      "PI-05": "PASSA — OWNER_DECISIONS com subject/class/owner/decision/reason/proof/expiresWhen; 1 entrada harness-installer -> installer/install.mjs:413.",
+      "PI-06": "PASSA — owner-decision-incomplete e owner-decision-stale cobertos (sujeito ausente; ganhou consumidor; entrou no lock; entrada estreita; proof morto).",
+      "PI-07": "PASSA — inventory-class-ambiguous e inventory-artifact-untracked cobertos por fixture real.",
+      "PI-08": "PASSA — 1 record V19 no runner; counters em PASS e FAIL; suiteFull/seal sem diff.",
+      "PI-09": "PASSA — inventory.spec 56 testes / 0 fail; 10 ids (nao 7) + caso sem lock + par PASS/FAIL com 1 arquivo de diferenca.",
+      "PI-10": "PASSA — 5 comandos exit 0; PASS V19 com counters; diff de harness.config.json/seal.mjs vazio; os 4 commits que tocam path protegido carregam trailer Harness-Gate-Change."
+    },
+    "briefingChecklist": {
+      "p1_14_itens_e_10_tasks": "PASSA — 14/14 itens PASSA pelo comando do proprio item; 10/10 microtasks [x] com evidencia medida.",
+      "p2_pass_v19_literal": "PASSA — 'PASS V19: inventario derivado: skills=48 (vendor-by-axis=25, consumer=22, axis=0, orphan=1), rules=8 (consumer=7, axis=1, orphan=0), agents=10/10 (registered=10, orphan=0), vendorCited=0, lockPresent=true, owner-decisions=1, pendingRemoval=0'; grep -c '^PASS V19' = 1; FAIL no static real = 0.",
+      "p3_5_mutacoes": "PASSA — copia fora do repo: orfa nova => inventory-artifact-untracked; lock como diretorio => inventory-lock-unreadable; proof com alias .. => owner-decision-incomplete; comentario HTML nao fechado => untracked; diretorio sem SKILL.md => inventory-skill-without-manifest. Todos exit 1.",
+      "p4_diff_dos_protegidos_vazio": "PASSA — git diff --stat cb0f08d..HEAD dos paths protegidos => 0 bytes, exit 0; diff completo 0 bytes.",
+      "p5_selo_byte_identico": "PASSA — commands.suiteFull com sha256 identico em HEAD e cb0f08d; harness.config.json e seal.mjs com sha256 identicos; nenhuma republicacao de HARNESS_SEAL_JSON.",
+      "p6_10_ids": "PASSA — 10 ids unicos medidos no modulo (artifact-untracked, class-ambiguous, attendance-drift, lock-disk-mismatch, skill-without-manifest, lock-unreadable, declaration-phantom, agent-prompt-unresolved, owner-decision-incomplete, owner-decision-stale); o TASKS.md e a §2.4 do ADR ainda listam 7 (backlog b1)."
+    }
+  },
+  "divergences": {
+    "d1_adr_2_4_7_ids_vs_10_no_codigo": {
+      "severity": "informativo",
+      "what": "A §2.4 do ADR lista 7 ids; o codigo tem 10. N25 declara inventory-lock-unreadable; N26 declara inventory-declaration-phantom; inventory-skill-without-manifest so aparece em comentario do codigo e na mensagem do commit d305f30 (R7), nao no ADR. A contagem da tabela nao foi emendada.",
+      "evidence": "sed -n '/### 2.4/,/### 2.5/p' ADR.md | grep -c '^| `' => 7; grep -oE ids no checks.mjs | sort -u | wc -l => 10",
+      "impact": "nenhum no veredito: a interface executavel tem 10 ids e todos tem fixture; a prosa normativa esta incompleta.",
+      "action": "nenhuma (qa-engineer nao corrige documento)"
+    },
+    "d2_tasks_md_445_testes_e_7_ids": {
+      "severity": "informativo",
+      "what": "O bloco de verificacao do TASKS.md publica 445/445 e 7 ids. Medido no HEAD: 468/468 e 10 ids. O 445 era o plugins no commit 8041733 (inventory.spec tinha 33 testes); depois vieram +23 testes de fixture (R1-R7) e 3 ids (lock-unreadable, declaration-phantom, skill-without-manifest). O TASKS nao foi atualizado nem se declara datado.",
+      "evidence": "commit 8041733 message: 'plugins 445/445'; git show 8041733:inventory.spec.mjs test lines=33; HEAD=56; node --test => tests 468",
+      "impact": "nenhum no veredito (o REPORT mede 468/10); e drift de documento de planejamento.",
+      "action": "nenhuma"
+    },
+    "d3_item_14_literal_aponta_head_de_implementacao": {
+      "severity": "informativo",
+      "what": "O item 14 manda `git show --stat --name-only HEAD` e espera so ADR.md + ADR-INDEX.md. No HEAD b2b419e (implementacao) aparecem .opencode/plugins/**; o criterio reproduz no commit do batch do ADR a789003.",
+      "evidence": "git show --stat --name-only a789003 vs b2b419e",
+      "impact": "nenhum: o batch do ADR (a789003) toca so .spec/prd/**; a implementacao e outro batch, autorizado pelo SDD.",
+      "action": "nenhuma"
+    },
+    "d4_workflow_state_nao_aponta_o_ciclo_no_p4": {
+      "severity": "informativo",
+      "what": "workflow-state.json tem current_feature=harness-inventory-adr-004, mas current_phase=Planning, artifacts.spec/plan/tasks=null e harness_report=harness/harness-inventory-adr-005.json. O P4 nao e refletido no state.",
+      "evidence": "cat workflow-state.json; campo artifacts.harness_report",
+      "impact": "nenhum no veredito P4 (o gate nao le esses campos), mas a rastreabilidade SDD deste ciclo nao esta exercida.",
+      "action": "nenhuma (proibido editar workflow-state.json por este papel; dono = orchestrator)"
+    },
+    "d5_all_ids_nao_e_simbolo": {
+      "severity": "informativo",
+      "what": "A alegacao '10 ids em ALL_IDS' usa um nome que nao existe como export do modulo. O que existe e a lista de 10 ids na branch vacuous de runInventoryChecks + os results; medido 10 ids unicos.",
+      "evidence": "grep -oE ids no checks.mjs | sort -u",
+      "impact": "nenhum: o numero e 10, so o rotulo era impreciso.",
+      "action": "nenhuma"
+    }
+  },
+  "backlog": {
+    "b1_adr_2_4_7_vs_10": {
+      "classification": "parcialmente declarado",
+      "detail": "N25 declara inventory-lock-unreadable e N26 declara inventory-declaration-phantom. inventory-skill-without-manifest nao esta no ADR (so em comentario de codigo e no commit d305f30). A contagem '7 ids' da §2.4 e do aceite (§7c) nao foi emendada — nesse ponto e silencioso.",
+      "evidence": "ADR.md:290 (N26), busca por 'skill-without-manifest' no ADR => 0 ocorrencias"
+    },
+    "b2_tasks_7_ids_445_testes": {
+      "classification": "silencioso (drift datado)",
+      "detail": "TASKS.md:61 e :97-100 publicam 7 ids e 445 testes; o HEAD tem 10 ids e 468 testes. O bloco nao se declara snapshot e nao foi atualizado. Nao e falha do mecanismo; e documento de planejamento congelado no commit 8041733.",
+      "evidence": "TASKS.md:61,97; commit 8041733 message"
+    },
+    "b3_link_ref_markdown_compra_consumer": {
+      "classification": "silencioso",
+      "detail": "stripHtmlComments remove <!-- ... -->, mas nao remove [//]: # (...). Medido: citesToken('[//]: # (skill-orfa)','skill-orfa') = true e stripHtmlComments devolve o texto intacto. Nao ha mencao em ADR/SPEC/TASKS/teste.",
+      "evidence": "node -e import(checks.mjs) => citesToken=true, stripHtmlComments inalterado; grep link-ref nos docs => 0"
+    },
+    "b4_listDirs_descarta_symlink": {
+      "classification": "silencioso",
+      "detail": "listDirs usa isDirectory() && !isSymbolicLink(); um diretorio de skill simlinkado e ignorado. Medido: symlink skill-link -> dart-add-unit-test nao muda o V19 (PASS e hash identicos ao repo, exit 0). So o symlink do lock (R1) e declarado/testado; o symlink de skill nao.",
+      "evidence": "checks.mjs:235-244; mut6-symlink-skill.out hash = static.stdout.log hash"
+    }
+  },
+  "findings": {
+    "f1_v19_morde_5_vetores": {
+      "severity": "positivo",
+      "what": "Em copia descartavel fora do repo, os 5 modos de falha do briefing reprovam a suite selada com o id de causa esperado (exit 1 cada).",
+      "evidence": "/tmp/opencode/qa-harness-inventory-adr-004/mut{1..5}-*.out"
+    },
+    "f2_alias_dotdot_normalizado": {
+      "severity": "positivo",
+      "what": "proof 'installer/../.spec/...' e normalizado contra o root e reprova como .spec/**; o alias nao compra a proibicao (R2/N22).",
+      "evidence": "mut3-proof-alias.out"
+    },
+    "f3_comentario_nao_fechado_nao_cita": {
+      "severity": "positivo",
+      "what": "Um '<!-- skill-comentario' sem fechamento nao compra consumer: a skill nova continua untracked e o V19 reprova (R3).",
+      "evidence": "mut4-comentario-nao-fechado.out"
+    },
+    "f4_lock_como_diretorio_e_unreadable": {
+      "severity": "positivo",
+      "what": "Lock presente que nao e arquivo vira inventory-lock-unreadable, nunca lockPresent=false silencioso (R1/N25).",
+      "evidence": "mut2-lock-diretorio.out"
+    },
+    "f5_symlink_de_skill_e_silencioso": {
+      "severity": "gap",
+      "what": "listDirs ignora skill simlinkada; o V19 passa identico ao repo. Nao e falha do ciclo (backlog declarado pelo review), mas e um silencio nao declarado no ADR/SPEC/TASKS.",
+      "evidence": "mut6-symlink-skill.out (hash igual a static.stdout.log)"
+    }
+  },
+  "limitsDeclared": {
+    "C1_contagens_do_prd": "DECLARADO (ADR §4-C1) — PRD diz 11 agentes/49 skills; disco 10/48. Fora do batch; divida com dono.",
+    "C4_lock_no_destino": "DECLARADO (ADR §4-C4) — lock nao propaga; destino nao classifica skill; lockPresent=false. Nao e bug pendente.",
+    "C6_adapter_nao_protegido": "DECLARADO (ADR §4-C6) — scripts/static-checks.mjs nao e protectedPath; remover checkInventory escapa do runtime; ancora e CI + diff revisado.",
+    "N25_lock_ilegivel": "DECLARADO (ADR §8-N25 + testes R1) — lock ilegivel tem id proprio; so ausencia legitima e lockPresent=false.",
+    "N26_declaracao_fantasma": "DECLARADO (ADR §8-N26) — id proprio inventory-declaration-phantom.",
+    "N20_vendor_x_consumer": "DECLARADO (ADR §8-N20) — vendor x consumer nao e ambiguidade; publica vendorCited=0."
+  },
+  "brainStore": [
+    "sessoes/projetos/harness/2026-11-11-qa-harness-inventory-adr-004-p4"
+  ],
+  "brainNote": "Nota de sessao (layer sessoes, scope projetos, project harness) gravada nesta sessao via brain_store — 8 chunks, ok=true, path sem prefixo duplicado. Conteudo: veredito P4, 5 vetores de mordida + 1 de silencio, suite literal, selo e classificacao do backlog. Nenhuma nota de arquitetura/regras/estudos foi reescrita por este papel.",
+  "cleanup": {
+    "ports": [],
+    "processes": [],
+    "note": "Nenhum servidor subido: infra null e stack N/A. Zero pkill -f, zero lsof/kill. Todos os comandos foram spawn sincrono; nenhum node --test residual. Copias descartaveis em /tmp/opencode/qa-harness-inventory-adr-004/: mut2base (6 vetores) removida apos a medicao; logs mantidos. payload-skill.md/payload-agent.md sao fixtures de /tmp.",
+    "verifiedRemoved": "test -e /tmp/opencode/qa-harness-inventory-adr-004/mut2base => REMOVED (script imprime CLEANUP_REMOVED=YES)"
+  },
+  "gitState": {
+    "head": "b2b419e5887b955445b1b6dd446caa24ace09494",
+    "range": "cb0f08d..b2b419e",
+    "commits": [
+      { "sha": "a789003", "subject": "docs(adr): ADR-004 inventario canonico — superficie derivada (V19), nao documento" },
+      { "sha": "8041733", "subject": "feat(harness): V19 — inventario canonico derivado (ADR-004)" },
+      { "sha": "96376d1", "subject": "docs(adr): ADR-004 N20-N26" },
+      { "sha": "b6c8782", "subject": "fix(harness): V19 fecha C1 e I1-I5" },
+      { "sha": "86d2199", "subject": "docs(adr): ADR-004 N27" },
+      { "sha": "34c5d12", "subject": "docs(adr): ADR-004 N28 + item 6" },
+      { "sha": "d305f30", "subject": "fix(harness): V19 fecha R1-R5 e R7" },
+      { "sha": "b2b419e", "subject": "fix(inventory): proof normalizada contra o root e comentario HTML nao fechado nao cita" }
+    ],
+    "filesInRange": 10,
+    "protectedDiff": "git diff --stat cb0f08d..HEAD -- .opencode/plugins/gate.js harness.config.json installer/ .opencode/plugins/lib/config.mjs .opencode/plugins/lib/seal.mjs .opencode/plugins/lib/prd-adr-pipeline/ .opencode/plugins/lib/refs/ => 0 bytes (exit 0)",
+    "worktreeAtStart": "b2b419e, git status --porcelain vazio (o unico untracked ao final e este REPORT)"
+  },
+  "residual_risks": [
+    "ADR-004 segue in-progress: o merge e humano (1 ADR = 1 PR = 1 revisao); nenhum push foi feito por este papel.",
+    "O adapter V19 mora em scripts/static-checks.mjs (nao protegido): remover checkInventory() escapa do check (C6 declarado).",
+    "O ADR §2.4 e o TASKS.md estao desatualizados (7 ids/445 testes) em relacao ao codigo (10 ids/468) — drift de documento, nao de mecanismo.",
+    "backlog b3: link-ref markdown [//]: # (...) ainda compra consumer; b4: skill simlinkada e ignorada por listDirs. Ambos silenciosos no ADR/SPEC/TASKS.",
+    "workflow-state.json aponta current_phase=Planning e harness_report do ciclo adr-005; SDD-02/03 deste ciclo nao exercitam o state."
+  ],
+  "selfReported": true,
+  "selfReportedNote": "true por honestidade: numeros e hashes foram medidos pelo proprio executor com spawn sincrono e captura de stdout. A observacao independente e a contraprova do gate, que reexecuta commands.suiteFull selado.",
+  "notes": [
+    "Nenhum codigo, config, rule, agente, ADR, SPEC, PLAN, TASKS ou workflow-state.json foi corrigido: este papel so verifica e reporta. A unica escrita no repo foi harness/harness-inventory-adr-004.json.",
+    "Os 6 vetores rodaram por script em copia cp -a do worktree sob /tmp (nunca no repo): o repo nao recebeu skill nova, lock-diretorio, proof mutado, comentario HTML nem symlink.",
+    "O stdout do suiteFull contem FAIL V19 de FIXTURE (inventory.spec exercita o adapter contra arvores temporarias). O runner real emite exatamente uma linha V19, PASS, com os counters; grep -c '^PASS V19' no static isolado = 1.",
+    "O bloco de saida do TASKS.md foi confrontado com medicao propria: 445/7 era o estado em 8041733; no HEAD e 468/10 (d2). O V4 mede 1289 linhas, como no TASKS.",
+    "Os 4 commits que tocam path protegido (8041733, b6c8782, d305f30, b2b419e) carregam trailer Harness-Gate-Change; contagem verificada por commit.",
+    "Este REPORT ficou UNTRACKED de proposito: o qa-engineer nao faz push e o commit do evidence e ato do orchestrator."
+  ]
+}
