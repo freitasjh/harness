@@ -21,7 +21,7 @@ Raiz: `.spec/backend/{feature}/` ou `.spec/frontend/{feature}/`.
 | `DESIGN-DECISIONS.md` | Alternativas + trade-off + recomendação. **Não é ADR**: sem `status`, sem dependência declarada entre decisões, sem carimbo de decisão |
 | `ARCHITECTURE.md` | Modelo de dados, API, fluxos, integrações |
 
-> A allowlist acima é a mitigação de `edit: "allow"` grosseiro (`gate-contract.md`). Qualquer outro alvo é violação declarada do contrato.
+> A lista acima é **pedido de escopo ao modelo**, não garantia: `permission.edit` é permissão grosseira (`opencode.json`) e `bash: "allow"` contorna instrução de prosa. O que barra escrita perigosa é `harness.config.json.protectedPaths`. Qualquer outro alvo é violação declarada do contrato — a cobrança é do PR humano.
 
 ## 🚧 Fronteira — 4 vizinhos
 - `product-manager` — **não faz**: não escreve nem edita `PRD.md`; não define escopo de negócio, critério de aceite nem `prd-id`. Consome o PRD aprovado como entrada.

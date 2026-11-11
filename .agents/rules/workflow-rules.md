@@ -173,19 +173,17 @@ O **estado canônico** é o de `sdd-workflow-standard.md` (é o que vive em
 | Revisão de bug | BugReview |
 
 ### Fase 0 — Exploração & Planejamento Técnico
-> Para features com escopo claro, pular direto para Fase 1. Para features complexas/inovações, usar `dev-planner` para planejamento detalhado.
+> Para features com escopo claro, pular direto para Fase 1. Para features complexas/inovações, **delegar o planejamento ao subagente `planner`** (não executar as 6 fases localmente).
 
 1. Carregar `brain` — health check MCP automático, consultar memória de longo prazo
 2. Classificar demanda: **Feature**, **Bugfix** ou **Refactor**
-3. **Se Feature complexa ou Inovação** (recomendado para novos módulos, integrações, mudanças arquiteturais):
-   - Carregar skill `dev-planner`
-   - Executar **Fase 0 (Descubra)**: questionar problema real, usuários, casos de uso → gerar `EXPLORATION.md`
-   - Executar **Fase 1 (Analise)**: mapear restrições técnicas, dependências, compliance → gerar `CONSTRAINTS.md`
-   - Executar **Fase 2 (Desafie)**: comparar alternativas, registrar ADRs → gerar `DESIGN-DECISIONS.md`
-   - Executar **Fase 3 (Projete)**: modelo de dados, API, fluxos → gerar `ARCHITECTURE.md`
-   - Executar **Fase 4 (Estime)**: decompor tarefas, estimar esforço, riscos → gerar `PLAN.md`
-   - Executar **Fase 5 (Valide)**: consistência, revisão cruzada, handoff para `sdd-compiler`
-   - **Portão:** aprovação explícita do usuário em cada fase do dev-planner antes de avançar
+3. **Se Feature não isenta** (isenção em `.agents/rules/prd-adr-pipeline.md` §3) — o `orchestrator` **delega** o planejamento ao subagente `planner` via `task`; o papel consome a metodologia de planejamento (6 fases) e devolve:
+   - `EXPLORATION.md` — problema real, usuários, casos de uso
+   - `CONSTRAINTS.md` — restrições técnicas, dependências, compliance
+   - `DESIGN-DECISIONS.md` — alternativas + trade-off + recomendação (insumo; **a ADR é do `architect`**)
+   - `ARCHITECTURE.md` — modelo de dados, API, fluxos
+   - **parecer** no retorno do subagente (estimativa, dependências, riscos) — texto, não arquivo
+   - **Portão:** aprovação explícita do usuário sobre o parecer antes de avançar
 4. **Se Feature simples** (CRUD básico, ajuste pontual):
    - Carregar `sdd-compiler` modo `explore`
    - Levantar perguntas, hipóteses e alternativas de abordagem
@@ -195,7 +193,7 @@ O **estado canônico** é o de `sdd-workflow-standard.md` (é o que vive em
 ### Fase 1 — Análise (Requirements + Design)
 1. Carregar `brain` — health check MCP automático, consultar memória de longo prazo
 2. Carregar `sdd-architecture-board` — arquitetura e decisões técnicas
-3. **Se dev-planner foi executado:** incorporar artefatos (`EXPLORATION.md`, `CONSTRAINTS.md`, `DESIGN-DECISIONS.md`, `ARCHITECTURE.md`, `PLAN.md`) como base para SPEC
+3. **Se o `planner` foi executado:** incorporar os 4 artefatos (`EXPLORATION.md`, `CONSTRAINTS.md`, `DESIGN-DECISIONS.md`, `ARCHITECTURE.md`) + o parecer de estimativa/riscos como base para SPEC
 4. Gerar relatório de análise do domínio
 5. **Design Frontend** (se frontend): carregar `frontend-design`, definir direção visual
 6. Invocar agente `architect` para validar arquitetura
@@ -555,7 +553,7 @@ Para **TODO** desenvolvimento, as skills apropriadas **OBRIGATORIAMENTE** devem 
 |----------|-------|-----------|
 | **Prompt Gate** | `prompt-optimizer` | Análise obrigatória de toda demanda de mudança (6 elementos, 2 rotas) antes de qualquer ação — ver seção 0 |
 | **Análise inicial** | `brain` | Consultar memória de longo prazo do sistema |
-| **Planejamento Técnico** | `dev-planner` | Planejamento detalhado de features: descoberta, análise de restrições, desafio de soluções, projeto de arquitetura, estimativa e validação (6 fases, gera artefatos para sdd-compiler) |
+| **Planejamento Técnico** | (subagent) `planner` | Delegação do planejamento detalhado de features: descoberta, análise de restrições, desafio de soluções, projeto de arquitetura, estimativa e validação (6 fases; saída = 4 artefatos + parecer ao `sdd-compiler`) |
 | **Arquitetura** | `sdd-architecture-board` | Decisões arquiteturais, ADRs, validação de design |
 | **Desenvolvimento Backend** | `java-architecture-specialist` | DDD, JPA, serviços, segurança, testes |
 | **Desenvolvimento Backend** | `nestjs-architecture-specialist` | NestJS, módulos, DI, guards, testes |
@@ -604,7 +602,7 @@ Para **TODO** desenvolvimento, as skills apropriadas **OBRIGATORIAMENTE** devem 
 | `.agents/rules/security-standard.md` | **Fonte da verdade** de segurança (OWASP) — web, API, mobile |
 | `.agents/rules/brain-context.md` | Ponte fina → `BRAIN.MCP.md` (dono brain) |
 | `.agents/rules/sdd-workflow-standard.md` | Padrão do workflow SDD |
-| `.agents/skills/dev-planner/SKILL.md` | **Planejamento técnico detalhado** — 6 fases (Descubra→Analise→Desafie→Projete→Estime→Valide), gera artefatos para sdd-compiler |
+| Skill de planejamento consumida pelo `planner` (metodologia, `SKILL.md`) | **Planejamento técnico detalhado** — 6 fases (Descubra→Analise→Desafie→Projete→Estime→Valide); saída = 4 artefatos + parecer ao `sdd-compiler` |
 | `AGENTS.md` | Visão geral do projeto e comandos essenciais |
 | `~/.config/opencode/skills/caveman/SKILL.md` | Regras completas do modo caveman |
 | **`workflow-rules.md` §5** | **FONTE DA VERDADE** do harness (H0–H7) — fundido do `harness-continuous.md` (DOC-02) |
