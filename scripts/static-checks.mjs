@@ -20,7 +20,15 @@
 // instead of at the REFERENCE (does this prose point to something missing?) —
 // V18 and V19 are orthogonal, neither replaces the other. `common` lists from
 // the installer are read for closure only: they never confer a class.
-// No new command in the seal: the adapter rides the existing `suiteFull`.
+// V20 (ADR-001) registers the Clean Destination Criterion: the 4-verdict rubric
+// per line, over a population derived by command (D7), with vocabulary whose
+// keys come from the installer axes and whose coverage is owed. The debt it
+// finds lives in the literal BASELINE (with owner + sha256) and can only
+// shrink; prohibitions citing technology are COUNTERS (`prohibition-cited`),
+// not verdicts (D2). It never reads V18/V19 output — the `axis-decl` ×
+// `axis-class` divergence is published side by side, never treated as failure.
+// No new command in the seal for V18, V19 or V20: the adapters ride the
+// existing `suiteFull`.
 import { readFileSync, existsSync, readdirSync, statSync, lstatSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -52,6 +60,14 @@ import {
 // installer CLI is guarded by `import.meta.url === file://argv[1]`
 // (`install.mjs:2746`), so importing the module does not run the CLI.
 import { runInventoryChecks } from "../.opencode/plugins/lib/inventory/checks.mjs";
+// Critério do Destino Limpo (ADR-001): a rubrica de 4 vereditos é o módulo; o
+// V20 abaixo só registra o veredito. A fonte de eixo é o export do instalador,
+// importado DENTRO do módulo — este adapter não duplica o mapa. O par
+// `axis-decl`/`axis-class` é publicado junto: são duas leituras diferentes do
+// mesmo assunto, e esconder uma seria o defeito (ADR-001 §2.4). `axis-class`
+// vem do inventário JÁ calculado acima e é INJETADO — o módulo não lê nem
+// nomeia a saída do V19.
+import { runCdlChecks } from "../.opencode/plugins/lib/cdl/checks.mjs";
 import {
   SKILLS_BY_AXIS,
   SKILLS_COMMON,
@@ -452,6 +468,40 @@ function checkInventory(root = REPO_ROOT) {
         .map((r) => `${r.id}: ${r.detail}`)
         .join("; ")} | ${closure}`;
   record("V19", ok ? "PASS" : "FAIL", detail);
+  return counters;
+}
+
+// ADR-001 / RF-01: exactly one `record("V20", …)` — the verdict is `ok` (the
+// exit code), not just the console line. `root` is injectable for the same
+// reason as V18/V19: the adapter's bar must be testable against a fixture tree.
+// The counters are published in PASS **and** in FAIL — a counter that only
+// exists in the red branch is debt nobody reads while the check works.
+export function cdlCheckResults(root = REPO_ROOT, opts = {}) {
+  return runCdlChecks(root, opts).results;
+}
+
+function cdlClosure(c) {
+  return `population=${c.population.files}/${c.population.lines}`
+    + `, prescriptions=${c.prescriptions.total} (condicional=${c.prescriptions.conditional}, exemplo=${c.prescriptions.example}, catálogo=${c.prescriptions.catalogue}, incondicional=${c.prescriptions.unconditional})`
+    + `, prohibition-cited=${c.prohibitionCited}`
+    + `, baseline=${c.baseline.total} (incondicional=${c.baseline.unconditional}, identity=${c.baseline.identity})`
+    + `, identity=${c.identity.lines}/${c.identity.files}`
+    + `, axis-decl=${c.axisDecl.skills}/${c.axisDecl.rules}`
+    + `, axis-class=${c.axisClass.skills ?? "n/a"}/${c.axisClass.rules ?? "n/a"} (skills/rules)`
+    + `, refs-undetected=${c.refsUndetected} (owner ADR-004)`
+    + `, vocabulary=${c.vocabulary}, payload=${c.payload}`;
+}
+
+function checkCdl(root = REPO_ROOT, axisClass) {
+  const { ok, results: cdl, counters } = runCdlChecks(root, { axisClass });
+  const closure = cdlClosure(counters);
+  const detail = ok
+    ? `cdl medido: ${closure}`
+    : `cdl reprovado: ${cdl
+        .filter((r) => r.status === "FAIL")
+        .map((r) => `${r.id}: ${r.detail}`)
+        .join("; ")} | ${closure}`;
+  record("V20", ok ? "PASS" : "FAIL", detail);
 }
 
 // PAP-04 (🟡3): `root` is injectable so the ADAPTER's verdict — the `ok` flag that
@@ -468,7 +518,14 @@ export function runStaticChecks(root = REPO_ROOT) {
   checkV12();
   checkV14();
   checkRefs(root);
-  checkInventory(root);
+  // V19 roda ANTES de V20: `axis-class` é a contagem de classe primária que o
+  // inventário já deriva; o V20 publica o par ao lado de `axis-decl` (a
+  // declaração de eixo que ele mesmo deriva) sem ler a saída do outro check.
+  const inventory = checkInventory(root);
+  checkCdl(root, {
+    skills: inventory?.skills?.axis ?? null,
+    rules: inventory?.rules?.axis ?? null,
+  });
   checkPrd(root);
   reportLegacyBaseline();
   const failed = results.filter((r) => r.status === "FAIL");
