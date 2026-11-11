@@ -392,7 +392,7 @@ Use MoSCoW:
 - **Won't Have:** Explicitamente fora de escopo
 
 ### Saída
-- `.spec/[feature]/PLAN.md` com:
+- **Parecer** no retorno do subagente (texto, não arquivo) com:
   - Lista de tarefas com estimativas
   - Ordem de execução
   - Dependências mapeadas
@@ -426,7 +426,7 @@ Revisar tudo, garantir consistência e preparar handoff para implementação.
 - [ ] CONSTRAINTS.md mapeia todas as restrições?
 - [ ] DESIGN-DECISIONS.md possui justificativas técnicas?
 - [ ] ARCHITECTURE.md está alinhado com as decisões?
-- [ ] PLAN.md cobre todos os componentes?
+- [ ] O parecer de estimativa cobre todos os componentes?
 - [ ] Não há contradições entre artefatos?
 - [ ] Todas as fontes websearch foram documentadas?
 
@@ -458,7 +458,7 @@ Gere resumo para o `sdd-compiler`:
 - .spec/[feature]/CONSTRAINTS.md
 - .spec/[feature]/DESIGN-DECISIONS.md
 - .spec/[feature]/ARCHITECTURE.md
-- .spec/[feature]/PLAN.md
+- (parecer de estimativa/riscos no retorno do subagente — texto, não arquivo)
 
 ### Próximo Passo:
 Invocar sdd-compiler modo generate-spec

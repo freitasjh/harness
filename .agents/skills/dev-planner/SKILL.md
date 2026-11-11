@@ -136,7 +136,7 @@ Esta skill se encaixa no ciclo SDD existente:
 │  SDD Fase 2 (Planejamento)                                  │
 │  ┌─────────────────────────────────────────────────────┐    │
 │  │  dev-planner: Estimativa + Validação                │    │
-│  │  → PLAN.md (handoff para sdd-compiler)              │    │
+│  │  → parecer: estimativa + riscos (não é arquivo)     │    │
 │  └─────────────────────────────────────────────────────┘    │
 ├─────────────────────────────────────────────────────────────┤
 │  SDD Fase 2+ (Geração)                                      │
@@ -156,9 +156,10 @@ Esta skill se encaixa no ciclo SDD existente:
 |----------|---------|----------|
 | EXPLORATION.md | `.spec/[feature]/EXPLORATION.md` | Problema, contexto, alternativas consideradas |
 | CONSTRAINTS.md | `.spec/[feature]/CONSTRAINTS.md` | Restrições técnicas, dependências, limitações |
-| DESIGN-DECISIONS.md | `.spec/[feature]/DESIGN-DECISIONS.md` | Decisões de design com justificativa (ADRs) |
+| DESIGN-DECISIONS.md | `.spec/[feature]/DESIGN-DECISIONS.md` | Alternativas + trade-off + recomendação, com justificativa técnica (insumo; ADR é do `architect`) |
 | ARCHITECTURE.md | `.spec/[feature]/ARCHITECTURE.md` | Modelo de dados, API, fluxos, integrações |
-| PLAN.md | `.spec/[feature]/PLAN.md` | Tarefas, estimativas, dependências, riscos |
+
+**Autor do plano:** o arquivo de plano do ciclo é gerado pelo `sdd-compiler` (esteira SDD). O `dev-planner` entrega estimativa e riscos como **parecer** no retorno, não como arquivo.
 
 ---
 

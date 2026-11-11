@@ -1,0 +1,352 @@
+{
+  "version": 1,
+  "demand": "harness-inventory-adr-003",
+  "agent": "qa-engineer",
+  "phase": "Testing",
+  "gitSha": "7f13923527c08211840ca3ca4689da8f8699334e",
+  "branch": "adr/prd-harness-inventory/03-agente-planner",
+  "range": "5c9bbc0..7f13923",
+  "commands": [
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 676,
+      "stdoutHash": "sha256:f062c96ff0180667263d31f1c1c087bef3c9d0425051e0c219a27054bcd64346",
+      "stdoutBytes": 52728,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-003/plugins.stdout.log",
+      "observed": "tests 379 / suites 94 / pass 379 / fail 0 / cancelled 0 / skipped 0 / todo 0",
+      "resolution": "termo 1 de commands.suiteFull, lido do harness.config.json em runtime e reexecutado nesta sessao"
+    },
+    {
+      "cmd": "node --test \"installer/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 5675,
+      "stdoutHash": "sha256:8eab94274b88ead5009ffa4547692f766364aa70d3507addde8709ce2b3e1697",
+      "stdoutBytes": 72136,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-003/installer.stdout.log",
+      "observed": "tests 559 / suites 183 / pass 559 / fail 0 / cancelled 0 / skipped 0 / todo 0",
+      "resolution": "termo 2 de suiteFull, reexecutado nesta sessao; as linhas 'FAIL PRD-01' e 'vendor-check FAIL' no stdout sao fixtures internas (instalacao em diretorio temporario sem PRD/ADR e negativa do vendor-check), nao falha de suite - o contador oficial e pass 559 / fail 0"
+    },
+    {
+      "cmd": "node scripts/static-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 90,
+      "stdoutHash": "sha256:db23ee52fda33ba181cc06ed99923879ef3e0a49765b2946be8d6f47807f4d1e",
+      "stdoutBytes": 639,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-003/static.stdout.log",
+      "observed": "PASS V6, V6b, V2, V3, V7, V15, V14, PRD-01, ADR-01, ADR-02 = 10; INFO V12, LEGACY = 2; FAIL = 0",
+      "resolution": "termo 3 de suiteFull, reexecutado nesta sessao"
+    },
+    {
+      "cmd": "node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 64,
+      "stdoutHash": "sha256:e5e528c52d79fceaa1be828bd89116aa6e0be73294d2e99d39c4febe99e84516",
+      "stdoutBytes": 51,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-003/vendor.stdout.log",
+      "observed": "vendor-check OK (.agents/skills/.vendor-lock.json)",
+      "resolution": "termo 4 de suiteFull, reexecutado nesta sessao"
+    },
+    {
+      "cmd": "node scripts/sdd-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 121,
+      "stdoutHash": "sha256:bc82a9c35f30d39cce58656eca310f63cf7b199168c44eb53cd5022f473418cd",
+      "stdoutBytes": 628,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-003/sdd.stdout.log",
+      "observed": "V4, R-V12, V17, SDD-01, SDD-02, SDD-03, R-NODENY, RENAME-01 = 8 PASS / 0 FAIL (grep -c FAIL = 0)",
+      "resolution": "item 16 do ADR §3, reexecutado nesta sessao (nao e termo de suiteFull). V4 mede rules lines=1289 ao HEAD - ver divergencia d1"
+    },
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node --test \"installer/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs && node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 6174,
+      "stdoutHash": "sha256:15b15de0c749502f417a7dac7b45c940a12ff684ae49b54afb28b89520bcaac3",
+      "stdoutBytes": 125445,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-003/suitefull-grouped.stdout.log",
+      "observed": "plugins 379/379 (94 suites) + installer 559/559 (183 suites) + static 10 PASS / 0 FAIL / 2 INFO + vendor-check OK; exit 0",
+      "resolution": "commands.suiteFull literal, resolvido do harness.config.json em runtime e executado com o grupo inteiro redirecionado"
+    },
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node --test \"installer/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs && node scripts/vendor-skills.mjs --check (pos-escrita do REPORT)",
+      "exitCode": 0,
+      "durationMs": 6109,
+      "stdoutHash": "sha256:cb8da0d41dfa3a78dd1eb6861c5e8db2790bca687b06b5808aba3236106321a1",
+      "stdoutBytes": 125440,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory-adr-003/suitefull-postwrite.stdout.log",
+      "observed": "plugins 379/379 / fail 0 / skipped 0; installer 559/559 / fail 0 / skipped 0; exit 0",
+      "resolution": "suiteFull literal reexecutado DEPOIS da criacao deste arquivo, porque report-schema.spec.mjs valida todo harness/*.json real contra o schema (C-1) - este REPORT nao pode escapar da varredura"
+    }
+  ],
+  "counts": {
+    "unit": { "passed": 379, "failed": 0, "skipped": 0 },
+    "it": { "passed": 559, "failed": 0, "skipped": 0 },
+    "frontend": { "passed": 0, "failed": 0, "skipped": 0 }
+  },
+  "countsNote": "Numeros MEDIDOS nesta sessao no stdout literal dos comandos acima (plugins 379/379 em 94 suites; installer 559/559 em 183 suites; 0 failed / 0 skipped / 0 todo em ambos; stderr 0 bytes nos dois). `unit` = suite de plugins (commands.unit do config); `it` = suite do instalador; `frontend` 0/0/0 porque o repo nao tem frontend (stack.frontend declarado N/A). Nada copiado do developer, do reviewer ou do TASKS.md: o bloco de saida do TASKS.md nao e reexecutavel ao HEAD (ver d1).",
+  "e2e": {
+    "status": "N/A",
+    "justification": "harness.config.json: infra.composeFile = null, infra.ports.backend = null, infra.ports.frontend = null; stack.backend/frontend = 'N/A'. Nao existe URL alvo para o MCP chrome-devtools (mcp.required = [\"chrome-devtools\"]); H3 (wipe + re-cadastro em browser real) nao tem objeto neste repo de tooling Node ESM. O equivalente observavel foi executado: os 17 itens do ADR §3/§9 reexecutados pelo comando do proprio item + instalador real em diretorio temporario (559/559) + suiteFull exit 0.",
+    "escalateOnRisk": "nao dispara: riskPaths do config sao '**/security/**', '**/acl/**', '**/*Permission*', '**/auth/**', '**/i18n/**'; nenhum path do range 5c9bbc0..HEAD casa essas classes (git diff --name-status: .agents/**, .opencode/plugins/__tests__/**, .spec/**, docs/FUNCIONAMENTO.md, opencode.json)."
+  },
+  "evaluation": {
+    "telas": "n/a-sem-UI. Equivalente observavel: static-checks 10 PASS / 0 FAIL / 2 INFO e sdd-checks 8 PASS / 0 FAIL, ambos reexecutados nesta sessao; docs/FUNCIONAMENTO.md sem contradicao 9-vs-10 (sitios de contagem conferidos: linhas 95, 108, 622, 655, 740).",
+    "negocio": "ok-ADR-003 medido item a item: roster 10 chaves com 1 primary; planner subagent no shape legado (prompt string + permission); edit: allow 4->5 com conjunto literal exato; AGENT.md 42 l., 3 mencoes a dev-planner, 0 '### Fase', 0 websearch, 4 'nao faz' um por vizinho; 4 basenames + raiz .spec/(backend|frontend); PLAN.md fora do AGENT.md e da SKILL.md; planejador 2->0; paridade registro<->disco 10/10; ROSTER literal do spec de paridade com 10 nomes.",
+    "logica": "ok-suiteFull literal exit 0 (plugins 379/379, installer 559/559, static 10 PASS/0 FAIL, vendor OK, sdd 8 PASS/0 FAIL, stderr 0 bytes). Contraprova nao-vacua: a linha 50 da rule foi medida no diff (unico hunk do arquivo) e a linha 9 do qa-engineer nomeia orchestrator; a baseline de refs orfas do PRD §3.5 foi recomputada nas duas arvores (base e HEAD) e e identica.",
+    "perf": "suiteFull ~6.2 s somando os termos (plugins ~0.7 s, installer ~5.7 s, static 90 ms, vendor 64 ms); mesma ordem de grandeza dos ciclos anteriores (5.8-6.2 s). Repo de tooling: sem latencia de aplicacao a medir."
+  },
+  "h3": {
+    "status": "N/A com justificativa",
+    "why": "H3 pressupoe UI + banco + servidores locais; aqui infra = null e stack = N/A. Tela branca, rota duplicada, i18n faltando e CORS/auth de browser nao tem como ocorrer em repo de plugins/instalador/rules.",
+    "substitute": "Reexecucao independente dos 16 itens do §3 + item 17 do §9 pelo comando do proprio item + os 7 pontos do briefing P4 + suite completa reexecutada depois da escrita do REPORT."
+  },
+  "verification": {
+    "method": "Cada item foi reexecutado pelo comando que o proprio ADR declara, nesta sessao, com saida literal em /tmp/opencode/qa-harness-inventory-adr-003/*.log. Nenhum valor herdado do developer, do reviewer, do TASKS.md ou do relatorio do ciclo anterior (harness/harness-inventory-adr-002.json foi lido so como FORMA).",
+    "adrItems": {
+      "item_1_roster_10_e_1_primario": {
+        "cmd": "node -e 'Object.keys(agent).sort()' ; filtro mode===\"primary\" ; agent.planner.mode",
+        "measured": "10 architect,code-reviewer,design-system-specialist,developer-engineer,orchestrator,planner,product-manager,qa-engineer,security-engineer,ux-designer ; primary=1 ; planner.mode=subagent",
+        "verdict": "PASSA"
+      },
+      "item_2_shape_legado_homogeneo": {
+        "cmd": "node -e 'typeof p.prompt, p.prompt, typeof p.description, p.description.length>0, typeof p.permission' ; Object.keys(config)",
+        "measured": "string {file:./.agents/agents/planner/AGENT.md} string true object ; chaves de topo = $schema,$comment,plugin,plugins,instructions,permission,agent,$experiment (sem agents/system)",
+        "verdict": "PASSA"
+      },
+      "item_3_edit_allow_4_para_5": {
+        "cmd": "filtro permission.edit===\"allow\" (sort) e ===\"deny\"",
+        "measured": "allow 5 = architect,developer-engineer,planner,product-manager,qa-engineer ; deny 5 = code-reviewer,design-system-specialist,orchestrator,security-engineer,ux-designer (planner ausente)",
+        "verdict": "PASSA"
+      },
+      "item_4_description_com_as_4_fronteiras": {
+        "cmd": "node -e 'for t of [product-manager,architect,sdd-compiler,dev-planner] d.includes(t)'",
+        "measured": "product-manager true / architect true / sdd-compiler true / dev-planner true",
+        "verdict": "PASSA"
+      },
+      "item_5_prompt_fino_sem_metodo_duplicado": {
+        "cmd": "wc -l < planner/AGENT.md ; grep -cF dev-planner ; grep -cE '^### Fase [0-5]' ; grep -c websearch",
+        "measured": "42 ; 3 ; 0 (exit 1) ; 0 (exit 1)",
+        "verdict": "PASSA"
+      },
+      "item_6_nao_faz_um_por_vizinho": {
+        "cmd": "grep -c 'não faz' ; grep -n -B1 'não faz'",
+        "measured": "4 ; linhas 27 (product-manager), 28 (architect), 29 (sdd-compiler), 30 (dev-planner) - cada nome na propria linha do 'nao faz'",
+        "verdict": "PASSA"
+      },
+      "item_7_escrita_4_basenames_com_raiz": {
+        "cmd": "for f in EXPLORATION CONSTRAINTS DESIGN-DECISIONS ARCHITECTURE do grep -cF $f.md ; grep -cE '\\.spec/(backend|frontend)/'",
+        "measured": "1 / 1 / 2 / 1 (4/4 >=1) ; raiz = 1",
+        "verdict": "PASSA"
+      },
+      "item_8_plan_md_fora_do_planner": {
+        "cmd": "grep -cE 'PLAN\\.md' planner/AGENT.md ; grep -c 'PLAN\\.md' dev-planner/SKILL.md ; grep -rc 'PLAN\\.md' dev-planner/ ; grep -c 'PLAN\\.md' workflow-rules.md ; git diff -U0 5c9bbc0..HEAD -- sdd-workflow-standard.md",
+        "measured": "0 ; 0 ; 0 nos 4 arquivos do diretorio (workflow.md, anti-patterns.md, questions-template.md, SKILL.md) ; 3 em workflow-rules.md, todas atribuindo PLAN.md ao sdd-compiler (:214, :215, :256) ; diff do sdd-workflow-standard.md = 1 unico hunk na linha 50",
+        "note": "A invariante I2 e mais ampla que a metrica por token e esta DEFERIDA ao ADR-005 (§10): dev-planner/workflow.md:20-21, :420, :434 e :408 mantem PLAN por sentido. Item medido PASSA pelo comando declarado; I2 NAO e afirmada como fechada no §10.",
+        "verdict": "PASSA (metrica) / I2 deferida"
+      },
+      "item_9_duas_citacoes_reivindicadas": {
+        "cmd": "grep -rn 'planejador' .agents/ ; grep -c planejador nos 2 arquivos ; sed -n '9p' qa-engineer ; sed -n '50p' sdd-workflow-standard",
+        "measured": "0 ocorrencias (grep exit 1, sem saida) ; 0 e 0 ; qa:9 = '...acionado no portao P4 (Quality Gate, fase canonica Testing) pelo orchestrator...' ; rule:50 = 'Ao concluir o planejamento (Fase 5 - Valide), o planner deve consolidar...'",
+        "verdict": "PASSA"
+      },
+      "item_10_design_decisions_nao_e_adr": {
+        "cmd": "grep -c depende-de ; grep -ci 'interface congelada' ; grep -c ADR ; conferir fontes workflow-rules:184 e SKILL.md:159",
+        "measured": "0 (exit 1) ; 0 (exit 1) ; 3 (linhas 21, 28, 33 - fronteira nomeia o vizinho) ; workflow-rules:184 = 'a ADR e do architect' ; SKILL.md:159 = 'insumo; ADR e do architect'",
+        "note": "Mesma ressalva do item 8: dev-planner/workflow.md:199,:202,:204,:225 ainda manda criar ADR - I3 DEFERIDA ao ADR-005 (§10).",
+        "verdict": "PASSA (metrica) / I3 deferida"
+      },
+      "item_11_gate_byte_identico_sem_planner": {
+        "cmd": "grep -c planner gate.js ; git diff --stat 5c9bbc0..HEAD -- gate.js ; sed -n '635,646p' gate.js",
+        "measured": "0 (exit 1) ; vazio (0 bytes) ; KNOWN_AGENTS = 6 nomes + unknown (orchestrator, developer-engineer, qa-engineer, code-reviewer, ux-designer, design-system-specialist)",
+        "verdict": "PASSA"
+      },
+      "item_12_known_agents_declarado": {
+        "cmd": "node -e 'agentes fora do enum de 6'",
+        "measured": "architect,planner,product-manager,security-engineer = 4 de 10 caem em unknown; gate.js:645-646 devolve 'unknown' por construcao",
+        "verdict": "PASSA (declarado, FU-65 segue aberto)"
+      },
+      "item_13_paridade_10_10": {
+        "cmd": "ls -d .agents/agents/*/ | wc -l ; test -f planner/AGENT.md ; diff <(dirs) <(chaves)",
+        "measured": "10 ; OK ; diff vazio (exit 0)",
+        "verdict": "PASSA"
+      },
+      "item_14_teste_de_paridade_acompanha": {
+        "cmd": "grep -c '\"planner\"' config-dual-parity.spec.mjs ; node --test config-dual-parity.spec.mjs",
+        "measured": "1 ; tests 20 / suites 3 / pass 20 / fail 0 ; ROSTER literal agora tem 10 nomes e assere o CONJUNTO (nao length)",
+        "verdict": "PASSA"
+      },
+      "item_15_instalador_intocado": {
+        "cmd": "git diff --stat 5c9bbc0..HEAD -- installer/ ; import('./installer/install.mjs') SKILLS_COMMON.includes('dev-planner')",
+        "measured": "vazio (0 bytes) ; true",
+        "verdict": "PASSA"
+      },
+      "item_16_suite_full_e_selo_intactos": {
+        "cmd": "git diff --stat 5c9bbc0..HEAD -- harness.config.json ; 4 termos de suiteFull ; node scripts/sdd-checks.mjs",
+        "measured": "vazio (0 bytes) ; exit 0 (379+559+static 0 FAIL+vendor OK) ; 8 PASS / 0 FAIL; nenhum comando novo em commands.suiteFull, logo selo nao precisa ser republicado",
+        "verdict": "PASSA"
+      },
+      "item_17_fiacao_do_planner": {
+        "cmd": "grep -c planner orchestrator/AGENT.md ; grep -c planner workflow-rules.md ; grep -c dev-planner workflow-rules.md",
+        "measured": "1 ; 5 (linhas 176, 180, 196, 556, 605) ; 0 (exit 1)",
+        "note": "Orchestrator:291 declara a delegacao via task e proibe F0-F5 local; workflow-rules:176/180 descrevem a delegacao. O protocolo de delegacao em orchestrator:565-580 NAO lista planner - deferido ao ADR-005 (§10).",
+        "verdict": "PASSA"
+      }
+    },
+    "briefingChecklist": {
+      "b1_16_itens_mais_item_17": "PASSA - 17/17 reexecutados pelo comando declarado no proprio item (ver adrItems); 2 deles com ressalva de invariante deferida (I2 no item 8, I3 no item 10).",
+      "b2_paridade_registro_disco_10_10": "PASSA - 10 diretorios, diff de conjuntos vazio, planner/AGENT.md presente; 9 AGENT.md + code-reviewer/PROMPT.md.",
+      "b3_planejador_zero_e_2_linhas_do_papel_certo": "PASSA - grep -rn planejador .agents/ = 0 (exit 1); qa-engineer:9 -> orchestrator (quem dispara QA); sdd-workflow-standard:50 -> planner + Fase 5 - Valide (sujeito que planeja).",
+      "b4_git_diff_dos_protegidos_vazio": "PASSA - git diff --stat 5c9bbc0..HEAD -- .opencode/plugins/gate.js harness.config.json installer/ .opencode/plugins/lib/ => vazio; git diff | wc -c = 0.",
+      "b5_docs_funcionamento_coerente": "PASSA - 10 agentes em todas as contagens (linhas 95, 108, 622, 655, 740); nenhum resto de '9 agentes'/'mesmos 9'; refs opencode.json:12-102 conferem com o arquivo (12 = 'agent': {, 102 = fecha o mapa); refs orchestrator/AGENT.md:220-245, 239/240/242/244/245, 249-274, 253, 439-472, 448-456, 458-462, 464-472, 478 conferidas linha a linha e todas batem.",
+      "b6_deferimentos_do_10": "PASSA COM RESSALVA - os 5 itens estao declarados no §10; I2 e, porem, afirmada como entregue em TASKS.md PL-04 [x] ('RF-04, I2, E2'), no SPEC §2 (invariante) e no PLAN §2 (mapa I2 -> Fase 3), e o §4-C5 do proprio ADR ainda diz 'colisao PLAN.md eliminada'. Ver deferredScope.",
+      "b7_sem_referencia_viva_nova_a_arquivo_inexistente": "PASSA - baseline do PRD §3.5 recomputada em 5c9bbc0 e no HEAD: 20 paths citados, 13 ausentes, 52 citacoes, conjunto identico (diff vazio); planejador 2->0; frontend/DESIGN.md 11->11; os 21 tokens de path adicionados pelo range resolvem no disco (ou sao placeholder de template .spec/prd/{prd-id}/PRD.md) e ../../rules/brain-context.md resolve a partir de planner/."
+    },
+    "deferredScope": {
+      "source": "ADR-003 §10 (decisao do owner 2026-11-11) - 5 itens deferidos ao ADR-005",
+      "items": [
+        {
+          "id": "I2",
+          "desc": "autor unico de PLAN.md",
+          "declared": true,
+          "residuals_measured": "dev-planner/workflow.md:20-21 (diagrama com coluna PLAN), :408 ('Posso gerar as tasks detalhadas?'), :420 ('artefatos anteriores ... PLAN'), :434 ('tarefa do PLAN')",
+          "asserted_as_delivered_elsewhere": "SIM - TASKS.md PL-04 marcado [x] cita I2; SPEC.md §2 I2 e invariante; PLAN.md §2 mapeia I2 -> Fase 3. O ADR §4-C5 tambem mantem 'colisao PLAN.md eliminada' sem emenda.",
+          "dependency": "item 8 depende de I2: o item 8 PASSA pelo comando (0 tokens), mas a invariante '1 autor por path' segue falsa por sentido - e o proprio §10 declara isso."
+        },
+        {
+          "id": "I3",
+          "desc": "DESIGN-DECISIONS nao e ADR dentro da skill consumida",
+          "declared": true,
+          "residuals_measured": "dev-planner/workflow.md:199 (2.5 Registrar Decisoes (ADRs)), :202 (template '## ADR-001:'), :204 (### Status), :225 (Decisoes documentadas (ADRs))",
+          "asserted_as_delivered_elsewhere": "PARCIAL - SPEC.md §2 I3 e invariante e PLAN.md §2 mapeia I3 -> Fase 1 item 1 (texto do AGENT.md, que de fato declara); nenhum artefato afirma que a SKILL foi corrigida, e o §10 diz o contrario.",
+          "dependency": "item 10 depende de I3: os 3 greps do item passam no AGENT.md e as 2 fontes citadas foram corrigidas, mas a skill que o planner consome continua mandando criar ADR."
+        },
+        {
+          "id": "EXPLORATION_autor_unico",
+          "desc": "autor unico de EXPLORATION.md",
+          "declared": true,
+          "residuals_measured": "orchestrator/AGENT.md:285 (via sdd-compiler explore) e :291 (via planner) - colisao criada pela fiacao do item 17",
+          "asserted_as_delivered_elsewhere": "NAO - nenhum artefato do ciclo afirma autor unico de EXPLORATION.md",
+          "dependency": "colateral do item 17 (fiacao): a delegacao existe e e verificavel, a autoria do arquivo ficou ambigua e deferida."
+        },
+        {
+          "id": "protocolo_de_delegacao",
+          "desc": "tabela de delegacao do orchestrator listar planner",
+          "declared": true,
+          "residuals_measured": "orchestrator/AGENT.md:565-580 - Protocolo de Delegacao sem linha do planner",
+          "asserted_as_delivered_elsewhere": "NAO",
+          "dependency": "nenhum item do §3/§9 exige a tabela; o item 17 exige apenas a fiacao no texto da Fase 1, que existe."
+        },
+        {
+          "id": "gatilho_fase_0",
+          "desc": "sobreposicao entre 'complexas/inovacoes', 'nao isenta' e 'Feature simples'",
+          "declared": true,
+          "residuals_measured": "orchestrator/AGENT.md:176, :180, :187 (CRUD nao e isento e cai nos dois passos); workflow-rules.md:176 mesma sobreposicao",
+          "asserted_as_delivered_elsewhere": "NAO",
+          "dependency": "nenhum item do §3/§9 cobre o gatilho."
+        }
+      ]
+    }
+  },
+  "divergences": {
+    "d1_tasks_md_nao_reexecutavel": {
+      "severity": "informativo",
+      "what": "TASKS.md:84 publica 'PASS V4: rules lines=1291 (budget 1705)'. Medido ao HEAD: 1289. Em 5c9bbc0 (base) o valor seria 1290; 1291 so existiu ate 7c62839, antes do commit 0502835 (F1 removeu 2 linhas de workflow-rules).",
+      "evidence": "node scripts/sdd-checks.mjs => 'PASS V4: rules lines=1289'; total de linhas de .agents/rules por commit: 5c9bbc0=1290, 7c62839=1290, 0502835=1288 (git show | wc -l, sdd-checks soma +1)",
+      "impact": "nenhum no veredito: o bloco do TASKS.md e evidencia estatica desatualizada, nao assercao do produto; os contadores de teste (379/559) e os checks estao verdes na minha execucao ao HEAD. O orcamento (1705) continua folgado.",
+      "action": "nenhuma (qa-engineer nao corrige documentos); registrar para o proximo ciclo"
+    },
+    "d2_adr_nao_retrata_3_e_4_apos_o_re_escopo": {
+      "severity": "informativo",
+      "what": "O §10 defere I2/I3 ao ADR-005, mas o §3 item 8 ('1 autor por path'), o §2 (tabela de fronteira) o §4-C5 ('colisao PLAN.md eliminada') e o §7 (criterios de aceite) seguem afirmando o resultado sem remissao ao §10.",
+      "evidence": "ADR.md:58, :88, :121 e :235 vs ADR.md:242-243",
+      "impact": "leitura do ADR sem o §10 conclui que I2/I3 estao fechadas. Nao muda medida nem veredito; e risco de leitura para quem auditar so o §3.",
+      "action": "nenhuma (escopo de escrita do qa-engineer e harness/)"
+    },
+    "d3_ancoras_de_linha_do_10_deslocadas": {
+      "severity": "informativo",
+      "what": "O §10 cita workflow.md:402 para 'Posso gerar as tasks detalhadas?' (esta em :408) e :225 para o template com '### Status' (o marcador esta em :204; :225 e 'Decisoes documentadas (ADRs)').",
+      "evidence": "grep -n das strings citadas em .agents/skills/dev-planner/workflow.md",
+      "impact": "nenhum no veredito (o deferimento existe; so a ancora flutuou 6 e 21 linhas).",
+      "action": "nenhuma"
+    },
+    "d4_ancoras_de_workflow_rules_no_docs_deslocadas_2": {
+      "severity": "informativo (criado por 0502835, que removeu 2 linhas)",
+      "what": "docs/FUNCIONAMENTO.md:388/421/424/443-445/461 cita ranges de workflow-rules.md (:144-328, :302-316, :330-371 etc.); com a remocao de 2 linhas na Fase 0, os fins de range agora incluem o cabecalho seguinte (:328 = '## 4. Workflow Bugfix', :371 = '## 5. Harness Continuo').",
+      "evidence": "sed -n nos limites citados",
+      "impact": "nenhum: o inicio de cada range continua no lugar; so o fim avanca 1-2 linhas. Nao e referencia a arquivo inexistente (b7 continua PASSA).",
+      "action": "nenhuma; candidato ao PRD 2 (prosa)"
+    },
+    "d5_sdd_checks_aponta_para_o_ciclo_anterior": {
+      "severity": "informativo",
+      "what": "SDD-02/SDD-03 leem workflow-state.json e reportam cycle=.spec/backend/harness-inventory-adr-002. O estado do workflow nao foi atualizado para harness-inventory-adr-003.",
+      "evidence": "node scripts/sdd-checks.mjs => 'PASS SDD-02: cycle=.spec/backend/harness-inventory-adr-002' e SDD-03 com SPEC 49 linhas / PLAN 57 linhas / TASKS RV-01..RV-12",
+      "impact": "nenhum no veredito deste ciclo: o check passa e o gate nao le esses campos para P4. Mas a rastreabilidade SDD-02/03 deste ciclo NAO esta sendo exercida - quem atualiza workflow-state.json e o orchestrator.",
+      "action": "nenhuma (proibido editar workflow-state.json por este papel)"
+    }
+  },
+  "findings": {
+    "f1_contraprova_de_baseline_de_refs": {
+      "severity": "positivo",
+      "what": "A checagem de 'nenhuma referencia viva nova a arquivo inexistente' nao e vacua: a baseline do PRD §3.5 foi recomputada em duas arvores (git archive de 5c9bbc0 e o HEAD) e o conjunto dos 13 ausentes e byte-identico. Se o ciclo tivesse introduzido 1 path quebrado, o diff de conjuntos acusaria.",
+      "evidence": "/tmp/opencode/qa-harness-inventory-adr-003/absent-base.txt vs absent-head.txt (13/13, diff vazio); 20 paths citados em ambas"
+    },
+    "f2_itens_8_e_10_passam_por_token": {
+      "severity": "declarado (limite de metrica, nao defeito novo)",
+      "what": "Os itens 8 e 10 passam pelo comando que o proprio ADR define, mas a intencao (1 autor por path; DESIGN-DECISIONS nao e ADR) continua violada em dev-planner/workflow.md. O §10 declara exatamente isso; minha medicao confirma a lista de sitios do §10 (mais :408 e :204 como linhas reais).",
+      "evidence": "grep -rc PLAN.md dev-planner/ = 0 em todos os 4 arquivos; strings 'PLAN' e 'ADRs'/'### Status' seguem em workflow.md"
+    },
+    "f3_allow_5_bate_em_3_fontes": {
+      "severity": "positivo",
+      "what": "O conjunto edit: allow = 5 coincide em opencode.json (medido), gate-contract.md:18 (I5) e docs/FUNCIONAMENTO.md:609-618 - 5 allow e 5 deny, sem divergencia entre as 3 fontes.",
+      "evidence": "node -e dos 2 filtros + leitura das 2 tabelas"
+    }
+  },
+  "brainStore": [
+    "sessoes/projetos/harness/2026-11-11-qa-harness-inventory-adr-003-p4"
+  ],
+  "brainNote": "Nota gravada nesta sessao via brain_store (layer sessoes, project harness) com o veredito P4, os 2 itens deferidos com ressalva de metrica (I2/I3), as 5 divergencias informativas e a lista do §10. Nenhuma nota de arquitetura/regras/estudos foi reescrita por este papel.",
+  "cleanup": {
+    "ports": [],
+    "processes": [],
+    "note": "Nenhum servidor subido: infra null e stack N/A. Zero `pkill -f`, zero `lsof`/`kill` (nada a encerrar). Todos os comandos foram spawn sincrono; nenhum node --test residual. Diretorio temporario criado por mim foi removido: /tmp/opencode/qa-harness-inventory-adr-003/base (git archive de 5c9bbc0). Logs mantidos em /tmp/opencode/qa-harness-inventory-adr-003/.",
+    "verifiedRemoved": "rm -rf do git archive executado e conferido com test -e => REMOVED"
+  },
+  "gitState": {
+    "head": "7f13923527c08211840ca3ca4689da8f8699334e",
+    "range": "5c9bbc0..7f13923",
+    "commits": [
+      { "sha": "1e74b4d", "subject": "feat(agents): ADR-003 — papel `planner` (subagent) consome `dev-planner`" },
+      { "sha": "2db6e82", "subject": "docs(adr): N12 no ADR-003" },
+      { "sha": "7c62839", "subject": "docs(adr): ADR-003 emenda pos-review — N13-N17 + item 17" },
+      { "sha": "0502835", "subject": "fix(agents): fecha ressalvas F1-F7 do review do ADR-003" },
+      { "sha": "6887022", "subject": "docs(adr): re-escopar ADR-003 — I2/I3 e 4 achados deferidos ao ADR-005" },
+      { "sha": "7f13923", "subject": "docs(harness): corrigir contagem do roster e lastros de linha do AGENT.md" }
+    ],
+    "filesInRange": 16,
+    "protectedDiff": "git diff --stat 5c9bbc0..HEAD -- .opencode/plugins/gate.js harness.config.json installer/ .opencode/plugins/lib/ => vazio (0 bytes)",
+    "worktreeAtStart": "clean (git status --porcelain=v1 -b: apenas a linha de branch)"
+  },
+  "residual_risks": [
+    "ADR-003 segue com status in-progress: o merge e humano (1 ADR = 1 PR = 1 revisao) e nenhum push foi feito por este papel",
+    "I2 e I3 ficam falsas por sentido ate o ADR-005; os itens 8 e 10 do §3 passam apenas pela metrica de token - risco de leitura se alguem tratar §3 como prova de invariante",
+    "TASKS.md deste ciclo publica um bloco de suite nao reexecutavel ao HEAD (V4=1291 vs 1289 medido)",
+    "workflow-state.json aponta para o ciclo harness-inventory-adr-002; SDD-02/03 deste ciclo nao exercitam o state atual",
+    "A allowlist de escrita do planner e prosa: permission.edit e grosseira e bash contorna; o que barra e protectedPaths (declarado no proprio AGENT.md e no §4-C2)"
+  ],
+  "selfReported": true,
+  "selfReportedNote": "true por honestidade: numeros e hashes foram medidos pelo proprio executor desta sessao, com spawn sincrono e captura de stdout. A observacao independente e a contraprova do gate, que reexecuta commands.suiteFull selado.",
+  "notes": [
+    "Nenhum codigo, config, rule, agente, ADR, SPEC, PLAN, TASKS ou workflow-state.json foi corrigido: este papel so verifica e reporta; a unica escrita foi harness/harness-inventory-adr-003.json.",
+    "Os comandos de suite foram resolvidos do harness.config.json em runtime; os comandos por item foram copiados do proprio ADR §3/§9 (nunca de prosa do briefing).",
+    "O bloco de saida do TASKS.md foi confrontado com medicao propria em vez de aceito: 379/559 conferem, 1291 nao (d1).",
+    "O §10 foi tratado como escopo deferido declarado, nao como falha; os 2 itens de §3 que dependem dele (8 e 10) foram marcados PASSA-metrica + invariante deferida.",
+    "A suite de plugins foi reexecutada DEPOIS da criacao deste arquivo porque report-schema.spec.mjs valida todo harness/*.json real contra o schema."
+  ]
+}

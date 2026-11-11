@@ -1,5 +1,5 @@
 {
-  "current_feature": "harness-inventory-adr-002",
+  "current_feature": "harness-inventory-adr-003",
   "current_phase": "Completed",
   "previous_phase": "Testing",
   "next_phase": "Planning",
@@ -11,9 +11,9 @@
     "bug_report": "harness/harness-eixos-stack-p2.json",
     "source_tech_debt": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
     "previous_archive": ".spec/archive/20261018-harness-eixos-stack/",
-    "verify": ".spec/backend/harness-inventory-adr-002/VERIFY.md",
+    "verify": ".spec/backend/harness-inventory-adr-003/VERIFY.md",
     "harness_evidence": ".spec/archive/20261018-harness-eixos-stack/harness/",
-    "harness_report": "harness/harness-inventory-adr-002.json",
+    "harness_report": "harness/harness-inventory-adr-003.json",
     "tech_debt_p2": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
     "previous_cycle": {
       "cycle": ".spec/backend/harness-inventory-adr-001/",
@@ -22,16 +22,16 @@
       "harness_report": "harness/harness-inventory.json"
     },
     "c1_previous_bug": ".spec/bugs/harness-eixos-stack-p2/TASKS.md",
-    "proposal": ".spec/backend/harness-inventory-adr-002/PROPOSAL.md",
-    "spec": ".spec/backend/harness-inventory-adr-002/SPEC.md",
-    "plan": ".spec/backend/harness-inventory-adr-002/PLAN.md",
-    "tasks": ".spec/backend/harness-inventory-adr-002/TASKS.md",
+    "proposal": ".spec/backend/harness-inventory-adr-003/PROPOSAL.md",
+    "spec": ".spec/backend/harness-inventory-adr-003/SPEC.md",
+    "plan": ".spec/backend/harness-inventory-adr-003/PLAN.md",
+    "tasks": ".spec/backend/harness-inventory-adr-003/TASKS.md",
     "superseded_cycle": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/ (superseded: SPEC prescrevia `Plugin.define`, ausente no binario v2.0.32)",
     "archive": ".spec/archive/20261028-harness-design-system-agent/",
     "prd": ".spec/prd/prd-harness-inventory/PRD.md",
     "research": ".spec/prd/prd-harness-inventory/RESEARCH.md",
     "adr_index": ".spec/prd/prd-harness-inventory/ADR-INDEX.md",
-    "adr": ".spec/prd/prd-harness-inventory/ADRs/ADR-002-prd-adr-pipeline-modulo/ADR.md",
+    "adr": ".spec/prd/prd-harness-inventory/ADRs/ADR-003-agente-planner/ADR.md",
     "prd_lines": ".spec/prd/prd-harness-inventory/PRD.md (162 linhas, 16 secoes, PRD-01 PASS)"
   },
   "scope": {
@@ -57,10 +57,10 @@
     "G2_PRD": "approved_user_2026_10_22 (PRD prd-garantias-runtime aprovado sem ressalvas; §16 do PRD.md; 3 decisoes do owner)",
     "P1_P2": "approved_user_2026_11_11 (SPEC 49 linhas, 12 RF mapeados aos 16 itens do ADR-001, 6 invariantes)",
     "P2_P3": "approved_user_2026_11_11 (PLAN 57 linhas, TASKS 12 microtasks RV-01..RV-12)",
-    "P3_P4": "approved_auto_evidence_2026_11_11 (commit 9ccc3a2; review APPROVED 0 criticos)",
-    "P4_P5": "approved_auto_evidence_QA_2026_11_11 (REPORT schema-valido; 938 testes 0 falhas; 12/12 presets; selo inalterado)",
-    "P5_P6": "approved_user_2026_11_11 (VERIFY 3/3 PASS)",
-    "P6_fim": "pending_human_merge (branch 02-prd-adr-pipeline-modulo)",
+    "P3_P4": "approved_auto_evidence_2026_11_11 (commits 1e74b4d..7f13923; review 3 rodadas; re-escopo aprovado pelo owner)",
+    "P4_P5": "approved_auto_evidence_QA_2026_11_11 (REPORT schema-valido; 938 testes; 17/17 itens)",
+    "P5_P6": "approved_user_2026_11_11 (VERIFY 3/3 com escopo deferido declarado)",
+    "P6_fim": "pending_human_merge (branch 03-agente-planner)",
     "B1_B2": "approved_user_2026_09_29",
     "FU32": "closed_approved_decision_B",
     "_previous_cycle_opencode_v2_only": {
@@ -75,15 +75,15 @@
       "B1_B2": "approved_user_2026_09_29",
       "FU32": "closed_approved_decision_B"
     },
-    "G2_ADR": "approved_user_2026_11_11 (ADR-002 interface de 12 itens aprovada)",
+    "G2_ADR": "approved_user_2026_11_11 (ADR-003 interface de 16 itens + item 17 emendado)",
     "G1_PRD": "approved_user_2026_11_11 (PRD-1 harness-inventory; D1-D7 fechadas; nenhum ADR criado antes do veredito)"
   },
   "code_review": {
     "last_invoked_at": "2026-11-11T00:00:00-03:00",
-    "last_status": "passed",
+    "last_status": "passed_with_scope_deferral",
     "critical_issues": 0,
     "attention_issues": 0,
-    "reviewer_notes": "ADR-002: APPROVED (0 criticos, 2 importantes documentais, 3 sugestoes). Fechadas: numero do item 7 (SKILLS_COMMON 23->22, N11), N12 (2 testes sentem, nao 3) e supersessao registrada no ADR-002 do prd-adr-pipeline. Guard de pureza e 4 template paths provados nao-cegos por 4 mutacoes em copia."
+    "reviewer_notes": "ADR-003: 3 rodadas (2 criticos -> fechados por token; re-review apontou residuo semantico em dev-planner/workflow.md + colisao nova em EXPLORATION.md). Owner decidiu RE-ESCOPAR (ADR §10): I2/I3 e 4 achados deferidos ao ADR-005. Entregue e verificado: agente, registro, fronteira de 4 vizinhos, gate-contract I5=5, fiacao (item 17), lastros do doc."
   },
   "overrides": [
     {
@@ -192,7 +192,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-11T16:07:50.504Z",
+  "last_update": "2026-11-11T17:54:29.974Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -212,27 +212,24 @@
     "U5": "c - dois ancoras",
     "U6": "b - selo de hash"
   },
-  "harness_status": "passed (REPORT harness/harness-inventory-adr-002.json schema-valido; 12/12 presets entregam o modulo; 938 testes 0 falhas; selo c904f1c5 inalterado)",
+  "harness_status": "passed (REPORT harness/harness-inventory-adr-003.json schema-valido; 17/17 itens; 938 testes 0 falhas; gate.js/config/installer/lib com 0 linhas)",
   "harness_evidence": "harness/harness-inventory-adr-002.json — 8 comandos com exitCode/sha256; contraprova collectIncoming em ac80e49 = novo 0 / velho 5; QA PASSA 12/12 + 8/8",
   "code_review_status": "passed",
-  "code_review_status_ciclo": "harness-inventory-adr-002: APPROVED (0 criticos); 2 importantes documentais fechadas; QA P4 PASSA",
-  "sdd_stage": "harness-inventory-adr-002 CONCLUIDO (VERIFY 3/3, REPORT aceito, push feito). Proximo: merge humano; depois ADR-003 (agente planner)",
+  "code_review_status_ciclo": "harness-inventory-adr-003: encerrado por decisao de escopo (ADR §10), nao por loop de correcao; 0 criticos abertos no escopo entregue; prosa da skill deferida ao ADR-005",
+  "sdd_stage": "harness-inventory-adr-003 CONCLUIDO (escopo parcial). Proximo: push + merge humano; depois ADR-004 (inventario derivado) ou ADR-005 (prosa orfa, agora com 5 itens herdados)",
   "backlog": {
-    "total": 10,
+    "total": 7,
     "todo": 0,
     "doing": 0,
-    "done": 10,
+    "done": 7,
     "ids": [
-      "PA-01",
-      "PA-02",
-      "PA-03",
-      "PA-04",
-      "PA-05",
-      "PA-06",
-      "PA-07",
-      "PA-08",
-      "PA-09",
-      "PA-10"
+      "PL-01",
+      "PL-02",
+      "PL-03",
+      "PL-04",
+      "PL-05",
+      "PL-06",
+      "PL-07"
     ]
   },
   "next_task": "ADR-002",
@@ -973,13 +970,13 @@
   },
   "verify": {
     "at": "2026-11-11T00:00:00-03:00",
-    "verdict": "3/3 PASS",
-    "completude": "10/10 microtasks, 0 TODO, 5 artefatos",
-    "corretude": "938 testes 0 falhas; 12/12 RF; REPORT schema-valido; 12/12 presets entregam o modulo",
-    "coerencia": "12/12 itens do ADR; gate.js/config.mjs/seal.mjs/harness.config.json 0 linhas; selo inalterado; supersessao registrada",
-    "traceability": "100% (12 RF -> 10 tasks -> arquivo:linha)",
-    "artefato": ".spec/backend/harness-inventory-adr-002/VERIFY.md",
-    "report": "harness/harness-inventory-adr-002.json"
+    "verdict": "3/3 PASS (com escopo deferido declarado)",
+    "completude": "7/7 microtasks; 5 itens deferidos declarados no ADR §10",
+    "corretude": "938 testes 0 falhas; 17/17 itens (§3 + item 17); REPORT schema-valido",
+    "coerencia": "gate.js/config/installer/lib 0 linhas; paridade 10/10; contradicao 9-vs-10 eliminada",
+    "traceability": "9/9 RF · 17/17 itens",
+    "artefato": ".spec/backend/harness-inventory-adr-003/VERIFY.md",
+    "report": "harness/harness-inventory-adr-003.json"
   },
   "commit": "a19acab",
   "remote": "git@github.com:freitasjh/harness.git (SSH; push + CI pendentes)",
@@ -1120,7 +1117,9 @@
         "depende_de": [
           "ADR-001"
         ],
-        "branch": "adr/prd-harness-inventory/03-agente-planner"
+        "branch": "adr/prd-harness-inventory/03-agente-planner",
+        "status": "in-progress",
+        "merge": "pending_human (branch 03-agente-planner; escopo parcial deferido ao ADR-005)"
       },
       {
         "order": 4,
@@ -1132,9 +1131,13 @@
       {
         "order": 5,
         "id": "ADR-005",
-        "titulo": "Classificacao da prosa orfa (8 paths acionaveis, 5 vendor-internal, .doc, AGENTS.md, frontend/DESIGN.md)",
-        "depende_de": [],
-        "branch": "adr/prd-harness-inventory/05-prosa-orfa"
+        "titulo": "Prosa orfa: 8 paths acionaveis + 5 vendor-internal + .doc + AGENTS.md + frontend/DESIGN.md + HERDADO do ADR-003 (I2 PLAN.md, I3 template de ADR na skill, autor de EXPLORATION.md, protocolo de delegacao, gatilho da Fase 0)",
+        "depende_de": [
+          "ADR-003"
+        ],
+        "branch": "adr/prd-harness-inventory/05-prosa-orfa",
+        "status": "todo",
+        "merge": null
       }
     ],
     "prd_verdict": "approved_user_2026_11_11",

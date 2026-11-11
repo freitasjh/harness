@@ -47,4 +47,4 @@ Antes de avançar entre as fases (SPEC -> PLAN -> TASKS), o `orchestrator` deve 
 5. Solicitar aprovação explícita do usuário via `ask_user`.
 
 ## 5. Persistência no Brain
-Ao concluir as TASKS, o `planejador` deve consolidar a análise e as lições aprendidas em uma nota estruturada no sistema de memória (brain, ver `BRAIN.MCP.md`).
+Ao concluir o planejamento (`Fase 5 — Valide`), o `planner` deve consolidar a análise e as lições aprendidas em uma nota estruturada no sistema de memória (brain, ver `BRAIN.MCP.md`).
