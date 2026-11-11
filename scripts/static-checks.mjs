@@ -13,6 +13,14 @@
 // V18 (ADR-005) FAILs on live prose citing a missing `rules/*.md` that is not
 // declared in the `BASELINE` of `.opencode/plugins/lib/refs/checks.mjs`, and on
 // a baseline entry that went stale. Pure core, no new command in the seal.
+// V19 (ADR-004) registers the canonical inventory: the pure core
+// (`.opencode/plugins/lib/inventory/checks.mjs`) derives classes from disk and
+// from the roster REGISTRY, and the owner-decision registry expires. It is the
+// first check that looks at the ARTIFACT (does it have a class and an owner?)
+// instead of at the REFERENCE (does this prose point to something missing?) —
+// V18 and V19 are orthogonal, neither replaces the other. `common` lists from
+// the installer are read for closure only: they never confer a class.
+// No new command in the seal: the adapter rides the existing `suiteFull`.
 import { readFileSync, existsSync, readdirSync, statSync, lstatSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -36,6 +44,17 @@ import {
   BASELINE as REFS_BASELINE,
   NON_DEFECT as REFS_NON_DEFECT,
 } from "../.opencode/plugins/lib/refs/checks.mjs";
+// Inventário canônico (ADR-004): the module derives the classes; V19 below only
+// registers the verdict. The axis/common structures are read from their OWNER
+// (`installer/install.mjs`) and injected — the module never copies them
+// (ADR-004 §4-C2), so a second registry of the same decision cannot rot.
+import { runInventoryChecks } from "../.opencode/plugins/lib/inventory/checks.mjs";
+import {
+  SKILLS_BY_AXIS,
+  SKILLS_COMMON,
+  RULES_BY_AXIS,
+  RULES_COMMON,
+} from "../installer/install.mjs";
 
 // Re-exported so the tested loader interface stays stable after the
 // Batch 3/7 relocation (GATE-01/FIX-01 scope). Canonical home is
@@ -47,6 +66,16 @@ export {
   DEFAULT_CONFIG_PATH,
   REPO_ROOT,
 };
+
+// The installer OWNS the axis/common declarations; this adapter only reads and
+// injects them (ADR-004 §4-C2). `common` is passed for observability — it never
+// confers a class, so adding a name to `SKILLS_COMMON` cannot buy an exemption.
+const INVENTORY_DECLARATIONS = Object.freeze({
+  skillCommon: SKILLS_COMMON,
+  skillAxis: SKILLS_BY_AXIS,
+  ruleCommon: RULES_COMMON,
+  ruleAxis: RULES_BY_AXIS,
+});
 
 // --- File collection -------------------------------------------------------
 const SCAN_FILES = [
@@ -393,6 +422,34 @@ function checkRefs(root = REPO_ROOT) {
   record("V18", ok ? "PASS" : "FAIL", detail);
 }
 
+// ADR-004 / RF-02: exactly one `record()` for V19 — the verdict is `ok` (the
+// exit code), not just the console line. `root` is injectable for the same
+// reason as V18: the adapter's bar must be testable against a fixture tree.
+export function inventoryCheckResults(root = REPO_ROOT) {
+  return runInventoryChecks(root, { declarations: INVENTORY_DECLARATIONS }).results;
+}
+
+// The closing arithmetic is published in PASS **and** in FAIL: a counter that
+// only exists in the red branch is debt nobody reads while the check works.
+function inventoryClosure(c) {
+  return `skills=${c.skills.total} (vendor-by-axis=${c.skills["vendor-by-axis"]}, consumer=${c.skills.consumer}, axis=${c.skills.axis}, orphan=${c.skills.orphan})`
+    + `, rules=${c.rules.total} (consumer=${c.rules.consumer}, axis=${c.rules.axis}, orphan=${c.rules.orphan})`
+    + `, agents=${c.agents.registered + c.agents.orphan}/${c.agents.registry} (registered=${c.agents.registered}, orphan=${c.agents.orphan})`
+    + `, vendorCited=${c.vendorCited}, lockPresent=${c.lockPresent}, owner-decisions=${c.ownerDecisions}`;
+}
+
+function checkInventory(root = REPO_ROOT) {
+  const { ok, results: inv, counters } = runInventoryChecks(root, { declarations: INVENTORY_DECLARATIONS });
+  const closure = inventoryClosure(counters);
+  const detail = ok
+    ? `inventário derivado: ${closure}`
+    : `inventário reprovado: ${inv
+        .filter((r) => r.status === "FAIL")
+        .map((r) => `${r.id}: ${r.detail}`)
+        .join("; ")} | ${closure}`;
+  record("V19", ok ? "PASS" : "FAIL", detail);
+}
+
 // PAP-04 (🟡3): `root` is injectable so the ADAPTER's verdict — the `ok` flag that
 // defines the process exit code, not just the console line — is testable against
 // a malformed fixture without touching the repo's real `.spec/**`. Production
@@ -407,6 +464,7 @@ export function runStaticChecks(root = REPO_ROOT) {
   checkV12();
   checkV14();
   checkRefs(root);
+  checkInventory(root);
   checkPrd(root);
   reportLegacyBaseline();
   const failed = results.filter((r) => r.status === "FAIL");
