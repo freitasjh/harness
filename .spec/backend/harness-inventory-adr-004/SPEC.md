@@ -8,7 +8,7 @@
 - **RF-02 (itens 2, 3)** — um `record("V19", …)` no runner selado; `commands.suiteFull` e `seal.mjs` byte-idênticos (selo não republicado).
 - **RF-03 (item 4)** — classe de skill derivada **só** do `.vendor-lock.json`: `grep -c "startsWith|inferStacks"` = 0.
 - **RF-04 (item 5)** — fechamento aritmético publicado em `counters`, **inclusive em PASS**: skills = vendor + consumer + orphan; agentes = registrados; rules = consumer + axis.
-- **RF-05 (item 6)** — `OWNER_DECISIONS` com 6 campos por entrada (`subject`, `class`, `owner`, `reason`, `proof`, `expiresWhen`); único literal commitado; registry em path protegido.
+- **RF-05 (item 6)** — `OWNER_DECISIONS` com **7** campos por entrada (`subject`, `class`, `owner`, `decision`, `reason`, `proof`, `expiresWhen`), com `expiresWhen ⊇ EXPIRY_CONDITIONS[class]` (conjunto fechado e executado — N21); único literal commitado; registry em path protegido.
 - **RF-06 (item 7)** — órfã nova reprova; órfã com decisão registrada passa.
 - **RF-07 (item 8)** — decisão obsoleta reprova nos 2 casos: sujeito ausente do disco; sujeito que ganhou consumidor.
 - **RF-08 (item 9)** — classe ambígua reprova (skill simultaneamente vendorizada e local, ou sem classe).

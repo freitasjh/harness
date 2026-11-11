@@ -74,7 +74,7 @@ Uma coisa decidida; cinco consequências mecânicas. Cada uma responde a uma das
 |---|---|---|---|---|
 | 1 | `vendor-by-axis` | `id ∈ keys(.vendor-lock.json.skills)` | `node -e 'const l=require("./.agents/skills/.vendor-lock.json").skills;console.log(Object.keys(l).length)'` | **25** |
 | 2 | `consumer` | `id` citado por ≥1 prompt do roster (resolvido de `agent.*.prompt`) **ou** por `opencode.json` | `grep -rlF <id> $(node -e '…prompts…') opencode.json` | **22** |
-| 3 | `axis` | `id ∈ SKILLS_BY_AXIS[*]` (`install.mjs:396`) | `grep -c "SKILLS_BY_AXIS" installer/install.mjs` | **0** (as 2 locais de eixo têm consumidor e caem na 2.ª classe; o eixo delas sai na coluna `axis`, §3) |
+| 3 | `axis` | `id ∈ SKILLS_BY_AXIS[*]` (`install.mjs:396`) | `grep -c "SKILLS_BY_AXIS" installer/install.mjs` | **7** (as 2 locais de eixo têm consumidor e caem na 2.ª classe; o eixo delas sai na coluna `axis`, §3) |
 | 4 | `orphan+decision` | nenhuma das anteriores ⇒ **exige** entrada em `OWNER_DECISIONS` | `node -e '…deriveInventory().counts.skills…'` | **1** |
 
 **Rules** (`name` = arquivo sob `.agents/rules/`):
@@ -148,7 +148,7 @@ Cada item é verificável por comando, da raiz do repo. Onde a verificação dep
 8. **Decisão apodrecida reprova.** Remover o sujeito do fixture, ou dar-lhe um consumidor, ⇒ `owner-decision-stale` FAIL.
    *Verificação (SDD)*: idem, 2 casos dedicados (sujeito ausente; sujeito que passou a ser citado).
 
-9. **Ambiguidade de classe reprova.** Um fixture onde o mesmo artefato casa `vendor-by-axis` **e** `consumer` de forma não resolvida pela precedência declarada ⇒ `inventory-class-ambiguous` FAIL.
+9. **Ambiguidade de classe reprova.** Um fixture onde o mesmo artefato casa `vendor-by-axis` **e** `axis` — contradição de **natureza**, não resolvida pela precedência ⇒ `inventory-class-ambiguous` FAIL. (`vendor × consumer` é **resolvido** por D3 e publicado em `vendorCited`; não é ambiguidade — N20.)
    *Verificação (SDD)*: 1 caso dedicado em `inventory.spec.mjs`.
 
 10. **Attendance de agente é medida pelo registro, não pelo nome do arquivo.** O predicado resolve `agent.*.prompt` (`{file:./…}`); arquivo `AGENT.md` **não** é a unidade.
@@ -280,3 +280,11 @@ node --test .opencode/plugins/__tests__/inventory.spec.mjs
 4. Fazer o `V19` publicar `counters` em PASS (`skills=48`, `rules=8`, `agents=10`, `vendorCited=0`, `lockPresent=true`) — a lição do `ADR-005` §8-N18.
 5. Rodar `commands.suiteFull` completo e `node scripts/sdd-checks.mjs` antes do merge; `VERIFY.md` com as 3 dimensões.
 6. Corrigir, **em ciclo separado com dono**, as duas contagens do PRD (C1/N1/N2) — este ADR não edita `PRD.md`.
+
+- **N20 — item 9 contradizia §2.3/§2.4 e foi emendado.** O texto dizia que `vendor-by-axis ∧ consumer` reprova; o código (e D3) **resolvem** esse par e publicam `vendorCited`. `inventory-class-ambiguous` é para **contradição de natureza** (`vendor ∧ axis`). O item agora diz isso.
+- **N21 — `expiresWhen` era auto-declarado (C1 do review).** A validação aceitava **qualquer** subconjunto das condições da classe; quem escrevia a entrada escolhia do que ela expirava (ex.: só `subject-absent`) e a supressão ficava permanente se o sujeito apenas ganhasse consumidor. Com isso I3 ("não existe supressão permanente") era falso. Passa a exigir `expiresWhen ⊇ EXPIRY_CONDITIONS[class]` — a string vira documentação de um conjunto **fechado e executado**.
+- **N22 — proof podia ser o próprio artefato do sujeito (I1 do review).** `proof` só precisava citar o sujeito, então `proof: .agents/skills/<a própria skill>:1` satisfazia a letra de §2.4 e falhava o RF-01 ("fonte de evidência"). Passa a exigir que a linha citada nomeie **owner** ou **subject**, e que `proof` não seja o artefato do próprio sujeito.
+- **N23 — registry: renomes e contagem.** Item 6 dizia "5 campos" e enumerava 6; a SPEC RF-05 listava 6 sem `decision`; o código usa 7 (`subject/class/owner/decision/reason/proof/expiresWhen`). Item 6 passa a declarar os **7** nomes do código — renomear por estética seria drift de contrato (a SPEC diz "em conflito, o ADR prevalece").
+- **N24 — §7(e) dizia "zero edição em `scripts/**`" e §9-2 exige o adapter.** Corrigido: o adapter em `scripts/static-checks.mjs` é edição **autorizada** deste batch; o que não pode mudar é `commands.suiteFull` e `seal.mjs`.
+- **N25 — lock ilegível era tratado como ausente (I4 do review).** `loadLock` devolvia `null` para arquivo **ausente** e para arquivo **inválido**, publicando `lockPresent=false` — mentira sobre um input presente. Passa a distinguir: ausente ⇒ `lockPresent=false` (legítimo no destino); **inválido ⇒ FAIL**.
+- **N26 — declaração fantasma só falava pelo agregado (I3 do review).** `SKILLS_COMMON` com nome sem diretório não tinha id de causa; o fechamento aceitava par compensatório (remove 1, inventa 1). Id próprio `inventory-declaration-phantom` acrescentado.
