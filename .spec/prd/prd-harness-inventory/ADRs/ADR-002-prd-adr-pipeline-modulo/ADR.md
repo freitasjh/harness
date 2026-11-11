@@ -187,12 +187,12 @@ de entregar. **O item 1 é a interface de propagação** — a regressão silenc
 
 7. **O registro do instalador para de chamar o módulo de skill — e o efeito é 1 linha.**
    `installer/install.mjs:419` (`'prd-adr-pipeline',` em `SKILLS_COMMON`) é **removida**;
-   `SKILLS_COMMON` fica com **23** entradas e `realLocalSkills()` com **23** diretórios;
+   `SKILLS_COMMON` fica com **22** entradas (medido; o ADR previu 23 — ver N11) e `realLocalSkills()` com **23** diretórios;
    os 2 testes de enumeração (`BUG-2`, `eixos-stack.spec.mjs:529-560`) continuam verdes
    nas **duas** direções (disco→lista e fantasma).
    *Verificação*:
    ```sh
-   node --input-type=module -e 'import("./installer/install.mjs").then(m=>console.log(m.SKILLS_COMMON.length, m.SKILLS_COMMON.includes("prd-adr-pipeline")))'  # 23 false
+   node --input-type=module -e 'import("./installer/install.mjs").then(m=>console.log(m.SKILLS_COMMON.length, m.SKILLS_COMMON.includes("prd-adr-pipeline")))'  # 22 false (medido; N11)
    node --test "installer/__tests__/*.spec.mjs" | grep -E "^ℹ (tests|pass|fail)"   # 559 / 559 / 0
    ```
 
@@ -248,7 +248,7 @@ de entregar. **O item 1 é a interface de propagação** — a regressão silenc
   `SKILL.md`, 0 sem. A métrica do `PRD.md` §5 "artefatos sem classe e sem decisão" cai a 0
   **por classe declarada**, não por omissão: o artefato tem classe (módulo) e a classe tem
   dono (este ADR + rule §5).
-- **C2 — O registro do instalador deixa de mentir, com 1 linha.** `SKILLS_COMMON` 24→23
+- **C2 — O registro do instalador deixa de mentir, com 1 linha.** `SKILLS_COMMON` 23→22 (medido; N11)
   entradas; `realLocalSkills()` 24→23. Nenhum mapa novo, nenhum validador novo, nenhuma
   chave de config nova.
 - **C3 — A propagação fica provada, não prometida.** O módulo passa a viver no **mesmo**
@@ -284,8 +284,8 @@ de entregar. **O item 1 é a interface de propagação** — a regressão silenc
 | `LAYER_PREFIX` muda? | **Não.** `.opencode/plugins` já é o layer `:107`. |
 | `INCOMING_ROOTS` muda? | **Não.** `.opencode/plugins` já está em `:1690`. |
 | Mapa de eixo novo? | **Não.** `SKILLS_BY_AXIS`/`RULES_BY_AXIS` intocados; o layer de plugins não tem mapa por eixo por desenho (o módulo é comum a todo destino). |
-| Quantos dos 559 testes sentem? | **3 testes** sentem a remoção de registro, todos por **enumeração recomputada do disco** (`eixos-stack.spec.mjs`: disco→lista, fantasma, e a guarda `SANGRA` — as 3 seguem verdes porque o disco e a lista mudam juntos). **Nenhum** teste tem literal `24` ou `prd-adr-pipeline` em `installer/__tests__/**` (medido: 0 ocorrências). |
-| Efeito observável nos 559 | `realLocalSkills()` 24→23; `SKILLS_COMMON.length` 24→23; `pass 559 / fail 0` mantido. |
+| Quantos dos 559 testes sentem? | **2 testes** sentem a remoção de registro (medido por mutação; o ADR dizia 3 — ver N12), ambos por **enumeração recomputada do disco** (`eixos-stack.spec.mjs`: disco→lista e a guarda `SANGRA`; o guarda "fantasma" não sente remoção. As 2 seguem verdes porque o disco e a lista mudam juntos). **Nenhum** teste tem literal `24` ou `prd-adr-pipeline` em `installer/__tests__/**` (medido: 0 ocorrências). |
+| Efeito observável nos 559 | `realLocalSkills()` 24→23; `SKILLS_COMMON.length` 23→22 (medido; N11); `pass 559 / fail 0` mantido. |
 
 **O que quebraria se a linha errada fosse removida:** `installer/install.mjs:384`
 (`'prd-adr-pipeline.md'` em `RULES_COMMON`) é a entrada da **rule**. Removê-la deixaria a
@@ -325,7 +325,7 @@ find .agents/skills/prd-adr-pipeline -type f | wc -l                        # 5 
 find .opencode/plugins/lib/prd-adr-pipeline -type f | wc -l                 # ausente (antes) → 5 (depois)
 grep -rn "prd-adr-pipeline" .agents/agents/                                 # 3 linhas (2 já na rule)
 grep -n "prd-adr-pipeline" installer/install.mjs                            # 384 (rule) + 419 (skill)
-node --input-type=module -e 'import("./installer/install.mjs").then(m=>console.log(m.SKILLS_COMMON.length))'  # 24 → 23
+node --input-type=module -e 'import("./installer/install.mjs").then(m=>console.log(m.SKILLS_COMMON.length))'  # 23 → 22 (medido; N11)
 ```
 
 **Aceite do SDD** — os 12 itens de §3, na ordem, com os comandos lá escritos. Critério de
@@ -380,3 +380,5 @@ consumada, o que reduziu o reapontamento de 4 para 1 citação de agente.
   (`static-checks.mjs`, o spec) muda de **path**, não de chamada.
 
 - **N11 — `SKILLS_COMMON` era 23, não 24 (o item 7 dizia 24→23; medido 23→22).** O número do ADR confundiu `SKILLS_COMMON` com a contagem de skills locais: `realLocalSkills()` é 24→23 (48 dirs − 25 vendorizadas) e `SKILLS_COMMON` é 23→22 — `frontend-vue-specialist` é classificado por `SKILLS_BY_AXIS`, não por `SKILLS_COMMON`. O contrato semântico do item 7 está cumprido (remove exatamente 1 entrada de skill, preserva a rule, enumeração bidirecional verde, 559/559); o **número** estava errado e não foi "corrigido" inventando uma entrada fantasma na enumeração.
+
+- **N12 — 2 testes sentem a remoção, não 3.** Medido por mutação (remover outra entrada de `SKILLS_COMMON`): falham `disco→lista` e a guarda `SANGRA`; o guarda "fantasma" (nome na lista sem diretório no disco) **não** é acionado por remoção. O ADR superestimou em 1.

@@ -20,7 +20,7 @@
 - [x] Remover a prosa `"only path the installer propagates"` de `checks.mjs:15-16` e de `static-checks.mjs` (RF-06).
 
 ### PA-06
-- [x] `installer/install.mjs:419`: remover `'prd-adr-pipeline',` de `SKILLS_COMMON` (24→23), **mantendo** `:384` em `RULES_COMMON`; `grep -c "prd-adr-pipeline" installer/install.mjs` = 1 (RF-07, RF-08).
+- [x] `installer/install.mjs:419`: remover `'prd-adr-pipeline',` de `SKILLS_COMMON` (23→22, medido), **mantendo** `:384` em `RULES_COMMON`; `grep -c "prd-adr-pipeline" installer/install.mjs` = 1 (RF-07, RF-08).
 
 ### PA-07
 - [x] `orchestrator/AGENT.md:273`, `.agents/rules/prd-adr-pipeline.md:63-65`, `.agents/rules/workflow-rules.md:322`, `docs/FUNCIONAMENTO.md:109,138,484,538` com o path novo (RF-09, RF-10).

@@ -145,7 +145,7 @@ Sem tela. A experiência é de leitura e decisão: (a) o inventário precisa ser
 - **Depende de**: nada além do disco atual e de `workflow-state.json.program` (ordem dos PRDs, medido).
 - **Bloqueia**: PRD 2 (`prd-agnostic-artifacts`) — a lista de prosa stack-bound sai daqui; PRD 5 (`prd-frontend-harness-fusion`) — o destino dos 3 agentes que citam `frontend/DESIGN.md` depende da decisão de roster; PRD 3 (`prd-installer-rust`) — inventário é a entrada da paridade de presets.
 - **Relação declarada com os irmãos** (todos fora deste ciclo, ordem medida em `workflow-state.json.program.prds`): 2 `prd-agnostic-artifacts`, 3 `prd-installer-rust`, 4 `prd-axes-split`, 5 `prd-frontend-harness-fusion`, 6 `prd-forge-integration`.
-- **Ferramentas que este PRD usa e não altera**: `scripts/static-checks.mjs` e `.agents/skills/prd-adr-pipeline/checks.mjs` (PRD-01/ADR-01/ADR-02); `commands.suiteFull` de `harness.config.json`.
+- **Ferramentas que este PRD usa**: `scripts/static-checks.mjs` e o módulo de checks (`PRD-01`/`ADR-01`/`ADR-02`) — desde o ADR-002 deste PRD o módulo vive em `.opencode/plugins/lib/prd-adr-pipeline/checks.mjs`. Não altera `commands.suiteFull` de `harness.config.json`.
 
 ## 13. Segurança
 - **Superfície nova: nenhuma.** Este PRD não cria tool, plugin, gate ou permissão.

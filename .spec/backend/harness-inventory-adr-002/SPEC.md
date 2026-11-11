@@ -10,7 +10,7 @@
 - **RF-04 (item 4)** — os 4 paths de template do spec (`prd-checks.spec.mjs:1125-1129`) derivam de `LIB`, não de `SKILLS`.
 - **RF-05 (item 5)** — o guard de pureza (`prd-checks.spec.mjs:915-923`) relê o módulo no path novo; specifiers estáticos = `{node:fs, node:path}`.
 - **RF-06 (item 6)** — prosa expirada morta: `grep -c "only path the installer propagates"` = 0 em `checks.mjs` e em `scripts/static-checks.mjs`.
-- **RF-07 (item 7)** — `SKILLS_COMMON` passa de 24 para **23** entradas; `realLocalSkills()` = 23; enumeração bidirecional verde; os 3 guardas recomputados do disco, **0 literais** `24`/`prd-adr-pipeline` em `installer/__tests__/**`; 559 testes pass.
+- **RF-07 (item 7)** — `SKILLS_COMMON` passa de 23 para **22** entradas (medido; o ADR previu 24→23 — ver N11); `realLocalSkills()` = 24→23; enumeração bidirecional verde; os 3 guardas recomputados do disco, **0 literais** `24`/`prd-adr-pipeline` em `installer/__tests__/**`; 559 testes pass.
 - **RF-08 (item 8)** — `RULES_COMMON` **mantém** `'prd-adr-pipeline.md'`; `grep -c "prd-adr-pipeline" installer/install.mjs` = **1**.
 - **RF-09 (item 9)** — `orchestrator/AGENT.md:273` reapontado; `product-manager/AGENT.md:10` e `architect/AGENT.md:11` **inalterados** (já citam a rule).
 - **RF-10 (item 10)** — as 2 rules com o path novo ficam ≤80 linhas cada (hoje 79) e o total ≤1705 (hoje 1290); trailer `Harness-Gate-Change` no commit.
