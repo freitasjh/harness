@@ -1,10 +1,12 @@
 // checks.mjs — prosa órfã (ADR-005): a rubric de 6 classes como mecanismo.
 //
 // Contract (SPEC RF-01/RF-03): `runRefsChecks(root)` →
-//   { ok: boolean, results: [{ id, status: "PASS"|"FAIL", detail }] }
+//   { ok: boolean, results: [{ id, status: "PASS"|"FAIL", detail, counters? }] }
 // com os ids `missing-and-unclassified`, `stale-baseline-entry`,
 // `baseline-entry-incomplete`, `nondefect-entry-incomplete`,
-// `stale-nondefect-entry`.
+// `stale-nondefect-entry`. `counters` é aditivo e carrega os números que o
+// `detail` narra — `stale-baseline-entry` publica `{ vendorOnly }` para que o
+// adapter emita a dívida vendorizada também em PASS (ADR-005 §8-N18).
 //
 // A decisão que este arquivo executa é a régua, não a lista de casos: cada
 // referência ausente cai numa classe por predicado de PATH, nunca por conteúdo
@@ -200,9 +202,13 @@ export function validateNonDefect(entries) {
   return issues;
 }
 
-// C3 — a supressão apodrece como a baseline (ADR-005 §8-N11). `proof` é
+// C3 — a supressão apodrece como a baseline (ADR-005 §8-N11/N17). `proof` é
 // `arquivo:linha`; a entrada só suprime enquanto o arquivo existir, a linha
-// estiver no arquivo e essa linha citar o path. Verificada em TODAS as entradas.
+// estiver no arquivo, essa linha citar o path **e** a prova for citação viva
+// (`isLiveCiter(proof.file)`) de um path que ainda tem ≥1 citação viva. Uma
+// prova em `.spec/archive/**` cita o path e não sustenta nada: o registro
+// datado não é testemunha do corpus (ADR-005 §2.1). Verificada em TODAS as
+// entradas.
 export function parseProof(proof) {
   if (typeof proof !== "string") return null;
   const m = /^(.+):(\d+)$/.exec(proof.trim());
@@ -210,7 +216,7 @@ export function parseProof(proof) {
   return { file: m[1], line: Number(m[2]) };
 }
 
-export function validateNonDefectStale(entries, root) {
+export function validateNonDefectStale(entries, root, citations = collectCitations(root)) {
   const issues = [];
   for (const e of entries) {
     // `path` ausente já é issue de `validateNonDefect` — aqui não duplica.
@@ -223,6 +229,12 @@ export function validateNonDefectStale(entries, root) {
     const parsed = parseProof(e.proof);
     if (!parsed) {
       issues.push(`${target} (proof fora do formato arquivo:linha: "${e.proof ?? ""}")`);
+      continue;
+    }
+    // O citante da prova tem de estar no corpus vivo: registro datado cita o
+    // path e mesmo assim não é testemunha (ADR-005 §8-N17).
+    if (!isLiveCiter(parsed.file)) {
+      issues.push(`${target} (proof ${parsed.file} não é citante vivo: registro datado não sustenta a supressão)`);
       continue;
     }
     let lines;
@@ -240,6 +252,12 @@ export function validateNonDefectStale(entries, root) {
     }
     if (!lines[parsed.line - 1].includes(target)) {
       issues.push(`${target} (proof ${parsed.file}:${parsed.line} não cita o path)`);
+      continue;
+    }
+    // A prova ser viva não basta: o path precisa continuar citado no corpus
+    // vivo coletado — senão a supressão sobrevive à citação que a justificava.
+    if ((citations.get(target) ?? []).length === 0) {
+      issues.push(`${target} (0 citações vivas no corpus: a supressão é órfã)`);
     }
   }
   return issues;
@@ -388,8 +406,9 @@ export function runRefsChecks(root = process.cwd()) {
 
   const baselineIssues = validateBaseline(BASELINE);
   const nonDefectIssues = validateNonDefect(NON_DEFECT);
-  // Modo (c): a supressão de C3 apodreceu (ADR-005 §8-N11).
-  const nonDefectStale = validateNonDefectStale(NON_DEFECT, root);
+  // Modo (c): a supressão de C3 apodreceu (ADR-005 §8-N11/N17). Reaproveita as
+  // citações já coletadas — a régua é a mesma, sem segunda varredura.
+  const nonDefectStale = validateNonDefectStale(NON_DEFECT, root, citations);
 
   const results = [
     {
@@ -406,6 +425,9 @@ export function runRefsChecks(root = process.cwd()) {
       detail: stale.length
         ? `BASELINE com ${stale.length} entrada(s) obsoleta(s): ${stale.join("; ")}; ${vendorNote}`
         : `BASELINE com ${BASELINE.length} entrada(s) ainda ausente(s) e citada(s); ${vendorNote}`,
+      // Estruturado para o adapter: dívida vendorizada não pode depender de o
+      // check estar vermelho para ser lida (ADR-005 §8-N18).
+      counters: { vendorOnly: vendorOnly.length },
     },
     {
       id: "baseline-entry-incomplete",

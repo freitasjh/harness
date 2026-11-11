@@ -282,6 +282,37 @@ describe("PO-03/review F4 — NON_DEFECT não é permissão permanente (stale-no
     assert.deepEqual(parseProof(NON_DEFECT[0].proof), { file: PROOF_FILE, line: PROOF_LINE });
     assert.equal(parseProof("sem-linha"), null);
   });
+
+  // H-B3 (ADR-005 §8-N17): prova que existe e cita o path NÃO basta. Medido:
+  // uma prova em `.spec/archive/**` anulava a régua de uma órfã viva nova.
+  it("proof em registro datado (.spec/archive/**) não sustenta a supressão", () => {
+    const alvo = "rules/exemplo.md";
+    const root = fixture(
+      cleanTree({ ".spec/archive/20260101-ciclo/REPORT.md": `cita \`${alvo}\`\n` }),
+    );
+    const issues = validateNonDefectStale(
+      [{ path: alvo, reason: "r", proof: ".spec/archive/20260101-ciclo/REPORT.md:1" }],
+      root,
+    );
+    assert.equal(issues.length, 1, issues.join("; "));
+    assert.match(issues[0], /não é citante vivo/);
+  });
+
+  // H-B3: prova viva mas o path perdeu toda citação viva — `node_modules` sob
+  // `.agents` é vivo pelo predicado e fora do walker, logo o coletor (o mesmo
+  // que decide a supressão) não vê a linha da prova.
+  it("proof vivo mas path sem citação viva reprova (a prova não substitui a citação)", () => {
+    const alvo = "rules/segunda.md";
+    const root = fixture(
+      cleanTree({ ".agents/node_modules/dep/NOTES.md": `cita \`${alvo}\`\n` }),
+    );
+    const issues = validateNonDefectStale(
+      [{ path: alvo, reason: "r", proof: ".agents/node_modules/dep/NOTES.md:1" }],
+      root,
+    );
+    assert.equal(issues.length, 1, issues.join("; "));
+    assert.match(issues[0], /0 citações vivas/);
+  });
 });
 
 describe("PO-04 — supressões separadas por mecanismo (C3/C4)", () => {
@@ -361,11 +392,25 @@ describe("PO-04 — pureza e propagabilidade (SPEC I1, ADR §4 item 2)", () => {
 });
 
 describe("PO-05 — adapter V18 em scripts/static-checks.mjs (RF-06)", () => {
-  it("no repo real o runner reporta V18 PASS com a baseline de 7", () => {
+  it("no repo real o runner reporta V18 PASS com a baseline de 7 e o contador vendor-only", () => {
     const report = runStaticChecks();
     const v18 = byId(report, "V18");
     assert.equal(v18.status, "PASS", v18.detail);
     assert.match(v18.detail, /baseline=7/);
+    // H-B4 (§8-N18): o contador não pode sumir no único ramo que roda.
+    assert.match(v18.detail, /stale-baseline-entry=ok\[vendor-only=0\]/);
+  });
+
+  it("dívida vendorizada aparece no PASS do V18 sem tornar o check vermelho", () => {
+    const alvo = BASELINE.find((e) => e.class === "C1").path;
+    const tree = treeWithLock({ "react-best-practices": {} }, {
+      ".agents/rules/_baseline.md":
+        BASELINE.filter((e) => e.path !== alvo).map((e) => `- \`${e.path}\``).join("\n") + "\n",
+      ".agents/skills/react-best-practices/SKILL.md": `cita \`${alvo}\`\n`,
+    });
+    const v18 = byId(runStaticChecks(fixture(tree)), "V18");
+    assert.equal(v18.status, "PASS", v18.detail);
+    assert.match(v18.detail, /stale-baseline-entry=ok\[vendor-only=1\]/);
   });
 
   it("o veredito barra: fixture com órfã nova ⇒ V18 FAIL e ok=false", () => {

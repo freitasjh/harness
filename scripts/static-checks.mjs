@@ -381,8 +381,14 @@ export function refsCheckResults(root = REPO_ROOT) {
 
 function checkRefs(root = REPO_ROOT) {
   const { ok, results: refs } = runRefsChecks(root);
+  // A dívida vendorizada é contada no módulo e precisa aparecer TAMBÉM em PASS:
+  // o ramo verde era o único consumidor que roda e ele descartava o detalhe
+  // (ADR-005 §8-N18). O contador sai do campo estruturado, não de regex na prosa.
+  const vendorOnly = refs.find((r) => r.id === "stale-baseline-entry")?.counters?.vendorOnly ?? 0;
   const detail = ok
-    ? `refs vivas: ${refs.map((r) => `${r.id}=ok`).join(", ")} (baseline=${REFS_BASELINE.length}, non-defect=${REFS_NON_DEFECT.length})`
+    ? `refs vivas: ${refs
+        .map((r) => (r.id === "stale-baseline-entry" ? `${r.id}=ok[vendor-only=${vendorOnly}]` : `${r.id}=ok`))
+        .join(", ")} (baseline=${REFS_BASELINE.length}, non-defect=${REFS_NON_DEFECT.length})`
     : refs.filter((r) => r.status === "FAIL").map((r) => `${r.id}: ${r.detail}`).join("; ");
   record("V18", ok ? "PASS" : "FAIL", detail);
 }
