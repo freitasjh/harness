@@ -378,3 +378,5 @@ consumada, o que reduziu o reapontamento de 4 para 1 citação de agente.
   `{ ok, results: [{ id, status, detail }] }` com exatamente `PRD-01`/`ADR-01`/`ADR-02`
   continuam idênticos; este ADR move **arquivos**, não contrato. Quem consome o check
   (`static-checks.mjs`, o spec) muda de **path**, não de chamada.
+
+- **N11 — `SKILLS_COMMON` era 23, não 24 (o item 7 dizia 24→23; medido 23→22).** O número do ADR confundiu `SKILLS_COMMON` com a contagem de skills locais: `realLocalSkills()` é 24→23 (48 dirs − 25 vendorizadas) e `SKILLS_COMMON` é 23→22 — `frontend-vue-specialist` é classificado por `SKILLS_BY_AXIS`, não por `SKILLS_COMMON`. O contrato semântico do item 7 está cumprido (remove exatamente 1 entrada de skill, preserva a rule, enumeração bidirecional verde, 559/559); o **número** estava errado e não foi "corrigido" inventando uma entrada fantasma na enumeração.
