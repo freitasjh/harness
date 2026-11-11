@@ -58,7 +58,7 @@ $ node scripts/static-checks.mjs | grep V19
 PASS V19: inventário derivado: skills=48 (vendor-by-axis=25, consumer=22, axis=0, orphan=1), rules=8 (consumer=7, axis=1, orphan=0), agents=10/10 (registered=10, orphan=0), vendorCited=0, lockPresent=true, owner-decisions=1
 ```
 
-### Os 7 ids de §2.4, cada um com mutação real (cópia do repo fora do worktree)
+### Os 10 ids de §2.4, cada um com mutação real (cópia do repo fora do worktree)
 
 ```
 ### inventory-artifact-untracked
@@ -94,9 +94,9 @@ FAIL owner-decision-stale: OWNER_DECISIONS com 1 entrada(s) expirada(s): skill:d
 
 ```
 $ node --test ".opencode/plugins/__tests__/*.spec.mjs"
-ℹ tests 445
+ℹ tests 468
 ℹ suites 111
-ℹ pass 445
+ℹ pass 468
 ℹ fail 0
 
 $ node --test "installer/__tests__/*.spec.mjs"
@@ -119,3 +119,8 @@ vendor-check OK (.agents/skills/.vendor-lock.json)
 $ git diff --stat -- harness.config.json .opencode/plugins/lib/seal.mjs
 (vazio)
 ```
+
+## Nota de atualização (2026-11-11, pós-P4)
+
+- Os ids passaram de **7 para 10** durante as rodadas de review (`inventory-lock-unreadable`, `inventory-declaration-phantom`, `inventory-skill-without-manifest`).
+- Os counts de plugins passaram de **445** (`8041733`) para **468** (HEAD `b2b419e`) — os blocos de evidência abaixo são snapshots datados; o número vivo é o do P4.

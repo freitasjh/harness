@@ -238,7 +238,7 @@ node -e 'import("./.opencode/plugins/lib/inventory/checks.mjs").then(m=>console.
 node --test .opencode/plugins/__tests__/inventory.spec.mjs
 ```
 
-**Aceite:** (a) `node scripts/static-checks.mjs` ⇒ exit `0`; (b) `V19` ⇒ `PASS` com `skills=48` e `rules=8` e `agents=10` na linha; (c) os 7 ids de §2.4 provados por fixture que **derruba** (não asserção de fachada); (d) `harness.config.json` e `seal.mjs` sem diff; (e) zero edição em `.agents/**`, `installer/**`, `scripts/**` e `opencode.json` **neste batch**.
+**Aceite:** (a) `node scripts/static-checks.mjs` ⇒ exit `0`; (b) `V19` ⇒ `PASS` com `skills=48` e `rules=8` e `agents=10` na linha; (c) os **10** ids de §2.4 provados por fixture que **derruba** (não asserção de fachada); (d) `harness.config.json` e `seal.mjs` sem diff; (e) zero edição em `.agents/**`, `installer/**`, `scripts/**` e `opencode.json` **neste batch**.
 
 ## 8. Notas de correção (divergências medidas entre PRD/RESEARCH e disco)
 
@@ -274,7 +274,7 @@ node --test .opencode/plugins/__tests__/inventory.spec.mjs
 
 ## 9. O que fica para o SDD
 
-1. Criar `.opencode/plugins/lib/inventory/checks.mjs` com `deriveInventory`, `runInventoryChecks`, `OWNER_DECISIONS` (1 entrada, N6), `CLASS_LABELS` e os 7 ids de falha (§2.4).
+1. Criar `.opencode/plugins/lib/inventory/checks.mjs` com `deriveInventory`, `runInventoryChecks`, `OWNER_DECISIONS` (1 entrada, N6), `CLASS_LABELS` e os **10** ids de falha (§2.4).
 2. Registrar `checkInventory(root)` e **um** `record("V19", …)` em `scripts/static-checks.mjs` — sem tocar `commands.suiteFull` (IF-2, IF-3).
 3. Escrever `.opencode/plugins/__tests__/inventory.spec.mjs` no padrão de `refs.spec.mjs`: fixture em `tempScope`, par PASS/FAIL com 1 arquivo de diferença, 1 caso por id de falha, 1 caso sem lock (IF-12).
 4. Fazer o `V19` publicar `counters` em PASS (`skills=48`, `rules=8`, `agents=10`, `vendorCited=0`, `lockPresent=true`) — a lição do `ADR-005` §8-N18.
@@ -291,3 +291,6 @@ node --test .opencode/plugins/__tests__/inventory.spec.mjs
 - **N27 — a justificativa escrita do import estava errada (achado do review).** O código faz `import { SKILLS_BY_AXIS, RULES_BY_AXIS, … } from "../installer/install.mjs"`; o comentário descrevia "leitura de arquivo/parse de fonte". Não há parse: `install.mjs` é **módulo**, o CLI é guardado por `import.meta.url === file://${process.argv[1]}` (`install.mjs:2746`), e o import custa ~17ms sem efeito colateral. O desenho **está correto** (contrato do dono em vez de gramática de código); a prosa é que mentia. Corrigida no código (`static-checks.mjs:47-54,73-76`; `checks.mjs:268-272`). É o mesmo defeito DOC-01 que este PRD vem caçando: descrição de mecanismo inexistente.
 
 - **N28 — R6 do review: N23 afirmou emenda que o item 6 não tinha.** O item 6 continuava dizendo "5 campos" e enumerando 6, enquanto o código usa 7. Corrigido agora no próprio item 6 e em C5. Lição repetida do ADR-003: **nota que descreve emenda não é emenda** — o texto normativo tem de mudar.
+
+- **N29 — os ids são 10, não 7 (drift do QA, corrigido).** A tabela §2.4 nasceu com 7 e o mecanismo terminou com 10: `inventory-lock-unreadable` (N25), `inventory-declaration-phantom` (N26) e `inventory-skill-without-manifest` (R7) nasceram durante as rodadas de review. Aceite corrigido para 10 ids.
+- **N30 — dois buracos declarados como residuais (backlog do review, aceitos com dono).** Não são silêncio: (a) **`[//]: # (skill)`** — link-reference markdown deixa o texto visível ao `citesToken` e ainda compra `consumer` para uma skill; o strip cobre comentário HTML, não link-ref. Fecha removendo link-refs na mesma função, com dono **PRD-2** (junto da agnosticização da prosa). (b) **skill em symlink** — `listDirs` ignora diretório que é symlink, então a skill não é contada nem vira `skill-without-manifest`; hoje **0** ocorrências no repo (medido), fecha quando o instalador passar a suportar skill linkada, dono **PRD-3**.
