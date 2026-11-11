@@ -105,7 +105,7 @@ ele re-executa.
 | `.agents/rules/prd-adr-pipeline.md` | Contrato da esteira PRD → RESEARCH → ADR-INDEX → ADR | `1-79` |
 | `.agents/rules/sdd-workflow-standard.md` | Layout `.spec/**` + campos canônicos de `workflow-state.json` | `1-50` |
 | `.agents/rules/brain-context.md` | Ponte para o repo `brain` (dono da regra) | `1-15` |
-| `.agents/agents/*/AGENT.md` | 10 papéis (o `opencode.json` registra 9) | `orchestrator/AGENT.md:213-235`, `:426-457` |
+| `.agents/agents/*/AGENT.md` | 9 diretórios de agente — 8 com `AGENT.md` + `code-reviewer/PROMPT.md` — e o `opencode.json` registra os mesmos 9: registro↔disco em paridade (ADR-001) | `opencode.json:12-94`; `orchestrator/AGENT.md:213-235`, `:426-457` |
 | `.agents/skills/` | Playbooks: `prompt-optimizer`, `sdd-compiler`, `harness-report`, `harness-installer`, `prd-adr-pipeline` | — |
 | `.agents/schemas/harness-report.schema.json` | Schema canônico do relatório de evidência | `7-19`, `40-48` |
 | `scripts/static-checks.mjs` | Checks estáticos V2/V3/V6/V7/V12/V14/V15 + PRD/ADR-01/02 | `42-47`, `254-342`, `371-382` |
@@ -605,15 +605,15 @@ Permissões nativas vêm de `opencode.json:12-94`. O gate acrescenta regras por 
 
 | Agente | Papel | `edit` | `bash` | O que pode escrever (regra efetiva) |
 |---|---|---|---|---|
-| `orchestrator` | Triagem, governance, SPEC/PLAN/TASKS; não implementa | deny | allow | só `.spec/**` e `workflow-state.json` — fora disso, deny `orch-write-outside-allowlist` (`gate.js:556-563`, `:666-668`) |
-| `developer-engineer` | Implementa código e testes sob delegação | allow | allow | qualquer path, **inclusive protegido** (`gate.js:659`) — o trailer é exigido fora do runtime, pelo CI |
-| `codebase-analyzer` | Análise estática; não escreve | deny | allow | nada (`opencode.json:36`) |
-| `product-manager` | Validação de negócio; escreve o PRD | allow | allow | `.spec/prd/**` (gate-contract.md:18) |
-| `qa-engineer` | Execução do harness; grava o relatório | allow | allow | **só** `harness/` — fora disso, deny `qa-scope-violation` (`gate.js:565-568`, `:669-671`) |
-| `architect` | ADRs e integridade estrutural | allow | allow | `.spec/**` (gate-contract.md:18) |
-| `security-engineer` | Auditoria OWASP/ASVS | deny | allow | nada (`opencode.json:72`) |
-| `code-reviewer` | Parecer de review | deny | allow | nada — e o gate nega escrita explícita (`gate.js:672-678`) |
-| `ux-designer` | Parecer de UX | deny | allow | nada — idem (`gate.js:672-678`) |
+| `orchestrator` | Triagem, governance, SPEC/PLAN/TASKS; não implementa | deny (`opencode.json:18`) | allow | só `.spec/**` e `workflow-state.json` — fora disso, deny `orch-write-outside-allowlist` (`gate.js:556-563`, `:666-668`) |
+| `developer-engineer` | Implementa código e testes sob delegação | allow (`opencode.json:27`) | allow | qualquer path, **inclusive protegido** (`gate.js:659`) — o trailer é exigido fora do runtime, pelo CI |
+| `product-manager` | Validação de negócio; escreve o PRD | allow (`opencode.json:36`) | allow | `.spec/prd/**` (gate-contract.md:18) |
+| `qa-engineer` | Execução do harness; grava o relatório | allow (`opencode.json:45`) | allow | **só** `harness/` — fora disso, deny `qa-scope-violation` (`gate.js:565-568`, `:669-671`) |
+| `architect` | ADRs e integridade estrutural; modo de análise sob demanda | allow (`opencode.json:54`) | allow | `.spec/**` (gate-contract.md:18) |
+| `security-engineer` | Auditoria OWASP/ASVS | deny (`opencode.json:63`) | allow | nada |
+| `code-reviewer` | Parecer de review | deny (`opencode.json:72`) | allow | nada — e o gate nega escrita explícita (`gate.js:672-678`) |
+| `ux-designer` | Parecer de UX | deny (`opencode.json:81`) | allow | nada — idem (`gate.js:672-678`) |
+| `design-system-specialist` | Templates de componentes do design system | deny (`opencode.json:90`) | allow | nada — idem (`gate.js:672-678`) |
 
 Notas:
 
@@ -650,7 +650,7 @@ de garantia. Nada aqui propõe implementação.
 |---|---|---|---|
 | b1 | A proteção de path protegido e a higiene de shell são **parse de string**: `bashProtectedWrites` só casa redirect e `tee`; `isPkillF` é regex. Formas indiretas (interpretador, comando codificado, variável) não casam | `gate.js:1127-1152`; `gate-contract.md:20` (I7) | 🟠 parcial — CI é a rede final |
 | b2 | O ban de `pkill -f` é parse-based e, portanto, evadível | `gate.js:1127-1129`; `gate-contract.md:20` | 🟠 parcial |
-| b3 | `permission.bash = "allow"` para os 9 agentes; o gate só enxerga `bash` por parse. A própria escrita de governança pelo orquestrador é registrada como **evasão declarada** | `opencode.json:19,28,37,46,55,64,73,82,91`; `workflow-state.json` → `enforcement_status.pendente` | 🟠 — backstop é CI/pre-commit (`gate-contract.md:22`, I9) |
+| b3 | `permission.bash = "allow"` para os 9 agentes; o gate só enxerga `bash` por parse. A própria escrita de governança pelo orquestrador é registrada como **evasão declarada** | `opencode.json:18-19,27-28,36-37,45-46,54-55,63-64,72-73,81-82,90-91` (par `edit`/`bash` de cada um dos 9 agentes); `workflow-state.json` → `enforcement_status.pendente` | 🟠 — backstop é CI/pre-commit (`gate-contract.md:22`, I9) |
 | b4 | A detecção de path em patch é **heurística por 4 regexes**, e o glob de path protegido é implementação própria | `gate.js:578-594`, `:537-551` | 🟠 parcial |
 | b5 | As regras por papel dependem da identidade de agente, que vem do payload do hook. Sem a entrada no mapa `sessionID → agente`, **nenhuma** regra por agente se aplica (fail-open) | `gate.js:405-408`, `:410-427`, `:1346` | 🟠 parcial |
 | b6 | O check de rede V15 declara 9 escapes (E1..E9), entre eles comando em variável, alias de `fetch`, specifier construído e padrão dividido entre linhas | `scripts/static-checks.mjs:144-175`; `gate-contract.md:31` | 🟠 parcial |
