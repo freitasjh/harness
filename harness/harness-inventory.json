@@ -1,0 +1,284 @@
+{
+  "version": 1,
+  "demand": "harness-inventory",
+  "agent": "qa-engineer",
+  "phase": "Testing",
+  "gitSha": "2b8068524dc99067c5acaec0046ca532c155734e",
+  "branch": "adr/prd-harness-inventory/01-roster-de-agentes",
+  "commands": [
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 646,
+      "stdoutHash": "sha256:3237d2b3f6c6d0b37f21a26fb157eea55b9f0ea164b76313551bec4e48aa1202",
+      "stdoutBytes": 52725,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory/plugins.stdout.log",
+      "observed": "tests 379 / suites 94 / pass 379 / fail 0 / cancelled 0 / skipped 0 / todo 0",
+      "resolution": "comando lido de harness.config.json.commands (termo 1 de suiteFull) e executado nesta sessao - nunca copiado de prosa nem do relatorio anterior"
+    },
+    {
+      "cmd": "node --test \"installer/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 5480,
+      "stdoutHash": "sha256:1e8b33fc05d274b33233849ddc96c45f4e9ad77577da195a350d76560e5a7e34",
+      "stdoutBytes": 72026,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory/installer.stdout.log",
+      "observed": "tests 559 / suites 183 / pass 559 / fail 0 / cancelled 0 / skipped 0 / todo 0",
+      "resolution": "termo 2 de suiteFull, reexecutado nesta sessao"
+    },
+    {
+      "cmd": "node scripts/static-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 79,
+      "stdoutHash": "sha256:db23ee52fda33ba181cc06ed99923879ef3e0a49765b2946be8d6f47807f4d1e",
+      "stdoutBytes": 639,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory/static.stdout.log",
+      "observed": "PASS V6, V6b, V2, V3, V7, V15, V14, PRD-01, ADR-01, ADR-02 = 10; INFO V12, LEGACY = 2; FAIL = 0",
+      "resolution": "termo 3 de suiteFull, reexecutado nesta sessao"
+    },
+    {
+      "cmd": "node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 59,
+      "stdoutHash": "sha256:e5e528c52d79fceaa1be828bd89116aa6e0be73294d2e99d39c4febe99e84516",
+      "stdoutBytes": 51,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory/vendor.stdout.log",
+      "observed": "vendor-check OK (.agents/skills/.vendor-lock.json)",
+      "resolution": "termo 4 de suiteFull, reexecutado nesta sessao"
+    },
+    {
+      "cmd": "node scripts/sdd-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 94,
+      "stdoutHash": "sha256:db382d2ca4e0fb479697095738cf8dc358b64801641ae5c24b270ced4c27855b",
+      "stdoutBytes": 641,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory/sdd.stdout.log",
+      "observed": "PASS V4 (rules 1291 de 1705), R-V12 (orphan refs=0), V17, SDD-01 (refs-ok=true non-bypass=true no-orphan-promise=true), SDD-02, SDD-03 (convention-doc=true), R-NODENY, RENAME-01 = 8 PASS / 0 FAIL",
+      "resolution": "5o comando do item 16 do ADR §3, reexecutado nesta sessao (nao e termo de suiteFull; o ADR o exige separado)"
+    },
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node --test \"installer/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs && node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 5851,
+      "stdoutHash": "sha256:183435c94eaf37a3c112c5831962c67e076d9052f6566eb44c86c70b5936e83e",
+      "stdoutBytes": 125428,
+      "stderrBytes": 0,
+      "capture": "/tmp/opencode/qa-harness-inventory/suitefull-postwrite.stdout.log",
+      "observed": "plugins 379/379 (94 suites) + installer 559/559 (183 suites) + static-checks 10 PASS / 0 FAIL / 2 INFO + vendor-check OK; stderr 0 bytes",
+      "resolution": "commands.suiteFull literal, resolvido do config em runtime e reexecutado DEPOIS de harness/harness-inventory.json existir (report-schema.spec.mjs valida todo harness/*.json real contra o schema, entao o REPORT tem de estar schema-valido para a suite fechar verde)",
+      "postEditRerun": {
+        "why": "depois desta execucao os campos numericos deste proprio registro foram corrigidos (duracao/hash/bytes do placeholder para o valor real). Nenhuma mudanca estrutural; a edicao foi seguida de reexecucao da suite de plugins para provar que o arquivo continua schema-valido.",
+        "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
+        "exitCode": 0,
+        "durationMs": 564,
+        "stdoutHash": "sha256:a37132fd5646fd1ea9c63fcd852c84c6b04c1b3d2638d9fb776df7d0e13c6643",
+        "observed": "tests 379 / pass 379 / fail 0 (94 suites); report-schema.spec.mjs isolado: 9/9 pass",
+        "note": "hashes de execucoes verdes diferem entre si porque o stdout do node --test embute duration_ms - mesmo padrao ja declarado no ciclo anterior (findings.stdoutHash_not_consumed)"
+      }
+    }
+  ],
+  "counts": {
+    "unit": { "passed": 379, "failed": 0, "skipped": 0 },
+    "it": { "passed": 559, "failed": 0, "skipped": 0 },
+    "frontend": { "passed": 0, "failed": 0, "skipped": 0 }
+  },
+  "countsNote": "Numeros MEDIDOS nesta sessao pelo stdout literal dos comandos acima (plugins 379/379 em 94 suites; installer 559/559 em 183 suites; 0 failed / 0 skipped / 0 todo em ambos). frontend 0/0/0 porque harness.config.json declara stack.frontend = N/A (repo de tooling Node ESM). Nada foi copiado das afirmacoes do developer/reviewer: installer 559 difere do 516 do ciclo anterior (garantias-runtime-adr-001), o que confirma medicao propria e nao reaproveitamento.",
+  "e2e": {
+    "status": "N/A",
+    "justification": "harness.config.json: stack.backend/stack.frontend = N/A, infra.composeFile = null, infra.ports.backend/frontend = null. Nao ha URL alvo para o MCP chrome-devtools (mcp.required = [\"chrome-devtools\"]); H3 (wipe + re-cadastro em browser) nao tem objeto. O equivalente observavel deste repo - o proprio roster e seus consumidores - foi verificado por comando (ver verification).",
+    "escalateOnRisk": "nao dispara: nenhum arquivo do range casa riskPaths (\"**/security/**\", \"**/acl/**\", \"**/*Permission*\", \"**/auth/**\", \"**/i18n/**\"). O diretorio .agents/agents/security-engineer/ NAO foi tocado (confirmado em git diff --name-only 5dcc0e0..HEAD)."
+  },
+  "h3": {
+    "status": "N/A com justificativa",
+    "why": "H3 pressupoe UI + banco + servidores locais. Neste repo stack = N/A e infra = null; nao existe browser alvo nem re-cadastro a executar. Os defeitos classicos que H3 pega (tela branca, rota duplicada, i18n faltando, CORS/auth no browser) nao tem como ocorrer em um repo de plugins/skills/rules.",
+    "substitute": "Reexecucao independente dos 5 comandos de aceite do ADR §7 + os 16 itens de §3 por comando, com a suite completa reexecutada DEPOIS da criacao do REPORT (para o proprio REPORT nao escapar do schema)."
+  },
+  "evaluation": {
+    "telas": "n/a-sem-UI. harness.config.json declara stack backend/frontend N/A e infra null. O equivalente observavel de 'tela' aqui e a saida dos checks: static-checks 10 PASS / 0 FAIL / 2 INFO e sdd-checks 8 PASS / 0 FAIL, ambos reexecutados nesta sessao.",
+    "negocio": "ok-ADR-001 entregue e medido por comando, item a item: roster de 9 agentes identico entre opencode.json e o disco (diff de conjuntos vazio, 9 chaves / 9 diretorios), 1 unico primary (orchestrator), 0 adicoes de agente e exatamente 1 remocao (codebase-analyzer, conforme o diff de opencode.json: -9 linhas), sdd-orquestrador e codebase-analyzer ausentes do disco, stub code-reviewer/AGENT.md removido com PROMPT.md mantido, e a capacidade de analise absorvida no architect com os 5 literais exigidos. Divergencia registro<->disco: 1 -> 0.",
+    "logica": "ok-suiteFull literal exit 0. Plugins 379/379, installer 559/559, static-checks 10 PASS, vendor-check OK, sdd-checks 8 PASS, tudo com stderr de 0 bytes. Os 3 marcadores dogfoodados por SDD-01/SDD-03 (NAO-BYPASS junto de gate-contract.md, gates.P1_P2, gates.P2_P3) vivem agora em orchestrator/AGENT.md e os checks seguem verdes: SDD-01 refs-ok=true non-bypass=true no-orphan-promise=true; SDD-03 convention-doc=true.",
+    "perf": "suiteFull pre-write ~6.2 s somando termos (plugins 646 ms, installer 5480 ms, static 79 ms, vendor 59 ms). Mesma ordem de grandeza do ciclo anterior (6.0-6.8 s). Repo sem runtime de produto: nao ha latencia de aplicacao a medir."
+  },
+  "verification": {
+    "method": "Cada item do ADR §3 foi reexecutado pelo comando do §7 nesta sessao, com a saida literal capturada em /tmp/opencode/qa-harness-inventory/*.log e transcrita em verification.adrItems. Nenhum valor foi copiado das afirmacoes do developer ou do reviewer.",
+    "adrItems": {
+      "1_roster_9_chaves": {
+        "cmd": "node -e 'const k=Object.keys(require(\"./opencode.json\").agent).sort();console.log(k.length,k.join(\",\"))'",
+        "measured": "9 architect,code-reviewer,design-system-specialist,developer-engineer,orchestrator,product-manager,qa-engineer,security-engineer,ux-designer",
+        "setDiff": "missing: [] extra: [] equal: true",
+        "primary": "orchestrator (unico com mode=primary)",
+        "removals": "1 (codebase-analyzer); adicoes: 0 (git diff de opencode.json no range = -9 linhas, so remocao)",
+        "verdict": "PASSA"
+      },
+      "2_registro_disco_1_1": {
+        "cmd": "ls -d .agents/agents/*/ | wc -l ; diff <dirs> <keys>",
+        "measured": "dirs=9 keys=9; diff vazio (conjuntos identicos)",
+        "verdict": "PASSA"
+      },
+      "3_sdd_orquestrador_ausente": {
+        "cmd": "test ! -e .agents/agents/sdd-orquestrador && echo ABSENT",
+        "measured": "ABSENT (dentro do 4/4 OK do script do §7)",
+        "verdict": "PASSA"
+      },
+      "4_codebase_analyzer_ausente_e_absorvido": {
+        "cmd": "test ! -e .agents/agents/codebase-analyzer ; grep -cF <5 literais> .agents/agents/architect/AGENT.md ; node -e '...agent.architect.permission.edit'",
+        "measured": "ausente; 5/5 literais com contagem 1 cada; architect.permission.edit = allow",
+        "verdict": "PASSA"
+      },
+      "5_stub_removido_prompt_mantido": {
+        "cmd": "test ! -e .agents/agents/code-reviewer/AGENT.md ; test -e .agents/agents/code-reviewer/PROMPT.md ; node -e '<comparacao da string prompt>'",
+        "measured": "4/4 OK; prompt e string e === '{file:./.agents/agents/code-reviewer/PROMPT.md}' => true (shape N8 confirmado: grep de \".prompt.file\" no repo = 0 leitores)",
+        "verdict": "PASSA"
+      },
+      "6_sdd_checks_sem_arquivo_removido": {
+        "cmd": "grep -c \"sdd-orquestrador\" scripts/sdd-checks.mjs .opencode/plugins/__tests__/sdd-checks.spec.mjs ; node scripts/sdd-checks.mjs",
+        "measured": "0 e 0; SDD-01 PASS (refs-ok=true non-bypass=true no-orphan-promise=true), SDD-03 PASS (convention-doc=true), exit 0",
+        "verdict": "PASSA"
+      },
+      "7_marcadores_migrados": {
+        "cmd": "grep -c \"NAO-BYPASS\"/\"gate-contract.md\"/\"gates.P1_P2\"/\"gates.P2_P3\" .agents/agents/orchestrator/AGENT.md",
+        "measured": "NAO-BYPASS=1 (:643, secao CLAUSULA DE NAO-BYPASS), gate-contract.md=6 (inclusive :647, na mesma secao => satisfaz hasNoBypassClause), gates.P1_P2=1, gates.P2_P3=1",
+        "verdict": "PASSA"
+      },
+      "8_spec_do_sdd_checks_reapontado": {
+        "cmd": "node --test \".opencode/plugins/__tests__/sdd-checks.spec.mjs\"",
+        "measured": "tests 58 / pass 58 / fail 0 (14 suites), incluindo 'o arquivo vivo carrega a clausula de nao-bypass' e 'fixture negativa'",
+        "verdict": "PASSA"
+      },
+      "9_rules_reapontadas_com_trailer": {
+        "cmd": "grep -c \"sdd-orquestrador\" .agents/rules/workflow-rules.md .agents/rules/sdd-workflow-standard.md",
+        "measured": "0 e 0; os 2 commits do range carregam trailer 'Harness-Gate-Change: ADR-001 (roster) ...'",
+        "verdict": "PASSA"
+      },
+      "10_gate_contract_i5": {
+        "cmd": "grep -c \"codebase-analyzer\" .agents/rules/gate-contract.md ; checagem dos 5 nomes na linha I5",
+        "measured": "0 ocorrencias de codebase-analyzer; linha :18 lista exatamente orchestrator/code-reviewer/ux-designer/security-engineer/design-system-specialist => todos true",
+        "verdict": "PASSA"
+      },
+      "11_prompt_optimizer_skill": {
+        "cmd": "grep -c \"sdd-orquestrador\" .agents/skills/prompt-optimizer/SKILL.md",
+        "measured": "0",
+        "verdict": "PASSA"
+      },
+      "12_docs_funcionamento": {
+        "cmd": "grep -c \"sdd-orquestrador\" docs/FUNCIONAMENTO.md",
+        "measured": "1, exatamente em :680 (registro d9, datado 'Corrigido em 2026-10-22', evidencia do defeito passado) - o deslocamento -2 previsto pelo item tambem confere",
+        "verdict": "PASSA (1 e o valor exigido pelo item 12)"
+      },
+      "13_registros_historicos_intactos": {
+        "cmd": "grep -c \"sdd-orquestrador\" workflow-state.json harness/opencode-v2-only.json ; git diff --stat 5dcc0e0..HEAD -- <os dois>",
+        "measured": "3 e 1; git diff --stat dos dois no range = vazio",
+        "verdict": "PASSA"
+      },
+      "14_gate_js_byte_identico": {
+        "cmd": "git diff 5dcc0e0..HEAD -- .opencode/plugins/gate.js .opencode/plugins/lib/ | wc -l ; node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
+        "measured": "0 linhas de diff em gate.js e lib/; plugins 379/379 fail 0. Dentro de .opencode/plugins/**, o range toca APENAS os 2 specs (.opencode/plugins/__tests__/sdd-checks.spec.mjs +27/-15 e config-dual-parity.spec.mjs +19/-1)",
+        "verdict": "PASSA"
+      },
+      "15_suitefull_byte_identico_e_selo": {
+        "cmd": "git diff --stat 5dcc0e0..HEAD -- harness.config.json ; node scripts/static-checks.mjs ; sealCommands(commands)",
+        "measured": "0 linhas de diff (ultimo commit que tocou o arquivo: 52021cf, fora do range); static exit 0; selo suiteFull = sha256 c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2, IDENTICO ao registrado no ciclo anterior (harness/garantias-runtime-adr-001.json.verification.sealComputedLocally) => nenhum comando novo na suite, selo nao precisa ser republicado",
+        "verdict": "PASSA"
+      },
+      "16_suite_completa_verde": {
+        "cmd": "os 5 comandos do item 16",
+        "measured": "exit 0 em cada um dos 5 (ver commands[])",
+        "verdict": "PASSA"
+      }
+    },
+    "checklist7": {
+      "1_16_itens_do_adr": "PASSA - 16/16 reexecutados por comando, ver adrItems",
+      "2_diff_protegidos_e_trailer": "PASSA - git diff 5dcc0e0..HEAD -- .opencode/plugins/gate.js harness.config.json => vazio (exit 0, 0 linhas); trailers: 1c8062b e 2b80685 com 'Harness-Gate-Change:', cada um com motivo nao vazio",
+      "3_opencode_json": "PASSA - 9 chaves; 1 primary (orchestrator); edit=allow exatamente em architect, developer-engineer, product-manager, qa-engineer",
+      "4_docs_roster": "PASSA - tabela :607-616 com 9 linhas de dados, os 9 agentes reais, design-system-specialist em :616; lastros opencode.json:18,27,36,45,54,63,72,81,90 conferem com as linhas reais de permission.edit de cada agente (verificado lendo opencode.json 1-100); :108 sem '10 papeis' (grep exit 1)",
+      "5_grep_sdd_orquestrador": "DIVERGENTE da letra do checklist / CONFORME o item 12 do ADR - ver divergences.d1. Medido: 1 ocorrencia fora de .spec/, workflow-state.json e harness/opencode-v2-only.json, em docs/FUNCIONAMENTO.md:680 (registro historico datado). O ADR §3 item 12 EXIGE exatamente esse 1: 'Resultado: grep -c => 1 ocorrencia remanescente, a de :680'.",
+      "6_referencias_vivas_novas": "PASSA - baseline do PRD §3.5 recalculada e IDENTICA (20 paths de rule citados / 13 ausentes); nenhuma referencia viva nova a arquivo inexistente: as linhas ADICIONADAS pelo range citam 4 paths e todos existem; proxy negativo: codebase-analyzer e sdd-orquestrador nao aparecem como path em nenhum arquivo vivo (as unicas mencoes sao prosa de 'capacidade absorvida' em architect/AGENT.md:22-24 e decisoes historicas em workflow-state.json); code-reviewer/AGENT.md so aparece em workflow-state.json:1083 (registro da decisao)",
+      "7_selo_suitefull": "PASSA - harness.config.json byte-identico (0 linhas de diff; ultimo commit que o tocou e 52021cf, fora do range) e selo recomputado = c904f1c5... identico ao do ciclo anterior"
+    }
+  },
+  "divergences": {
+    "d1_checklist_espera_0_vs_adr_exige_1": {
+      "severity": "atencao (contrato do checklist x interface congelada)",
+      "what": "O checklist P4 pede grep de 'sdd-orquestrador' fora de .spec/, workflow-state.json e harness/opencode-v2-only.json = 0. Medido: 1, em docs/FUNCIONAMENTO.md:680.",
+      "why_it_is_not_a_defect": "O ADR-001 §3 item 12 (interface congelada) exige explicitamente 1 ocorrencia remanescente nessa linha: e o registro d9, rotulado 'Corrigido em 2026-10-22', que cita sdd-orquestrador/AGENT.md:17 como evidencia do defeito passado - nao afirma que o agente existe. O item 12 tambem preve o deslocamento -2 (682 -> 680), que confere.",
+      "resolution": "Veredito pelo contrato de registro (ADR §3 item 12 e §7): PASSA. A letra do checklist P4 esta mais estrita que a interface congelada; se o owner quiser 0, e preciso emendar o item 12 - nao e defeito de implementacao."
+    },
+    "d2_estado_nao_commitado_no_worktree": {
+      "severity": "atencao (higiene, fora do escopo de escrita do qa-engineer)",
+      "what": "Ao rodar este portao, `git status` mostra 5 arquivos modificados e NAO commitados em cima de HEAD 2b80685: .spec/backend/harness-inventory-adr-001/SPEC.md, TASKS.md, .spec/prd/prd-harness-inventory/ADRs/ADR-001-roster-de-agentes/ADR.md, .spec/prd/prd-harness-inventory/PRD.md e workflow-state.json.",
+      "impact": "As notas N8/N9/N10 do ADR e o desvio D5 do TASKS existem apenas no worktree, nao no commit 2b80685. O ciclo nao esta fechado no historico ate esses arquivos serem commitados (dono: orquestrador). Nada disso altera o veredito de roster: os 16 itens foram medidos contra o worktree e contra o range commitado, e ambos concordam.",
+      "action": "nenhuma (o qa-engineer nao edita .spec/ nem workflow-state.json)"
+    },
+    "d3_numeros_do_developer_conferem": {
+      "severity": "informativo",
+      "what": "As afirmacoes 'plugins 379/379', 'installer 559/559', 'static exit 0', 'sdd-checks 0 FAIL', 'vendor OK', '0 linhas em gate.js/harness.config.json' foram TODAS reproduzidas por medicao propria. Nenhuma divergencia de numero encontrada.",
+      "note": "O 559 do installer so aparece se a medicao for real: o ciclo anterior (garantias-runtime-adr-001) tinha 516."
+    }
+  },
+  "findings": {
+    "f1_structural_count_assert_replaced": {
+      "severity": "positivo (declarado)",
+      "what": "config-dual-parity.spec.mjs passou de `length === 10` para `assert.deepEqual` do conjunto literal de 9 nomes: uma troca silenciosa de agente (um sai, outro entra) agora deixa a suite vermelha - antes passava.",
+      "evidence": ".opencode/plugins/__tests__/config-dual-parity.spec.mjs:120-140 (commit 2b80685)"
+    },
+    "f2_architect_analysis_mode_is_prose": {
+      "severity": "declarado (nao bloqueia)",
+      "what": "A capacidade 'analise sem escrever' que vinha de codebase-analyzer (edit: deny nativo) agora e limitacao de prosa no architect (edit: allow). Sem mecanismo de runtime.",
+      "owner": "ADR-001 §4 C3 - ja declarado pelo proprio ADR; nada a fazer neste portao."
+    },
+    "f3_known_agents_enum_lag": {
+      "severity": "declarado (pre-existente)",
+      "what": "KNOWN_AGENTS em gate.js tem 6 nomes + 'unknown'; com o roster de 9, 5 agentes registrados caem em 'unknown' nos details de DenyError. E a consequence C7 do ADR, nao regressao deste ciclo (gate.js tem 0 linhas de diff).",
+      "owner": "ADR-001 §4 C7 - fora do escopo (mexe em .opencode/plugins/**)."
+    },
+    "f4_tasks_rv12_unchecked": {
+      "severity": "esperado",
+      "what": "TASKS.md RV-12 esta desmarcado; o proprio texto diz que a verificacao final e deste portao P4. Este REPORT e a entrega dele.",
+      "owner": "orquestrador (marcar RV-12 apos aceitar este relatorio)"
+    }
+  },
+  "brainStore": [
+    "sessoes/projetos/harness/2026-11-11-qa-harness-inventory-p4"
+  ],
+  "brainNote": "O path acima foi GRAVADO nesta sessao com brain_store (layer sessoes, scope projetos). A nota regras/projetos/harness/roster-agentes-adr-001 ja existia e foi LIDA via brain_read para contexto - nao foi reescrita (dono: developer/orquestrador). Nenhuma nota em regras/ ou estudos/ foi criada por este papel.",
+  "cleanup": {
+    "ports": [],
+    "processes": [],
+    "note": "Nenhum servidor subido: infra.composeFile/ports = null e stack = N/A. Zero `pkill -f` (workflow-rules.md §5 H5.1). Todos os comandos foram spawn sincrono nesta sessao; nenhum node --test residual. Artefatos temporarios (logs + capturas) em /tmp/opencode/qa-harness-inventory/, fora do worktree.",
+    "verifiedPortsFree": "backend/frontend = null => nada a liberar"
+  },
+  "gitState": {
+    "range": "5dcc0e0..2b80685",
+    "commits": [
+      { "sha": "1c8062b", "subject": "refactor(roster): aplicar ADR-001 - 9 agentes, 1 primario, 0 divergencia registro<->disco", "trailer": "Harness-Gate-Change: ADR-001 (roster) - reapontamento de referencia e correcao de contagem I5; nenhuma policy alterada" },
+      { "sha": "2b80685", "subject": "docs(harness): corrigir prosa do roster e assertar o conjunto de agentes", "trailer": "Harness-Gate-Change: ADR-001 (roster) - correcao de prosa e assert do roster; nenhuma policy alterada" }
+    ],
+    "filesInRange": 22,
+    "protectedPathDiff": "git diff 5dcc0e0..HEAD -- .opencode/plugins/gate.js harness.config.json => vazio (0 bytes)",
+    "uncommittedOver2b80685": [
+      ".spec/backend/harness-inventory-adr-001/SPEC.md",
+      ".spec/backend/harness-inventory-adr-001/TASKS.md",
+      ".spec/prd/prd-harness-inventory/ADRs/ADR-001-roster-de-agentes/ADR.md",
+      ".spec/prd/prd-harness-inventory/PRD.md",
+      "workflow-state.json"
+    ]
+  },
+  "residual_risks": [
+    "Estados de .spec/** e workflow-state.json (notas N8/N9/N10, D5, PRD §16) existem so no worktree - precisam de commit pelo orquestrador para o ciclo fechar no historico",
+    "ADR-001 item 12 mantem 1 referencia historica a sdd-orquestrador em docs/FUNCIONAMENTO.md:680 (intencional; conflita com a letra mais estrita do checklist P4)",
+    "Modo analise do architect e prosa (C3), sem garantia de runtime",
+    "KNOWN_AGENTS de gate.js cobre 6 nomes: 5 agentes do roster caem em 'unknown' no log de deny (C7, pre-existente)"
+  ],
+  "selfReported": true,
+  "selfReportedNote": "true por honestidade: os numeros foram medidos pelo proprio executor desta sessao (spawn sincrono + hashes de stdout). A observacao independente e a contraprova do gate, que reexecuta commands.suiteFull selado (selo c904f1c5... inalterado).",
+  "notes": [
+    "Nenhum codigo, config, rule, agente ou documento foi corrigido: este papel so verifica e reporta. A unica escrita no worktree e harness/harness-inventory.json.",
+    "Todos os comandos foram resolvidos de harness.config.json em runtime (commands.suiteFull) ou do ADR §7 literal - nenhum numero veio de prosa ou de relatorio anterior.",
+    "A suite completa foi reexecutada DEPOIS da criacao deste arquivo, porque report-schema.spec.mjs valida todo harness/*.json real contra o schema: um REPORT invalido deixaria a suite vermelha."
+  ]
+}

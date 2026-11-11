@@ -168,7 +168,7 @@ brain_store(
 |---|-------------|----------|
 | **V1** | Prompt vago real ("melhorar o sistema") | Rota A, ≤3 perguntas, ZERO artefato criado |
 | **V2** | Prompt claro real | Rota B, bloco PICCO válido, 1 confirmação, depois avança |
-| **V3** | `grep -c "Tier 1|Tier 2|Tier 3"` nos 3 call sites (orchestrator/AGENT.md, sdd-orquestrador/AGENT.md, workflow-rules.md — fundido DOC-02) | 0 |
+| **V3** | `grep -c "Tier 1|Tier 2|Tier 3"` nos 2 call sites (orchestrator/AGENT.md, workflow-rules.md — fundido DOC-02) | 0 |
 | **V4** | `grep -c "prompt-optimizer" .agents/rules/workflow-rules.md` (§0 + §5 fundidos) | >= 1 |
 | **V5** | Constraints por exemplo no picco-template.md | ≤ 10 em todos |
 | **V6** | `workflow-state.json` | JSON válido, `type: refactor` |

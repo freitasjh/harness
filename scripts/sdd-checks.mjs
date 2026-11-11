@@ -127,9 +127,9 @@ export function hasVocabTable(text) {
 }
 
 // SDD-03 convention probe (used on TASKS fixtures in tests; on the repo it
-// runs against sdd-orquestrador/AGENT.md + workflow-state.json in runSddChecks).
+// runs against orchestrator/AGENT.md + workflow-state.json in runSddChecks).
 export function hasGatesConvention(root) {
-  const agent = join(root, ".agents/agents/sdd-orquestrador/AGENT.md");
+  const agent = join(root, ".agents/agents/orchestrator/AGENT.md");
   if (!existsSync(agent)) return false;
   const text = readFileSync(agent, "utf8");
   return text.includes("gates.P1_P2") && text.includes("gates.P2_P3");
@@ -380,8 +380,8 @@ export function runSddChecks(root = REPO_ROOT) {
   const wrText = existsSync(wr) ? readFileSync(wr, "utf8") : "";
   record("V17", hasVocabTable(wrText) ? "PASS" : "FAIL", hasVocabTable(wrText) ? "canonical vocab + conversion table present" : "vocab table missing");
 
-  // SDD-01 — sdd-orquestrador aligned: refs resolve, non-bypass clause, no orphan promise.
-  const sddAgent = join(root, ".agents/agents/sdd-orquestrador/AGENT.md");
+  // SDD-01 — orchestrator aligned: refs resolve, non-bypass clause, no orphan promise.
+  const sddAgent = join(root, ".agents/agents/orchestrator/AGENT.md");
   const sddText = existsSync(sddAgent) ? readFileSync(sddAgent, "utf8") : "";
   const sddOrphans = findLiveRefs(root, []).length; // placeholder no-op
   void sddOrphans;

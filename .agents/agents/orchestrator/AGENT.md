@@ -640,6 +640,23 @@ Antes de marcar qualquer tarefa como concluída, verifique:
 - **Kill-switch** = env `HARNESS_GATES=off` no host; `gates.*` do config não desliga a suíte **nem**
   rebaixa gate: o rebaixamento vive no env (`HARNESS_GATE_<GATE>` + `_REASON`, `gate.js:98`) e exige motivo; o config é auditado (`gate.js:252`) — 🟢 runtime: resolução pura (`gate.js:98`) + anúncio único (`gate.js:278`), corte por env (`gate.js:1366`).
 
+### CLÁUSULA DE NÃO-BYPASS (U10 — nenhum orquestrador escapa dos gates)
+
+PICCO e contraprova disparam **por tool**, independentemente de quem delega — o
+`orchestrator` é o único primário do roster. Nenhuma linha deste AGENT.md nega
+tool por si só — prosa descreve, runtime nega (SPEC §2; `gate-contract.md` §1/§3).
+
+- Toda delegação via `task` exige bloco PICCO válido (tag `<open_questions>`
+  presente e vazia; E1/E2 ausentes ⇒ deny — SPEC ADR-004, I1; mecanismo:
+  `gate.js` no hook v2 `ctx.tool.hook("execute.before", …)`).
+- `Completed` exige escrita pela via estruturada + contraprova por re-execução;
+  o próximo `task` exige `Completed` + `harness_status` + `code_review_status`
+  do ciclo anterior (SPEC ADR-008, I2; mecanismo: `gate.js` âncoras A+B).
+- Convenção de portões no `workflow-state.json`: `gates.P1_P2` e `gates.P2_P3`
+  são registrados a cada aprovação humana (SDD-03, `scripts/sdd-checks.mjs`).
+- Níveis de garantia sempre explícitos: 🟢 runtime · 🟠 parcial/CI-dependente ·
+  🟡 processo · 🔴 declarado-aberto (`gate-contract.md` §3).
+
 ## Documentos de Referência
 
 | Documento | Propósito |

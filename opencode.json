@@ -28,15 +28,6 @@
         "bash": "allow"
       }
     },
-    "codebase-analyzer": {
-      "mode": "subagent",
-      "prompt": "{file:./.agents/agents/codebase-analyzer/AGENT.md}",
-      "description": "Analise estatica de codigo e arquitetura; nao escreve.",
-      "permission": {
-        "edit": "deny",
-        "bash": "allow"
-      }
-    },
     "product-manager": {
       "mode": "subagent",
       "prompt": "{file:./.agents/agents/product-manager/AGENT.md}",

@@ -84,7 +84,7 @@ Contrato de saída e exemplos (bons e ruins): `.agents/skills/prompt-optimizer/r
 
 ## 0.1 Divisão de Papéis (NON-NEGOTIABLE)
 
-> 🚨 **REGRA CRÍTICA:** Orchestrator (sdd-orquestrador) **NÃO DESENVOLVE**. Apenas orquestra, governa, documenta, delega.
+> 🚨 **REGRA CRÍTICA:** Orchestrator (`orchestrator`) **NÃO DESENVOLVE**. Apenas orquestra, governa, documenta, delega.
 
 | Role | Responsabilidade |
 |------|------------------|

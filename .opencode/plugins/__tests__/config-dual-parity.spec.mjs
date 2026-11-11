@@ -120,7 +120,24 @@ describe("PL-05 — opencode.json is v2-only (dual keys ABSENT, v2 shape PRESENT
   it("v2 shape: every `agent` entry has the mandatory `description` + `permission`", () => {
     const json = opencodeJson();
     const names = Object.keys(json.agent ?? {});
-    assert.equal(names.length, 10, `10 agents expected, got ${names.length}`);
+    // ADR-001 roster: assert the literal SET, not a count. `length === 9` stays
+    // green on a silent swap (one agent out, another in) — the set does not.
+    const ROSTER = [
+      "orchestrator",
+      "developer-engineer",
+      "product-manager",
+      "qa-engineer",
+      "architect",
+      "security-engineer",
+      "code-reviewer",
+      "ux-designer",
+      "design-system-specialist",
+    ];
+    assert.deepEqual(
+      names.slice().sort(),
+      ROSTER.slice().sort(),
+      `roster mismatch — got [${names.join(", ")}]`,
+    );
     for (const name of names) {
       const entry = json.agent[name];
       assert.equal(typeof entry.description, "string", `agent.${name}.description present`);

@@ -105,7 +105,7 @@ ele re-executa.
 | `.agents/rules/prd-adr-pipeline.md` | Contrato da esteira PRD → RESEARCH → ADR-INDEX → ADR | `1-79` |
 | `.agents/rules/sdd-workflow-standard.md` | Layout `.spec/**` + campos canônicos de `workflow-state.json` | `1-50` |
 | `.agents/rules/brain-context.md` | Ponte para o repo `brain` (dono da regra) | `1-15` |
-| `.agents/agents/*/AGENT.md` | 10 papéis (o `opencode.json` registra 9) | `orchestrator/AGENT.md:213-235`, `:426-457` |
+| `.agents/agents/*/AGENT.md` | 9 diretórios de agente — 8 com `AGENT.md` + `code-reviewer/PROMPT.md` — e o `opencode.json` registra os mesmos 9: registro↔disco em paridade (ADR-001) | `opencode.json:12-94`; `orchestrator/AGENT.md:213-235`, `:426-457` |
 | `.agents/skills/` | Playbooks: `prompt-optimizer`, `sdd-compiler`, `harness-report`, `harness-installer`, `prd-adr-pipeline` | — |
 | `.agents/schemas/harness-report.schema.json` | Schema canônico do relatório de evidência | `7-19`, `40-48` |
 | `scripts/static-checks.mjs` | Checks estáticos V2/V3/V6/V7/V12/V14/V15 + PRD/ADR-01/02 | `42-47`, `254-342`, `371-382` |
@@ -539,7 +539,7 @@ intencional (`isDeclaredDeviation`, `gate.js:896-907`).
 | V4 | `sdd-checks.mjs:370-372` | orçamento de linhas das rules (1090 de 1705) | 🟢 |
 | R-V12 | `sdd-checks.mjs:374-376` | referência órfã ao arquivo fundido (FAIL real) | 🟢 |
 | V17 | `sdd-checks.mjs:378-381` | tabela de vocabulário canônico de `current_phase` | 🟢 |
-| SDD-01 | `sdd-checks.mjs:383-393` | `sdd-orquestrador` alinhado, cláusula de não-bypass, sem promessa órfã | 🟢 |
+| SDD-01 | `sdd-checks.mjs:383-393` | `orchestrator` alinhado, cláusula de não-bypass, sem promessa órfã | 🟢 |
 | SDD-02 | `sdd-checks.mjs:395-397` | artefatos do ciclo resolvido + coerência task↔seção (dogfood) | 🟢 |
 | SDD-03 | `sdd-checks.mjs:399-407` | `gates.P1_P2`/`P2_P3` no state + convenção no AGENT.md | 🟢 |
 | R-NODENY | `sdd-checks.mjs:409-413` | `gate.js` **não** tem deny de artefato de SDD | 🟢 |
@@ -605,15 +605,15 @@ Permissões nativas vêm de `opencode.json:12-94`. O gate acrescenta regras por 
 
 | Agente | Papel | `edit` | `bash` | O que pode escrever (regra efetiva) |
 |---|---|---|---|---|
-| `orchestrator` | Triagem, governance, SPEC/PLAN/TASKS; não implementa | deny | allow | só `.spec/**` e `workflow-state.json` — fora disso, deny `orch-write-outside-allowlist` (`gate.js:556-563`, `:666-668`) |
-| `developer-engineer` | Implementa código e testes sob delegação | allow | allow | qualquer path, **inclusive protegido** (`gate.js:659`) — o trailer é exigido fora do runtime, pelo CI |
-| `codebase-analyzer` | Análise estática; não escreve | deny | allow | nada (`opencode.json:36`) |
-| `product-manager` | Validação de negócio; escreve o PRD | allow | allow | `.spec/prd/**` (gate-contract.md:18) |
-| `qa-engineer` | Execução do harness; grava o relatório | allow | allow | **só** `harness/` — fora disso, deny `qa-scope-violation` (`gate.js:565-568`, `:669-671`) |
-| `architect` | ADRs e integridade estrutural | allow | allow | `.spec/**` (gate-contract.md:18) |
-| `security-engineer` | Auditoria OWASP/ASVS | deny | allow | nada (`opencode.json:72`) |
-| `code-reviewer` | Parecer de review | deny | allow | nada — e o gate nega escrita explícita (`gate.js:672-678`) |
-| `ux-designer` | Parecer de UX | deny | allow | nada — idem (`gate.js:672-678`) |
+| `orchestrator` | Triagem, governance, SPEC/PLAN/TASKS; não implementa | deny (`opencode.json:18`) | allow | só `.spec/**` e `workflow-state.json` — fora disso, deny `orch-write-outside-allowlist` (`gate.js:556-563`, `:666-668`) |
+| `developer-engineer` | Implementa código e testes sob delegação | allow (`opencode.json:27`) | allow | qualquer path, **inclusive protegido** (`gate.js:659`) — o trailer é exigido fora do runtime, pelo CI |
+| `product-manager` | Validação de negócio; escreve o PRD | allow (`opencode.json:36`) | allow | `.spec/prd/**` (gate-contract.md:18) |
+| `qa-engineer` | Execução do harness; grava o relatório | allow (`opencode.json:45`) | allow | **só** `harness/` — fora disso, deny `qa-scope-violation` (`gate.js:565-568`, `:669-671`) |
+| `architect` | ADRs e integridade estrutural; modo de análise sob demanda | allow (`opencode.json:54`) | allow | `.spec/**` (gate-contract.md:18) |
+| `security-engineer` | Auditoria OWASP/ASVS | deny (`opencode.json:63`) | allow | nada |
+| `code-reviewer` | Parecer de review | deny (`opencode.json:72`) | allow | nada — e o gate nega escrita explícita (`gate.js:672-678`) |
+| `ux-designer` | Parecer de UX | deny (`opencode.json:81`) | allow | nada — idem (`gate.js:672-678`) |
+| `design-system-specialist` | Templates de componentes do design system | deny (`opencode.json:90`) | allow | nada — idem (`gate.js:672-678`) |
 
 Notas:
 
@@ -621,8 +621,6 @@ Notas:
   (`gate.js:1114-1169`); o backstop real é CI + pre-commit (§10b).
 - `permission.task = "ask"` (`opencode.json:9-11`) — o opencode pergunta ao usuário antes de
   cada delegação, independentemente do PICCO.
-- `sdd-orquestrador` tem pasta em `.agents/agents/` (10 diretórios) mas **não** está
-  registrado em `opencode.json` (9 agentes) — ver §10d.
 - **Brain**: `brain_search` antes de codificar, `brain_store` depois
   (`brain-context.md:8-11`). O `brainStore` é campo obrigatório do relatório.
 
@@ -652,7 +650,7 @@ de garantia. Nada aqui propõe implementação.
 |---|---|---|---|
 | b1 | A proteção de path protegido e a higiene de shell são **parse de string**: `bashProtectedWrites` só casa redirect e `tee`; `isPkillF` é regex. Formas indiretas (interpretador, comando codificado, variável) não casam | `gate.js:1127-1152`; `gate-contract.md:20` (I7) | 🟠 parcial — CI é a rede final |
 | b2 | O ban de `pkill -f` é parse-based e, portanto, evadível | `gate.js:1127-1129`; `gate-contract.md:20` | 🟠 parcial |
-| b3 | `permission.bash = "allow"` para os 9 agentes; o gate só enxerga `bash` por parse. A própria escrita de governança pelo orquestrador é registrada como **evasão declarada** | `opencode.json:19,28,37,46,55,64,73,82,91`; `workflow-state.json` → `enforcement_status.pendente` | 🟠 — backstop é CI/pre-commit (`gate-contract.md:22`, I9) |
+| b3 | `permission.bash = "allow"` para os 9 agentes; o gate só enxerga `bash` por parse. A própria escrita de governança pelo orquestrador é registrada como **evasão declarada** | `opencode.json:18-19,27-28,36-37,45-46,54-55,63-64,72-73,81-82,90-91` (par `edit`/`bash` de cada um dos 9 agentes); `workflow-state.json` → `enforcement_status.pendente` | 🟠 — backstop é CI/pre-commit (`gate-contract.md:22`, I9) |
 | b4 | A detecção de path em patch é **heurística por 4 regexes**, e o glob de path protegido é implementação própria | `gate.js:578-594`, `:537-551` | 🟠 parcial |
 | b5 | As regras por papel dependem da identidade de agente, que vem do payload do hook. Sem a entrada no mapa `sessionID → agente`, **nenhuma** regra por agente se aplica (fail-open) | `gate.js:405-408`, `:410-427`, `:1346` | 🟠 parcial |
 | b6 | O check de rede V15 declara 9 escapes (E1..E9), entre eles comando em variável, alias de `fetch`, specifier construído e padrão dividido entre linhas | `scripts/static-checks.mjs:144-175`; `gate-contract.md:31` | 🟠 parcial |
@@ -672,7 +670,7 @@ de garantia. Nada aqui propõe implementação.
 | # | Fato | Lastro | Nível |
 |---|---|---|---|
 | d1 | `workflow-state.json` tem **81 chaves de topo**; só um subconjunto é canônico (`current_feature`, `current_phase`, `previous_phase`, `next_phase`, `artifacts`, `type`, `last_update`) | `workflow-state.json` (raiz); `.agents/rules/sdd-workflow-standard.md` §2 | 🟡 processo — risco de estado paralelo |
-| d2 | `sdd-orquestrador` tem diretório em `.agents/agents/` (10 papéis) mas **não** está registrado em `opencode.json` (9 agentes); os checks SDD-01 e SDD-03 leem o `AGENT.md` dele | `.agents/agents/` (10 diretórios); `opencode.json:12-94`; `scripts/sdd-checks.mjs:131-136`, `:383-393` | 🟡 processo |
+| d2 | `orchestrator` é o único orquestrador registrado; os checks SDD-01 e SDD-03 leem o `AGENT.md` dele | `opencode.json:12-94`; `scripts/sdd-checks.mjs:131-136`, `:383-393` | 🟡 processo |
 | d3 | `gate-contract.md` (I6) **citava** `hitl-guardrail.js` como bloqueante e a fronteira via `chat.message` — o código diz que esse plugin é **no-op** e que `chat.message` não existe no v2. **Corrigido em 2026-10-22**: a linha I6 foi reescrita com o mecanismo real (GATE-04 `gateHitlBatch` + event stream) | `.agents/rules/gate-contract.md:19`; `.opencode/plugins/hitl-guardrail.js:1`, `:27-32`; `gate.js:1218-1222`, `:1096`, `:1178`, `:1183`, `:1270`, `:1288-1297`, `:1451-1473` | 🟢 runtime (mecanismo documentado = o que o codigo faz) |
 | d4 | `gate-contract.md` (I11) **afirmava** que o mapa `sessionID → agente` é alimentado por `chat.message`/`chat.params` e que `tool.execute.before` não traz o agente — no v2 o agente vem do payload do hook, e a tabela v1→v2 documenta a substituição. **Corrigido em 2026-10-22**: a linha I11 foi reescrita com o mecanismo real (agente pelo payload do hook `execute.before`) | `.agents/rules/gate-contract.md:24`; `gate.js:1253-1257`, `:1346`, `:410-427`, `:405-408` | 🟢 runtime (mecanismo documentado = o que o codigo faz) |
 | d5 | `orchestrator/AGENT.md` **afirmava** que `harness-validator.js` injeta a regra H1..H7 em todos os agentes via system prompt; o plugin não registra hook nenhum desde FIX-01. **Corrigido em 2026-10-22**: a linha agora cita o mecanismo real (`opencode.json` → `instructions` global + prompt por agente; enforcement = `gate.js`) | `.agents/agents/orchestrator/AGENT.md:465`; `.opencode/plugins/harness-validator.js:1-12`, `:26-31`; `opencode.json:6-8`, `:12-94` | 🟢 runtime (mecanismo documentado = o que o codigo faz) |

@@ -642,24 +642,23 @@ describe("V17 emenda da esteira (PAP-07)", () => {
   });
 });
 
-// --- PAP-08: wiring da esteira nos 2 orquestradores --------------------------
+// --- PAP-08: wiring da esteira no orquestrador -------------------------------
 // As fases da esteira (PRD → RESEARCH → ADR-INDEX → loop por ADR) e a operação
-// de branch/PR sem `gh` entram nos DOIS orquestradores, apontando para
+// de branch/PR sem `gh` entram no orquestrador, apontando para
 // `.agents/rules/prd-adr-pipeline.md` (a regra), sem duplicar o contrato. Os
 // marcadores que `SDD-01`/`SDD-03` verificam precisam sobreviver à reescrita.
 const ORCH = join(REPO, ".agents", "agents", "orchestrator", "AGENT.md");
-const SDD_ORCH = join(REPO, ".agents", "agents", "sdd-orquestrador", "AGENT.md");
 
-describe("PAP-08 wiring da esteira nos 2 orquestradores", () => {
-  it("ambos apontam para a regra da esteira em vez de duplicar o contrato", () => {
-    for (const f of [ORCH, SDD_ORCH]) {
+describe("PAP-08 wiring da esteira no orquestrador", () => {
+  it("aponta para a regra da esteira em vez de duplicar o contrato", () => {
+    for (const f of [ORCH]) {
       const text = readFileSync(f, "utf8");
       assert.match(text, /\.agents\/rules\/prd-adr-pipeline\.md/, `${f} não cita a regra`);
     }
   });
 
-  it("ambos documentam as fases PRD → RESEARCH → ADR-INDEX → loop por ADR", () => {
-    for (const f of [ORCH, SDD_ORCH]) {
+  it("documenta as fases PRD → RESEARCH → ADR-INDEX → loop por ADR", () => {
+    for (const f of [ORCH]) {
       const text = readFileSync(f, "utf8");
       for (const label of ["PRD", "RESEARCH", "ADR-INDEX"]) {
         assert.match(text, new RegExp(label), `${f} não documenta a fase ${label}`);
@@ -668,8 +667,8 @@ describe("PAP-08 wiring da esteira nos 2 orquestradores", () => {
     }
   });
 
-  it("ambos documentam branch/PR sem gh: branch no padrão + URL de compare + merge humano", () => {
-    for (const f of [ORCH, SDD_ORCH]) {
+  it("documenta branch/PR sem gh: branch no padrão + URL de compare + merge humano", () => {
+    for (const f of [ORCH]) {
       const text = readFileSync(f, "utf8");
       assert.match(text, /adr\/\{prd-id\}\/\{nn\}-\{slug\}/, `${f} não fixa o padrão de branch`);
       assert.match(text, /compare/, `${f} não documenta a URL de compare`);
@@ -678,7 +677,7 @@ describe("PAP-08 wiring da esteira nos 2 orquestradores", () => {
   });
 
   it("os rótulos da esteira NÃO introduzem valor novo de current_phase (ADR-P05)", () => {
-    for (const f of [ORCH, SDD_ORCH]) {
+    for (const f of [ORCH]) {
       const text = readFileSync(f, "utf8");
       assert.doesNotMatch(text, /current_phase["']?\s*[:=]\s*["']?(PRD|RESEARCH|ADR-INDEX|ADR)["']?/i);
     }
@@ -691,11 +690,11 @@ describe("PAP-08 wiring da esteira nos 2 orquestradores", () => {
 // prova que o teste cobre o defeito: removido o marcador, o check FALHA.
 describe("SDD-01 preservação do marcador de não-bypass (PAP-08)", () => {
   it("o arquivo vivo carrega a cláusula de não-bypass", () => {
-    assert.equal(hasNoBypassClause(readFileSync(SDD_ORCH, "utf8")), true);
+    assert.equal(hasNoBypassClause(readFileSync(ORCH, "utf8")), true);
   });
 
   it("fixture negativa: removida a cláusula ⇒ hasNoBypassClause = false", () => {
-    const text = readFileSync(SDD_ORCH, "utf8");
+    const text = readFileSync(ORCH, "utf8");
 
     const semMarcador = text.replace(/NÃO-BYPASS/g, "REMOVED");
     assert.notEqual(semMarcador, text, "controle positivo: o marcador existia para remover");
@@ -707,7 +706,7 @@ describe("SDD-01 preservação do marcador de não-bypass (PAP-08)", () => {
   });
 
   it("os literais gates.P1_P2 / gates.P2_P3 sobrevivem (SDD-03 / hasGatesConvention)", () => {
-    const text = readFileSync(SDD_ORCH, "utf8");
+    const text = readFileSync(ORCH, "utf8");
     assert.match(text, /gates\.P1_P2/);
     assert.match(text, /gates\.P2_P3/);
     assert.equal(hasGatesConvention(REPO), true);
