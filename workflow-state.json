@@ -13,7 +13,7 @@
     "previous_archive": ".spec/archive/20261018-harness-eixos-stack/",
     "verify": ".spec/archive/20261020-opencode-v2-only/VERIFY.md",
     "harness_evidence": ".spec/archive/20261018-harness-eixos-stack/harness/",
-    "harness_report": "harness/harness-eixos-stack.json",
+    "harness_report": "harness/harness-inventory.json",
     "tech_debt_p2": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
     "previous_cycle": {
       "archive": ".spec/archive/20261016-prd-adr-pipeline/",
@@ -28,8 +28,8 @@
     "superseded_cycle": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/ (superseded: SPEC prescrevia `Plugin.define`, ausente no binario v2.0.32)",
     "archive": ".spec/archive/20261028-harness-design-system-agent/",
     "prd": ".spec/prd/prd-harness-inventory/PRD.md",
-    "research": ".spec/prd/prd-garantias-runtime/RESEARCH.md",
-    "adr_index": ".spec/prd/prd-garantias-runtime/ADR-INDEX.md",
+    "research": ".spec/prd/prd-harness-inventory/RESEARCH.md",
+    "adr_index": ".spec/prd/prd-harness-inventory/ADR-INDEX.md",
     "adr": ".spec/prd/prd-harness-inventory/ADRs/ADR-001-roster-de-agentes/ADR.md",
     "prd_lines": ".spec/prd/prd-harness-inventory/PRD.md (162 linhas, 16 secoes, PRD-01 PASS)"
   },
@@ -56,10 +56,10 @@
     "G2_PRD": "approved_user_2026_10_22 (PRD prd-garantias-runtime aprovado sem ressalvas; §16 do PRD.md; 3 decisoes do owner)",
     "P1_P2": "approved_user_2026_11_11 (SPEC 49 linhas, 12 RF mapeados aos 16 itens do ADR-001, 6 invariantes)",
     "P2_P3": "approved_user_2026_11_11 (PLAN 57 linhas, TASKS 12 microtasks RV-01..RV-12)",
-    "P3_P4": "pending_user_approval (implementacao atomica em 2b80685; code review rodada 2 CHANGES_REQUIRED com 6 atencao de governanca, 0 criticos; correcoes aplicadas)",
-    "P4_P5": "pending_user_approval (QA P4: gate PASSA na substancia; 831/831; 0 writes nos 2 presets; transcript byte-identico; 2 P2 novos registrados em .spec/tech-debts/harness-eixos-stack-p2/)",
-    "P5_P6": "approved_user_2026_10_18 (VERIFY APPROVED 3/3 dimensoes; traceability 100%; ciclo arquivado; commit ab66c40 com trailer)",
-    "P6_fim": "done_commit_63660a7 (trailer Harness-Gate-Change aceito; bugfix harness-eixos-stack-p2; push PENDENTE — 3 commits a frente de origin/main)",
+    "P3_P4": "approved_auto_evidence_batches_2026_11_11 (commits 1c8062b + 2b80685 + e63c464; code review 3 rodadas 0 criticos; correcoes de governanca aplicadas)",
+    "P4_P5": "approved_auto_evidence_QA_2026_11_11 (REPORT harness/harness-inventory.json schema-valido; suite 379+559 = 938 testes, 0 falhas; static exit 0; sdd-checks 0 FAIL; vendor OK; selo inalterado)",
+    "P5_P6": "pending_user_approval (VERIFY do ciclo harness-inventory-adr-001)",
+    "P6_fim": "pending (merge humano do PR; push pendente)",
     "B1_B2": "approved_user_2026_09_29",
     "FU32": "closed_approved_decision_B",
     "_previous_cycle_opencode_v2_only": {
@@ -78,11 +78,11 @@
     "G1_PRD": "approved_user_2026_11_11 (PRD-1 harness-inventory; D1-D7 fechadas; nenhum ADR criado antes do veredito)"
   },
   "code_review": {
-    "last_invoked_at": "2026-11-11T00:00:00Z",
-    "last_status": "changes_required",
+    "last_invoked_at": "2026-11-11T00:00:00-03:00",
+    "last_status": "passed",
     "critical_issues": 0,
-    "attention_issues": 6,
-    "reviewer_notes": "ADENDO 2026-11-11 (ciclo harness-inventory-adr-001): rodada 1 = APROVADO COM RESSALVAS (0 criticos, 3 atencao); rodada 2 apos correcao de prosa = CHANGES_REQUIRED com 6 atencao, todas em artefatos de governanca (ADR itens 5/12/14, N10, TASKS 'commit unico'/RV-12, este workflow-state com campos do ciclo anterior). Campos do ciclo anterior: batch 1 APPROVED, batch 2 APPROVED (re-review), batch 3 APPROVED."
+    "attention_issues": 0,
+    "reviewer_notes": "3 rodadas no ciclo harness-inventory-adr-001: (1) APROVADO COM RESSALVAS 3 atencao; (2) CHANGES_REQUIRED 6 atencao em governanca; (3) CHANGES_REQUIRED 3 atencao, todas de bookkeeping no workflow-state. Nenhum critico em nenhuma rodada. Correcoes aplicadas: ADR itens 5/12/14 + N8/N9/N10, TASKS (2 commits, RV-12), SPEC I5, PRD contagens, workflow-state (backlog/artifacts/gates/harness_status)."
   },
   "overrides": [
     {
@@ -191,7 +191,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-11T15:29:10.821Z",
+  "last_update": "2026-11-11T15:36:48.530Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -211,14 +211,14 @@
     "U5": "c - dois ancoras",
     "U6": "b - selo de hash"
   },
-  "harness_status": "pending (P4: qa-engineer deve produzir harness/harness-inventory.json antes de Completed)",
-  "harness_evidence": "Batches 1-5 do ciclo harness-eixos-stack (2026-10-18) — 14/14 tasks. Estado final: plugins 352/352, installer 479/479, static 10 PASS/0 FAIL, vendor-check OK; dry-run 0 writes nos 2 presets web; transcript do wizard (escolha React) em .spec/backend/harness-eixos-stack/harness/; REPORT em harness/harness-eixos-stack.json (com desvio declarado C-1: counts omitido). Historico dos batches 1-2: Batch 1 (EX-BE-01/EX-VAL-02/EX-BE-03): plugins 352/352, installer 398/398, static exit 0, vendor OK; mutacao axes.frontend vue->react => 1 fail. Batch 2 (EX-BE-04/EX-BE-05/EX-VAL-06): plugins 352/352, installer 439/439, static 10 PASS/0 FAIL, vendor OK; provas do orquestrador: chave 'backend=node' (valida) => 2 fail; 'backend=react' (id invalido) => BAD_DECLARATION na carga; 'backend=none' sintetica => 0 fail (matcher por par). Nao-regressao vs HEAD: node/node-esm/outra/flutter/dart/java+vue com keys+bodies byte-identicos (129/129/129/151/141/129); so java+react difere pela exclusao pretendida. Refs penduradas do destino react congeladas em 12. gate.js/harness.config.json/.vendor-lock.json/.agents/rules = 0 linhas. I9 respeitado: apenas 2 imports + assert estrutural de chaves reescopado para superconjunto.",
-  "code_review_status": "changes_required (rodada 2 do ciclo harness-inventory-adr-001: 6 atencao em governanca; nenhum critico; correcoes de contrato aplicadas pelo orquestrador em 2026-11-11, pendente re-verificacao)",
-  "code_review_status_ciclo": "harness-inventory-adr-001: rodada 1 APPROVED_WITH_RESERVATIONS (3 atencao) -> rodada 2 CHANGES_REQUIRED (6 atencao, 0 criticos) -> correcoes de contrato pelo orquestrador; QA P4 pendente",
-  "sdd_stage": "harness-inventory-adr-001 EXECUTION: 11/12 microtasks implementadas (commits 1c8062b + 2b80685); RV-12 pendente (harness/harness-inventory.json). Proximo: P4 (qa-engineer) -> re-verificacao do code review -> P5 verify",
+  "harness_status": "passed (REPORT harness/harness-inventory.json aceito no P4; schema-valido; counts medidos unit 379 / it 559 / frontend 0; suite 938 testes 0 falhas; QA veredito PASSA 16/16)",
+  "harness_evidence": "harness/harness-inventory.json — 6 comandos com exitCode e sha256 do stdout; ADR-001 16/16 itens verificados por comando; gate.js e harness.config.json com 0 linhas no range 5dcc0e0..HEAD; selo suiteFull c904f1c5 inalterado",
+  "code_review_status": "passed",
+  "code_review_status_ciclo": "harness-inventory-adr-001: 3 rodadas, 0 criticos; ultimas 3 atencao fechadas em bookkeeping do workflow-state (backlog, artifacts, gates, harness_status)",
+  "sdd_stage": "harness-inventory-adr-001: EXECUTION + QA completas (12/12 microtasks, REPORT aceito). Proximo: VERIFY (3 dimensoes) -> P5",
   "backlog": {
-    "total": 13,
-    "todo": 1,
+    "total": 12,
+    "todo": 0,
     "doing": 0,
     "done": 12,
     "ids": [
@@ -232,13 +232,11 @@
       "RV-08",
       "RV-09",
       "RV-10",
-      "RV-11"
-    ],
-    "pendente": [
-      "RV-12 (harness report)"
+      "RV-11",
+      "RV-12"
     ]
   },
-  "next_task": "RV-12",
+  "next_task": null,
   "plan_score": 1,
   "tasks_score": 1,
   "active_batch": {
