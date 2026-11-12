@@ -1,0 +1,378 @@
+{
+  "version": 1,
+  "demand": "prd-agnostic-artifacts-adr-002",
+  "agent": "qa-engineer",
+  "phase": "Testing",
+  "gitSha": "03b3d76f2ab35379d1db58e55764823dc6f5405d",
+  "branch": "adr/prd-agnostic-artifacts/02-entradas-sempre-instaladas",
+  "range": "10f60f7..03b3d76 (ADR b2d6bce, implementacao 9bf383c, I-3 a83310a, I-3b 6054418, VERIFY 03b3d76)",
+  "verdict": "P4 PASSA — 13/13 itens do ADR §3 e 11/11 microtasks reconferidos por reexecucao propria; 3/3 tentativas de derrubar a permissao falharam. 6 divergencias DOCUMENTAIS declaradas (d1-d6), nenhuma de mecanismo. Nenhuma escrita fora de harness/.",
+  "commands": [
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 547,
+      "stdoutHash": "sha256:2162078ca7717fcd902bcecc04e0adfa75e5cb233eda210151a2f740f5face75",
+      "stdoutBytes": 155150,
+      "capture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-002/plugins.log",
+      "observed": "tests 538 / suites 127 / pass 538 / fail 0 / cancelled 0 / skipped 0 / todo 0",
+      "resolution": "termo 1 de commands.suiteFull, lido do harness.config.json em runtime e reexecutado nesta sessao; igual ao alegado 538/538"
+    },
+    {
+      "cmd": "node --test \"installer/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 5371,
+      "stdoutHash": "sha256:2f7452bcba93de24efa767da45b04f2dfe9b757b0e1a19e61e18212edd679706",
+      "stdoutBytes": 72016,
+      "capture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-002/installer.log",
+      "observed": "tests 559 / suites 183 / pass 559 / fail 0 / cancelled 0 / skipped 0 / todo 0",
+      "resolution": "termo 2 de suiteFull, reexecutado; igual ao alegado 559/559"
+    },
+    {
+      "cmd": "node scripts/static-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 160,
+      "stdoutHash": "sha256:77968ea72b154e034bbc5d564f1d9bf1880688fbd346be9ba5762bcd293a8fde",
+      "stdoutBytes": 2810,
+      "capture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-002/static.log",
+      "observed": "13 PASS (V6, V6b, V2, V3, V7, V15, V14, V18, V19, V20, PRD-01, ADR-01, ADR-02) + 2 INFO (V12, LEGACY) / 0 FAIL / exit 0; grep -c '^PASS V20' = 1; 'PASS V20: ... baseline=80 (incondicional=66, identity=14), identity=14/11, prescriptions=178 (56/39/17/66)'",
+      "resolution": "termo 3 de suiteFull, isolado (a linha real do runner e unica; o log agregado contem 5 PASS/15 FAIL de FIXTURE vindos dos testes que chamam runStaticChecks contra arvores temporarias)"
+    },
+    {
+      "cmd": "node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 30,
+      "stdoutHash": "sha256:e5e528c52d79fceaa1be828bd89116aa6e0be73294d2e99d39c4febe99e84516",
+      "stdoutBytes": 51,
+      "capture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-002/vendor.log",
+      "observed": "vendor-check OK (.agents/skills/.vendor-lock.json)",
+      "resolution": "termo 4 de suiteFull, reexecutado"
+    },
+    {
+      "cmd": "node scripts/sdd-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 70,
+      "stdoutHash": "sha256:f5e013ac3adcc605a7ac3d82fb64cc05a3d9b39999c0b42d12052e85607504de",
+      "stdoutBytes": 817,
+      "capture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-002/sdd.log",
+      "observed": "8 PASS (V4, R-V12, V17, SDD-01, SDD-02, SDD-03, R-NODENY, RENAME-01) / 0 FAIL; SDD-02 cycle=prd-agnostic-artifacts-adr-002 artifacts 4/4 tasks sections=11 declared=11",
+      "resolution": "verificacao de SDD (nao e termo de suiteFull), reexecutada"
+    },
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node --test \"installer/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs && node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 6160,
+      "stdoutHash": "sha256:f39e6e4555da3bf9d4b105707d9ac22b8d5a3fad55428b358528a0c3e56a9118",
+      "stdoutBytes": 228780,
+      "capture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-002/suitefull2.log",
+      "observed": "commands.suiteFull literal (resolvido do harness.config.json), executado como grupo: exit 0. 'tests 538 / pass 538 / fail 0' e 'tests 559 / pass 559 / fail 0' dentro do agregado",
+      "resolution": "comando selado; o stdout agregado tem 5 'PASS V20' e 15 'FAIL' de FIXTURE (mesma assinatura declarada no REPORT do ADR-001) — o veredito vem dos logs isolados"
+    },
+    {
+      "cmd": "opencode debug config | node -e '...permissions do agent.orchestrator...'",
+      "exitCode": 0,
+      "durationMs": 640,
+      "stdoutHash": "sha256:aada5e1d66c3a3b6be9c02f22162b4695a7b6413e367e930b3a7706e423e451a",
+      "stdoutBytes": 159,
+      "capture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-002/debug-config.txt",
+      "observed": "[{\"action\":\"edit\",\"resource\":\"*\",\"effect\":\"deny\"},{\"action\":\"edit\",\"resource\":\".spec/**\",\"effect\":\"allow\"},{\"action\":\"shell\",\"resource\":\"*\",\"effect\":\"allow\"}]; i(deny*)=0 a(allow)=1 shell=2; systemLen=44822 (prompt preservado)",
+      "resolution": "permissoes JA RESOLVIDAS pelo runtime, nao leitura do JSON (ADR §3 IF-1/IF-2)"
+    },
+    {
+      "cmd": "node --test .opencode/plugins/__tests__/config-dual-parity.spec.mjs",
+      "exitCode": 0,
+      "durationMs": 59,
+      "stdoutHash": "sha256:c173ef156443b12e93db0c27ccdd3463878d41e9c7e12c0be779bd2fe1d3f91b",
+      "stdoutBytes": 4203,
+      "capture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-002/dual-parity.log",
+      "observed": "tests 24 / suites 3 / pass 24 / fail 0; casos: ordem escrita [\"*\",\".spec/**\"], resolveEdit em 3 caminhos, fixture invertida, fixture agents.* (system \"\")",
+      "resolution": "item 11 do ADR §3, reexecutado"
+    },
+    {
+      "cmd": "node --input-type=module -e 'verifySeal(commands, publishedSeal)'",
+      "exitCode": 0,
+      "durationMs": 120,
+      "stdoutHash": "sha256:3729c336edfe4a9542d63339efc2093b615d43bbc891c4c0c60e83e464888775",
+      "stdoutBytes": 207,
+      "capture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-002/seal.out",
+      "observed": "verifySeal={\"ok\":true,\"mismatches\":[]}; sealCommands(commands)={\"suiteFull\":\"c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2\",\"unit\":\"daba8c5465bffe061738235b274c497a4e8e761e41c5e79d4c671a72231cffc7\"}; sha256 de harness.config.json=94fe55c7..., seal.mjs=b698703d... (identicos ao REPORT do ADR-001)",
+      "resolution": "selo do ADR §3 item 12, reexecutado com a assinatura real verifySeal(commands, seal)"
+    }
+  ],
+  "counts": {
+    "unit": { "passed": 538, "failed": 0, "skipped": 0 },
+    "it": { "passed": 559, "failed": 0, "skipped": 0 },
+    "frontend": { "passed": 0, "failed": 0, "skipped": 0 }
+  },
+  "countsNote": "unit = plugins (538), it = installer (559), frontend = 0 (stack.frontend N/A). Ambos medidos por mim nesta sessao a partir do 'pass'/'fail' do node --test; nenhum skipped. O executor padrao da contraprova nao observa counts (o gate trata como nao-comparavel, D-15), logo estes numeros sao auto-declarados — a prova do gate e a reexecucao do comando selado, que RODEI (exit 0).",
+  "e2e": {
+    "applicable": false,
+    "reason": "infra.composeFile=null, infra.ports={backend:null,frontend:null}, stack N/A (sem UI/DB). H3 (greenfield wipe + 12 passos) nao tem alvo. mcp.required=['chrome-devtools'] existe no config mas nao ha pagina a abrir."
+  },
+  "evaluation": {
+    "telas": "n/a sem UI. Equivalente observavel: static-checks 13 PASS / 0 FAIL / exit 0 com exatamente 1 PASS V20; sdd-checks 8 PASS / 0 FAIL.",
+    "negocio": "13/13 itens do ADR §3 verificados pelo comando do proprio item (11 PASS plenos; item 3 PASS-como-declarado (amarelo); item 7 nucleo PASS com numero documentado stale — d1). 11/11 microtasks ED-01..ED-11 com evidencia reproduzida.",
+    "logica": "suiteFull literal exit 0 (538+559+static 0 FAIL+vendor OK). Contraprova nao-vacuosa: 3 tentativas de derrubar a permissao e 2 fixtures do instrumento sangram (cdl-unconditional-unbaselined / cdl-baseline-stale).",
+    "perf": "suiteFull 6,16 s wall nesta maquina (plugins 0,55 s; installer 5,37 s). Sem regressao de tempo atribuivel ao ciclo."
+  },
+  "h3": {
+    "applicable": false,
+    "detail": "Sem servidores, sem portas, sem DB, sem browser. Nenhum WIPE/re-cadastro possivel ou exigivel; escalateOnRisk nao dispara (nenhum riskPath tocado: security/acl/Permission/auth/i18n)."
+  },
+  "verification": {
+    "method": "Reexecucao independente de TODOS os comandos citados (nunca leitura do REPORT anterior), contagem propria dos testes, comparacao estrutural base x HEAD em copia git-archive, e 3 sondas de derrubada da permissao em copias fora do repo (/tmp). Numero nao medido nao entra aqui.",
+    "adrItems": [
+      {
+        "item": 1,
+        "alegado": "[{edit,*,\"deny\"},{edit,\".spec/**\",\"allow\"},{shell,*,\"allow\"}]",
+        "medido": "[{\"action\":\"edit\",\"resource\":\"*\",\"effect\":\"deny\"},{\"action\":\"edit\",\"resource\":\".spec/**\",\"effect\":\"allow\"},{\"action\":\"shell\",\"resource\":\"*\",\"effect\":\"allow\"}]",
+        "verdict": "PASS",
+        "nivel": "verde (saida do runtime)"
+      },
+      {
+        "item": 2,
+        "alegado": "i(deny*)=0 < a(allow)=1, exit 0; inversao reprova",
+        "medido": "i=0 a=1 shell=2 => oracle exit 0. Fixture fora do repo com objeto invertido: runtime publica [{allow .spec/**},{deny *},{shell *}] => i=1 a=0 => oracle exit 1 (reprova). Ordem NAO e vacuidade.",
+        "verdict": "PASS",
+        "nivel": "verde"
+      },
+      {
+        "item": 3,
+        "alegado": "escrita real: .spec/** sucede, .agents/** negado; amarelo por billing",
+        "medido": "NAO reexecutado: exige billing do host e escrita em paths fora do meu escopo. O VERIFY DECLARA o nivel amarelo em §1 desvio (4): 'escrita real em .spec/** executada; negacao em .agents/** provada por resolucao + fixture — opencode run --agent orchestrator falhou por billing (Insufficient balance)'. A metade de resolucao e independentemente sustentada pelas sondas (a) e (b) abaixo",
+        "verdict": "PASS-como-declarado (amarelo, processo)",
+        "nivel": "declarado no VERIFY, nao mascarado"
+      },
+      {
+        "item": 4,
+        "alegado": "scanArtifact(workflow-rules.md).incondicional = []",
+        "medido": "[] (array vazio, nao '15 entradas reclassificadas por engano')",
+        "verdict": "PASS",
+        "nivel": "verde"
+      },
+      {
+        "item": 5,
+        "alegado": "80 0 0; 27 chaves vizinhas / 80; nada mais muda",
+        "medido": "total=80 wf=0 sdd-std=0; keys=27 sum=80 com os MESMOS 27 nomes do mapa do ADR. Comparacao estrutural base b2d6bce x HEAD: removidas=16 {workflow-rules.md:15, sdd-workflow-standard.md:1}, adicionadas=0, drift em entradas compartilhadas=0 (80/80 identicas, incluindo sha256 por linha)",
+        "verdict": "PASS",
+        "nivel": "verde"
+      },
+      {
+        "item": 6,
+        "alegado": "PASS V20 baseline=80, sem os 3 ids de falha; fixtures reprovam",
+        "medido": "PASS V20 com baseline=80 (incondicional=66, identity=14), identity=14/11, 0 FAIL no log isolado. Fixture 1 (linha prescritiva acrescentada): 'FAIL V20: cdl-unconditional-unbaselined: 1 linha(s) ... workflow-rules.md:609'. Fixture 2 (linha 3 de sdd-workflow-standard apagada): 'FAIL V20: cdl-baseline-stale ... ; cdl-identity-term-stale' — exatamente a armadilha que o ADR §2.4 previu",
+        "verdict": "PASS",
+        "nivel": "verde"
+      },
+      {
+        "item": 7,
+        "alegado": "awk=608; numstat 20 20; 11 hunks (VERIFY declara 10)",
+        "medido": "awk=608 PASS. numstat b2d6bce..HEAD = 23 23 (20 20 medido por mim no commit 9bf383c). Hunks: 10 em 9bf383c, 13 no HEAD. As 3 linhas extras sao :337,:391,:421 (I-3/I-3b, keys mortas de commands). Propriedade central (608 linhas, zero insercao/remocao liquida, 0 incondicional) HOLD; o numero 20/20 e datado no commit de implementacao (d1/d2)",
+        "verdict": "PASS no nucleo / numero documental stale (d1,d2)",
+        "nivel": "verde p/ a propriedade; amarelo p/ a contagem publicada no HEAD"
+      },
+      {
+        "item": 8,
+        "alegado": "linha 3 sem 'Atlas ECM'; proof re-apontado para prova viva; identity=14/11",
+        "medido": "sed -n 3p => '...no repositorio que adota este harness.' (sem 'Atlas ECM'). PROJECT_TERMS[Atlas ECM] => proof='.agents/rules/frontend-react-coding-standards.md:161', e a linha 161 e '## Dependencias Principais (Atlas ECM)'. V20: identity=14/11, cdl-identity-term-stale PASS",
+        "verdict": "PASS",
+        "nivel": "verde",
+        "nota": "o ADR §4.4 atribui a tabela a checks.mjs; a fonte viva e cdl/vocabulary.txt (d5)"
+      },
+      {
+        "item": 9,
+        "alegado": "16-18 nomeiam sessao; grep de negacao total = 0; '4 sem edit' = 1; AGENT 9/16/19/285 coerentes",
+        "medido": "16-18: cada linha nomeia sdd-compiler E 'a sessao que escreve — orchestrator'. grep global 'permission.edit = \"deny\"|permission.edit: deny' = 1 (ux-designer/AGENT.md:259, afirmacao verdadeira do proprio papel — desvio declarado no VERIFY §1(3)); escopo orchestrator=.agents/rules = 0. grep -c '4 sem `edit`' gate-contract.md = 1. AGENT.md 9/16/19/285 citam {\"*\":\"deny\",\".spec/**\":\"allow\"}, o nivel de garantia e a evasao por bash",
+        "verdict": "PASS",
+        "nivel": "verde no escopo; deviacao global declarada"
+      },
+      {
+        "item": 10,
+        "alegado": "AGENT.md 682 linhas, numstat 4 4, baseline 36,158,323,500-504,619",
+        "medido": "awk=682; numstat=4 4; baseline do arquivo=36,158,323,500,501,502,503,504,619 (identico). Nenhuma entrada deslocada",
+        "verdict": "PASS",
+        "nivel": "verde"
+      },
+      {
+        "item": 11,
+        "alegado": "teste assa a RESOLUCAO (3 caminhos), roster 10 intacto, suite verde",
+        "medido": "config-dual-parity: 24/24 pass, 0 fail. Asserts lidos no arquivo: Object.keys(edit)=[\"*\",\".spec/**\"], resolveEdit('.spec/prd/x/ADR.md')='allow', ('.agents/rules/x.md')='deny', ('harness.config.json')='deny', fixture invertida, fixture agents.* com system:\"\". ROSTER literal de 10 assertado por conjunto",
+        "verdict": "PASS",
+        "nivel": "verde (resolveEdit e oraculo-proxy — ressalva S-4 do VERIFY, declarada)"
+      },
+      {
+        "item": 12,
+        "alegado": "installer/, seal.mjs, harness.config.json com 0 linhas; suiteFull inalterado; selo c904f1c5",
+        "medido": "git diff --numstat b2d6bce..HEAD -- installer/ .opencode/plugins/lib/seal.mjs harness.config.json .opencode/plugins/gate.js => VAZIO (0 arquivos). sha256(commands.suiteFull)=c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2 (igual ao publicado). verifySeal(commands, seal publicado) => {\"ok\":true,\"mismatches\":[]}. installer 559/559",
+        "verdict": "PASS",
+        "nivel": "verde"
+      },
+      {
+        "item": 13,
+        "alegado": "static exit 0 com ADR-01/ADR-02 nao-vacuosos; batch do ADR so em .spec/prd/**",
+        "medido": "static exit 0 com 'PASS ADR-01: ADR-INDEX.md 1:1 com ADRs/<dir>/ (sem orfaos)' e 'PASS ADR-02: sequencia e branch conformes'. ADR-INDEX tem 2 linhas de dados / 2 dirs (nao-vacuoso). git show --name-only b2d6bce => .spec/prd/prd-agnostic-artifacts/ADR-INDEX.md + ADRs/ADR-002-entradas-sempre-instaladas/ADR.md",
+        "verdict": "PASS",
+        "nivel": "verde"
+      }
+    ],
+    "tasksItems": [
+      { "task": "ED-01", "evidencia": "opencode.json: agent.orchestrator.permission.edit = {\"*\":\"deny\", \".spec/**\":\"allow\"}; sem agents.*, sem permissions; runtime resolve 3 regras na ordem escrita", "verdict": "PASS" },
+      { "task": "ED-02", "evidencia": "config-dual-parity: assercao por indice (i=0<a=1) + fixture invertida + fixture agents.* (system \"\"); 24/24 verde", "verdict": "PASS" },
+      { "task": "ED-03", "evidencia": "metade allow executada segundo o VERIFY; metade deny provada por resolucao + fixture; billing impediu a sonda real — declarado amarelo pelo proprio VERIFY", "verdict": "PASS-como-declarado (amarelo)" },
+      { "task": "ED-04", "evidencia": "linhas :217,:218,:219,:225 citam commands.unit/commands.suiteFull e nao mvn; classifyLine => null (item 4 [])", "verdict": "PASS" },
+      { "task": "ED-05", "evidencia": "headings :431 '## 5.1 Backend (Java)', :438 '## 5.2 Backend (Java)', :444 '## 5.3 Frontend (Vue/React)'; tabela :558-563 com (backend=java|nestjs|node|rust) e (frontend=vue|react)", "verdict": "PASS" },
+      { "task": "ED-06", "evidencia": "awk 608 e numstat 20/20 no commit 9bf383c (10 hunks); no HEAD 23/23 e 13 hunks por I-3/I-3b — contagem de linhas preservada", "verdict": "PASS com d1/d2" },
+      { "task": "ED-07", "evidencia": "sdd-workflow-standard.md:3 generica; :16-18 nomeiam sdd-compiler + a sessao que escreve (orchestrator)", "verdict": "PASS" },
+      { "task": "ED-08", "evidencia": "PROJECT_TERMS proof aponta para frontend-react-coding-standards.md:161 (vivo); TASKS.md:29 ainda diz frontend-coding-standards.md:154 — desvio declarado no VERIFY §1(2), nao propagado ao TASKS (d3)", "verdict": "PASS com d3" },
+      { "task": "ED-09", "evidencia": "BASELINE 96->80; removidas 16 (15+1); 0 adicionadas; 80 compartilhadas identicas; 27 chaves", "verdict": "PASS" },
+      { "task": "ED-10", "evidencia": "9bf383c carrega 'Harness-Gate-Change: ADR-002 (entradas sempre-instaladas) ...' no corpo; 4 protectedPaths tocados (opencode.json, .agents/rules/*, .agents/agents/*, .opencode/plugins/lib/cdl/*)", "verdict": "PASS" },
+      { "task": "ED-11", "evidencia": "5 comandos + debug config exit 0; diff de installer//seal.mjs vazio; V18/V19 byte-identicos base x HEAD", "verdict": "PASS" }
+    ],
+    "permissionDefeatAttempts": [
+      {
+        "id": "a",
+        "attack": "ordem invertida",
+        "fixture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-002/perm/a/opencode.json -> permission.edit = {\".spec/**\":\"allow\", \"*\":\"deny\"}",
+        "literal": "permissions=[{\"action\":\"edit\",\"resource\":\".spec/**\",\"effect\":\"allow\"},{\"action\":\"edit\",\"resource\":\"*\",\"effect\":\"deny\"},{\"action\":\"shell\",\"resource\":\"*\",\"effect\":\"allow\"}] | i(deny*)=1 a(allow.spec)=0 | item2_oracle=FAIL",
+        "result": "DERROTADA — o runtime preserva a ordem escrita; o allow vem primeiro e vence => negacao total de .spec/**. O oraculo de indice do item 2 fecha o buraco (nao e assercao de presenca)"
+      },
+      {
+        "id": "b",
+        "attack": "agents.* (plural) coexistindo com agent.*",
+        "fixture": "/tmp/.../perm/b/opencode.json -> agent.orchestrator (com prompt/description) + agents.orchestrator.permissions[]",
+        "literal": "permissions=[{\"action\":\"edit\",\"resource\":\"*\",\"effect\":\"deny\"},{\"action\":\"edit\",\"resource\":\".spec/**\",\"effect\":\"allow\"}] | systemLen=0 | i(deny*)=0 a(allow.spec)=1 | item2_oracle=PASS",
+        "result": "EFEITO COLATERAL DESTRUTIVO, permissao intacta — a entrada plural SUBSTITUI a legada: some a regra shell e o system prompt cai para 0. O item 2 (indice) PASSA por acidente; quem fecha e o item 1 (array exato de 3 regras => 2 != 3) e a fixture E1 do teste (resolvedPrompt===\"\"). Achado F-1 abaixo"
+      },
+      {
+        "id": "c",
+        "attack": "effect trocado",
+        "fixture": "/tmp/.../perm/c/opencode.json -> permission.edit = {\"*\":\"allow\", \".spec/**\":\"deny\"}",
+        "literal": "permissions=[{\"action\":\"edit\",\"resource\":\"*\",\"effect\":\"allow\"},{\"action\":\"edit\",\"resource\":\".spec/**\",\"effect\":\"deny\"},{\"action\":\"shell\",\"resource\":\"*\",\"effect\":\"allow\"}] | i(deny*)=-1 a(allow.spec)=-1 | item2_oracle=FAIL",
+        "result": "DERROTADA — o runtime publica o allow amplo; o oraculo do item 1/2 nao encontra o par ordenado e reprova imediatamente"
+      }
+    ],
+    "instrumentFixtures": [
+      {
+        "id": "fx1",
+        "attack": "acrescentar linha prescritiva a workflow-rules.md",
+        "literal": "FAIL V20: cdl reprovado: cdl-unconditional-unbaselined: 1 linha(s) incondicional fora da BASELINE: .agents/rules/workflow-rules.md:609 (- Use `Spring` sempre.)",
+        "result": "sangra (item 6 confirmado)"
+      },
+      {
+        "id": "fx2",
+        "attack": "apagar a linha de uma entrada de BASELINE (sdd-workflow-standard.md:3)",
+        "literal": "FAIL V20: cdl reprovado: cdl-baseline-stale: BASELINE com 1 entrada(s) invalida(s)/obsoleta(s): .agents/rules/sdd-workflow-standard.md:3 (linha mudou); cdl-identity-term-stale: A-1: Atlas ECM: proof nao cita o termo",
+        "result": "sangra, e o segundo id e exatamente a armadilha do ADR §2.4"
+      }
+    ],
+    "briefingChecklist": {
+      "p1_plugins_538": "CONFIRMADO por reexecucao: 538 testes / 538 pass / 0 fail",
+      "p2_installer_559": "CONFIRMADO: 559 / 559 / 0 fail",
+      "p3_v20_baseline": "CONFIRMADO: 'PASS V20 ... baseline=80 (incondicional=66, identity=14), identity=14/11' — literal na linha unica do runner isolado",
+      "p4_permissao": "CONFIRMADO: array de 3 regras, i=0<a=1, system 44.822 chars preservado",
+      "p5_v18_v19_inalterados": "CONFIRMADO por comparacao base x HEAD em copia git-archive: V18 'baseline=7, non-defect=1' e V19 'skills=48 (...), rules=8 (...), agents=10/10' byte-identicos",
+      "p6_selo": "CONFIRMADO: sha256(commands.suiteFull)=c904f1c5... e verifySeal ok:true",
+      "p7_item3_declarado": "CONFIRMADO: VERIFY §1 desvio (4) declara o amarelo por billing; §2 nao reivindica verde para ele"
+    }
+  },
+  "divergences": [
+    {
+      "id": "d1",
+      "severidade": "P3-documental",
+      "titulo": "O numero do item 7 (numstat 20 20) foi medido no commit de implementacao, nao no HEAD",
+      "alegado": "ADR §3 item 7 / TASKS ED-06 / VERIFY §2: 'numstat 20 20'",
+      "medido": "9bf383c => 20 20 (confere); b2d6bce..HEAD => 23 23, porque I-3 (a83310a, 3/3) e I-3b (6054418, 5/5) tocaram mais 3 linhas liquidas (:337, :391, :421)",
+      "efeito": "Nenhum na propriedade verificada: 608 linhas preservadas, zero insercao/remocao liquida, 0 incondicional, baseline 80. O enunciado 'o diff toca EXATAMENTE as linhas de §4.1-§4.3' deixa de valer no HEAD — vale no commit de implementacao"
+    },
+    {
+      "id": "d2",
+      "severidade": "P3-documental",
+      "titulo": "Contagem de hunks divergente entre ADR, VERIFY e medicao por commit",
+      "alegado": "ADR: 11 hunks; VERIFY §1(1): '10 hunks, nao 11 — git coalesce 558-563'",
+      "medido": "9bf383c => 10 hunks (a declaracao do VERIFY e exata para o commit de implementacao); HEAD => 13 hunks (as 3 linhas de I-3/I-3b abrem hunks em :337, :391, :421)",
+      "efeito": "Nenhum de mecanismo; documental"
+    },
+    {
+      "id": "d3",
+      "severidade": "P3-documental",
+      "titulo": "TASKS ED-08 nao foi atualizado para o proof real",
+      "alegado": "TASKS.md:29: 'proof re-apontado para frontend-coding-standards.md:154'",
+      "medido": "PROJECT_TERMS['Atlas ECM'].proof = '.agents/rules/frontend-react-coding-standards.md:161'",
+      "efeito": "O VERIFY §1(2) declara a troca e o motivo (evitar a 13a ref pendurada do freeze EX-VAL-06); o TASKS ficou com o valor antigo. Item 8 do ADR nao nomeia arquivo:linha, so exige prova viva — que existe"
+    },
+    {
+      "id": "d4",
+      "severidade": "P3-documental",
+      "titulo": "VERIFY §3 diz 'lib/** com 0 linhas' — literalmente falso no range",
+      "alegado": "VERIFY §1 coerencia: 'gate.js/harness.config.json/installer//lib/** com 0 linhas'",
+      "medido": "b2d6bce..HEAD -- .opencode/plugins/lib/ => '0 112 checks.mjs' + '1 1 vocabulary.txt'. O escopo do item 12 (harness.config.json, seal.mjs, installer/) e' de fato 0 linhas; gate.js 0 linhas",
+      "efeito": "A prosa do VERIFY supergeneraliza; o contrato do ADR (item 12) continua verdadeiro. O instrumento mudou de proposito (-16 entradas, 1 proof) — nao e regressao"
+    },
+    {
+      "id": "d5",
+      "severidade": "P3-documental",
+      "titulo": "ADR §4.4 localiza PROJECT_TERMS em checks.mjs; a fonte viva e vocabulary.txt",
+      "alegado": "ADR §4.4: alvo '.opencode/plugins/lib/cdl/checks.mjs — PROJECT_TERMS'",
+      "medido": "diff de checks.mjs no range: 0 linhas ADICIONADAS (so remocoes de baseline); a prova mudou em .opencode/plugins/lib/cdl/vocabulary.txt (1/1). checks.mjs le a tabela do .txt",
+      "efeito": "Comportamento identico e o comando de verificacao do item 8 (dump de PROJECT_TERMS) passa; o VERIFY ja cita vocabulary.txt:46 na traceability"
+    },
+    {
+      "id": "d6",
+      "severidade": "P3-documental",
+      "titulo": "VERIFY declara 'HEAD: 6054418', mas o proprio arquivo nasce em 03b3d76",
+      "alegado": "VERIFY.md:4: 'HEAD: 6054418'",
+      "medido": "git show --name-only 03b3d76 inclui VERIFY.md; o HEAD que contem o arquivo e 03b3d76. 6054418 e o HEAD medido ANTES do commit de documentacao",
+      "efeito": "Imprecisao de auto-referencia; nenhum numero do VERIFY depende dela"
+    }
+  ],
+  "findings": [
+    {
+      "id": "F-1",
+      "severidade": "P3",
+      "titulo": "O oraculo de indice (item 2) sozinho nao cobre a forma agents.* — o item 1 e a fixture E1 cobrem",
+      "evidencia": "Sonda (b): a entrada plural substitui a legada e publica [{edit,*,\"deny\"},{edit,\".spec/**\",\"allow\"}] — sem a regra shell e com system:\"\" — e o oraculo i<a PASSA (i=0,a=1). A deteccao vem do item 1 (igualdade com o array de 3 regras) e do teste E1 (resolvedPrompt===\"\")",
+      "recomendacao": "Ao reaproveitar a receita em outros ADRs, nunca declarar o item 2 como suficiente contra agents.*: o par de oraculos (forma exata + ordem) e que fecha",
+      "nao_corrigido": "Fora do meu escopo (nao corrijo codigo/prosa)"
+    },
+    {
+      "id": "F-2",
+      "severidade": "P2",
+      "titulo": "Reproduzido ao vivo o F-01 do workflow-state: qa-scope-violation em path ABSOLUTO dentro de harness/",
+      "evidencia": "`write` com filePath '/home/joao/fusionlf/wsProjeto/harness/harness/prd-agnostic-artifacts-adr-002.json' => DENY {'error':{'type':'unknown','message':'qa-scope-violation'}} (gate.js:669-671 + isHarnessScoped gate.js:565, que so casa 'harness/' relativo). Mesma escrita com caminho RELATIVO 'harness/prd-agnostic-artifacts-adr-002.json' => aceita. Falha fechada, mas o caminho legitimo e negado",
+      "recomendacao": "normalizar contra a raiz do workspace antes da comparacao (mesma classe do F-01/F-02 ja registrados; TD-12)",
+      "nao_corrigido": "gate.js e protectedPath e esta fora do meu escopo"
+    }
+  ],
+  "limitsDeclared": [
+    "Item 3 (escrita real em .agents/** negada) NAO foi reexecutado por mim: exige runtime pago e escrita em paths que nao me pertencem. Esta declarado amarelo no VERIFY (billing) e foi aceito como tal pelo briefing — sem reivindicar verde.",
+    "Contagem: a contraprova do gate NAO observa counts (executor padrao devolve counts:null) — os numeros deste REPORT sao auto-declarados; a prova e a reexecucao exit 0 do comando selado, que eu executei.",
+    "resolveEdit do teste e oraculo-proxy do resolvedor nativo (S-4 do VERIFY). O oraculo real do item 1/2 e o 'opencode debug config', que eu rodei.",
+    "Suite plugin/installer: stdout agregado contem linhas de fixture (5 PASS V20 / 15 FAIL / vendor FAIL de diretorios temporarios). Veredito lido dos logs isolados, onde ha exatamente 1 PASS V20 e 0 FAIL."
+  ],
+  "brainStore": [
+    "sessoes/projetos/harness/2026-11-12-qa-prd-agnostic-artifacts-adr-002-p4",
+    "regras/projetos/harness/numero-datado-no-commit-fica-stale-no-head"
+  ],
+  "cleanup": {
+    "ports": [],
+    "processes": [],
+    "note": "Nada foi subido: infra null, stack N/A — zero lsof/kill, zero pkill -f, zero git push, zero gh. Todos os comandos foram spawn sincrono; nenhum node --test residual. Copias descartaveis em /tmp/opencode/qa-prd-agnostic-artifacts-adr-002/ (logs, base via git archive, perm/a|b|c, fx1, fx2).",
+    "repoWrites": ["harness/prd-agnostic-artifacts-adr-002.json"]
+  },
+  "gitState": {
+    "branch": "adr/prd-agnostic-artifacts/02-entradas-sempre-instaladas",
+    "head": "03b3d76",
+    "workingTree": "clean (git status --porcelain vazio antes e depois, exceto este arquivo nao rastreado)",
+    "aheadOfOrigin": 5,
+    "pushed": false,
+    "protectedPathsTouched": "nenhum nesta sessao (unica escrita: harness/, que nao e protectedPath)"
+  },
+  "residual_risks": [
+    "Evasao declarada por bash: workflow-state.json e .agents/** continuam escreviveis por 'bash' (I5 parcial) — o ADR nao promete isolamento que o runtime nao da. Decisao A/B/C aberta, dona: owner.",
+    "scripts/static-checks.mjs nao e protectedPath (C6b do ADR): remover a chamada de checkCdl desliga o V20 sem trailer.",
+    "O numero do item 7 e do §3 em geral e datado: qualquer commit posterior a 9bf383c que toque o arquivo invalida o literal sem invalidar a propriedade (d1/d2) — recomendo que o P5/P6 use o medidor (awk/scanArtifact/BASELINE), nao o literal."
+  ],
+  "selfReported": false,
+  "selfReportedNote": "Os exit codes e contagens deste REPORT foram observados por mim nesta sessao (logs em /tmp), nao copiados de REPORT anterior. Ainda assim a evidencia e auto-declarada por natureza (SPEC ADR-002): a prova e a contraprova do gate reexecutando o comando selado.",
+  "notes": "H3 nao aplicavel e declarado (sem UI/DB/portas). Nenhuma correcao de codigo, config, rules, agentes ou documentos foi feita — o papel e verificar. Veredito de P4: PASSA; as 6 divergencias sao documentais e nenhuma muda mecanismo, numero de teste ou contrato do ADR."
+}
