@@ -334,7 +334,7 @@ Toda correção de bug (backend, frontend ou fullstack) **OBRIGATORIAMENTE** seg
 > 🚨 **Violação = retrabalho completo do bugfix.**
 
 #### R1 — Harness-First: ver o erro REAL na tela antes de codificar
-- O agente (`developer-engineer` ou `qa-engineer`) **DEVE**: subir o sistema com os comandos de `harness.config.json` (`commands.backendRun`/`frontendRun`, portas de `infra.ports`); abrir via **Chrome DevTools** (`new_page` → `take_snapshot` → `list_network_requests` → `list_console_messages` → `take_screenshot`); reproduzir o fluxo exato e confirmar o erro (status 4xx/5xx, console `[ERROR]`/`[WARN]`, snapshot vazio).
+- O agente (`developer-engineer` ou `qa-engineer`) **DEVE**: subir o sistema com o comando de execução declarado no `AGENTS.md` do destino — o instalador publica só `suiteFull`/`unit`/`analyze`, logo chave de execução do eixo ausente ⇒ comando documentado — e as portas de `infra.ports`; abrir via **Chrome DevTools** (`new_page` → `take_snapshot` → `list_network_requests` → `list_console_messages` → `take_screenshot`); reproduzir o fluxo exato e confirmar o erro (status 4xx/5xx, console `[ERROR]`/`[WARN]`, snapshot vazio).
 - **PROIBIDO adivinhar no escuro.** Sem evidência de harness, a análise é inválida → re-delegar.
 - Retorno obrigatório: `backend UP/DOWN`, `frontend UP/DOWN`, `console N errors`, `network M 2xx/5xx`, `screenshot path`, erro reproduzido ✅/❌.
 
@@ -388,7 +388,7 @@ Suite completa com zero falhas **incluindo pré-existentes** (ver §5 H1+H2); `w
 
 ### H3. Harness E2E Greenfield (Wipe + Re-cadastro)
 **Quando (MANDATORY):** fim de cada sub-fase SDD, cada bug UI/fullstack, fim de sprint, release, mudança em stack/router/i18n/auth/migration base.
-**Protocolo:** subir dependências (`infra.composeFile` se houver) → WIPE + recreate → subir backend/frontend (`commands.backendRun`/`frontendRun`, portas de `infra.ports`) → Chrome DevTools (`new_page` na URL do front → snapshot).
+**Protocolo:** subir dependências (`infra.composeFile` se houver) → WIPE + recreate → subir backend/frontend (comando de execução do `AGENTS.md` do destino; o instalador publica só `suiteFull`/`unit`/`analyze` — chave de execução ausente no eixo ⇒ comando documentado — portas de `infra.ports`) → Chrome DevTools (`new_page` na URL do front → snapshot).
 **Re-cadastro manual via UI:** login → admin → 2 employees → team → project → workflow → kanban → task completa → transicionar TODOS os status → dashboard/backlog → i18n (trocar locale) → logout.
 **Por passo (DevTools):** Network sem rota duplicada e sem 4xx/5xx; Console zero `[ERROR]`/`[WARN]`; snapshot renderiza; screenshot bate com o padrão visual; navegação preserva state; 1280x800 + 375x800; aria-labels + foco visível.
 Testes unitários/integração **não pegam** tela branca, rota duplicada, i18n faltando, CORS/auth em browser real — só este harness pega.
@@ -418,7 +418,7 @@ Build+testes (suite completa 0 falhas; front test+build 0 erros) · H3 quando ap
 Suite por task/bug/feature (`developer-engineer`) · E2E por sub-fase/sprint/release (`qa-engineer`/`developer-engineer`, ~30–60min) · H4 por entrega UI · Brain por achado (2–5min) · saneamento quando débito > 0 · auditoria mensal (`architect`+`qa-engineer`).
 
 ### Anexo A — Comandos
-Resolver sempre de `harness.config.json`: `commands.suiteFull` (referência absoluta), `commands.unit`, e por stack `integration`/`frontendTest`/`frontendBuild`/`backendRun`/`frontendRun` (ausente com justificativa `N/A` quando a stack não existe). Infra: `infra.composeFile` + `infra.ports`. Neste repo: `node --test ".opencode/plugins/__tests__/*.spec.mjs" && node scripts/static-checks.mjs`.
+Resolver sempre de `harness.config.json`: `commands.suiteFull` (referência absoluta), `commands.unit` e, quando o eixo declarar, `commands.analyze` — o instalador publica só `suiteFull`/`unit`/`analyze`, logo chave de integração, de front test/build ou de execução do eixo ausente ⇒ use `commands.suiteFull` (e, para subir o sistema, o comando de execução documentado no `AGENTS.md` do destino; `N/A` quando a stack não existe). Infra: `infra.composeFile` + `infra.ports`. Neste repo: `node --test ".opencode/plugins/__tests__/*.spec.mjs" && node scripts/static-checks.mjs`.
 
 ### Anexo B — Template de Relatório de Harness
 Retorno de developer/qa que executou H1/H3/H4 **DEVE** conter: H1 (comando, ✅/❌, counts unit/IT, falhas classe:linha); H2 (débito antes do dev + ação); H3 (wipe, UPs, 12 passos, Network/Console, screenshots, processos finalizados); H4 (telas/regras/lógica/perf); H5 (brain_store paths); conclusão + bloqueios.
@@ -439,11 +439,11 @@ Mudanças exigem aprovação do orquestrador + `workflow-state.json`. Violação
 
 - **Controllers** (backend=java): todo controller tem `*IT.java` (200/201/204, 400/404/409, 401/403, isolamento multi-tenant). **Repositories**: queries/`@Query`/paginação/constraints. **Cross-module** (outbox, eventos) e **Flyway** (bootstrap valida migrations).
 - Regras (backend=java): `*IT.java` só em `integration-test/`; PostgreSQL real via Testcontainers (nunca H2); base `WebIntegrationTest`; limpeza com `DatabaseCleaner.reset()` (nunca `deleteAll`); auth via `JwtTestHelper`; dados via `TestUserFactory`/`seedCommonData()`. Proibido `@WebMvcTest` e RestAssured (usar MockMvc).
-- Execução (backend=java): `mvn verify -pl integration-test` / `-Dit.test=XxxIT` (ou `commands.integration`).
+- Execução (backend=java): `mvn verify -pl integration-test` / `-Dit.test=XxxIT` (ou `commands.suiteFull`, pois o instalador não publica chave de integração do eixo).
 
 ## 5.3 Frontend (Vue/React) — Testes (obrigatório)
 
-- **Obrigatório**: Stores (Pinia), views, serviços API e componentes: Vitest + happy-dom (nunca jsdom), `src/**/__tests__/*.spec.ts`, coverage ≥70% no novo. Execução: `npm run test:run` + `npm run build` (ou `commands.frontendTest`/`frontendBuild`).
+- **Obrigatório**: Stores (Pinia), views, serviços API e componentes: Vitest + happy-dom (nunca jsdom), `src/**/__tests__/*.spec.ts`, coverage ≥70% no novo. Execução: `npm run test:run` + `npm run build` (ou `commands.suiteFull`, pois o instalador não publica chave de front test/build).
 
 ## 5.4 Regra Geral
 Testes passam **antes** de commit/push — novo, existente ou pré-existente. Falhou ⇒ corrigir até passar (H1.2). Suite completa 0 falhas antes de finalizar a tarefa **e** antes do próximo dev (H2.2). Eixos sem seção própria (ex.: eixo `node`, `nestjs`, `rust`) resolvem a obrigação de testar por `commands.suiteFull`/`commands.unit` do `harness.config.json` do destino; chave do eixo ausente ⇒ use `commands.suiteFull`.
