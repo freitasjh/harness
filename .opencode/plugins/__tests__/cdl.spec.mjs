@@ -797,12 +797,12 @@ describe("repo real — os 7 ids PASS e os contadores publicados (RF-08, RF-09, 
     assert.equal(report.ok, true);
   });
 
-  it("população é 223 arquivos / 30.362 linhas (D7)", () => {
+  it("população é 223 arquivos / 30.385 linhas (D7)", () => {
     const population = derivePopulation(REPO_ROOT);
     assert.equal(population.files.length, 223);
-    assert.equal(population.lines, 30362);
+    assert.equal(population.lines, 30385);
     assert.equal(report.counters.population.files, 223);
-    assert.equal(report.counters.population.lines, 30362);
+    assert.equal(report.counters.population.lines, 30385);
   });
 
   it("a BASELINE re-derivada é o oráculo dos ADRs 002–005 (número publicado)", () => {

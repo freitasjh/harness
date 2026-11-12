@@ -237,7 +237,7 @@ P3 ──[USUÁRIO]──> P4 ──[USUÁRIO]──> P5 ──[USUÁRIO]──>
 | Portão | Fase | Pergunta ao Usuário |
 |--------|------|---------------------|
 | P0→P1 | Fim Fase 0 | "Classificação como **[Feature/Bugfix/Refactor]** está correta? Posso avançar para Análise?" |
-| P1→P2 | Fim Fase 1 | "SPEC gerada com score **X%** (🔴 Y críticos corrigidos). Aprova seguir para Planejamento?" |
+| P1→P2 | Fim Fase 1 | "SPEC gerada com score **X%** (fórmula em `asserts/spec-gate.md` §5; 🔴 Y críticos corrigidos). Aprova seguir para Planejamento?" |
 | P2→P3 | Fim Fase 2 | "PLAN + TASKS validados (**X tasks**, **Y microtasks**). Aprova delegar para implementação?" |
 | P3→P4 | Fim Fase 3 | "Implementação concluída, code review feito. Aprova seguir para Quality Gate / Harness?" |
 | P4→P5 | Fim Fase 4 | "Harness executado: **X passaram, Y falharam**. Logs em anexo. Aprova seguir para Verify?" |
@@ -307,7 +307,7 @@ Validação da esteira: `PRD-01`/`ADR-01`/`ADR-02`
 12. **Security Review:** carregue skill `security-review` e execute a revisão de segurança da SPEC (threat modeling STRIDE, checklist OWASP Top 10, cobertura ASVS L2). Gere relatório de segurança.
 13. Corrija todos 🔴 críticos e 🟠 alta prioridade (incluindo gaps de segurança).
 14. Salve artefatos em `.spec/backend/{dominio}/` ou `.spec/frontend/{dominio}/`.
-15. **PORTÃO P1→P2:** Apresente score da SPEC, número de ADRs, total de gaps corrigidos, parecer do `ux-designer` e **parecer do `security-review`** (threat model, gaps de segurança, cobertura ASVS). Pergunte: "SPEC gerada com score **X%** (🔴 Y críticos corrigidos). Parecer do ux-designer: **[resumo]**. Parecer do security-review: **[resumo]**. Aprova seguir para Planejamento?" Aguarde resposta.
+15. **PORTÃO P1→P2:** Apresente score da SPEC calculado por `asserts/spec-gate.md` do `sdd-compiler` (§5: itens atendidos / itens aplicáveis × 100, itens `N/A` com motivo fora do denominador), número de ADRs, total de gaps corrigidos, parecer do `ux-designer` e **parecer do `security-review`** (threat model, gaps de segurança, cobertura ASVS). Pergunte: "SPEC gerada com score **X%** (🔴 Y críticos corrigidos). Parecer do ux-designer: **[resumo]**. Parecer do security-review: **[resumo]**. Aprova seguir para Planejamento?" Aguarde resposta.
 
 ### Fase 2: Planejamento & Decomposição Atômica
 1. Carregue `sdd-compiler` modo `generate-plan` → `PLAN.md` a partir da SPEC aprovada.
