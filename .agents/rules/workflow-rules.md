@@ -215,8 +215,8 @@ O **estado canônico** é o de `sdd-workflow-standard.md` (é o que vive em
 3. **Gerar TASKS**: `sdd-compiler` modo `generate-tasks` → `TASKS.md` a partir do `PLAN.md`
 4. Implementar código seguindo as tasks (TDD — teste antes da implementação)
 5. Escrever **testes unitários** do eixo declarado — §5.1–§5.3 por eixo; comando: `commands.unit` do `harness.config.json`
-6. Escrever **testes de integração** do eixo declarado — todo controller com IT; comando: `commands.integration` do `harness.config.json`
-7. Verificar quebras de contrato com o comando de build do eixo (`commands.*` do `harness.config.json`) a cada task concluída
+6. Escrever **testes de integração** do eixo declarado — todo controller com IT; comando: `commands.suiteFull` do `harness.config.json` (o instalador publica só `suiteFull`/`unit`/`analyze`; chave de integração do eixo ausente ⇒ use `commands.suiteFull`)
+7. Verificar quebras de contrato a cada task concluída com o comando canônico do eixo em `harness.config.json` — `commands.suiteFull`, pois chave de build do eixo não é publicada pelo instalador; ausente ⇒ use `commands.suiteFull`
 
 ### Fase 3 — Review
 1. Invocar agente `code-reviewer` para revisar o código
@@ -446,7 +446,7 @@ Mudanças exigem aprovação do orquestrador + `workflow-state.json`. Violação
 - **Obrigatório**: Stores (Pinia), views, serviços API e componentes: Vitest + happy-dom (nunca jsdom), `src/**/__tests__/*.spec.ts`, coverage ≥70% no novo. Execução: `npm run test:run` + `npm run build` (ou `commands.frontendTest`/`frontendBuild`).
 
 ## 5.4 Regra Geral
-Testes passam **antes** de commit/push — novo, existente ou pré-existente. Falhou ⇒ corrigir até passar (H1.2). Suite completa 0 falhas antes de finalizar a tarefa **e** antes do próximo dev (H2.2). Eixos sem seção própria (ex.: eixo `node`, `nestjs`, `rust`) resolvem a obrigação de testar pelos `commands.*` do `harness.config.json` do destino.
+Testes passam **antes** de commit/push — novo, existente ou pré-existente. Falhou ⇒ corrigir até passar (H1.2). Suite completa 0 falhas antes de finalizar a tarefa **e** antes do próximo dev (H2.2). Eixos sem seção própria (ex.: eixo `node`, `nestjs`, `rust`) resolvem a obrigação de testar por `commands.suiteFull`/`commands.unit` do `harness.config.json` do destino; chave do eixo ausente ⇒ use `commands.suiteFull`.
 
 ---
 
