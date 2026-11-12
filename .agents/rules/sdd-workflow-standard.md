@@ -41,7 +41,7 @@ O arquivo `spec-developed.md` na **raiz do projeto** deve listar cronologicament
 ## 4. Portão de Aprovação e Feedback
 Antes de avançar entre as fases (SPEC -> PLAN -> TASKS), o `orchestrator` deve obrigatoriamente:
 1. Validar o artefato contra os `asserts` da skill `sdd-compiler`.
-2. Invocar skill `spec-review` para revisar SPEC.md contra regras do projeto.
+2. Revisar a SPEC contra `asserts/spec-gate.md` do `sdd-compiler` e contra as regras do projeto (revisor do destino, se houver).
 3. Gerar relatório de gaps e conformidade (com scorecard por categoria).
 4. Corrigir gaps 🔴 críticos e 🟠 alta prioridade antes de avançar.
 5. Solicitar aprovação explícita do usuário via `ask_user`.

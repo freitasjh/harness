@@ -422,7 +422,6 @@ export const SKILLS_COMMON = [
   'sdd-feedback',
   'rust-architecture-specialist',
   'security-review',
-  'spec-review',
   'template-best-practices',
   'template-deepsearch',
   'template-structure',

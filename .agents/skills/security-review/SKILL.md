@@ -1,7 +1,6 @@
 ---
 name: security-review
-description: "Security review skill integrated into the SDD workflow. Validates security at each SDD phase gate against OWASP Top 10, ASVS 4.x, MASVS 2.x, and the TaskFlow security-standard.md (source of truth). Covers web, API, and mobile."
-license: TaskFlow Security Standard
+description: "Security review skill integrated into the SDD workflow. Validates security at each SDD phase gate against OWASP Top 10, ASVS 4.x, MASVS 2.x, and the project's security standard (source of truth). Covers web, API, and mobile."
 ---
 
 # Security Review — SDD Integrated Skill
@@ -34,7 +33,7 @@ Security review as a **phase-integrated gate** in the Spec-Driven Development (S
 
 | Document | Purpose |
 |----------|---------|
-| `.agents/rules/security-standard.md` | **Fonte da verdade** — OWASP Top 10, ASVS 4.x, MASVS 2.x, TaskFlow rules |
+| `.agents/rules/security-standard.md` | **Fonte da verdade** — OWASP Top 10, ASVS 4.x, MASVS 2.x, regras do projeto |
 | `.agents/rules/backend-coding-standards.md` | Backend coding patterns (injection prevention, DTO projection) |
 | `.agents/rules/frontend-coding-standards.md` | Frontend security (XSS, CSP, CSRF, token storage) |
 | `.agents/rules/backend-integration-tests.md` | Security test patterns (401/403, IDOR, injection) |
@@ -112,7 +111,7 @@ After the `code-reviewer` completes the general review, run the security-specifi
 - [ ] **A03 (Injection):** All JPQL/QueryDSL parameterized. No string concatenation in native queries. `@Valid` on all inputs. RabbitMQ payloads validated.
 - [ ] **A04 (Insecure Design):** Rate limiting on auth endpoints. No sensitive data in URLs. Payload size limits enforced.
 - [ ] **A05 (Security Misconfiguration):** No default credentials. Verbose errors disabled in production. Actuator/Swagger protected. Dependencies audited (no critical CVEs).
-- [ ] **A06 (Vulnerable Components):** `npm audit` clean (no critical/high). OWASP Dependency-Check clean.
+- [ ] **A06 (Vulnerable Components):** auditoria de dependências pelo gerenciador do eixo (`commands.audit` de `harness.config.json`): zero CVE crítica/alta.
 - [ ] **A07 (Auth Failures):** JWT expiração curta + refresh rotativo. Logout invalida token. No credentials in logs/URLs.
 - [ ] **A08 (Integrity):** RabbitMQ publisher confirms. Idempotency in consumers. Dependencies pinned (lockfiles).
 - [ ] **A09 (Logging):** Security events logged (login success/failure, permission denied, data deletion). No secrets in logs. Correlation IDs present.
@@ -163,7 +162,7 @@ Before archive, validate against `security-standard.md` zero-tolerance checklist
 - [ ] Zero `v-html` com conteúdo não sanitizado no frontend?
 - [ ] Sem segredos em código versionado, logs ou respostas de API?
 - [ ] Rate limiting em autenticação e endpoints sensíveis?
-- [ ] Dependências auditadas (npm audit + OWASP Dependency-Check) — zero CVE alta sem mitigação?
+- [ ] Dependências auditadas (gerenciador de pacotes do eixo) — zero CVE alta sem mitigação?
 - [ ] Actuator/Swagger protegidos em produção?
 - [ ] Mobile (se aplicável): tokens em Keychain/Keystore, TLS obrigatório, sem cleartext?
 

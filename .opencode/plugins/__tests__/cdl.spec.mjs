@@ -797,19 +797,19 @@ describe("repo real — os 7 ids PASS e os contadores publicados (RF-08, RF-09, 
     assert.equal(report.ok, true);
   });
 
-  it("população é 228 arquivos / 31.661 linhas (D7)", () => {
+  it("população é 223 arquivos / 30.362 linhas (D7)", () => {
     const population = derivePopulation(REPO_ROOT);
-    assert.equal(population.files.length, 228);
-    assert.equal(population.lines, 31661);
-    assert.equal(report.counters.population.files, 228);
-    assert.equal(report.counters.population.lines, 31661);
+    assert.equal(population.files.length, 223);
+    assert.equal(population.lines, 30362);
+    assert.equal(report.counters.population.files, 223);
+    assert.equal(report.counters.population.lines, 30362);
   });
 
   it("a BASELINE re-derivada é o oráculo dos ADRs 002–005 (número publicado)", () => {
-    assert.equal(BASELINE.length, 80);
+    assert.equal(BASELINE.length, 38);
     assert.equal(report.counters.baseline.total, BASELINE.length);
-    assert.equal(report.counters.baseline.identity, 14);
-    assert.equal(report.counters.baseline.unconditional, 66);
+    assert.equal(report.counters.baseline.identity, 4);
+    assert.equal(report.counters.baseline.unconditional, 34);
     assert.equal(
       report.counters.prescriptions.unconditional,
       report.counters.baseline.unconditional,
@@ -820,10 +820,10 @@ describe("repo real — os 7 ids PASS e os contadores publicados (RF-08, RF-09, 
     assert.equal(BASELINE.some((e) => /react-components|react-best-practices/.test(e.file)), false);
   });
 
-  it("baseline contém as 14 linhas identitárias em 11 arquivos", () => {
-    assert.equal(report.counters.identity.lines, 14);
-    assert.equal(report.counters.identity.files, 11);
-    assert.equal(BASELINE.filter((e) => e.verdict === "identity").length, 14);
+  it("baseline contém as 4 linhas identitárias em 3 arquivos", () => {
+    assert.equal(report.counters.identity.lines, 4);
+    assert.equal(report.counters.identity.files, 3);
+    assert.equal(BASELINE.filter((e) => e.verdict === "identity").length, 4);
   });
 
   it("D2 é contada, não presumida: contador em PASS", () => {
@@ -833,9 +833,9 @@ describe("repo real — os 7 ids PASS e os contadores publicados (RF-08, RF-09, 
     assert.ok(report.counters.prescriptions.total > 0);
   });
 
-  it("vendor é publicado fora de A-2 (E-5), com a dívida estrutural declarada", () => {
+  it("vendor é publicado fora de A-2 (E-5), com a dívida estrutural zerada", () => {
     assert.ok(report.counters.vendorUpstreamLines > 0);
-    assert.equal(report.counters.structuralDebt, 1);
+    assert.equal(report.counters.structuralDebt, 0);
   });
 
   it("A-3 publica `refs-undetected` com dono ADR-004", () => {
@@ -843,9 +843,9 @@ describe("repo real — os 7 ids PASS e os contadores publicados (RF-08, RF-09, 
     assert.ok(report.counters.refsUndetected > 0, "a 2ª gramática é publicada, nunca silêncio");
   });
 
-  it("EXCEPTIONS e PROJECT_TERMS são o registro vivo (E-1..E-6)", () => {
-    assert.deepEqual(EXCEPTIONS.map((e) => e.id), ["E-1", "E-2", "E-3", "E-4", "E-5", "E-6"]);
-    assert.deepEqual(PROJECT_TERMS.map((t) => t.term), ["TaskFlow", "Atlas ECM", "Pulse"]);
+  it("EXCEPTIONS e PROJECT_TERMS são o registro vivo (E-1..E-5)", () => {
+    assert.deepEqual(EXCEPTIONS.map((e) => e.id), ["E-1", "E-2", "E-3", "E-4", "E-5"]);
+    assert.deepEqual(PROJECT_TERMS.map((t) => t.term), ["TaskFlow", "Pulse"]);
   });
 
   it("o adapter publica um único V20 com os contadores no PASS", () => {

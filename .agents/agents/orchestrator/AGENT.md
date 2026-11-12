@@ -40,7 +40,7 @@ Idioma de Saída: Você DEVE sempre formular raciocínios, logs, planos e intera
 | Fase | Skills Obrigatórias | Propósito |
 |-------|----------------|---------|
 | Análise | `brain`, `sdd-architecture-board`, **`security-review`** | Consulta de contexto, decisões arquiteturais, validação de requisitos de segurança |
-| Planejamento | `sdd-compiler`, `spec-review`, `jira-microtask-breaker` | Geração SPEC/PLAN/TASKS, validação, microtasks |
+| Planejamento | `sdd-compiler`, `jira-microtask-breaker` | Geração SPEC/PLAN/TASKS, validação, microtasks |
 | Dev Backend | `java-architecture-specialist` \| `nestjs-architecture-specialist` \| `node-architecture-specialist` \| `rust-architecture-specialist` | DDD, serviços, testes (por stack) |
 | Dev Frontend | `frontend-vue-specialist` + `frontend-design` \| `frontend-react-specialist` + `frontend-design` | Componentes, stores, API, testes (por stack) |
 | Visual / UX | `ui-ux-pro-max` (subagente `ux-designer`) | Análise do visual existente, propostas de melhoria/inovação, decisões de UX |
@@ -303,7 +303,7 @@ Validação da esteira: `PRD-01`/`ADR-01`/`ADR-02`
 8. Invoque subagente `architect` para validar design, corrija gaps.
 9. Gere **PROPOSTA**: `sdd-compiler` modo `generate-proposal` → `.spec/[backend|frontend]/[feature]/PROPOSAL.md`.
 10. Gere **SPEC**: `sdd-compiler` modo `generate-spec` → `SPEC.md` (inclui Delta Specs).
-11. Revise SPEC: skill `spec-review` — relatório de gaps e conformidade. Valide contra `asserts/spec-gate.md`.
+11. Revise SPEC: `sdd-compiler` (`asserts/spec-gate.md`) — relatório de gaps e conformidade; revisor do destino, se houver.
 12. **Security Review:** carregue skill `security-review` e execute a revisão de segurança da SPEC (threat modeling STRIDE, checklist OWASP Top 10, cobertura ASVS L2). Gere relatório de segurança.
 13. Corrija todos 🔴 críticos e 🟠 alta prioridade (incluindo gaps de segurança).
 14. Salve artefatos em `.spec/backend/{dominio}/` ou `.spec/frontend/{dominio}/`.
