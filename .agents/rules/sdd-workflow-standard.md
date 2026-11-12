@@ -1,6 +1,6 @@
 # SDD Workflow Standard (MANDATORY)
 
-Esta regra define o contrato rigoroso de organização de arquivos e gestão de estado para todo o ciclo de vida de desenvolvimento (SDD) no projeto Atlas ECM.
+Esta regra define o contrato rigoroso de organização de arquivos e gestão de estado para todo o ciclo de vida de desenvolvimento (SDD) no repositório que adota este harness.
 
 ## 1. Organização de Arquivos (File Structure)
 
@@ -13,9 +13,9 @@ Todos os artefatos de especificação e planejamento devem ser organizados por c
 
 ### Artefatos Obrigatórios por Funcionalidade:
 Cada pasta de funcionalidade deve conter:
-1. `SPEC.md`: Especificação técnica prescritiva (gerada pelo `sdd-compiler`).
-2. `PLAN.md`: Plano de implementação detalhado (gerado pelo `sdd-compiler`).
-3. `TASKS.md`: Backlog de tarefas TDD-ready (gerado pelo `sdd-compiler`).
+1. `SPEC.md`: Especificação técnica prescritiva (metodologia: `sdd-compiler` `generate-spec`; autor: a sessão que escreve — `orchestrator`).
+2. `PLAN.md`: Plano de implementação detalhado (metodologia: `sdd-compiler` `generate-plan`; autor: a sessão que escreve — `orchestrator`).
+3. `TASKS.md`: Backlog de tarefas TDD-ready (metodologia: `sdd-compiler` `generate-tasks`; autor: a sessão que escreve — `orchestrator`).
 
 ## 2. Gestão de Estado Global (`workflow-state.json`)
 

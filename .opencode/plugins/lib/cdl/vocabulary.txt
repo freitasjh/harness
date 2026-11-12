@@ -43,5 +43,5 @@ sumiu da posição identitária ou prova morta ⇒ `cdl-identity-term-stale`.
 | term | class | proof | owner |
 |---|---|---|---|
 | TaskFlow | projeto | .agents/skills/spec-review/README.md:1 | ADR-003 |
-| Atlas ECM | projeto | .agents/rules/sdd-workflow-standard.md:3 | ADR-003 |
+| Atlas ECM | projeto | .agents/rules/frontend-react-coding-standards.md:161 | ADR-003 |
 | Pulse | projeto | .agents/agents/design-system-specialist/AGENT.md:42 | ADR-005 |
