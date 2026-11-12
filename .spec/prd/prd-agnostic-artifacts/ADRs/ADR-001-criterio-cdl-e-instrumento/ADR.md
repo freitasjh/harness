@@ -204,6 +204,22 @@ A baseline é literal, com hash de linha, e **só encolhe** — a regra está no
 
 O instrumento é um **módulo** em path propagado + **um** `record("V20", …)` no adapter que já roda dentro do selo. `commands.suiteFull` **não muda**, logo `harness.config.json` não muda e `HARNESS_SEAL_JSON` **não** é republicado (`harness-config.md` §"Command seal"). Qualquer desenho que exigisse comando novo seria custo de gate pago sem ganho de critério — é o que a alternativa C2/C1 do `RESEARCH.md` §5 já tinha descartado por esse motivo.
 
+
+### 2.3-ter Rodada 3: o instrumento é heurístico, e agora diz isso
+
+Duas rodadas de review mostraram o mesmo padrão: cada correção de predicado move a fronteira (sai um falso negativo, entra um falso positivo). Isso não é bug — é o que acontece ao medir prosa com regex. A decisão do owner (2026-11-11) é manter o instrumento **rotulado como heurístico**, com os 6 defeitos abaixo corrigidos e **FP/FN medidos numa amostra declarada**.
+
+1. **Cópula `é`:** `\b` não casa antes de caractere não-ASCII. A classe de cópula passa a usar alternância explícita (`é|É|são|usa|usam|exige`) sem `\b` à esquerda.
+2. **Marcadores e headings:** `NORMATIVE`/`NORMATIVE_HEADING` passam a cobrir os verbos que o corpus usa (`Verifique`, `Configure`, `Analise`, `Substituir`, `rode`, `garanta`) e os headings topicais (`### Testes`, `### DDD Modular`, `### Performance`) — hoje a linha conta conforme o título da seção, não conforme a cláusula.
+3. **D2 com backtick e rótulo:** proibição vale com o termo em `code`, com dois-pontos (`Proibido no unitário: Lombok`), com verbo (`reprova`) e com "X proibido". As 4 proibições hoje baselinadas saem para `prohibition-cited`.
+4. **`catálogo` só para alternativa:** exige conectivo de alternativa (`or|ou|/|,`) **sem** composição (`com`, `+`) e sem dois eixos na mesma cláusula. `Use X com Y` é composição ⇒ `incondicional`.
+5. **C5 fail-closed real:** sem `exports` injetado, `cdl-axis-vocabulary-missing` **falha mesmo com lock presente** (hoje o fallback lê o próprio `STACK_VOCAB` e publica PASS).
+6. **Ruído estrutural sai:** registros datados (`| 2026-.. |`), colisão do termo `H2` (exigir contexto de banco: `banco`, `database`, `testcontainers`), anti-patterns invertidos e template de exemplo deixam de ser `incondicional`.
+
+**Rotulagem obrigatória:** o `detail` do `V20` passa a publicar `heuristic=true` + `fp=<n>/<amostra>` + `fn=<n>/<amostra>` + o método da amostra. A rubrica deixa de se chamar determinística: ela é **um scanner com erro declarado**, e a baseline é dívida **medida por ele**, não a verdade sobre o repo.
+
+**Consequência aceita:** a baseline **sobe** (as ~20 prescrições que sumiram voltam). Um número maior aqui é sinal de instrumento mais honesto, não de repo pior.
+
 ## 3. Interface congelada
 
 Cada item é verificável por comando, da raiz do repo. Itens marcados *(SDD)* só passam a valer após a implementação; antes dela o comando mede o **estado atual**, e o valor esperado está anotado. Nível 🟡 declarado onde a verificação depende de leitura.
