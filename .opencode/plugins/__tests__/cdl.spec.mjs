@@ -27,16 +27,19 @@ import {
   AXIS_SOURCE_MISSING,
   BASELINE,
   EXCEPTIONS,
+  HEURISTIC,
   PROJECT_TERMS,
   STACK_VOCAB,
   VERDICTS,
   classifyLine,
   declaredAxis,
   derivePopulation,
+  isPrescriptive,
   missingVocabulary,
   prohibitedTermsOf,
   prohibitionOf,
   runCdlChecks,
+  scanArtifact,
   sha256Line,
 } from "../lib/cdl/checks.mjs";
 import {
@@ -47,7 +50,7 @@ import {
   SKILLS_COMMON,
   STACKS_FOR_EXCEPTIONS,
 } from "../../../installer/install.mjs";
-import { cdlCheckResults } from "../../../scripts/static-checks.mjs";
+import { cdlCheckResults, runStaticChecks } from "../../../scripts/static-checks.mjs";
 
 // Fonte de eixo REAL, injetada — o módulo não a importa (C5).
 const REAL_EXPORTS = {
@@ -638,6 +641,154 @@ describe("A-1 — registro e dois alarmes estruturais (RF-10)", () => {
   });
 });
 
+// §2.3-ter — rodada 3: os 6 defeitos do predicado, cada um com MUTAÇÃO que
+// derruba, mais o instrumento rotulado como heurístico com FP/FN medidos.
+describe("predicado v3 — os 6 defeitos de §2.3-ter", () => {
+  it("1. cópula `é`: prosa declarativa conta (\\b morria antes de não-ASCII)", () => {
+    assert.equal(classifyLine("A stack é Spring Boot.", { axis: new Set() }), "incondicional");
+    const root = fixture(baseFiles({ ".agents/rules/uma.md": "# Uma\n\nA stack é Spring Boot.\n" }));
+    const result = byId(runCdlChecks(root, options()), "cdl-unconditional-unbaselined");
+    assert.equal(result.status, "FAIL");
+    assert.match(result.detail, /\.agents\/rules\/uma\.md:3/);
+  });
+
+  it("2. marcadores e headings topicais contam (`Verifique`, `### Testes`, `### DDD Modular`)", () => {
+    assert.equal(
+      classifyLine("- Backend: mvn compile -pl api", { axis: new Set(), heading: "Testes" }),
+      "incondicional",
+    );
+    assert.equal(
+      classifyLine("- Verifique DDD Modular + Liquibase", { axis: new Set(), heading: "DDD Modular" }),
+      "incondicional",
+    );
+    assert.equal(classifyLine("- Ao final: mvn clean install", { axis: new Set() }), "incondicional");
+    // `- Verifique DDD Modular` não tem termo do vocabulário: o PREDICADO de
+    // prescrição passa a reconhecê-lo (marcador + heading), mas A-2 é
+    // "prescritiva COM termo" — sem termo não há veredito (§2.3 passo 1).
+    assert.equal(isPrescriptive("- Verifique DDD Modular", { heading: "DDD Modular" }), true);
+    assert.equal(classifyLine("- Verifique DDD Modular", { axis: new Set(), heading: "DDD Modular" }), null);
+    // Mutação que derruba: linha de comando sob heading topográfico é dívida.
+    const root = fixture(
+      baseFiles({ ".agents/rules/uma.md": "# Uma\n\n### Testes\n\n- Backend: mvn compile -pl api\n" }),
+    );
+    const result = byId(runCdlChecks(root, options()), "cdl-unconditional-unbaselined");
+    assert.equal(result.status, "FAIL");
+    assert.match(result.detail, /\.agents\/rules\/uma\.md:5/);
+  });
+
+  it("3. D2 com code, rótulo, verbo e sufixo — e `harness-installer:163` sai da baseline", () => {
+    const lines = [
+      "Sem `Lombok`",
+      "Proibido `mdi-*`",
+      "Proibido no unitário: Lombok",
+      "reprova: `new Vuetify()`",
+      "`JUnit proibido`",
+    ];
+    for (const line of lines) {
+      assert.equal(prohibitionOf(line), true, line);
+      assert.deepEqual(prohibitedTermsOf(line).length, 1, line);
+      assert.equal(classifyLine(line, { axis: new Set(), heading: "Regras" }), null, line);
+    }
+    const analysis = scanArtifact(REPO_ROOT, ".agents/skills/harness-installer/SKILL.md", {
+      exports: REAL_EXPORTS,
+    });
+    assert.equal(analysis.verdicts.some((v) => v.line === 163), false, "linha 163 não é prescrição");
+    assert.ok(analysis.prohibitions.some((v) => v.line === 163), "linha 163 é proibição citada");
+    assert.equal(
+      BASELINE.some((e) => e.file.endsWith("harness-installer/SKILL.md") && e.line === 163),
+      false,
+      "linha 163 não está mais na baseline",
+    );
+  });
+
+  it("4. `catálogo` só para alternativa; composição (`com`, `+`) é prescrição", () => {
+    assert.equal(
+      classifyLine("Use Spring Boot com React no mesmo artefato.", { axis: new Set() }),
+      "incondicional",
+    );
+    assert.equal(
+      classifyLine("- Use Spring + React no mesmo artefato", { axis: new Set(), heading: "Regras" }),
+      "incondicional",
+    );
+    assert.equal(
+      classifyLine("- Escolha Spring ou React para a UI", { axis: new Set(), heading: "Regras" }),
+      "catálogo",
+    );
+    const root = fixture(
+      baseFiles({ ".agents/rules/uma.md": "# Uma\n\nUse Spring Boot com React no mesmo artefato.\n" }),
+    );
+    const result = byId(runCdlChecks(root, options()), "cdl-unconditional-unbaselined");
+    assert.equal(result.status, "FAIL");
+    assert.match(result.detail, /\.agents\/rules\/uma\.md:3/);
+  });
+
+  it("5. C5 fail-closed: lock presente NÃO substitui a fonte de eixo", () => {
+    const lock = { "dart-collect-coverage": { stacks: ["dart"] } };
+    assert.deepEqual(missingVocabulary({}, lock), [AXIS_SOURCE_MISSING]);
+    const root = fixture({
+      ".agents/skills/.vendor-lock.json": JSON.stringify({ version: "1", skills: lock }),
+      ".agents/rules/uma.md": "# Uma\n",
+    });
+    const report = runCdlChecks(root, { baseline: [], exceptions: [], projectTerms: [] });
+    const result = byId(report, "cdl-axis-vocabulary-missing");
+    assert.equal(result.status, "FAIL");
+    assert.match(result.detail, new RegExp(AXIS_SOURCE_MISSING.replace(/[<>]/g, "\\$&")));
+  });
+
+  it("6. ruído estrutural: registro datado, H2 sem contexto, anti-pattern e template", () => {
+    assert.equal(classifyLine("| 2026-10-20 | feat | Java |", { axis: new Set() }), null);
+    assert.equal(
+      classifyLine("3. **`output.system = string` não propaga** (RUNTIME-CONTRACT H2);", {
+        axis: new Set(),
+      }),
+      null,
+    );
+    assert.equal(
+      classifyLine("- Use H2 no unitário para acelerar", { axis: new Set(), heading: "Regras" }),
+      "incondicional",
+      "H2 com contexto de teste continua medido",
+    );
+    const root = fixture({
+      ".agents/skills/.vendor-lock.json": LOCK,
+      ".agents/skills/dev-planner/anti-patterns.md": "# Anti-Patterns\n\n## X\n- Usar JNDI (WildFly)\n",
+      ".agents/skills/spec-review/assets/output-template.md": "# Template\n\n| Frontend (Vue 3) | [XX]% |\n",
+    });
+    const report = runCdlChecks(root, options({ declarations: { RULES_COMMON: [] } }));
+    assert.equal(byId(report, "cdl-unconditional-unbaselined").status, "PASS");
+    assert.equal(report.counters.prescriptions.unconditional, 0);
+    assert.equal(report.counters.prescriptions.example, 2);
+  });
+});
+
+describe("rotulagem heurística (§2.3-ter)", () => {
+  it("HEURISTIC publica heuristic/fp/fn e o método da amostra", () => {
+    assert.equal(HEURISTIC.heuristic, true);
+    assert.ok(HEURISTIC.sample.size >= 40, "amostra declarada ≥40");
+    assert.ok(HEURISTIC.sample.classified >= 40, "≥40 linhas efetivamente classificadas");
+    assert.ok(Number.isInteger(HEURISTIC.fp) && HEURISTIC.fp >= 0);
+    assert.ok(Number.isInteger(HEURISTIC.fn) && HEURISTIC.fn >= 0);
+    assert.match(HEURISTIC.sample.method, /sha256/);
+    assert.match(HEURISTIC.sample.method, /FP/);
+    assert.match(HEURISTIC.sample.method, /FN/);
+    assert.ok(HEURISTIC.sample.reviewer.length > 0);
+  });
+
+  it("o contador e o `detail` do V20 publicam `heuristic=true fp=/fn=`", () => {
+    const report = runCdlChecks(REPO_ROOT, { exports: REAL_EXPORTS });
+    assert.equal(report.counters.heuristic.heuristic, true);
+    assert.equal(report.counters.heuristic.fp, HEURISTIC.fp);
+    assert.equal(report.counters.heuristic.fn, HEURISTIC.fn);
+    assert.equal(
+      report.counters.heuristicLabel,
+      `heuristic=true fp=${HEURISTIC.fp}/${HEURISTIC.sample.size} fn=${HEURISTIC.fn}/${HEURISTIC.sample.size}`,
+    );
+    const { results } = runStaticChecks(REPO_ROOT);
+    const v20 = results.find((r) => r.id === "V20");
+    assert.equal(v20.status, "PASS");
+    assert.match(v20.detail, /heuristic=true fp=5\/90 fn=4\/90/);
+  });
+});
+
 describe("repo real — os 7 ids PASS e os contadores publicados (RF-08, RF-09, RF-11)", () => {
   const report = runCdlChecks(REPO_ROOT, { exports: REAL_EXPORTS });
 
@@ -655,10 +806,10 @@ describe("repo real — os 7 ids PASS e os contadores publicados (RF-08, RF-09, 
   });
 
   it("a BASELINE re-derivada é o oráculo dos ADRs 002–005 (número publicado)", () => {
-    assert.equal(BASELINE.length, 92);
+    assert.equal(BASELINE.length, 96);
     assert.equal(report.counters.baseline.total, BASELINE.length);
     assert.equal(report.counters.baseline.identity, 15);
-    assert.equal(report.counters.baseline.unconditional, 77);
+    assert.equal(report.counters.baseline.unconditional, 81);
     assert.equal(
       report.counters.prescriptions.unconditional,
       report.counters.baseline.unconditional,

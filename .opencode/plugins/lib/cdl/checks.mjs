@@ -65,6 +65,28 @@
 //   (d) linha de tabela cujo cabeçalho/célula declara stack/ferramenta/comando
 //   (e) prosa declarativa com cópula/determinação de stack
 //
+// --- Predicado v3 — rodada 3 (ADR-001 §2.3-ter) ---------------------------
+// Seis correções, cada uma com mutação que derruba (`cdl.spec.mjs`):
+//   1. cópula `é`: alternância explícita sem `\b` à esquerda (`\b` não casa
+//      antes de caractere não-ASCII, então `A stack é Spring Boot.` sumia);
+//   2. marcadores (`Verifique`, `Configure`, `Analise`, `Substituir`, `rode`,
+//      `garanta`, `Ao final`) e headings topicais (`Testes`, `DDD Modular`,
+//      `Performance`, ...) entram no passo 1a/1c;
+//   3. D2 vale com o termo em code, com rótulo (`Proibido no unitário: X`),
+//      com verbo (`reprova: X`) e com sufixo (`X proibido`);
+//   4. `catálogo` exige conectivo de ALTERNATIVA (`or|ou|/|,`) e nenhuma
+//      composição (`com`, `with`, `+`) na mesma cláusula — `Use X com Y` é
+//      prescrição de stack composta, não enumeração;
+//   5. C5 fail-closed real: sem `exports` injetado o vocabulário reprova mesmo
+//      com `.vendor-lock.json` presente (o lock não substitui a fonte de eixo);
+//   6. ruído estrutural sai de A-2: registro datado, colisão do termo `H2`
+//      (exige contexto de banco/teste), anti-pattern invertido e arquivo de
+//      template de exemplo.
+// **O instrumento é HEURÍSTICO e diz isso.** `HEURISTIC` publica tamanho de
+// amostra, método do sorteio, revisor e FP/FN medidos; o `detail` do check
+// publica `heuristic=true fp=<n>/<amostra> fn=<n>/<amostra>`. A baseline é a
+// dívida MEDIDA por este scanner, não a verdade sobre o repo.
+//
 // --- Pureza e portabilidade (SPEC I1, ADR-001 §10-N4) --------------------
 // `node:fs`/`node:path` read-only + `node:crypto` para o `sha256` da linha
 // (hash é cálculo, não I/O). Sem rede, sem child process, sem gravação. `root`
@@ -90,6 +112,35 @@ export const VERDICTS = Object.freeze([
   "catálogo",
   "incondicional",
 ]);
+
+// --- Rotulagem heurística (ADR-001 §2.3-ter) ------------------------------
+// Medir prosa com regex move a fronteira a cada correção: o scanner tem erro
+// próprio. Publicar o erro é parte do contrato — declarar FP/FN "sem método"
+// ou ajustar a baseline para um número-alvo é o defeito que esta rodada fecha.
+// Amostra: linhas da população com ≥1 termo do vocabulário, sorteio
+// determinístico por `sha256("<arquivo>:<linha>")` crescente; veredito humano
+// lido no contexto (arquivo + heading), revisor único (o autor do commit).
+// `fp` = scanner disse `incondicional` e a linha NÃO é dívida (não é prescrição,
+// ou é condicional/exemplo/catálogo/proibição);
+// `fn` = a linha É prescritiva (merecia um dos 4 vereditos) e o scanner
+// devolveu `null` — inclui a dívida perdida e a categoria perdida.
+export const HEURISTIC = Object.freeze({
+  heuristic: true,
+  fp: 5,
+  fn: 4,
+  sample: Object.freeze({
+    size: 90,
+    classified: 42,
+    candidateLines: 387,
+    method:
+      "amostra determinística de 90 linhas dentre as 387 da população (D7, sem vendor) com ≥1 termo do "
+      + "vocabulário: ordena por sha256(\"<arquivo>:<linha>\") ascendente e toma as 90 primeiras; "
+      + "FP = scanner `incondicional` com veredito humano diferente (por linha, lendo arquivo + heading); "
+      + "FN = veredito humano prescritivo (qualquer dos 4) e scanner `null`",
+    reviewer: "developer-engineer (autor do commit), veredito humano lido no contexto do arquivo",
+    at: "2026-11-11",
+  }),
+});
 
 // --- Exclusões da população (ADR-001 §2.1) -------------------------------
 export const POPULATION_EXCLUSIONS = Object.freeze([
@@ -312,8 +363,29 @@ function resolveBaselineEntry(entry, exports) {
 export const BASELINE = Object.freeze([
   {
     file: ".agents/agents/code-reviewer/PROMPT.md",
+    line: 24,
+    sha256: "080c8e210cdf81626ced129cc448fece9299ebf9b3bcdba83aba8198d12bd87b",
+    verdict: "incondicional",
+    owner: "ADR-005",
+  },
+  {
+    file: ".agents/agents/code-reviewer/PROMPT.md",
+    line: 29,
+    sha256: "1af1ce79f3067199c7dc4dc2262a2d4d566b293bb62506e6c82100f401da90ab",
+    verdict: "incondicional",
+    owner: "ADR-005",
+  },
+  {
+    file: ".agents/agents/code-reviewer/PROMPT.md",
     line: 61,
     sha256: "bf8b44d0ebc556be494841b8525dfe410eff1432c6bca3f6adaee76d2dc40a28",
+    verdict: "incondicional",
+    owner: "ADR-005",
+  },
+  {
+    file: ".agents/agents/design-system-specialist/AGENT.md",
+    line: 28,
+    sha256: "4e3c2a3ded6189e2d050c88f64c836ce083772d63a3197145181de367c161513",
     verdict: "incondicional",
     owner: "ADR-005",
   },
@@ -340,8 +412,15 @@ export const BASELINE = Object.freeze([
   },
   {
     file: ".agents/agents/developer-engineer/AGENT.md",
-    line: 100,
-    sha256: "aac6f5fea0d039f91193fc5c101e9344ae0fae1c2eda2a8bd392af37c1ac17f5",
+    line: 77,
+    sha256: "c18c7a11d9c0cefc5170de44e5ba158f7084f036c157d8ae3243f78e17eee166",
+    verdict: "incondicional",
+    owner: "ADR-005",
+  },
+  {
+    file: ".agents/agents/developer-engineer/AGENT.md",
+    line: 78,
+    sha256: "fcb686ffe71ae4790e5ea02540c1ae97f4fe9a8b872af3e31a7b1cbcd3986e01",
     verdict: "incondicional",
     owner: "ADR-005",
   },
@@ -361,15 +440,15 @@ export const BASELINE = Object.freeze([
   },
   {
     file: ".agents/agents/orchestrator/AGENT.md",
-    line: 323,
-    sha256: "6755b1793346e5f8ac704f8f657e0f7a44f8b0f4e3b8aa9c45758201f502db38",
+    line: 158,
+    sha256: "6e6be13f61f8d01d973428bdbf7c3e3d9505538eb92626a5b839811bf9497e4e",
     verdict: "incondicional",
     owner: "ADR-005",
   },
   {
     file: ".agents/agents/orchestrator/AGENT.md",
-    line: 493,
-    sha256: "138a27d671b0a896c79f54a6ae1bbd068fcd359fbd6ec36bc049e3df14e23906",
+    line: 323,
+    sha256: "6755b1793346e5f8ac704f8f657e0f7a44f8b0f4e3b8aa9c45758201f502db38",
     verdict: "incondicional",
     owner: "ADR-005",
   },
@@ -410,13 +489,6 @@ export const BASELINE = Object.freeze([
   },
   {
     file: ".agents/agents/orchestrator/AGENT.md",
-    line: 611,
-    sha256: "52f599dc4d605fd47b792d83bf2de30134582f70c24d255438e437f0a0e457f3",
-    verdict: "incondicional",
-    owner: "ADR-005",
-  },
-  {
-    file: ".agents/agents/orchestrator/AGENT.md",
     line: 619,
     sha256: "10f1d906a2bfc1bccc9c70a327fc60a941fbda865c139d6fd849c23d797399dc",
     verdict: "incondicional",
@@ -438,9 +510,9 @@ export const BASELINE = Object.freeze([
   },
   {
     file: "@rule-axis:frontend=react#0",
-    line: 154,
-    sha256: "459a3e39cd4b8530e1ed2ca814c0dc1b38cf112007b60dcf09f0fa7c95b7389f",
-    verdict: "identity",
+    line: 12,
+    sha256: "a122ef408adab46393ee331ae75a839861ed62ac9f477184ba2c649ec72b9dfe",
+    verdict: "incondicional",
     owner: "ADR-003",
   },
   {
@@ -456,20 +528,6 @@ export const BASELINE = Object.freeze([
     sha256: "f3abb89eab8f3aac6c3ac38da7add70864a646143921b1a473c8add565526f9d",
     verdict: "incondicional",
     owner: "ADR-003",
-  },
-  {
-    file: "@rule-axis:frontend=vue#0",
-    line: 161,
-    sha256: "459a3e39cd4b8530e1ed2ca814c0dc1b38cf112007b60dcf09f0fa7c95b7389f",
-    verdict: "identity",
-    owner: "ADR-003",
-  },
-  {
-    file: ".agents/rules/gate-contract.md",
-    line: 42,
-    sha256: "d73bf766389946f98b2e7d56631dd63774b67cba7b8bbeae2d12d39347de97d5",
-    verdict: "incondicional",
-    owner: "ADR-005",
   },
   {
     file: ".agents/rules/sdd-workflow-standard.md",
@@ -501,8 +559,8 @@ export const BASELINE = Object.freeze([
   },
   {
     file: ".agents/rules/workflow-rules.md",
-    line: 434,
-    sha256: "99b0ea6df870e437d41078898532ebb0a2dec2bceaf2f52a65764545d4da4c70",
+    line: 225,
+    sha256: "df5c5123c94c917400bd810f8846a08907f87e3c9e375d0198420c23b42ccd2c",
     verdict: "incondicional",
     owner: "ADR-002",
   },
@@ -543,6 +601,13 @@ export const BASELINE = Object.freeze([
   },
   {
     file: ".agents/rules/workflow-rules.md",
+    line: 446,
+    sha256: "61aba56a49d2ace433b281f83fd5c1094e08d02653983fbaaa2eee51ed7b7bcd",
+    verdict: "incondicional",
+    owner: "ADR-002",
+  },
+  {
+    file: ".agents/rules/workflow-rules.md",
     line: 558,
     sha256: "93da5033ad9e6c1f2d9e380be2de0943d3f30d31a1c17f1317abe9ffc5ed15ba",
     verdict: "incondicional",
@@ -552,6 +617,20 @@ export const BASELINE = Object.freeze([
     file: ".agents/rules/workflow-rules.md",
     line: 559,
     sha256: "1f7f49e593a65db90a6530c466e877f5ea139aabaec619c21e6099ab28bd1221",
+    verdict: "incondicional",
+    owner: "ADR-002",
+  },
+  {
+    file: ".agents/rules/workflow-rules.md",
+    line: 560,
+    sha256: "63976475b5ec9fce643f78ad8e4fe0b4573e62c56f95ae32f2318877e55e6166",
+    verdict: "incondicional",
+    owner: "ADR-002",
+  },
+  {
+    file: ".agents/rules/workflow-rules.md",
+    line: 561,
+    sha256: "e21f868502c98b7c0e05c2ea6a5cd9f0d32b320d688f58884c475285a4daaff1",
     verdict: "incondicional",
     owner: "ADR-002",
   },
@@ -570,44 +649,9 @@ export const BASELINE = Object.freeze([
     owner: "ADR-005",
   },
   {
-    file: ".agents/skills/dev-planner/anti-patterns.md",
-    line: 144,
-    sha256: "221dda4ac72825b94ac106ee1aaada5feabceb5acd2352962b92e2ccb6394429",
-    verdict: "incondicional",
-    owner: "ADR-005",
-  },
-  {
-    file: ".agents/skills/dev-planner/anti-patterns.md",
-    line: 169,
-    sha256: "b2b5ab8cb39e903772ce7b19f0674fd1449640b024d3cb540f16efbcb5f0cf2b",
-    verdict: "incondicional",
-    owner: "ADR-005",
-  },
-  {
-    file: ".agents/skills/dev-planner/anti-patterns.md",
-    line: 208,
-    sha256: "5840a3927e56a38712b861142e46613a11cdee77e475340770d2291a73514b6a",
-    verdict: "incondicional",
-    owner: "ADR-005",
-  },
-  {
-    file: ".agents/skills/dev-planner/anti-patterns.md",
-    line: 227,
-    sha256: "a71c8a66d5a0682261b827ca0bd22884d1b441e9dda09ecbcb44788ddcd38877",
-    verdict: "incondicional",
-    owner: "ADR-005",
-  },
-  {
-    file: ".agents/skills/dev-planner/anti-patterns.md",
-    line: 267,
-    sha256: "793c92cf8bf89f034e72916510ee1269ce9f73d48c50dcbc9ce1e852a2dab932",
-    verdict: "incondicional",
-    owner: "ADR-005",
-  },
-  {
-    file: ".agents/skills/dev-planner/anti-patterns.md",
-    line: 290,
-    sha256: "41b8e4a615e94d0c4647ff63be0cbd8f123a13e690a618f226928019a49e9770",
+    file: ".agents/skills/dev-planner/SKILL.md",
+    line: 205,
+    sha256: "15b04e116c164a2f5b308d47558b089b5072b3870a547d69d4e620190c44e832",
     verdict: "incondicional",
     owner: "ADR-005",
   },
@@ -619,9 +663,16 @@ export const BASELINE = Object.freeze([
     owner: "ADR-005",
   },
   {
-    file: ".agents/skills/harness-installer/SKILL.md",
-    line: 163,
-    sha256: "3ccd3140cad0f1f3573cd5c77eed688cff26776d572221a205f5318939588d19",
+    file: ".agents/skills/nestjs-architecture-specialist/SKILL.md",
+    line: 81,
+    sha256: "4154b9c42ab98afc55b0aa114e700460dcfdd41fe2bd960fc8ffece3708d99b0",
+    verdict: "incondicional",
+    owner: "ADR-005",
+  },
+  {
+    file: ".agents/skills/node-architecture-specialist/SKILL.md",
+    line: 86,
+    sha256: "95cfcc2402ef926640a1cf297729dcfbb77a70a168bb831933166233ff9e89b8",
     verdict: "incondicional",
     owner: "ADR-005",
   },
@@ -629,6 +680,13 @@ export const BASELINE = Object.freeze([
     file: ".agents/skills/prompt-optimizer/references/clarifying-questions.md",
     line: 130,
     sha256: "a6420b60b1fcd8aaeaa453f38ce790c6a1414addc2ae53ef1b2b3c252cd72988",
+    verdict: "incondicional",
+    owner: "ADR-005",
+  },
+  {
+    file: ".agents/skills/sdd-architecture-board/SKILL.md",
+    line: 18,
+    sha256: "511be83eb5cd5a041f7459c3e1bf73691b34b695bba611b0d66ac1e57b56140a",
     verdict: "incondicional",
     owner: "ADR-005",
   },
@@ -732,8 +790,8 @@ export const BASELINE = Object.freeze([
   },
   {
     file: ".agents/skills/spec-review/README.md",
-    line: 120,
-    sha256: "269bc5b897a9deb1cbae6ff087c4b54c082f07a4744fae64920cdcf717bae8f8",
+    line: 116,
+    sha256: "dc0ba0f7a8b4dfc1a018add1fb40136562c3b0ba8a04dd0d2a3a5659daa05824",
     verdict: "incondicional",
     owner: "ADR-003",
   },
@@ -741,20 +799,6 @@ export const BASELINE = Object.freeze([
     file: ".agents/skills/spec-review/README.md",
     line: 141,
     sha256: "058ca03f7c1d8a6fac3fead1958a80fbcb3dc70511546dc6c024e834bb67dcf5",
-    verdict: "incondicional",
-    owner: "ADR-003",
-  },
-  {
-    file: ".agents/skills/spec-review/README.md",
-    line: 142,
-    sha256: "b52da28acdbd2f7197a372c481d045aff7f540743b92f0d8840957e5778f2e3e",
-    verdict: "incondicional",
-    owner: "ADR-003",
-  },
-  {
-    file: ".agents/skills/spec-review/README.md",
-    line: 143,
-    sha256: "168adc88e8cfa6e7fa0783ebdfef1b9407bbc2311679476b6d4c0db8c1736c83",
     verdict: "incondicional",
     owner: "ADR-003",
   },
@@ -794,6 +838,34 @@ export const BASELINE = Object.freeze([
     owner: "ADR-003",
   },
   {
+    file: ".agents/skills/spec-review/SKILL.md",
+    line: 116,
+    sha256: "4997d5f75d55008c0f7b3ec29f6b809c1b1223ea16091e41ab30cb49efb10443",
+    verdict: "incondicional",
+    owner: "ADR-003",
+  },
+  {
+    file: ".agents/skills/spec-review/SKILL.md",
+    line: 164,
+    sha256: "4474222d5862bc35370a334b832277176a0a16d4f8e4daf5fed6c7a71e284355",
+    verdict: "incondicional",
+    owner: "ADR-003",
+  },
+  {
+    file: ".agents/skills/spec-review/SKILL.md",
+    line: 166,
+    sha256: "78427222a6d4e54d48d2e90feabff5faac4a0934894fe7ec9b7d6844c7f22316",
+    verdict: "incondicional",
+    owner: "ADR-003",
+  },
+  {
+    file: ".agents/skills/spec-review/SKILL.md",
+    line: 167,
+    sha256: "54fcf5526e9fa66668f130b587e42b5d8f22a7ac689782eed1055e33024eb385",
+    verdict: "incondicional",
+    owner: "ADR-003",
+  },
+  {
     file: ".agents/skills/spec-review/assets/checklist.md",
     line: 1,
     sha256: "cdf2c902348a0f2ebf91a23b38f49248998c38b9447a7e12afbecdf9c47930d2",
@@ -818,6 +890,13 @@ export const BASELINE = Object.freeze([
     file: ".agents/skills/spec-review/assets/checklist.md",
     line: 98,
     sha256: "14741313b631f9883db31d940f74eed23acfefc8eab6f69a548bd45c0170b6ac",
+    verdict: "incondicional",
+    owner: "ADR-003",
+  },
+  {
+    file: ".agents/skills/spec-review/assets/checklist.md",
+    line: 99,
+    sha256: "53ccfd525333afc3fd5f5b1171a492b5da5a391143c0f75471097618a5598cfb",
     verdict: "incondicional",
     owner: "ADR-003",
   },
@@ -865,13 +944,6 @@ export const BASELINE = Object.freeze([
   },
   {
     file: ".agents/skills/spec-review/assets/checklist.md",
-    line: 160,
-    sha256: "498154f79aa87f8ecb4cb60335f23e260ad700f3acf266645652676951c94934",
-    verdict: "incondicional",
-    owner: "ADR-003",
-  },
-  {
-    file: ".agents/skills/spec-review/assets/checklist.md",
     line: 161,
     sha256: "d574afe2370ced716fec31544b80f2f142cf6eaf6b4b0e67900631df33fd911a",
     verdict: "incondicional",
@@ -885,31 +957,17 @@ export const BASELINE = Object.freeze([
     owner: "ADR-003",
   },
   {
-    file: ".agents/skills/spec-review/assets/output-template.md",
-    line: 41,
-    sha256: "a442c3759fd5041ae95d8c00dcd8ce2f0d7f7df8e84e3383e042ccc2ef8a548d",
-    verdict: "incondicional",
-    owner: "ADR-003",
-  },
-  {
-    file: ".agents/skills/spec-review/assets/output-template.md",
-    line: 73,
-    sha256: "ecb0910c4ea8115ba0f151334c18347f5e24c175ce620f27747e78678fdf40d4",
-    verdict: "incondicional",
-    owner: "ADR-003",
-  },
-  {
-    file: ".agents/skills/spec-review/assets/output-template.md",
-    line: 205,
-    sha256: "72b14a9a23b31e896103748aafd60bcf9d74f35d2760f2ab57aa2e211d8047af",
-    verdict: "incondicional",
-    owner: "ADR-003",
-  },
-  {
     file: ".agents/skills/spec-review/assets/usage-guide.md",
     line: 1,
     sha256: "2d7f8cdb06d724eea0f7724f45577afe93e6c48bfebd9963c141e5710bd5eac9",
     verdict: "identity",
+    owner: "ADR-003",
+  },
+  {
+    file: ".agents/skills/spec-review/assets/usage-guide.md",
+    line: 3,
+    sha256: "5abedc974b43ccf61b6d5efa7c1d7a2a7072e6fa0431ac3d68ae785f61c3fa98",
+    verdict: "incondicional",
     owner: "ADR-003",
   },
   {
@@ -927,23 +985,44 @@ export const BASELINE = Object.freeze([
     owner: "ADR-003",
   },
   {
+    file: ".agents/skills/template-best-practices/SKILL.md",
+    line: 24,
+    sha256: "d74c7bff20ee32d115a3c7c1f86d100ee5623628211ed769cb6feb7b0c9572ec",
+    verdict: "incondicional",
+    owner: "ADR-005",
+  },
+  {
+    file: ".agents/skills/template-structure/SKILL.md",
+    line: 3,
+    sha256: "1b0b5ade789f02caf10c41b50ced849cea0c8b507bd7a69b0a419eda239c82f6",
+    verdict: "incondicional",
+    owner: "ADR-005",
+  },
+  {
+    file: ".agents/skills/template-structure/SKILL.md",
+    line: 9,
+    sha256: "ac4ecb57521b9232b4f449364dfae5fa47aa5e721f21d8ca42ddcd99ae01033e",
+    verdict: "incondicional",
+    owner: "ADR-005",
+  },
+  {
+    file: "@rule-axis:frontend=react#0",
+    line: 154,
+    sha256: "459a3e39cd4b8530e1ed2ca814c0dc1b38cf112007b60dcf09f0fa7c95b7389f",
+    verdict: "identity",
+    owner: "ADR-003",
+  },
+  {
+    file: "@rule-axis:frontend=vue#0",
+    line: 161,
+    sha256: "459a3e39cd4b8530e1ed2ca814c0dc1b38cf112007b60dcf09f0fa7c95b7389f",
+    verdict: "identity",
+    owner: "ADR-003",
+  },
+  {
     file: "docs/INSTALACAO.md",
     line: 268,
     sha256: "922b43b50b2c53cb41a2deffe45d60fd4218f879ae63d1c361e7e0fd15385048",
-    verdict: "incondicional",
-    owner: "ADR-005",
-  },
-  {
-    file: "spec-developed.md",
-    line: 57,
-    sha256: "48911d759bed8eb5e575ea0fa66b231038ee6e4e4367a39df8976f927ee4e377",
-    verdict: "incondicional",
-    owner: "ADR-005",
-  },
-  {
-    file: "spec-developed.md",
-    line: 83,
-    sha256: "4d6fd28bb8d8a851a1760a18ce1206674e9e8e79d5bf6c481821590d4a9f4636",
     verdict: "incondicional",
     owner: "ADR-005",
   },
@@ -969,13 +1048,29 @@ export function sha256Line(line) {
   return createHash("sha256").update(line).digest("hex");
 }
 
+// Colisão de termo curto (ADR-001 §2.3-ter item 6): `H2` é banco de dados em
+// `.agents/rules/*` e é o identificador de seção `H2` no contrato do runtime.
+// O termo só conta quando a linha dá o contexto — sem isso o instrumento mede
+// a referência bibliográfica como se fosse stack.
+const TERM_CONTEXT = new Map([
+  [
+    "H2",
+    /\b(?:banco|database|db|testcontainers|postgres(?:ql)?|jdbc|datasource|mem[óo]ria|unit[áa]ri[oa]s?|integra[çc][ãa]o|integration|testes?|tests?|testing)\b/i,
+  ],
+]);
+
+function termInContext(term, line) {
+  const required = TERM_CONTEXT.get(term);
+  return !required || required.test(line);
+}
+
 // Termos presentes na linha, cada um com o conjunto de eixos que os declara.
 export function termsOf(line) {
   if (!TERM_PREFILTER.test(line)) return [];
   const hits = [];
   for (const { term, axes, re } of TERM_PATTERNS) {
     re.lastIndex = 0;
-    if (re.test(line)) {
+    if (re.test(line) && termInContext(term, line)) {
       hits.push({ term, axes: axes });
     }
   }
@@ -1067,10 +1162,14 @@ export function axisIdsOf(exports = DEFAULT_EXPORTS, lock = {}) {
 }
 
 export function missingVocabulary(exports = DEFAULT_EXPORTS, lock = {}) {
+  // Fail-closed (C5 de §2.3-ter): sem `exports` injetado NÃO há fonte de eixo —
+  // o `.vendor-lock.json` sozinho não a substitui. O predicado anterior deixava
+  // o lock preencher `ids`, cada id era encontrado no vocabulário do módulo e a
+  // cobertura publicava PASS com a fonte ausente (`missingVocabulary({}, lock)`
+  // ⇒ `[]`). Fonte ausente = FAIL, com ou sem lock.
+  const axisIds = Object.keys(exports?.AXIS_IDS ?? {});
+  if (axisIds.length === 0) return [AXIS_SOURCE_MISSING];
   const ids = axisIdsOf(exports, lock);
-  // Fail-closed (C5): sem fonte de eixo injetada não há cobertura a declarar —
-  // lista vazia aqui seria "verde por omissão", o defeito que RF-09 proíbe.
-  if (ids.size === 0) return [AXIS_SOURCE_MISSING];
   const missing = [];
   for (const id of ids) {
     if (!Object.prototype.hasOwnProperty.call(exports.STACK_VOCAB ?? STACK_VOCAB, id)) {
@@ -1143,13 +1242,19 @@ const TABLE_ROW = /^\s*\|.*\|\s*$/;
 const TABLE_SEPARATOR = /^\s*\|?[\s:|-]*-{2,}[\s:|-]*\|?\s*$/;
 
 // Marcador normativo — imperativo/modal/estado obrigatório. É o que separa
-// "instrução" de "menção" no passo 1 da rubrica.
+// "instrução" de "menção" no passo 1 da rubrica. Os verbos de §2.3-ter item 2
+// entram aqui: o corpus prescreve com `Verifique`/`Configure`/`Analise`/
+// `Substituir`/`rode`/`garanta` e com o rótulo temporal `Ao final`.
 const NORMATIVE_SOURCE = [
     "\\bMUST\\b", "\\bSHOULD\\b", "\\bDEVE[M]?\\b", "\\bDEVEM\\b", "\\bobrigat[óo]ri[oa]s?\\b",
     "\\bNUNCA\\b", "\\bSEMPRE\\b", "\\bnever\\b", "\\balways\\b", "\\brequired\\b",
     "\\bProibido\\b", "\\bproibid[oa]s?\\b", "\\bproibida\\b", "\\bUse\\b", "\\buse\\b",
     "\\bUsar\\b", "\\busar\\b", "\\busa\\b", "\\bEscreva\\b", "\\bescreva\\b", "\\bEscrever\\b",
-    "\\bCriar\\b", "\\bcriar\\b", "\\bVerificar\\b", "\\bverificar\\b", "\\bExecutar\\b",
+    "\\bCriar\\b", "\\bcriar\\b", "\\bVerificar\\b", "\\bverificar\\b", "\\bVerifique\\b",
+    "\\bverifique\\b", "\\bVerifica\\b", "\\bConfigure\\b", "\\bconfigure\\b", "\\bConfigurem\\b",
+    "\\bAnalise\\b", "\\banalise\\b", "\\bAnalisar\\b", "\\bSubstituir\\b", "\\bsubstituir\\b",
+    "\\bSubstitua\\b", "\\bsubstitua\\b", "\\bRode\\b", "\\brode\\b", "\\bGaranta\\b",
+    "\\bgaranta\\b", "\\bAo final\\b", "\\bPor fim\\b", "\\bExecutar\\b",
     "\\bexecutar\\b", "\\bRodar\\b", "\\brodar\\b", "\\bpreferencial(?:mente)?\\b",
     "\\bEvite\\b", "\\bevite\\b", "\\bEvitar\\b", "\\bevitar\\b", "\\bViola\\b",
     "\\bNot\\b", "\\bAvoid\\b", "\\bDON'T\\b",
@@ -1161,7 +1266,9 @@ const NORMATIVE = new RegExp(NORMATIVE_SOURCE);
 // Heading NORMATIVO (passo 1c): um item de lista só é prescrição quando o
 // heading que o delimita declara norma. "Item solto não basta" — o predicado v1
 // aceitava qualquer bullet, e era assim que sumário e amostra entravam como
-// dívida (ADR-001 §2.3-bis, C1/C2 do review).
+// dívida (ADR-001 §2.3-bis, C1/C2 do review). Headings TOPICAIS (§2.3-ter
+// item 2) declaram o assunto da seção e, por isso, também delimitam norma:
+// `### Testes`, `### DDD Modular`, `### Performance`.
 const NORMATIVE_HEADING = new RegExp(
   [
     "\\bregras?\\b", "\\brules?\\b", "\\bobrigat[óo]ri[oa]s?\\b",
@@ -1171,23 +1278,89 @@ const NORMATIVE_HEADING = new RegExp(
     "\\bpol[íi]tica\\b", "\\bpolicy\\b", "\\bproibid[oa]s?\\b", "\\binviol[áa]ve(?:l|is)\\b",
     "\\bnunca\\b", "\\bnever\\b", "\\bmust\\b", "\\bdeve[m]?\\b", "\\bsempre\\b",
     "\\balways\\b", "\\bnon-negotiable\\b", "\\bprocedimento\\b", "\\bworkflow\\b",
+    "\\btestes?\\b", "\\btests?\\b", "\\btesting\\b", "\\bddd\\b", "\\bperformance\\b",
+    "\\bseguran[çc]a\\b", "\\bsecurity\\b", "\\barquitetura\\b", "\\barchitecture\\b",
+    "\\bbanco de dados\\b", "\\bdatabase\\b", "\\bpersist[êe]ncia\\b", "\\bpersistence\\b",
+    "\\bcomandos?\\b", "\\bcommands?\\b", "\\bbuild\\b", "\\bharness\\b", "\\be2e\\b",
+    "\\bgreenfield\\b",
   ].join("|"),
   "i",
 );
 
-// Proibição POR TERMO (passo 2, D2, C3 do review). A negação tem de estar
-// imediatamente antes do termo — com no máximo o verbo de uso entre os dois —,
-// ou o termo tem de ser seguido de "é proibido"/"is prohibited". Caixa é
-// irrelevante: `Não`/`NÃO`/`Nunca`/`NUNCA`/`Evitar`/`Evite` valem igual.
-const PROHIBITION_NEGATION =
-  "(?:nunca|never|jamais|n[ãa]o|nao|don'?t|do not|must not|avoid|evite|evitar|proibid[oa]s?|proibido|banid[oa]s?|sem)";
+// Proibição POR TERMO (passo 2, D2, C3 do review). A negação vale por termo:
+// (a) imediatamente antes dele — com code/ênfase/aspas no meio (`Sem \`<termo>\``,
+//     `Proibido \`<termo>\``) e com o verbo de uso opcional;
+// (b) por ESCOPO de cláusula — um marcador antes do termo proíbe até o fim da
+//     cláusula, a menos que um verbo de prescrição reinicie o escopo
+//     (`Proibido no unitário: <termo>`, `reprova: \`<termo>\``);
+// (c) depois do termo — `X é proibido`, `X proibido`, `X NÃO usado`.
+// Caixa é irrelevante: `Não`/`NÃO`/`Nunca`/`Evitar`/`Evite`/`Sem` valem igual.
+const PROHIBITION_MARKER =
+  "(?:nunca|never|jamais|nenhum[a]?|n[ãa]o|nao|don'?t|do not|must not|avoid|evite|evitar|proibid[oa]s?|proibido|banid[oa]s?|sem|reprova(?:m|r)?|forbidden|prohibited)";
 const PROHIBITION_VERB = "(?:(?:use|usar|utilize|utilizar|usa|usam|using|uses)\\s+(?:o\\s+|a\\s+)?)?";
 const NEGATION_BEFORE = new RegExp(
-  `(?:^|[\\s(*_"\`\\[,;:—–-])${PROHIBITION_NEGATION}[\\s,;:—–-]*${PROHIBITION_VERB}$`,
+  `(?:^|[\\s(*_"\`\\[,;:—–-])${PROHIBITION_MARKER}[\\s,;:\`*_"'()\\[\\]—–-]*${PROHIBITION_VERB}$`,
   "i",
 );
 const FORBIDDEN_AFTER =
-  /^[\s`*_)"'\]]*(?:é|e|is|são)\s+(?:proibid[oa]s?|banid[oa]s?|forbidden|prohibited)\b/i;
+  /^[\s`*_)"'\]]*(?:(?:é|e|is|são)\s+(?:proibid[oa]s?|banid[oa]s?|forbidden|prohibited)|(?:n[ãa]o|nao)\s+usad[oa]s?|proibid[oa]s?|banid[oa]s?|forbidden|prohibited)\b/i;
+
+// Verbo de prescrição que REINICIA o escopo de proibição: `Proibido X, prefira Y`
+// proíbe X e prescreve Y. O verbo da própria negação (`não use`) é consumido
+// antes da busca, senão `Não use X` prescreveria X.
+const PRESCRIPTION_RESET = /\b(?:use|usar|utilize|utilizar|prefira|preferir|mantenha|adote|adotar)\b/i;
+const USE_VERB_WORDS = "(?:use|usar|utilize|utilizar|usa|usam|using|uses)";
+const HEAD_VERB = new RegExp(`^\\s*${USE_VERB_WORDS}\\b`, "i");
+const MARKER_GLOBAL = new RegExp(PROHIBITION_MARKER, "gi");
+// "Nenhuma anotação <termo>": quantificador negativo + até 2 palavras antes do
+// termo. `nenhum[a]?`/`zero` não são verbos de uso, então não colidem com o
+// escopo de prescrição.
+const QUANTIFIER_BEFORE =
+  /(?:^|[\s(*_`"'\[,;:—–-])(?:nenhum[a]?|zero)\s+(?:[A-Za-zÀ-ÿ]+\s+){0,2}$/i;
+
+// Escopo de proibição só dentro da CLÁUSULA/CÉLULA: `|` separa células de
+// tabela, e a célula `Não usar <A>/<B>` proíbe os dois termos sem
+// contaminar as outras células da mesma linha.
+const PROHIBITION_CLAUSE_SPLIT = /;|(?<=[.!?])\s+|\s+[—–]\s+|\|/;
+const CLAUSE_HEAD = /^[\s>*_`"'([\-+|]+/;
+const HEAD_MARKER = new RegExp(`^(?:${PROHIBITION_MARKER})\\b`, "i");
+// Rótulo de rejeição: `Proibido no unitário: X`, `código reprova: X`. Só verbos
+// de REJEIÇÃO entram aqui — `não`/`sem` soltos antes de dois-pontos descrevem
+// condição (`Se não estiver: ...`), não proibição.
+const REJECTION_LABEL =
+  /\b(?:proibid[oa]s?|proibido|banid[oa]s?|reprova(?:m|r)?|forbidden|prohibited)\b[^.:;|]{0,40}:\s*/i;
+
+function prohibitionClausesOf(line) {
+  return line.split(PROHIBITION_CLAUSE_SPLIT).filter((c) => c.trim() !== "");
+}
+
+// Cláusula que COMEÇA com marcador de proibição proíbe todos os seus termos,
+// até um verbo de prescrição reiniciar o escopo.
+function headProhibits(clause, index) {
+  const head = clause.replace(CLAUSE_HEAD, "").replace(/^\*\*/, "");
+  if (!HEAD_MARKER.test(head)) return false;
+  const lead = Math.max(0, clause.indexOf(head));
+  const afterVerb = head.replace(
+    new RegExp(`^(?:${PROHIBITION_MARKER})\\b(?:\\s*${USE_VERB_WORDS}\\b)?`, "i"),
+    "",
+  );
+  const consumed = head.length - afterVerb.length;
+  const reset = PRESCRIPTION_RESET.exec(afterVerb);
+  if (!reset) return true;
+  return lead + consumed + reset.index > index;
+}
+
+function prohibitionAppliesBefore(clause, index) {
+  if (NEGATION_BEFORE.test(clause.slice(0, index))) return true;
+  if (QUANTIFIER_BEFORE.test(clause.slice(0, index))) return true;
+  if (headProhibits(clause, index)) return true;
+  const label = REJECTION_LABEL.exec(clause);
+  if (label && label.index + label[0].length <= index) {
+    const between = clause.slice(label.index + label[0].length, index);
+    return !PRESCRIPTION_RESET.test(between.replace(HEAD_VERB, ""));
+  }
+  return false;
+}
 
 // Célula de tabela que declara stack/ferramenta/comando (passo 1d). É a forma
 // CANÔNICA de prescrever neste repo (tabelas de stack das rules e dos
@@ -1211,9 +1384,13 @@ const PINNED_STACK = new RegExp(`^[\\s*_\`]*(?:${TERMS_ALTERNATION})[^,;|]{0,24}
 // Prosa declarativa com cópula/determinação de stack (passo 1e):
 // "A stack do destino é Spring Boot 3 com Maven." — afirma a stack, não a
 // menciona. Exige sujeito de stack + cópula/verbo na MESMA linha do termo.
+// `\b` NÃO serve antes de `é`/`são` (caractere não-ASCII não forma fronteira
+// com espaço); a alternância usa lookbehind/lookahead de letra explícitos —
+// senão `A stack é Spring Boot.` continua invisível (ADR-001 §2.3-ter item 1).
 const STACK_SPECIFIER =
   /\b(stack|backend|frontend|framework|tecnologia|technology|runtime|linguagem|language|banco(?: de dados)?|database|orm|build|test runner|ferramenta)\b/i;
-const STACK_COPULA = /\b(é|são|usa|usam|utiliza|utilizam|adota|adotam|com|using|uses|requires?)\b/i;
+const STACK_COPULA =
+  /(?<![A-Za-zÀ-ÿ0-9_])(?:é|são|usa|usam|utiliza|utilizam|adota|adotam|com|using|uses|requires?)(?![A-Za-zÀ-ÿ0-9_])/i;
 
 function tableCells(line) {
   return line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((c) => c.trim());
@@ -1235,9 +1412,17 @@ function namesAxis(line) {
 
 // Gate explícito na própria linha: `backend=java`, `Frontend:`, `If React`,
 // `**Spring Boot**:`. O keyword condicional precisa do TERMO na sequência —
-// "when{Action}_then{Expected}" é nome de padrão, não gate.
+// "when{Action}_then{Expected}" é nome de padrão, não gate. O par
+// `backend`/`frontend` seguido de `=`/`:` só é gate quando o VALOR é um id de
+// eixo: `Backend: mvn compile` é prescrição de comando, não condição
+// (`mvn` não é eixo) — o predicado v2 o classificava como `condicional`.
+const AXIS_ID_SET = new Set(Object.keys(STACK_VOCAB));
+
 function explicitGate(line) {
-  if (/\b(?:backend|frontend)\s*[=:]\s*[a-z]+\b/i.test(line)) return true;
+  const backendFrontend = /\b(?:backend|frontend)\s*[=:]\s*([A-Za-z][A-Za-z0-9_-]*)\b/gi;
+  for (const m of line.matchAll(backendFrontend)) {
+    if (AXIS_ID_SET.has(m[1].toLowerCase())) return true;
+  }
   const conditional = new RegExp(
     `(?:\\bif\\b|\\bse\\b|\\bquando\\b|\\bwhen\\b)[^.{}]{0,30}(?:${TERMS_ALTERNATION})`,
     "i",
@@ -1296,7 +1481,9 @@ function declarativeStack(line) {
 // NORMATIVO; (d) linha de tabela cujo cabeçalho/célula declara stack;
 // (e) prosa declarativa com cópula de stack. Sem isso a linha é
 // menção/referência — não recebe veredito (A-3 é quem trata path).
-function isPrescriptive(line, ctx = {}) {
+// Exportada para diagnóstico/teste: `classifyLine` ainda exige TERMO (A-2 =
+// prescritiva **com** termo), então o predicado puro é medido à parte.
+export function isPrescriptive(line, ctx = {}) {
   if (TABLE_CHECKBOX.test(line) || LIST_CHECKBOX.test(line)) return true;
   if (normativeClause(line)) return true;
   if (declarativeStack(line) && termsOf(line).length > 0) return true;
@@ -1317,17 +1504,19 @@ function isPrescriptive(line, ctx = {}) {
 // cada um conta no seu lugar.
 export function prohibitedTermsOf(line) {
   const out = [];
-  for (const { term } of termsOf(line)) {
-    const re = new RegExp(escapeRegExp(term), "g");
-    let match;
-    while ((match = re.exec(line)) !== null) {
-      const prefix = line.slice(0, match.index);
-      const tail = line.slice(match.index + match[0].length);
-      if (NEGATION_BEFORE.test(prefix) || FORBIDDEN_AFTER.test(tail)) {
-        out.push(term);
-        break;
+  for (const clause of prohibitionClausesOf(line)) {
+    for (const { term } of termsOf(clause)) {
+      const re = new RegExp(escapeRegExp(term), "g");
+      let match;
+      while ((match = re.exec(clause)) !== null) {
+        const index = match.index;
+        const tail = clause.slice(index + match[0].length);
+        if (prohibitionAppliesBefore(clause, index) || FORBIDDEN_AFTER.test(tail)) {
+          out.push(term);
+          break;
+        }
+        re.lastIndex = index + 1;
       }
-      re.lastIndex = match.index + 1;
     }
   }
   return out;
@@ -1337,28 +1526,29 @@ export function prohibitionOf(line) {
   return prohibitedTermsOf(line).length > 0;
 }
 
-// Passo 4: catálogo. ≥2 termos de ≥2 eixos distintos na MESMA linha, ou ≥2
-// termos ligados por conectivo de alternativa/listagem SEM composição `+`.
-// Um termo cross-axis sozinho (`Vitest`) não faz catálogo: ele pertence aos
-// dois eixos, não enumera dois.
-const CATALOGUE_JOINED = new RegExp(
-  `(?:${TERMS_ALTERNATION})\\s*(?:,|\\|)\\s*(?:or|ou)?\\s*(?:${TERMS_ALTERNATION})`,
+// Passo 4: catálogo. Enumeração de ALTERNATIVAS (§2.3-ter item 4): na MESMA
+// cláusula, ≥2 termos de eixos disjuntos ligados por conectivo de alternativa
+// (`or`, `ou`, `/`, `,`) e SEM composição (`com`, `with`, `+`). `Use Spring Boot
+// com React no mesmo artefato` é prescrição de stack composta — `incondicional`,
+// não catálogo. Um termo cross-axis sozinho (`Vitest`) não enumera dois eixos.
+const COMPOSITION = /(?:\bcom\b|\bwith\b|\+)/i;
+const ALTERNATIVE_JOINED = new RegExp(
+  `(?:${TERMS_ALTERNATION})[^;.|]{0,40}(?:\\bor\\b|\\bou\\b|/|,)[^;.|]{0,40}(?:${TERMS_ALTERNATION})`,
   "i",
 );
 
 function isCatalogue(line, hits) {
-  if (hits.length >= 2) {
-    // Dois termos de eixos DISJUNTOS enumeram alternativas; um termo
-    // cross-axis ao lado de um dos seus eixos não enumera nada.
-    for (let i = 0; i < hits.length; i += 1) {
-      for (let j = i + 1; j < hits.length; j += 1) {
-        const a = hits[i].axes;
-        const b = hits[j].axes;
-        if ([...a].every((axis) => !b.has(axis))) return true;
-      }
-    }
+  if (hits.length < 2) return false;
+  for (const clause of clausesOf(line)) {
+    const clauseHits = termsOf(clause);
+    if (clauseHits.length < 2) continue;
+    if (COMPOSITION.test(clause)) continue;
+    const disjoint = clauseHits.some((a, i) =>
+      clauseHits.some((b, j) => i !== j && [...a.axes].every((axis) => !b.axes.has(axis))),
+    );
+    if (disjoint && ALTERNATIVE_JOINED.test(clause)) return true;
   }
-  return CATALOGUE_JOINED.test(line);
+  return false;
 }
 
 // "termo entre aspas": o termo aparece dentro de uma citação (`"..."` ou
@@ -1372,13 +1562,25 @@ function quotedTermSpan(line) {
   return false;
 }
 
+// Ruído estrutural (§2.3-ter item 6) — formas que não são norma para o destino:
+//   · registro datado de tabela (`| 2026-10-20 | feat | ... |`) é memória, não
+//     instrução;
+//   · arquivo de TEMPLATE (`*-template.md`, `templates/*.md`) é exemplo de
+//     forma — as linhas são amostra, não prescrição;
+//   · catálogo de anti-patterns (`anti-patterns.md`) descreve o que evitar na
+//     forma invertida (`Usar JNDI`) — a linha é exemplo do padrão ruim.
+const DATED_RECORD = /^\s*\|\s*\d{4}-\d{2}-\d{2}\s*\|/;
+const ARTIFACT_TEMPLATE = /(?:^|\/)(?:[^/]*template[^/]*\.md|templates\/[^/]+\.md)$/i;
+const ARTIFACT_ANTI_PATTERN = /(?:^|\/)anti-?patterns?\.md$/i;
+
 /**
  * classifica UMA linha. `ctx` carrega o que é escopo, não julgamento:
  *   { artifact, axis: Set, heading, tableHeader, ancestors: string[], inFence,
- *     inPico, inQuote, catalogueFile }
+ *     inPico, inQuote, catalogueFile, templateFile, antiPatternFile }
  * Devolve UM veredito ou `null` (não-prescritiva, ou proibição por D2).
  */
 export function classifyLine(line, ctx = {}) {
+  if (DATED_RECORD.test(line)) return null;
   const hits = termsOf(line);
   if (!hits.length) return null;
   // D2 avaliado POR TERMO: o termo proibido não consome veredito, o resto da
@@ -1396,6 +1598,8 @@ export function classifyLine(line, ctx = {}) {
     ctx.inFence ||
     ctx.inPico ||
     ctx.inQuote ||
+    ctx.templateFile ||
+    ctx.antiPatternFile ||
     EXAMPLE_MARKERS.test(line) ||
     quotedTermSpan(line)
   ) {
@@ -1458,6 +1662,8 @@ function analyseFile(root, file, axis, exceptions, population, projectTerms = PR
   let tableHeader = null;
   let previousRow = null;
   const catalogue = catalogueFileOf(file, exceptions);
+  const templateFile = ARTIFACT_TEMPLATE.test(file);
+  const antiPatternFile = ARTIFACT_ANTI_PATTERN.test(file);
 
   for (let i = 0; i < lines.length; i += 1) {
     const line = lines[i];
@@ -1533,6 +1739,8 @@ function analyseFile(root, file, axis, exceptions, population, projectTerms = PR
       inPico,
       inQuote: BLOCKQUOTE.test(line),
       catalogueFile: Boolean(catalogue),
+      templateFile,
+      antiPatternFile,
       absenceDeclaration: Boolean(absence && absence.predicate?.type === "line-declaration"),
     };
     const verdict = classifyLine(line, ctx);
@@ -1949,7 +2157,19 @@ export function runCdlChecks(root = process.cwd(), opts = {}) {
     ),
     vendorUpstream: vendorFindings.length,
     vendorUpstreamLines: vendorFindings.reduce((sum, v) => sum + v.lines, 0),
+    // Rotulagem heurística (§2.3-ter): o número tem erro medido e o erro é
+    // publicado junto — nunca um FP/FN "sem método".
+    heuristic: {
+      heuristic: HEURISTIC.heuristic,
+      fp: HEURISTIC.fp,
+      fn: HEURISTIC.fn,
+      sample: HEURISTIC.sample,
+    },
   };
+
+  counters.heuristicLabel =
+    `heuristic=${HEURISTIC.heuristic} fp=${HEURISTIC.fp}/${HEURISTIC.sample.size} `
+    + `fn=${HEURISTIC.fn}/${HEURISTIC.sample.size}`;
 
   const axisSourceMissing = missing.includes(AXIS_SOURCE_MISSING);
   const results = [

@@ -509,6 +509,7 @@ function cdlClosure(c) {
     + `, vocabulary=${c.vocabulary}, payload=${c.payload}`
     + `, structural-debt=${c.structuralDebt}`
     + (c.structuralDebtEntries?.length ? ` (${c.structuralDebtEntries.join("; ")})` : "")
+    + `, ${c.heuristicLabel} (amostra=${c.heuristic.sample.size}, classificadas=${c.heuristic.sample.classified}, método declarado no módulo)`
     + `, vendor-upstream=${c.vendorUpstreamLines}/${c.vendorUpstream} (E-5)`;
 }
 
