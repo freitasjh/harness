@@ -1,0 +1,47 @@
+# Vocabulário do CDL — dado do instrumento, não prosa normativa
+
+Fonte dos termos que o Critério do Destino Limpo mede (ADR-001 §2.2). Vivem em
+`.md` — e não em código — pelo mesmo motivo declarado no canário do instalador
+(`isScannablePath`, `installer/install.mjs:1199`): prosa cita tecnologia para
+**proibi-la ou medi-la** e é isenta do scan de adoção; código não é. O termo
+curto em `.mjs` viraria "adoção da stack alheia" no destino limpo, que é o
+oposto do que este instrumento faz.
+
+As **chaves** de eixo não estão aqui: derivam de `AXIS_IDS` ∪ tags de `stacks`
+do `.vendor-lock.json` (instalador, ADR-001 §2.2). A **cobertura** é cobrada:
+eixo sem linha nesta tabela ⇒ `cdl-axis-vocabulary-missing` (RF-09).
+
+Formato lido por `checks.mjs` (tabela estrita, uma linha por chave):
+
+- seção "Eixos": `| <axisId> | termo, termo, ... |`
+- seção "Termos de projeto": `| termo | classe | prova | dono |`
+
+Termo cross-axis (`shadcn`, `Tailwind`, `Vitest`) aparece nas duas linhas: o
+mapa é `Map<term, Set<axis>>`, nunca `Map<term, axis>`.
+
+## Eixos
+
+| axis | terms |
+|---|---|
+| java | Java, JUnit, Mockito, AssertJ, Spring, Hibernate, JPA, Maven, mvn, Gradle, Lombok, Flyway, Liquibase, PostgreSQL, Testcontainers, MockMvc, RestAssured, H2, EJB, JSF, Quarkus, WildFly, JDBC, Envers, Thymeleaf, TestNG, *IT.java, -Pintegration, @SpringBootTest, @ExtendWith, @Autowired |
+| node | Node.js, npm, Express, Fastify, Jest, Mocha |
+| rust | Rust, Cargo, Axum, Actix, Tokio |
+| nestjs | NestJS, Nest |
+| vue | Vue, Vuetify, PrimeVue, Pinia, Vuex, Nuxt, vue-router, @vueuse, Vue Test Utils, Vitest, shadcn, Tailwind, ri-*, mdi-* |
+| react | React, Next.js, Redux, Zustand, shadcn, Radix, Tailwind, React Testing Library, react-router, MUI, Ariakit, Headless UI, React Aria, Vitest |
+| dart | Dart |
+| flutter | Flutter |
+| other | |
+| none | |
+
+## Termos de projeto
+
+Registro declarado (`{ term, class, proof, owner }`), porque nome de projeto do
+cliente não é derivável de preset nenhum. Prova viva obrigatória: termo que
+sumiu da posição identitária ou prova morta ⇒ `cdl-identity-term-stale`.
+
+| term | class | proof | owner |
+|---|---|---|---|
+| TaskFlow | projeto | .agents/skills/spec-review/README.md:1 | ADR-003 |
+| Atlas ECM | projeto | .agents/rules/sdd-workflow-standard.md:3 | ADR-003 |
+| Pulse | projeto | .agents/agents/design-system-specialist/AGENT.md:42 | ADR-005 |

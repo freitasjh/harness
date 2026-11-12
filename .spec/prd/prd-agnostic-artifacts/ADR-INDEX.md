@@ -20,8 +20,9 @@
 > continuidade de `order` (buraco não reprova), mas a ordem é a de merge do fatiamento — 1 → 5.
 >
 > **Estado:** `ADR-001` **`in-progress`** — branch `adr/prd-agnostic-artifacts/01-criterio-cdl-e-instrumento`,
-> `ADR.md` **stub** (placeholder de 1:1, sem decisão), nenhum merge. `merge` fica `—` em toda linha com
-> `status ≠ merged`. No máximo **1** linha `in-progress` por vez (`checks.mjs:378-379`).
+> `ADR.md` **com o corpo completo** (decisão + 12 itens de interface congelada + baseline medida); implementação
+> = SDD, nenhum merge. `merge` fica `—` em toda linha com `status ≠ merged`. No máximo **1** linha
+> `in-progress` por vez (`checks.mjs:378-379`).
 >
 > **Dependências do fatiamento (ainda sem linha neste ledger, porque ainda sem `ADR.md`):** `ADR-002`,
 > `ADR-003`, `ADR-004` e `ADR-005` declaram `depends_on = ADR-001`; nenhum deles depende de outro. No mesmo

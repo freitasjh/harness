@@ -1,0 +1,432 @@
+{
+  "version": 1,
+  "demand": "prd-agnostic-artifacts-adr-001",
+  "agent": "qa-engineer",
+  "phase": "Testing",
+  "gitSha": "26706e0c0e13089f76d623d37baafc8eb682c46a",
+  "branch": "adr/prd-agnostic-artifacts/01-criterio-cdl-e-instrumento",
+  "range": "9b754e5..26706e0",
+  "verdict": "P4 PASSA — mecanismo e numeros do oraculo (linha do V20) conferidos por reexecucao e por recontagem independente; 6 divergencias DOCUMENTAIS declaradas (d1-d6), nenhuma de mecanismo. Nenhuma escrita fora de harness/.",
+  "commands": [
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 1358,
+      "stdoutHash": "sha256:6a519d732d84d65ab885d77ff3d4dad5461aae86fe6b7922651a8eb1a303a2f2",
+      "stdoutBytes": 162378,
+      "capture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-001/plugins.log",
+      "observed": "tests 534 / suites 127 / pass 534 / fail 0 / cancelled 0 / skipped 0 / todo 0",
+      "resolution": "termo 1 de commands.suiteFull, lido do harness.config.json em runtime e reexecutado nesta sessao"
+    },
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/cdl.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 943,
+      "stdoutHash": "sha256:7f1cc31936d067d4e385b611e0af587ebc636910e5b1f6f728607a8ece75e605",
+      "stdoutBytes": 8681,
+      "capture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-001/cdl.log",
+      "observed": "tests 66 / suites 15 / pass 66 / fail 0 / cancelled 0 / skipped 0 / todo 0",
+      "resolution": "suite do instrumento (RF-12); 66 casos medidos, contra 38 publicados no TASKS.md (d1)"
+    },
+    {
+      "cmd": "node --test \"installer/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 6444,
+      "stdoutHash": "sha256:f0a6b53d2a8098400c4c6b12c294c10cd59c8eb6385378a2e4f05efbf84e71fa",
+      "stdoutBytes": 72153,
+      "capture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-001/installer.log",
+      "observed": "tests 559 / suites 183 / pass 559 / fail 0 / cancelled 0 / skipped 0 / todo 0",
+      "resolution": "termo 2 de suiteFull, reexecutado nesta sessao; igual ao publicado"
+    },
+    {
+      "cmd": "node scripts/static-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 354,
+      "stdoutHash": "sha256:f552581fe5833aefc1f50143f7dc30d61e26fbd5c28fe3f9dd66004aef042c52",
+      "stdoutBytes": 1606,
+      "capture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-001/static.log",
+      "observed": "13 PASS (V6, V6b, V2, V3, V7, V15, V14, V18, V19, V20, PRD-01, ADR-01, ADR-02) + 2 INFO (V12, LEGACY) / 0 FAIL / exit 0; grep -c '^PASS V20' = 1",
+      "resolution": "termo 3 de suiteFull, reexecutado nesta sessao; a linha literal do V20 esta em verification.briefingChecklist.p2"
+    },
+    {
+      "cmd": "node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 82,
+      "stdoutHash": "sha256:e5e528c52d79fceaa1be828bd89116aa6e0be73294d2e99d39c4febe99e84516",
+      "stdoutBytes": 51,
+      "capture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-001/vendor.log",
+      "observed": "vendor-check OK (.agents/skills/.vendor-lock.json)",
+      "resolution": "termo 4 de suiteFull, reexecutado nesta sessao"
+    },
+    {
+      "cmd": "node scripts/sdd-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 153,
+      "stdoutHash": "sha256:1dd672652a775f838b7b8413af6f94151c5aa0873a0df8e678585f7a9dcaf5e7",
+      "stdoutBytes": 641,
+      "capture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-001/sdd.log",
+      "observed": "8 PASS (V4, R-V12, V17, SDD-01, SDD-02, SDD-03, R-NODENY, RENAME-01) / 0 FAIL",
+      "resolution": "verificacao de SDD do ADR item 12/Fase 5, reexecutada nesta sessao; nao e termo de suiteFull"
+    },
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node --test \"installer/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs && node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 8999,
+      "stdoutHash": "sha256:ca4ea8836b469cf1d109eca89e4da2a8d2415ad5f60be412136c979f3446b379",
+      "stdoutBytes": 236282,
+      "capture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-001/suitefull.log",
+      "observed": "plugins 534/534 (127 suites) + installer 559/559 (183 suites) + static exit 0 (0 FAIL) + vendor-check OK; exit 0. O stdout agregado contem 5 linhas 'PASS V20' e 6 'FAIL V20' de FIXTURE (cdl.spec/inventory.spec/refs.spec/prd-checks.spec chamam runStaticChecks contra arvores temporarias E contra o repo); a linha do runner real e unica: grep -ac '^PASS V20' no static isolado = 1, e ela e byte-identica a ultima do log agregado",
+      "resolution": "commands.suiteFull literal, resolvido do harness.config.json em runtime e executado como grupo"
+    },
+    {
+      "cmd": "git diff --stat 9b754e5..HEAD -- .opencode/plugins/gate.js harness.config.json installer/ lib/config.mjs lib/seal.mjs lib/refs/** lib/inventory/** lib/prd-adr-pipeline/**",
+      "exitCode": 0,
+      "durationMs": 14,
+      "stdoutHash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutBytes": 0,
+      "capture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-001/protected-diff-literal.log",
+      "observed": "saida vazia (0 bytes), exit 0. ATENCAO: os paths 'lib/config.mjs', 'lib/seal.mjs', 'lib/refs/**', 'lib/inventory/**', 'lib/prd-adr-pipeline/**' NAO existem neste repo (vivem sob .opencode/plugins/lib/) => a forma literal passa por vacuidade em 5 dos 8 paths (d6)",
+      "resolution": "constraint 4 do briefing, forma literal pedida"
+    },
+    {
+      "cmd": "git diff --stat 9b754e5..HEAD -- .opencode/plugins/gate.js harness.config.json installer/ .opencode/plugins/lib/seal.mjs .opencode/plugins/lib/config.mjs '.opencode/plugins/lib/refs/**' '.opencode/plugins/lib/inventory/**' '.opencode/plugins/lib/prd-adr-pipeline/**'",
+      "exitCode": 0,
+      "durationMs": 15,
+      "stdoutHash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutBytes": 0,
+      "capture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-001/protected-diff-corrected.log",
+      "observed": "saida vazia (0 bytes), exit 0 — forma CORRIGIDA com os paths reais; confirma o mesmo veredito sem vacuidade",
+      "resolution": "constraint 4 do briefing, reexecutado com os paths reais (d6)"
+    },
+    {
+      "cmd": "git diff --stat 9b754e5..HEAD",
+      "exitCode": 0,
+      "durationMs": 28,
+      "stdoutHash": "sha256:286567d25a5c32349c74e74f150772fe2af119a2ac6ebf2aa6186ed524bd3cfd",
+      "stdoutBytes": 629,
+      "capture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-001/full-diff.log",
+      "observed": "9 arquivos: .opencode/plugins/lib/cdl/checks.mjs + vocabulary.txt, .opencode/plugins/__tests__/cdl.spec.mjs, scripts/static-checks.mjs, .spec/backend/prd-agnostic-artifacts-adr-001/{PROPOSAL,SPEC,PLAN,TASKS}.md e o ADR.md (51 linhas adicionadas) — nenhum path protegido",
+      "resolution": "escopo do ciclo inteiro, medido nesta sessao"
+    },
+    {
+      "cmd": "node -e 'sha256 dos commands.suiteFull de 9b754e5 e HEAD; sha256 de harness.config.json e seal.mjs nas duas arvores'",
+      "exitCode": 0,
+      "durationMs": 170,
+      "stdoutHash": "sha256:04a4272122a259b610eb7dfd8a13beb43ea6acb6b81c6fcf4203dc31c91df5f0",
+      "stdoutBytes": 426,
+      "capture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-001/seal-check.out",
+      "observed": "suiteFull base: c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2 | suiteFull head: c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2 | iguais: true | 94fe55c78f518e2c55b1d4eb3dc79b051623b2a0788d624831a7cfe45d36f585  harness.config.json | b698703d3a27249d5f92e79050854de1645dc0124f12290c9d06904a89a595a6  .opencode/plugins/lib/seal.mjs | b698703d3a27249d5f92e79050854de1645dc0124f12290c9d06904a89a595a6  - (9b754e5)",
+      "resolution": "constraint 5 do briefing (selo), reexecutado nesta sessao; o sha da string coincide com o valor publicado em workflow-state.json (c904f1c5…)"
+    },
+    {
+      "cmd": "node --input-type=module -e '<recontagem independente: derivePopulation + scanArtifact por arquivo + BASELINE sha vivo + payload>'",
+      "exitCode": 0,
+      "durationMs": 2282,
+      "stdoutHash": "sha256:8de3478c9857f111cda1e82f2cdc962387af6e5e70dd9d9f27ece4daa9a5eb9c",
+      "stdoutBytes": 751,
+      "capture": "/tmp/opencode/p4/recount.log",
+      "observed": "population files=228 lines=31661 | prescriptions total=181 (condicional=44, exemplo=39, catalogo=17, incondicional=81) | baseline length=96 incondicional=81 identity=15 owners=[ADR-002,ADR-003,ADR-005] | identity lines/files=15/12 | prohibition-cited lines=39 files=14 | vendor-upstream lines/files=284/94 | baseline sha vivo ok=96/96 (91 literais + 5 refs @rule-axis resolvidas por RULES_BY_AXIS; a recontagem inicial reportou 91/96 porque as 5 refs nao tem path literal)",
+      "resolution": "counts medidos INDEPENDENTEMENTE da linha do V20, com o mesmo modulo e o mesmo universo — fecha a aritmetica 44+39+17+81=181 e 81+15=96"
+    },
+    {
+      "cmd": "copia cp -a de .opencode/plugins/lib/cdl em /tmp + node vectors.mjs / vectors2.mjs (6 vetores do ADR §2.3-ter)",
+      "exitCode": 0,
+      "durationMs": 340,
+      "stdoutHash": "sha256:daf1e0bff933f1f74bd2062ea871f36e767d505dd48a15a850edc6791bafac83",
+      "stdoutBytes": 4472,
+      "capture": "/tmp/opencode/p4/vectors-all.log (concatena vectors.log + vectors2.log)",
+      "observed": "6 vetores; ver bloco 'vectors' abaixo com a saida LITERAL de cada um. Copia sha256 e85fdc0ef24c17dfbe7b4bc25f377a874a083fc7fd703f794d7a76273f2425dd identica ao modulo do repo",
+      "resolution": "constraint 3 do briefing: tentativa de derrubar o V20 em copia fora do repo"
+    }
+  ],
+  "counts": {
+    "unit": { "passed": 534, "failed": 0, "skipped": 0 },
+    "it": { "passed": 559, "failed": 0, "skipped": 0 },
+    "frontend": { "passed": 0, "failed": 0, "skipped": 0 }
+  },
+  "countsNote": "Numeros MEDIDOS nesta sessao. `unit` = suite de plugins (commands.unit): 534/534 em 127 suites — igual a alegacao do ciclo. `it` = suite do instalador: 559/559 em 183 suites. `frontend` 0/0/0 porque stack.frontend = N/A. O TASKS.md publica plugins 506 e cdl.spec 38 (d1): o HEAD tem 534 e 66 — o TASKS ficou no commit da rodada 2, antes de 47c906b (rodada 3) que acrescentou os casos dos 6 vetores do §2.3-ter.",
+  "e2e": {
+    "status": "N/A",
+    "justification": "harness.config.json: infra.composeFile = null, infra.ports backend/frontend = null; stack.backend/frontend = 'N/A'. O entregavel e um modulo puro de medicao de prosa (.opencode/plugins/lib/cdl/checks.mjs) + um adapter em scripts/static-checks.mjs: nao existe URL alvo para o MCP chrome-devtools, logo H3 (wipe + re-cadastro em browser real) nao tem objeto. Equivalente observavel executado: 12 itens da ADR §3 por comando proprio + 11 microtasks CD-01..CD-11 + 6 vetores adversariais do §2.3-ter + suiteFull literal.",
+    "escalateOnRisk": "nao dispara: os paths tocados no range sao .opencode/plugins/lib/cdl/**, .opencode/plugins/__tests__/cdl.spec.mjs, scripts/static-checks.mjs e .spec/**; nenhum casa riskPaths (security/acl/*Permission*/auth/i18n)."
+  },
+  "evaluation": {
+    "telas": "n/a-sem-UI. Equivalente observavel: static-checks 13 PASS / 0 FAIL / exit 0, com exatamente 1 PASS V20; sdd-checks 8 PASS / 0 FAIL.",
+    "negocio": "12/12 itens da ADR §3 PASSA pelo comando do proprio item (item 4 e item 7 com ressalva documental: d2 e d3). 11/11 microtasks CD-01..CD-11 com evidencia reproduzida; 6 delas publicam numero datado no TASKS.md (d1). O criterio mede: 181 prescricoes classificadas em 4 vereditos, 96 de divida com dono, 39 proibicoes contadas a parte.",
+    "logica": "suiteFull literal exit 0 (534 + 559 + static 0 FAIL + vendor OK). Contraprova nao-vacuidade: os 6 vetores do §2.3-ter foram tentados em copia descartavel e nenhum derruba o instrumento; tres residuos ficam DENTRO da heuristica declarada (fp=5/90 fn=4/90) e estao listados em verification.vectors.residuals — nao sao regressao, sao o erro que o proprio §2.3-ter publica.",
+    "perf": "suiteFull ~9,0 s somando os termos (plugins ~1,36 s, installer ~6,44 s, static ~0,35 s, vendor ~0,08 s). Recontagem descentralizada ~1,19 s. Mesma ordem dos ciclos anteriores; repo de tooling sem latencia de aplicacao."
+  },
+  "h3": {
+    "status": "N/A com justificativa",
+    "why": "H3 pressupoe UI + banco + servidores locais; aqui infra = null e stack = N/A. Tela branca, rota duplicada, i18n e CORS/auth de browser nao tem como ocorrer.",
+    "substitute": "Reexecucao independente dos 12 itens da ADR §3, das 11 microtasks de TASKS.md, dos 6 pontos do briefing P4 e de 6 vetores adversariais em copia descartavel."
+  },
+  "verification": {
+    "method": "Cada item foi reexecutado pelo comando que o proprio ADR/TASKS declara, nesta sessao, com saida literal em /tmp/opencode/qa-prd-agnostic-artifacts-adr-001/*.log e /tmp/opencode/p4/*.log. Nenhum valor herdado do developer, do reviewer ou do TASKS.md: o bloco do TASKS foi confrontado com medicao propria (506 vs 534; 38 vs 66; 101 vs 96; 44 vs 39; 10 vs 7; 4 vs 6). harness/harness-inventory-adr-004.json foi lido SO como forma.",
+    "adrItems": {
+      "item_1_modulo_puro_propagavel": {
+        "cmd": "git ls-files .opencode/plugins/lib/cdl/ ; grep -c 'export function runCdlChecks|classifyLine|declaredAxis' ; node -e 'exports presentes' ; grep -cE 'child_process|fetch\\(|https?:'",
+        "measured": ".opencode/plugins/lib/cdl/checks.mjs + vocabulary.txt (2 tracked); runCdlChecks=1, classifyLine=1, declaredAxis=1; derivePopulation/classifyLine/declaredAxis/runCdlChecks/STACK_VOCAB/PROJECT_TERMS/BASELINE/EXCEPTIONS/VERDICTS todos exportados=true; pureza: 0 ocorrencias de child_process/fetch(/http",
+        "verdict": "PASSA"
+      },
+      "item_2_populacao_derivada_com_numero": {
+        "cmd": "git ls-files '*.md' | 3 grep -vE | wc -l ; mesmo pipe + xargs wc -l | tail -1 ; node -e 'derivePopulation()' ; static | grep V20",
+        "measured": "228 ; 31661 total ; modulo: 228 31661 ; detail publica population=228/31661. X1/X2/X3 sao constantes nomeadas com reason no modulo (POPULATION_EXCLUSIONS)",
+        "verdict": "PASSA"
+      },
+      "item_3_populacao_contem_payload_derivado": {
+        "cmd": "node --input-type=module -e 'derivePayload(root, install.mjs, lock) vs derivePopulation()'",
+        "measured": "payload md = 219 ; fora da populacao = 0 ; detail publica payload=219",
+        "verdict": "PASSA"
+      },
+      "item_4_vocabulario_chave_derivada_cobertura_cobrada": {
+        "cmd": "node -e 'AXIS_IDS ∪ lock.stacks' ; node -e 'missingVocabulary()' ; node -e 'missingVocabulary({AXIS_IDS: install.AXIS_IDS})'",
+        "measured": "ids = dart,flutter,java,nestjs,node,none,other,react,rust,vue (10) ; STACK_VOCAB keys = 10 identicos ; missingVocabulary() SEM args = [\"<fonte-de-eixo-ausente>\"] (fail-closed, §2.3-ter item 5) ; missingVocabulary(exports reais) = []",
+        "verdict": "PASSA com ressalva documental (d2) — o ADR §3 item 4 manda esperar [] e o TASKS CD-02 publica []; pos-emenda o valor correto do comando cru e o sentinela de fonte ausente. A cobertura cobrada esta provada pelo caminho injetado (adapter) e pela fixture cdl-axis-vocabulary-missing"
+      },
+      "item_5_fonte_de_eixo_unica": {
+        "cmd": "grep -c 'V19' checks.mjs ; grep -c 'SKILLS_BY_AXIS' checks.mjs ; static | grep V20",
+        "measured": "0 ; 7 (TASKS publica 10 — d1) ; detail publica axis-decl=2/2, axis-class=0/1 (skills/rules) lado a lado",
+        "verdict": "PASSA"
+      },
+      "item_6_4_vereditos_ordem_fixa_funcao_pura": {
+        "cmd": "node -e 'VERDICTS' ; node --test cdl.spec ; grep -n 'ordem:' cdl.spec",
+        "measured": "condicional,exemplo,catálogo,incondicional ; 66/66 fail 0 ; testes 'ordem: exemplo vence catálogo' e 'ordem: catálogo vence condicional' presentes; classifyLine devolve 1 veredito ou null (assercao do spec)",
+        "verdict": "PASSA"
+      },
+      "item_7_baseline_literal_hash_so_encolhe": {
+        "cmd": "node -e 'BASELINE.length, every(owner&&sha256&&file&&line&&verdict), EXCEPTIONS.length' ; recontagem do sha vivo por entrada",
+        "measured": "96 entradas; every(owner&&sha256&&file&&line&&verdict)=true; 81 verdict=incondicional + 15 verdict=identity; owners={ADR-002,ADR-003,ADR-005}; sha256 vivo confere em 96/96 (91 literais + 5 refs @rule-axis resolvidas via RULES_BY_AXIS). Fixture de modo 1 (linha incondicional, baseline []): FAIL cdl-unconditional-unbaselined '1 linha(s) incondicional fora da BASELINE: .agents/rules/uma.md:3'",
+        "verdict": "PASSA com ressalva documental (d3) — o item 7 escreve verdict: incondicional; a implementacao admite tambem identity para as 15 de A-1, como o N7 publica (96 = 81+15)"
+      },
+      "item_8_exceptions_e1_e4_com_predicado_prova_e_expiracao": {
+        "cmd": "grep -c 'cdl-exception-stale' checks.mjs ; node -e 'EXCEPTIONS.every(e=>e.id&&e.predicate&&e.reason&&e.proof)'",
+        "measured": "3 ; true ; EXCEPTIONS = E-1,E-2,E-3,E-4,E-5,E-6 (6, nao 4 — d4: E-5 vem do N5, E-6 do N9)",
+        "verdict": "PASSA com ressalva documental (d4) — o item 8 nomeia E-1..E-4; o ADR §10 N5/N9 declaram E-5/E-6, mas a tabela §4.3 nao foi emendada"
+      },
+      "item_9_d2_contada_nao_presumida": {
+        "cmd": "static | grep '^PASS V20' ; recontagem independente de prohibition-cited",
+        "measured": "prohibition-cited=39 publicado em PASS ; recontagem independente: 39 linhas em 14 arquivos ; D2 nao consome veredito (classifyLine('Proibido no unitário: `Lombok`') = null e prohibitedTermsOf = ['Lombok']; 'Use Spring Boot; NUNCA use Lombok' = incondicional + proibicao de Lombok)",
+        "verdict": "PASSA"
+      },
+      "item_10_a3_reusa_v18_e_segunda_gramatica_declarada": {
+        "cmd": "static | grep '^PASS V18' ; grep -rn DESIGN.md .agents/agents | wc -l ; paths rules ausentes ; static | grep V20",
+        "measured": "baseline=7, non-defect=1 ; 11 citacoes de DESIGN.md em agentes ; 13 paths de rules citados e ausentes ; detail publica refs-undetected=20 (owner ADR-004)",
+        "verdict": "PASSA"
+      },
+      "item_11_a1_registro_e_dois_alarmes": {
+        "cmd": "awk do item 11 (arquivos) ; mesmo awk (linhas) ; static | grep V20",
+        "measured": "12 arquivos ; 15 linhas ; detail publica identity=15/12, structural-debt=1 (license@.agents/skills/security-review/SKILL.md:4→ADR-003) e license fora de SPDX=0 / stack fora do eixo=0 (as duas offenders estao escusadas por E-6)",
+        "verdict": "PASSA"
+      },
+      "item_12_fora_do_corpus_suite_verde_selo": {
+        "cmd": "git show --stat --name-only HEAD ; node scripts/static-checks.mjs ; git diff --exit-code -- harness.config.json .opencode/plugins/lib/seal.mjs",
+        "measured": "HEAD 26706e0 toca SO .spec/prd/prd-agnostic-artifacts/ADRs/ADR-001-criterio-cdl-e-instrumento/ADR.md ; static exit 0 com PASS ADR-01 + PASS ADR-02 ; diff de config/seal vazio",
+        "verdict": "PASSA"
+      }
+    },
+    "tasksItems": {
+      "CD-01": "PASSA — classifyLine/declaredAxis exportados (1/1), VERDICTS na ordem, cdl.spec 66/66 (o TASKS publica 38/38 — d1: numero datado da rodada 2).",
+      "CD-02": "PASSA com ressalva (d2) — 10 chaves de STACK_VOCAB e fixture cdl-axis-vocabulary-missing provada no spec; o comando cru do TASKS (missingVocabulary() ⇒ []) devolve hoje [\"<fonte-de-eixo-ausente>\"], que e o fail-closed exigido pelo §2.3-ter item 5.",
+      "CD-03": "PASSA — derivePopulation 228/31661, payload=219 no detail, fixture cdl-population-payload-gap presente no spec (id coberto por teste).",
+      "CD-04": "PASSA com ressalva (d1) — grep -c V19 = 0; grep -c SKILLS_BY_AXIS = 7 (TASKS publica 10); axis-decl=2/2 e axis-class=0/1 publicados; fixture cdl-axis-declaration-phantom presente.",
+      "CD-05": "PASSA com ressalva (d1) — BASELINE com 96 entradas (81 incondicional + 15 identity), todas com owner/sha256/verdict e sha vivo 96/96; o TASKS publica 101 (86+15) da rodada 2. Fixtures de sha divergente/veredito fechado/entrada incompleta presentes.",
+      "CD-06": "PASSA com ressalva (d1/d4) — grep cdl-exception-stale = 3; EXCEPTIONS com 6 entradas (nao 4), todas com predicate/reason/proof; fixtures E-1/E-2 presentes.",
+      "CD-07": "PASSA com ressalva (d1) — prohibition-cited=39 medido (TASKS publica 44); refs-undetected=20 confere; proibicao nao consome veredito (testes + vetor 3).",
+      "CD-08": "PASSA — A-1 12/15 pelo comando do ADR; PROJECT_TERMS=3 com prova viva; license fora de SPDX=0; stack fora do eixo=0; fixtures de license/prova morta/identidade nova presentes.",
+      "CD-09": "PASSA — adapter com exatamente 1 chamada record(\"V20\") (o grep -c conta 2 por causa do comentario na linha 490); counters publicados em PASS e FAIL; diff de harness.config.json/seal.mjs vazio; suiteFull inalterado.",
+      "CD-10": "PASSA com ressalva (d1) — cdl.spec 66/66 (TASKS publica 38); 4 vereditos, 2 casos de ordem, os 7 ids e a fixture de preset novo presentes.",
+      "CD-11": "PASSA com ressalva (d1) — plugins 534/534 (TASKS publica 506), installer 559/559, static exit 0, vendor OK, sdd-checks exit 0, V18/V19 identicos ao HEAD anterior (funcoes intocadas)."
+    },
+    "briefingChecklist": {
+      "p1_12_itens_e_11_tasks": "PASSA — 12/12 itens PASSA (item 4 e 7 com ressalva documental d2/d3); 11/11 microtasks com evidencia reproduzida (6 com numero datado: d1).",
+      "p2_pass_v20_literal": "PASSA — 'PASS V20: cdl medido: population=228/31661, prescriptions=181 (condicional=44, exemplo=39, catálogo=17, incondicional=81), prohibition-cited=39, baseline=96 (incondicional=81, identity=15), identity=15/12, axis-decl=2/2, axis-class=0/1 (skills/rules), refs-undetected=20 (owner ADR-004), vocabulary=10, payload=219, structural-debt=1 (license@.agents/skills/security-review/SKILL.md:4→ADR-003), heuristic=true fp=5/90 fn=4/90 (amostra=90, classificadas=42, método declarado no módulo), vendor-upstream=284/94 (E-5)'. grep -c '^PASS V20' no static isolado = 1; FAIL no static real = 0. Todos os campos da alegacao (population, prescriptions 44/39/17/81, prohibition-cited, baseline 81+15, identity 15/12, structural-debt, heuristic/fp/fn, vendor-upstream) batem com o medido por recontagem independente.",
+      "p3_6_vetores": "PASSA — 6/6 vetores do §2.3-ter tentados em copia cp -a fora do repo; nenhum derruba o instrumento. Residuos (3) ficam dentro do erro declarado (heuristic=true fp=5/90 fn=4/90), listados em verification.vectors.residuals.",
+      "p4_diff_dos_protegidos_vazio": "PASSA — forma literal = 0 bytes (exit 0) MAS 5 dos 8 paths nao existem (d6); forma corrigida com paths reais = 0 bytes (exit 0). Diff completo do range = 9 arquivos, nenhum protegido.",
+      "p5_selo_byte_identico": "PASSA — commands.suiteFull sha256 c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2 identico em 9b754e5 e HEAD (igual ao valor publicado em workflow-state.json); harness.config.json e seal.mjs com sha256 identicos nas duas arvores; nenhuma republicacao de HARNESS_SEAL_JSON.",
+      "p6_v18_v19_inalterados": "PASSA — nenhuma linha +/- dentro de checkRefs/checkInventory/record('V18'|'V19') no diff do adapter (4 hunks: comentarios, imports, CDL_EXPORTS, cdlClosure/checkCdl e o call site); modulos lib/refs e lib/inventory com diff 0 bytes; V18 baseline=7 non-defect=1 e V19 skills=48 (vendor-by-axis=25, consumer=22, axis=0, orphan=1), rules=8 (consumer=7, axis=1, orphan=0) identicos ao registrado no ADR §1."
+    },
+    "vectors": {
+      "method": "cp -a de .opencode/plugins/lib/cdl para /tmp/opencode/p4/cdl-copy (sha256 do checks.mjs e85fdc0ef24c17dfbe7b4bc25f377a874a083fc7fd703f794d7a76273f2425dd, identico ao repo) + arvores-fixture em /tmp/opencode/p4/fx*; nenhuma escrita no repo. Saida literal abaixo.",
+      "v1_copula_e_acute": {
+        "claim": "§2.3-ter item 1 — alternancia explicita (é|É|são|usa|usam|exige) sem \\b a esquerda",
+        "input": "A stack do destino é Spring Boot 3 com Maven.",
+        "literal": "isPrescriptive => true | classifyLine => \"incondicional\"",
+        "result": "FECHADO (antes: null)"
+      },
+      "v2_marcadores_e_headings": {
+        "claim": "§2.3-ter item 2 — NORMATIVE cobre Verifique/Configure/Analise/Substituir/rode/garanta; NORMATIVE_HEADING cobre headings topicais",
+        "input": "- Verifique a versão do Spring Boot. / - Configure o Flyway no boot. / - Analise o plano de JPA. / - Substituir Mockito por fake. / - rode o Maven antes do commit. / - garanta JUnit 5 nos testes. ; heading '### Testes' + '- JUnit 5 + Mockito' ; heading '### DDD Modular' + '- JPA no agregado'",
+        "literal": "os 6 verbos => \"incondicional\"; heading Testes => [{\"line\":5,\"text\":\"- JUnit 5 + Mockito\",\"verdict\":\"incondicional\"}]; heading DDD Modular => [{\"line\":5,\"text\":\"- JPA no agregado\",\"verdict\":\"incondicional\"}]",
+        "result": "FECHADO"
+      },
+      "v3_d2_backtick_rotulo_verbo": {
+        "claim": "§2.3-ter item 3 — proibicao com code, dois-pontos, verbo e 'X proibido'; as 4 proibicoes antes baselinadas saem para prohibition-cited",
+        "input": "Proibido no unitário: `Lombok`. / - NUNCA use `Vuetify`. / Lombok proibido no service. / Vuetify é proibido. / - Não use Mockito. / Use Spring Boot; NUNCA use Lombok.",
+        "literal": "cada linha => prohibitedTermsOf=[termo] e classifyLine=null; linha mista => prohibitedTermsOf=[\"Lombok\"], classifyLine=\"incondicional\"; linha real harness-installer/SKILL.md:163 => prohibition em 163 com terms [\"Vue\",\"Vuetify\"] (verdicts filtro 160-165 = [])",
+        "result": "FECHADO"
+      },
+      "v4_catalogo_so_alternativa": {
+        "claim": "§2.3-ter item 4 — catalogo exige conectivo de alternativa SEM composicao (com/with/+)",
+        "input": "Use Spring Boot com React no mesmo artefato. / Use Java com Spring Boot. / Use Spring Boot ou NestJS no backend.",
+        "literal": "com React => \"incondicional\" ; com Spring Boot => \"incondicional\" ; ou NestJS => \"catálogo\"",
+        "result": "FECHADO"
+      },
+      "v5_exports_ausente_fail_closed": {
+        "claim": "§2.3-ter item 5 — sem exports injetado o vocabulario reprova mesmo com lock",
+        "input": "missingVocabulary() ; missingVocabulary({}) ; missingVocabulary({}, {x:{stacks:['svelte']}}) ; runCdlChecks(fixture, {baseline:[],exceptions:[]})",
+        "literal": "[\"<fonte-de-eixo-ausente>\"] ; [\"<fonte-de-eixo-ausente>\"] ; [\"<fonte-de-eixo-ausente>\"] ; [\"FAIL\",\"<fonte-de-eixo-ausente>: nenhuma fonte de eixo injetada (o adapter deve passar `exports` do instalador); fail-closed em vez de verde por omissão\"] ; ok=false",
+        "result": "FECHADO (o lock NAO substitui a fonte)"
+      },
+      "v6_ruido_estrutural_h2": {
+        "claim": "§2.3-ter item 6 — registro datado, colisao H2, anti-pattern invertido e template deixam de ser incondicional",
+        "input": "| 2026-11-11 | feat | usa JUnit 5 | ; Verifique o H2 conforme o contrato H2. ; Use a seção H2 como âncora do contrato. ; Use H2 nos testes de integração. ; anti-patterns.md '- Usar EJB direto no serviço' vs references.md com a MESMA linha ; x-template.md '- Use JUnit 5'",
+        "literal": "datado => termsOf=[\"JUnit\"], classifyLine=null ; 'Verifique o H2…' => termsOf=[], null ; 'seção H2' => termsOf=[], null ; 'Use H2 nos testes de integração' => termsOf=[\"H2\"], \"incondicional\" ; anti-pattern => [{\"line\":3,\"verdict\":\"exemplo\"}] vs controle => [{\"line\":3,\"verdict\":\"incondicional\"}] ; template => [{\"line\":3,\"verdict\":\"exemplo\"}]",
+        "result": "FECHADO — a colisao do termo H2 e resolvida por contexto (sem contexto = nao conta; com contexto de banco/testes = conta)"
+      },
+      "residuals": [
+        "'A persistência é JPA com Hibernate.' => null: a classe de copula exige STACK_SPECIFIER e 'persistência' nao esta nele — FN de categoria dentro do erro declarado (fn=4/90), nao derruba o item 1.",
+        "Termo so dentro de path/fragmento ('require(''vuetify/lib'')') nao casa o termo capitalizado: a linha real e salva por 'new Vuetify()' no mesmo texto; FN estreito, sem FP.",
+        "Alternativa sem marcador normativo ('Escolha React ou Vue…', 'Framework: X / Y / Z') => null: o passo 1 da rubrica vem antes do passo 4, por contrato — nao e defeito.",
+        "TERM_CONTEXT de H2 e SUPERset do §2.3-ter (aceita testes/integração/unitários alem de banco/database/testcontainers): observacao de precisao, sem caso medido que gere FP."
+      ]
+    }
+  },
+  "divergences": {
+    "d1_tasks_md_numeros_da_rodada_2": {
+      "severity": "informativo",
+      "what": "TASKS.md publica 6 numeros que nao existem mais no HEAD: plugins 506 (medido 534), cdl.spec 38 (66), BASELINE 101 = 86+15 (96 = 81+15), prohibition-cited 44 (39), grep -c SKILLS_BY_AXIS = 10 (7), EXCEPTIONS 4 (6).",
+      "evidence": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-001/{plugins,cdl}.log; /tmp/opencode/p4/recount.log; node -e 'm.BASELINE.length' = 96",
+      "impact": "nenhum no mecanismo: o oraculo e a linha do V20 (ADR §10 N7), e ela e reproduzida exatamente. E drift de documento de planejamento, congelado antes de 47c906b.",
+      "action": "nenhuma (qa-engineer nao corrige documento; dono do TASKS = ciclo)"
+    },
+    "d2_adr_item_4_espera_lista_vazia": {
+      "severity": "baixo",
+      "what": "O ADR §3 item 4 (e o CD-02) mandam missingVocabulary() ⇒ []. Pos-emenda §2.3-ter item 5 o comando sem args devolve [\"<fonte-de-eixo-ausente>\"]: fail-closed e o comportamento CONTRATADO. So o caminho injetado (adapter) devolve [].",
+      "evidence": "node -e missingVocabulary() ; node -e missingVocabulary({AXIS_IDS: install.AXIS_IDS}) => []",
+      "impact": "nenhum no veredito: o item 4 e satisfeito pelo adapter + fixture cdl-axis-vocabulary-missing. A prosa do item nao foi emendada junto com o §2.3-ter.",
+      "action": "nenhuma (documento do ADR, dono = architect)"
+    },
+    "d3_item_7_verdict_incondicional_vs_identity": {
+      "severity": "baixo",
+      "what": "O item 7 descreve a entrada como verdict incondicional; a implementacao (e o N7) admite identity para as 15 entradas de A-1 (96 = 81 + 15).",
+      "evidence": "node -e 'BASELINE.filter(e=>e.verdict===\"identity\").length' => 15",
+      "impact": "nenhum: o N7 publica o par 81/15 e a linha do V20 tambem.",
+      "action": "nenhuma"
+    },
+    "d4_item_8_e_4_3_dizem_e1_e4": {
+      "severity": "baixo",
+      "what": "Item 8 e a tabela §4.3 nomeiam E-1..E-4; EXCEPTIONS tem 6 (E-5 upstream pelo N5; E-6 escusa de license pelo N9).",
+      "evidence": "node -e 'm.EXCEPTIONS.map(e=>e.id)' => E-1..E-6",
+      "impact": "nenhum: as duas entradas extras estao declaradas nos N5/N9, com predicate/reason/proof.",
+      "action": "nenhuma"
+    },
+    "d5_workflow_state_nao_reflete_o_p4": {
+      "severity": "informativo",
+      "what": "workflow-state.json tem current_feature=prd-agnostic-artifacts mas current_phase=Discovery e artifacts apontando para o ciclo harness-inventory-adr-004 (spec/plan/tasks/harness_report); este ciclo nao esta refletido.",
+      "evidence": "node -e 'JSON.stringify(state.artifacts)'",
+      "impact": "nenhum no veredito P4 (o gate nao le esses campos), mas a rastreabilidade SDD deste ciclo nao esta exercida no state.",
+      "action": "nenhuma (proibido editar workflow-state.json por este papel; dono = orchestrator)"
+    },
+    "d6_comando_de_diff_do_briefing_tem_paths_inexistentes": {
+      "severity": "informativo",
+      "what": "O comando pedido usa lib/config.mjs, lib/seal.mjs, lib/refs/**, lib/inventory/**, lib/prd-adr-pipeline/**; esses paths nao existem na raiz (vivem em .opencode/plugins/lib/). A forma literal passa por vacuidade em 5 de 8 paths.",
+      "evidence": "git diff --stat ... (literal) = 0 bytes; ls lib => inexistente; forma corrigida tambem = 0 bytes",
+      "impact": "nenhum: a forma corrigida confirma diff vazio. Registrado para que o vazio literal nao seja lido como prova de 8 paths.",
+      "action": "nenhuma"
+    }
+  },
+  "backlog": {
+    "b1_alternativa_sem_marcador": {
+      "classification": "silencioso",
+      "detail": "normativeClause exige marcador e termo na MESMA clausula; os residuos do vetor 4 mostram que alternativas em prosa SEM marcador nao recebem veredito (null) — o passo 1 vem antes do passo 4, por contrato. Nao ha declaracao de que isso produz FN de catalogo.",
+      "evidence": "/tmp/opencode/p4/vectors.log (linhas 'Escolha React ou Vue', 'Framework: Spring Boot / NestJS / Express')"
+    },
+    "b2_term_context_superset": {
+      "classification": "parcialmente declarado",
+      "detail": "TERM_CONTEXT['H2'] aceita testes/integração/unitários alem de banco/database/testcontainers. O §2.3-ter item 6 lista so os tres primeiros; o superset amplia a chance de contar H2 como stack em linha normativa que fale de testes.",
+      "evidence": "checks.mjs:1055-1060; vetor 6 'Use H2 nos testes de integração' => incondicional"
+    },
+    "b3_fixture_prints_no_stdout_do_suitefull": {
+      "classification": "silencioso",
+      "detail": "runStaticChecks e chamado por cdl/inventory/refs/prd-checks specs contra o repo real, logo o stdout agregado do suiteFull contem 5 linhas 'PASS V20' e 6 'FAIL V20' de fixture. Quem grepar 'PASS V20' no agregado ve 5, nao 1. A linha do runner real e unica e identica ao static isolado.",
+      "evidence": "grep -ac '^PASS V20' suitefull.log = 5 (todas identicas); static isolado = 1"
+    }
+  },
+  "findings": {
+    "f1_v20_nao_derrubado_nos_6_vetores": {
+      "severity": "positivo",
+      "what": "Em copia descartavel fora do repo, os 6 defeitos corrigidos no §2.3-ter nao voltam: copula é, marcadores/headings, D2 com backtick/rotulo/verbo, catalogo so-alternativa, fail-closed sem exports e ruido estrutural (datado/H2/anti-pattern/template) todos se comportam como contratado.",
+      "evidence": "/tmp/opencode/p4/vectors.log + vectors2.log"
+    },
+    "f2_numeros_do_oraculo_reproduzidos_por_recontagem": {
+      "severity": "positivo",
+      "what": "Recontagem independente (derivePopulation + scanArtifact arquivo a arquivo, sem usar os counters do runCdlChecks) fecha exatamente 228/31661, 181 (44/39/17/81), 39, 96 (81+15), 15/12, 284/94 e sha vivo 96/96 da BASELINE.",
+      "evidence": "/tmp/opencode/p4/recount.log"
+    },
+    "f3_selo_e_escopo_intactos": {
+      "severity": "positivo",
+      "what": "commands.suiteFull byte-identico (c904f1c5…), harness.config.json e seal.mjs intocados, gate.js/installer/lib(refs,inventory,prd-adr-pipeline) com diff 0 bytes; o ciclo inteiro toca 9 arquivos, nenhum protegido.",
+      "evidence": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-001/seal-check.out ; full-diff.log"
+    },
+    "f4_modo_1_morde": {
+      "severity": "positivo",
+      "what": "Uma linha incondicional nova com baseline vazia reprova: 'FAIL cdl-unconditional-unbaselined: 1 linha(s) incondicional fora da BASELINE: .agents/rules/uma.md:3 (- Use JUnit 5 e Mockito)'.",
+      "evidence": "node --input-type=module -e (fixture /tmp/opencode/p4/fx3/m1)"
+    },
+    "f5_tasks_publica_seis_numeros_mortos": {
+      "severity": "gap",
+      "what": "O TASKS.md nao se declara snapshot e publica 506/38/101/44/10/4 onde o HEAD mede 534/66/96/39/7/6. O ADR §10 N7 declara o drift dos numeros de §4.2, mas nao cobre os do TASKS.",
+      "evidence": "ver d1"
+    }
+  },
+  "limitsDeclared": {
+    "heuristic_by_owner_decision": "DECLARADO (ADR §2.3-ter) — o instrumento e heurístico por decisao do owner; fp=5/90 e fn=4/90 estao no detail e nao sao falha deste P4. A baseline e divida MEDIDA pelo scanner, nao a verdade sobre o repo.",
+    "C7_adapter_nao_protegido": "DECLARADO (ADR §5-C7) — scripts/static-checks.mjs nao e protectedPath; remover checkCdl() desliga o V20 sem trailer. Ancora = CI + diff revisado, nao runtime.",
+    "C7b_destino_sem_runner": "DECLARADO (ADR §5-C7b) — o destino herda o modulo (.opencode/plugins propaga) e nao herda o V20 (scripts/ nunca e artefato de consumidor); codigo sem caller no destino ate o PRD-3.",
+    "E5_vendor_upstream": "DECLARADO (ADR §10-N5) — linha vendorizada fica fora de A-2/A-1/D2 e e publicada como vendor-upstream=284/94 (E-5).",
+    "E6_license_nao_pina_valor": "DECLARADO (ADR §10-N9) — a escusa de license nao compara sha; qualquer license nao-SPDX na mesma linha segue escusado ate o ADR-003 corrigir o frontmatter."
+  },
+  "brainStore": [
+    "sessoes/projetos/harness/2026-11-11-qa-prd-agnostic-artifacts-adr-001-p4"
+  ],
+  "brainNote": "Nota de sessao (layer sessoes, scope projetos, project harness) gravada nesta sessao via brain_store — 5 chunks, ok=true, path sem prefixo duplicado. Conteudo: veredito P4, numeros reconferidos, 6 vetores do §2.3-ter, divergencias d1-d6 e a licao 'oraculo e a linha do V20, nao a prosa'. Nenhuma nota de arquitetura/regras/estudos foi reescrita por este papel.",
+  "cleanup": {
+    "ports": [],
+    "processes": [],
+    "note": "Nenhum servidor subido: infra null e stack N/A. Zero pkill -f, zero lsof/kill, zero git push, zero gh. Todos os comandos foram spawn sincrono; nenhum node --test residual. Copias descartaveis: /tmp/opencode/qa-prd-agnostic-artifacts-adr-001 (logs), /tmp/opencode/p4 (modulo cp -a + arvores-fixture fx, fx2, fx3). A unica escrita no repo e este arquivo.",
+    "repoWrites": ["harness/prd-agnostic-artifacts-adr-001.json"]
+  },
+  "gitState": {
+    "head": "26706e0c0e13089f76d623d37baafc8eb682c46a",
+    "range": "9b754e5..26706e0",
+    "commits": [
+      { "sha": "9b754e5", "subject": "docs(adr): ADR-001 do PRD-2 — CDL com rubrica de 4 vereditos e baseline medida" },
+      { "sha": "31ef39b", "subject": "feat(cdl): V20 mede o Critério do Destino Limpo com rubrica de 4 vereditos" },
+      { "sha": "373c515", "subject": "docs(adr): ADR-001 §2.3-bis — predicado v2 (tabela e prosa declarativa), proibicao por termo, vendor fora da baseline" },
+      { "sha": "3acd100", "subject": "fix(cdl): predicado v2 do V20" },
+      { "sha": "119da87", "subject": "docs(adr): ADR-001 §2.3-ter — instrumento heuristico com FP/FN declarados" },
+      { "sha": "47c906b", "subject": "fix(cdl): predicado v3 — fecha os 6 defeitos do ADR-001 §2.3-ter e re-deriva a baseline" },
+      { "sha": "26706e0", "subject": "docs(adr): ADR-001 N7-N9 — numeros vivos (96/181/39) e o drift de §4.2; fp/fn fazem parte do contrato" }
+    ],
+    "filesInRange": 9,
+    "protectedDiff": "git diff --stat 9b754e5..HEAD -- <paths reais de gate.js/config/installer/seal/refs/inventory/prd-adr-pipeline> => 0 bytes (exit 0); forma literal do briefing tambem 0 bytes (mas 5 paths inexistentes, d6)",
+    "worktreeAtStart": "26706e0, git status --porcelain vazio (o unico untracked ao final e este REPORT)"
+  },
+  "residual_risks": [
+    "ADR-001 segue in-progress: o merge e humano (1 ADR = 1 PR = 1 revisao); nenhum push foi feito por este papel.",
+    "O adapter V20 mora em scripts/static-checks.mjs (nao protegido): remover checkCdl() escapa do check (C7 declarado).",
+    "TASKS.md publica 6 numeros da rodada 2 (d1) e o ADR §3 itens 4/7/8 nao foram emendados apos o §2.3-ter (d2/d3/d4) — drift de documento, nao de mecanismo.",
+    "O instrumento e heuristico por decisao do owner: fp=5/90 e fn=4/90 sao parte do contrato; qualquer leitura da baseline como 'verdade sobre o repo' superestima o alcance do medidor.",
+    "workflow-state.json aponta current_phase=Discovery e artifacts do ciclo harness-inventory-adr-004; o P4 deste ciclo nao esta refletido (d5)."
+  ],
+  "selfReported": true,
+  "selfReportedNote": "true por honestidade: numeros e hashes foram medidos pelo proprio executor com spawn sincrono e captura de stdout. A observacao independente e a contraprova do gate, que reexecuta commands.suiteFull selado.",
+  "notes": [
+    "Nenhum codigo, config, rule, agente, ADR, SPEC, PLAN, TASKS ou workflow-state.json foi corrigido: este papel so verifica e reporta. A unica escrita no repo foi harness/prd-agnostic-artifacts-adr-001.json.",
+    "O tool de write foi NEGADO pelo gate ao tentar criar os vetores fora de harness/ (qa-scope-violation) — comportamento correto, registrado como evidencia de que o escopo de escrita do qa-engineer e imposto pelo gate. Os vetores foram materializados em /tmp por shell (artefato de teste), e o repo nao recebeu nenhuma mutacao.",
+    "O stdout agregado do suiteFull contem linhas V20 de FIXTURE (5 PASS + 6 FAIL) porque quatro specs chamam runStaticChecks contra arvores temporarias E contra o repo; o runner real emite exatamente uma linha V20, PASS, e ela e byte-identica a do static isolado.",
+    "O bloco de saida do TASKS.md foi confrontado com medicao propria: 506/38/101/44/10/4 era o estado da rodada 2; no HEAD e 534/66/96/39/7/6 (d1).",
+    "This report stayed UNTRACKED on purpose: o qa-engineer nao faz push e o commit do evidence e ato do orchestrator."
+  ]
+}
