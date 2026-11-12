@@ -1,7 +1,7 @@
 # VERIFY — prd-agnostic-artifacts-adr-002
 
 > Verificação de 3 dimensões sobre o ciclo que executa o **ADR-002 do PRD-2** (entradas sempre-instaladas + autoria).
-> Data: 2026-11-12. Branch: `adr/prd-agnostic-artifacts/02-entradas-sempre-instaladas`. HEAD: `6054418`.
+> Data: 2026-11-12. Branch: `adr/prd-agnostic-artifacts/02-entradas-sempre-instaladas`. HEAD: `03b3d76` (o VERIFY nasce nele; os números foram remedidos no HEAD pelo QA).
 
 ## Veredito: **3/3 PASS**
 
@@ -9,12 +9,12 @@
 |---|---|---|
 | Completude | ✅ PASS | 11/11 microtasks; 5 artefatos; 4 desvios + 4 residuais declarados |
 | Corretude | ✅ PASS | 1.097 testes (538 plugins + 559 installer) 0 falhas; 12/13 itens provados, 1 com prova 🟡 declarada |
-| Coerência | ✅ PASS | `gate.js`/`harness.config.json`/`installer/`/`lib/**` com 0 linhas; selo `c904f1c5` idêntico; `V18`/`V19` inalterados |
+| Coerência | ✅ PASS | `gate.js`/`harness.config.json`/`installer/` com 0 linhas (o `lib/cdl` mudou por desenho); selo `c904f1c5` idêntico; `V18`/`V19` inalterados |
 
 ## 1. Completude
 
 - `TASKS.md`: 11/11 marcadas.
-- **Desvios declarados**: (1) **10 hunks**, não 11 — git coalesce `558-563`; oráculo executável (`awk NR`=608, `numstat` 20/20) bate. (2) `PROJECT_TERMS["Atlas ECM"].proof` → `frontend-react-coding-standards.md:161`; a alternativa (`frontend-coding-standards.md:154`) criaria a 13ª ref pendurada do freeze `EX-VAL-06`. (3) item 9: `grep` global ⇒ **1** (`ux-designer/AGENT.md:259`, afirmação verdadeira do próprio papel); escopo do orchestrator ⇒ 0. (4) **item 3 🟡**: escrita real em `.spec/**` executada; negação em `.agents/**` provada por **resolução + fixture** — `opencode run --agent orchestrator` falhou por billing (`Insufficient balance`).
+- **Desvios declarados**: (1) **13 hunks** no HEAD (10 em `9bf383c`; I-3 e I-3b acrescentaram 3) — o 11 do ADR era contagem conceitual. Oráculo executável: `awk NR`=608 e `numstat` **23/23**. (2) `PROJECT_TERMS["Atlas ECM"].proof` → `frontend-react-coding-standards.md:161`; a alternativa (`frontend-coding-standards.md:154`) criaria a 13ª ref pendurada do freeze `EX-VAL-06`. (3) item 9: `grep` global ⇒ **1** (`ux-designer/AGENT.md:259`, afirmação verdadeira do próprio papel); escopo do orchestrator ⇒ 0. (4) **item 3 🟡**: escrita real em `.spec/**` executada; negação em `.agents/**` provada por **resolução + fixture** — `opencode run --agent orchestrator` falhou por billing (`Insufficient balance`).
 
 ## 2. Corretude
 
@@ -43,7 +43,7 @@
 |---|---|---|
 | RF-01, RF-02, RF-09 | ED-01..ED-03 | `opencode.json:18-21`, `config-dual-parity.spec.mjs:190-222` |
 | RF-03, RF-05 | ED-04..ED-06 | `workflow-rules.md` (608 l., 20/20) |
-| RF-06, RF-07 | ED-07, ED-08 | `sdd-workflow-standard.md:3,16-18`; `vocabulary.txt:46` |
+| RF-06, RF-07 | ED-07, ED-08 | `sdd-workflow-standard.md:3,16-18`; `cdl/vocabulary.txt` (`PROJECT_TERMS` → `frontend-react-coding-standards.md:161`) |
 | RF-04, RF-08 | ED-09 | `BASELINE` 96→80 |
 | RF-10 | ED-10, ED-11 | suíte + diff dos protegidos |
 
@@ -61,3 +61,15 @@
 ## 6. Conclusão
 
 As 3 dimensões fecham. A dívida de maior alcance do repo — `workflow-rules.md`, que vai a **todo** destino — caiu de 15 para 0 linhas incondicionais, com a obrigação preservada por `commands.*` e não por `mvn`. A permissão do `orchestrator` existe de fato e a prosa de autoria parou de mentir. **Apto ao P5→P6.**
+
+## 7. Correções aplicadas após o P4 (QA, 2026-11-12)
+
+| # | Divergência | Correção |
+|---|---|---|
+| d1/d2 | `numstat` 20/20 e 10 hunks eram de `9bf383c`; no HEAD são **23/23** e **13 hunks** (I-3/I-3b) | números corrigidos acima; o oráculo que vale (608 linhas) está medido |
+| d3 | `TASKS` ED-08 citava `frontend-coding-standards.md:154` | real é `frontend-react-coding-standards.md:161` (desvio 2) |
+| d4 | "`lib/**` com 0 linhas" era falso | a mudança em `lib/cdl` é **de desenho** (`BASELINE` −112); o escopo do item 12 (`installer/`, `seal.mjs`, `harness.config.json`) segue 0 |
+| d5 | ADR dizia `PROJECT_TERMS` em `checks.mjs` | vive em `cdl/vocabulary.txt` |
+| d6 | VERIFY declarava `6054418` | nasce em `03b3d76` |
+
+**Achados do QA com dono:** F-1 (`agents.*` plural passa pelo oráculo de índice mas apaga o prompt — pego pelo item 1 e pela fixture E1); F-2 (`write` com path **absoluto** em `harness/` escapa de `isHarnessScoped`, que só casa relativo — mesma classe do TD-12/F-01, dono: ciclo de gate/tech-debt).
