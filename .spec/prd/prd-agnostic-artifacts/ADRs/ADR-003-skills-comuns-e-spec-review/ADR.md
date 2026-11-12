@@ -202,7 +202,7 @@ Cada item é verificável por comando, da raiz do repo. Itens *(SDD)* só valem 
    *Verificação*: `git diff --exit-code -- harness.config.json .opencode/plugins/lib/seal.mjs` ⇒ vazio; `node -e 'console.log(require("./harness.config.json").commands.suiteFull)'` ⇒ literal atual; `node scripts/static-checks.mjs; echo $?` ⇒ `0`.
 
 10. **O oráculo é a linha do `V20`, e os contadores batem com §4.5.** Nenhum número deste ADR é contrato: os valores abaixo são a **previsão** derivada e o SDD publica o medido.
-    *Verificação (SDD)*: `node scripts/static-checks.mjs | grep V20` ⇒ `PASS` com `population=223/30362`, `prescriptions=137 (condicional=53, exemplo=33, catálogo=17, incondicional=34)`, `prohibition-cited=27`, `baseline=38 (incondicional=34, identity=4)`, `identity=4/3`, `payload=214`, `structural-debt=0`, `refs-undetected=20`, `vocabulary=10`.
+    *Verificação (SDD)*: `node scripts/static-checks.mjs | grep V20` ⇒ `PASS` com `population=223/30385`, `prescriptions=137 (condicional=53, exemplo=33, catálogo=17, incondicional=34)`, `prohibition-cited=27`, `baseline=38 (incondicional=34, identity=4)`, `identity=4/3`, `payload=214`, `structural-debt=0`, `refs-undetected=20`, `vocabulary=10`.
 
 11. **Os testes que assam número são atualizados para o novo oráculo (e o guard de "todo `incondicional` está na baseline" continua valendo).**
     *Verificação (SDD)*: `grep -n 'BASELINE.length' .opencode/plugins/__tests__/cdl.spec.mjs` ⇒ `38`; `grep -c 'assert.equal(report.counters.identity.lines, 4)' …` ⇒ `1`; `node --test ".opencode/plugins/__tests__/*.spec.mjs"` ⇒ 0 fail, inclusive `prescriptions.unconditional === baseline.unconditional` (34 = 34).
@@ -277,7 +277,7 @@ Regra de leitura: **veredito hoje** é o medido (`V20`/`BASELINE`, HEAD `4838e0e
 
 | Contador | Antes (`4838e0e`) | Depois | Δ derivado de |
 |---|---|---|---|
-| `population` | `228/31661` | `223/30362` | −5 arquivos, −1.298 linhas |
+| `population` | `228/31661` | `223/30385` | −5 arquivos, −1.298 linhas |
 | `prescriptions` | `178 (56/39/17/66)` | `137 (53/33/17/34)` | −39 (arquivos removidos) −2 (`security:115,166` → `null`); `+3` migram de `incondicional` para `condicional` |
 | `prohibition-cited` | `39` | `27` | −12 (as 5 proibições de `README`, 3 de `SKILL`, 4 de `checklist` saem com os arquivos) |
 | `baseline` | `80 (66/14)` | `38 (34/4)` | −32 `incondicional`, −10 `identity` |
@@ -418,8 +418,10 @@ Nesta ordem (a ordem importa: 2 antes de 3, senão o `V20` reprova no meio do ca
 
 ## 11. Correções do review (rodada 1)
 
-- **H2 — números do ADR × medido.** `git diff --numstat` das 2 rules dá `4 4` / `4 4` (o ADR previu `6 6`/`5 5`: só heading + prosa de identidade mudam; o corpo prescritivo é requisito intacto) e `population=223/30362` (não 30363: o ADR esqueceu a linha `license:` removida). Implementação correta, **texto do ADR errado** — corrigido. O oráculo segue sendo a linha do `V20` (ADR-001 N7).
+- **H2 — números do ADR × medido.** `git diff --numstat` das 2 rules dá `4 4` / `4 4` (o ADR previu `6 6`/`5 5`: só heading + prosa de identidade mudam; o corpo prescritivo é requisito intacto) e `population=223/30385` (não 30363: o ADR esqueceu a linha `license:` removida). Implementação correta, **texto do ADR errado** — corrigido. O oráculo segue sendo a linha do `V20` (ADR-001 N7).
 - **H3 — item 7 dizia que nenhuma skill de stack está na baseline.** Falso: `nestjs:81` e `node:86` continuam, com `owner: ADR-005` (o **corpo** é a dívida; o eixo pelo nome já está correto). Frase corrigida para "nenhuma **nova** entrada" — o N5 já dizia isso.
 - **H1 — o P1→P2 pedia um "score" que a skill removida produzia e nada substituiu.** Fechado em `asserts/spec-gate.md` §5: `score = itens atendidos / itens aplicáveis × 100`, com `N/A` só com motivo (sem motivo conta ❌ e fica no denominador) e `aplicáveis = 0 ⇒ score N/A` tratado como FAIL. O portão do orchestrator (tabela P1→P2 e passo 15) passou a citar a fórmula. Custo declarado: `spec-gate.md` 22 → 45 linhas.
 - **H4 — ciclo não registrado.** O `sdd-checks` verde media o ciclo do ADR-002 (vacuidade para este); registro e versionamento feitos no fechamento.
 - **H5 — menções obsoletas** (`workflow-state.json:597,1051,1095`; `.spec/bugs/installer-upgrade-regression/TASKS.md:147`) ficam como registro datado: descrevem estado passado, não instrução.
+
+- **H6 (QA) — `population` sobe para 223/30385, não 30362.** A definição do score em `spec-gate.md` (§5) acrescentou 23 linhas ao payload; o número de arquivos segue 223. Registrado: o oráculo é a linha do `V20`, e ela muda quando o próprio payload muda — o que é o comportamento correto.
