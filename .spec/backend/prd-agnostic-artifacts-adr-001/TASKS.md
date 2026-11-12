@@ -76,3 +76,20 @@
 | CD-09 | 4 | CD-05, CD-06 |
 | CD-10 | 4 | CD-09 |
 | CD-11 | 5 | CD-09, CD-10 |
+
+## Nota de atualização (2026-11-11, pós-P4)
+
+Os números desta lista são da **rodada 1**. Após a rodada 3 (§2.3-ter), os valores vivos — oráculo: a linha do `V20` — são:
+
+| Campo | aqui | vivo |
+|---|---|---|
+| plugins | 506 | **534** |
+| `cdl.spec` | 38 | **66** |
+| `BASELINE` | 101 (86+15) | **96 (81+15)** |
+| `prohibition-cited` | 44 | **39** |
+| `prescriptions` | 308 | **181 (44/39/17/81)** |
+| `EXCEPTIONS` | 4 | **6** (E-5 vendor, E-6 dívida estrutural) |
+| `missingVocabulary()` sem `exports` | `[]` | **`["<fonte-de-eixo-ausente>"]`** (fail-closed) |
+| heurística | — | `heuristic=true fp=5/90 fn=4/90` |
+
+Os blocos de evidência acima são snapshots datados; o número que vale é o publicado no `detail` do `V20`.
