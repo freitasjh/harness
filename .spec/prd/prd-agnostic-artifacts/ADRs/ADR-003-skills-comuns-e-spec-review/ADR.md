@@ -185,13 +185,13 @@ Cada item é verificável por comando, da raiz do repo. Itens *(SDD)* só valem 
 
 5. **D1 formalizado: 0 `incondicional` e 0 nome de projeto nas 2 rules, sem reescrever prescrição.**
    *Verificação (SDD)*: `node --input-type=module -e 'const m=await import("./.opencode/plugins/lib/cdl/checks.mjs");const ex=await import("./installer/install.mjs");for(const f of [".agents/rules/frontend-coding-standards.md",".agents/rules/frontend-react-coding-standards.md"]){const a=m.scanArtifact(process.cwd(),f,{exports:{AXIS_IDS:ex.AXIS_IDS,RULES_BY_AXIS:ex.RULES_BY_AXIS,RULES_COMMON:ex.RULES_COMMON,SKILLS_BY_AXIS:ex.SKILLS_BY_AXIS,SKILLS_COMMON:ex.SKILLS_COMMON,STACKS_FOR_EXCEPTIONS:ex.STACKS_FOR_EXCEPTIONS}});console.log(f,JSON.stringify(a.verdicts.filter(v=>v.verdict==="incondicional").map(v=>v.line)))}'` ⇒ `[] []`; hoje ⇒ `[12,159]` e `[30]`.
-   `grep -c 'Atlas ECM' .agents/rules/frontend-coding-standards.md .agents/rules/frontend-react-coding-standards.md` ⇒ `0 0` (hoje `3 3`); `awk 'END{print NR}'` ⇒ `188 194` (contagem preservada em ambos, para não deslocar nada); `git diff --numstat -- .agents/rules/frontend-coding-standards.md .agents/rules/frontend-react-coding-standards.md` ⇒ `6 6` e `5 5` (só as linhas de §2.3; **nenhuma** linha prescritiva do corpo é tocada).
+   `grep -c 'Atlas ECM' .agents/rules/frontend-coding-standards.md .agents/rules/frontend-react-coding-standards.md` ⇒ `0 0` (hoje `3 3`); `awk 'END{print NR}'` ⇒ `188 194` (contagem preservada em ambos, para não deslocar nada); `git diff --numstat -- .agents/rules/frontend-coding-standards.md .agents/rules/frontend-react-coding-standards.md` ⇒ `4 4` e `4 4` (só as linhas de §2.3; **nenhuma** linha prescritiva do corpo é tocada).
 
 6. **`security-review`: licença falsa removida, E-6 morta junto, débito estrutural zero.**
    *Verificação (SDD)*: `sed -n '4p;114p;165p' .agents/skills/security-review/SKILL.md` ⇒ nenhuma é `license:`/`npm audit`; `grep -c 'TaskFlow' .agents/skills/security-review/SKILL.md` ⇒ `0`; `node -e 'import("./.opencode/plugins/lib/cdl/checks.mjs").then(m=>console.log(m.EXCEPTIONS.length, m.EXCEPTIONS.some(e=>e.id==="E-6")))'` ⇒ `5 false`; `node scripts/static-checks.mjs | grep V20` ⇒ `structural-debt=0` e sem `cdl-exception-stale` em FAIL.
    *Fixture vermelha (deve continuar derrubando)*: recolocar `license: Foo Security Standard` numa cópia ⇒ alarme de A-1 FAIL **mesmo** com entrada `identity` na baseline (o comportamento que E-6 existia para contornar).
 
-7. **D8/E-1/E-3 são exceção com predicado vivo, não prosa.** Nenhuma das 6 skills de stack e nenhum arquivo de `ui-ux-pro-max` entra na baseline; `SKILLS_COMMON`/`SKILLS_BY_AXIS`/`RULES_BY_AXIS`/`RULES_COMMON` mantêm 21/2/2/6.
+7. **D8/E-1/E-3 são exceção com predicado vivo, não prosa.** Nenhuma **nova** entrada das 6 skills de stack e nenhum arquivo de `ui-ux-pro-max` entra na baseline; `SKILLS_COMMON`/`SKILLS_BY_AXIS`/`RULES_BY_AXIS`/`RULES_COMMON` mantêm 21/2/2/6.
    *Verificação (SDD)*: `node --input-type=module -e 'import * as m from "./installer/install.mjs";console.log(m.SKILLS_COMMON.length, JSON.stringify(m.SKILLS_BY_AXIS), JSON.stringify(m.RULES_BY_AXIS), m.RULES_COMMON.length)'` ⇒ `21 {"frontend=react":["frontend-vue-specialist"],"frontend=vue":["frontend-react-specialist"]} {"frontend=react":["frontend-coding-standards.md"],"frontend=vue":["frontend-react-coding-standards.md"]} 6`; `node -e 'import("./.opencode/plugins/lib/cdl/checks.mjs").then(m=>console.log(m.EXCEPTIONS.map(e=>e.id).join(",")))'` ⇒ `E-1,E-2,E-3,E-4,E-5`; `node scripts/static-checks.mjs | grep V20` ⇒ `vocabulary=10`, `axis-decl=2/2`, `axis-class=0/1` (inalterados) e `structural-debt=0`.
    *Contraprova de que a exceção não apodrece*: renomear `java-architecture-specialist` para `java-arch` numa árvore temporária ⇒ `cdl-exception-stale` FAIL (`E-3: java-architecture-specialist ausente`).
 
@@ -202,7 +202,7 @@ Cada item é verificável por comando, da raiz do repo. Itens *(SDD)* só valem 
    *Verificação*: `git diff --exit-code -- harness.config.json .opencode/plugins/lib/seal.mjs` ⇒ vazio; `node -e 'console.log(require("./harness.config.json").commands.suiteFull)'` ⇒ literal atual; `node scripts/static-checks.mjs; echo $?` ⇒ `0`.
 
 10. **O oráculo é a linha do `V20`, e os contadores batem com §4.5.** Nenhum número deste ADR é contrato: os valores abaixo são a **previsão** derivada e o SDD publica o medido.
-    *Verificação (SDD)*: `node scripts/static-checks.mjs | grep V20` ⇒ `PASS` com `population=223/30363`, `prescriptions=137 (condicional=53, exemplo=33, catálogo=17, incondicional=34)`, `prohibition-cited=27`, `baseline=38 (incondicional=34, identity=4)`, `identity=4/3`, `payload=214`, `structural-debt=0`, `refs-undetected=20`, `vocabulary=10`.
+    *Verificação (SDD)*: `node scripts/static-checks.mjs | grep V20` ⇒ `PASS` com `population=223/30362`, `prescriptions=137 (condicional=53, exemplo=33, catálogo=17, incondicional=34)`, `prohibition-cited=27`, `baseline=38 (incondicional=34, identity=4)`, `identity=4/3`, `payload=214`, `structural-debt=0`, `refs-undetected=20`, `vocabulary=10`.
 
 11. **Os testes que assam número são atualizados para o novo oráculo (e o guard de "todo `incondicional` está na baseline" continua valendo).**
     *Verificação (SDD)*: `grep -n 'BASELINE.length' .opencode/plugins/__tests__/cdl.spec.mjs` ⇒ `38`; `grep -c 'assert.equal(report.counters.identity.lines, 4)' …` ⇒ `1`; `node --test ".opencode/plugins/__tests__/*.spec.mjs"` ⇒ 0 fail, inclusive `prescriptions.unconditional === baseline.unconditional` (34 = 34).
@@ -246,7 +246,7 @@ Regra de leitura: **veredito hoje** é o medido (`V20`/`BASELINE`, HEAD `4838e0e
 | `frontend-coding-standards.md:154` (idem) | `identity` | `null` | heading de-identificado | `grep -c 'Atlas ECM'` ⇒ `0` |
 | `frontend-react-coding-standards.md:30` (`@rule-axis:frontend=vue#0`) | `incondicional` | `condicional` | heading `:21` → `## ESLint / Formatação (React)` | item 5 ⇒ `[]` |
 | `frontend-react-coding-standards.md:161` (idem) | `identity` | `null` | heading de-identificado | `grep -c 'Atlas ECM'` ⇒ `0` |
-| *fora de baseline*: `:3`, `:152` / `:3`, `:159` | prosa (`null`) e proibição (D2) | veredito-neutro | remover "no `Atlas ECM`" / "para o frontend `Atlas ECM`" | `git diff --numstat` ⇒ `6 6` / `5 5`; `prohibition-cited` não sobe |
+| *fora de baseline*: `:3`, `:152` / `:3`, `:159` | prosa (`null`) e proibição (D2) | veredito-neutro | remover "no `Atlas ECM`" / "para o frontend `Atlas ECM`" | `git diff --numstat` ⇒ `4 4` / `4 4`; `prohibition-cited` não sobe |
 
 ### 4.4 Os artefatos do instrumento e o mapa da baseline
 
@@ -277,7 +277,7 @@ Regra de leitura: **veredito hoje** é o medido (`V20`/`BASELINE`, HEAD `4838e0e
 
 | Contador | Antes (`4838e0e`) | Depois | Δ derivado de |
 |---|---|---|---|
-| `population` | `228/31661` | `223/30363` | −5 arquivos, −1.298 linhas |
+| `population` | `228/31661` | `223/30362` | −5 arquivos, −1.298 linhas |
 | `prescriptions` | `178 (56/39/17/66)` | `137 (53/33/17/34)` | −39 (arquivos removidos) −2 (`security:115,166` → `null`); `+3` migram de `incondicional` para `condicional` |
 | `prohibition-cited` | `39` | `27` | −12 (as 5 proibições de `README`, 3 de `SKILL`, 4 de `checklist` saem com os arquivos) |
 | `baseline` | `80 (66/14)` | `38 (34/4)` | −32 `incondicional`, −10 `identity` |
@@ -415,3 +415,11 @@ Nesta ordem (a ordem importa: 2 antes de 3, senão o `V20` reprova no meio do ca
 11. **PR do SDD** — trailer `Harness-Gate-Change` (5 paths protegidos: `.agents/rules/**`, `.agents/agents/**`, `.agents/skills/**`, `.opencode/plugins/**`, `installer/**`), `git diff --exit-code -- harness.config.json .opencode/plugins/lib/seal.mjs`, e a URL de compare impressa (merge é humano — `.agents/rules/prd-adr-pipeline.md` §4).
 
 **Fora do SDD (declarado):** corpo das skills de stack e as 11 linhas identitárias de agentes (ADR-005), `spec-gate.md` stack-bound (§2.6, ADR-005), `DESIGN.md`/8 paths (ADR-004), mapa novo no instalador e runner do `V20` no destino (PRD-3), `gate.js` (byte-idêntico).
+
+## 11. Correções do review (rodada 1)
+
+- **H2 — números do ADR × medido.** `git diff --numstat` das 2 rules dá `4 4` / `4 4` (o ADR previu `6 6`/`5 5`: só heading + prosa de identidade mudam; o corpo prescritivo é requisito intacto) e `population=223/30362` (não 30363: o ADR esqueceu a linha `license:` removida). Implementação correta, **texto do ADR errado** — corrigido. O oráculo segue sendo a linha do `V20` (ADR-001 N7).
+- **H3 — item 7 dizia que nenhuma skill de stack está na baseline.** Falso: `nestjs:81` e `node:86` continuam, com `owner: ADR-005` (o **corpo** é a dívida; o eixo pelo nome já está correto). Frase corrigida para "nenhuma **nova** entrada" — o N5 já dizia isso.
+- **H1 — o P1→P2 pedia um "score" que a skill removida produzia e nada substituiu.** Fechado em `asserts/spec-gate.md` §5: `score = itens atendidos / itens aplicáveis × 100`, com `N/A` só com motivo (sem motivo conta ❌ e fica no denominador) e `aplicáveis = 0 ⇒ score N/A` tratado como FAIL. O portão do orchestrator (tabela P1→P2 e passo 15) passou a citar a fórmula. Custo declarado: `spec-gate.md` 22 → 45 linhas.
+- **H4 — ciclo não registrado.** O `sdd-checks` verde media o ciclo do ADR-002 (vacuidade para este); registro e versionamento feitos no fechamento.
+- **H5 — menções obsoletas** (`workflow-state.json:597,1051,1095`; `.spec/bugs/installer-upgrade-regression/TASKS.md:147`) ficam como registro datado: descrevem estado passado, não instrução.
