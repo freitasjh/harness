@@ -1,7 +1,7 @@
 {
-  "current_feature": "harness-inventory-adr-004",
-  "current_phase": "Completed",
-  "previous_phase": "Testing",
+  "current_feature": "prd-agnostic-artifacts",
+  "current_phase": "Discovery",
+  "previous_phase": "Completed",
   "next_phase": "Planning",
   "type": "refactor",
   "layer": "agents/skills/rules",
@@ -28,7 +28,7 @@
     "tasks": ".spec/backend/harness-inventory-adr-004/TASKS.md",
     "superseded_cycle": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/ (superseded: SPEC prescrevia `Plugin.define`, ausente no binario v2.0.32)",
     "archive": ".spec/archive/20261028-harness-design-system-agent/",
-    "prd": ".spec/prd/prd-harness-inventory/PRD.md",
+    "prd": ".spec/prd/prd-agnostic-artifacts/PRD.md",
     "research": ".spec/prd/prd-harness-inventory/RESEARCH.md",
     "adr_index": ".spec/prd/prd-harness-inventory/ADR-INDEX.md",
     "adr": ".spec/prd/prd-harness-inventory/ADRs/ADR-004-inventario-canonico/ADR.md",
@@ -76,7 +76,7 @@
       "FU32": "closed_approved_decision_B"
     },
     "G2_ADR": "approved_user_2026_11_11 (ADR-004 inventario derivado, 14 itens)",
-    "G1_PRD": "approved_user_2026_11_11 (PRD-1 harness-inventory; D1-D7 fechadas; nenhum ADR criado antes do veredito)"
+    "G1_PRD": "approved_user_2026_11_11 (PRD-2 prd-agnostic-artifacts; D1-D8 fechadas)"
   },
   "code_review": {
     "last_invoked_at": "2026-11-11T00:00:00-03:00",
@@ -192,7 +192,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-11T20:09:50.282Z",
+  "last_update": "2026-11-11T22:20:36.453Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -216,7 +216,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "harness-inventory-adr-004: 3 rodadas + patch dirigido; 0 criticos abertos; 2 residuais declarados com dono (N30)",
-  "sdd_stage": "harness-inventory-adr-004 CONCLUIDO (VERIFY 3/3). PRD-1 (prd-harness-inventory) fecha quando este ADR mergear: 5/5 ADRs",
+  "sdd_stage": "PRD-2 prd-agnostic-artifacts: G1 APROVADO (D1-D8). Proximo: RESEARCH -> ADR-INDEX -> <=5 ADRs",
   "backlog": {
     "total": 10,
     "todo": 0,
@@ -1072,82 +1072,21 @@
     "env": "HARNESS_GATES=off (host)"
   },
   "prd_adr": {
-    "prd_id": "prd-harness-inventory",
+    "prd_id": "prd-agnostic-artifacts",
     "prd_status": "approved",
-    "active_adr": "ADR-004",
+    "active_adr": null,
     "adr_order": [],
-    "snapshots": [
-      {
-        "adr": "ADR-001",
-        "at": "2026-11-11",
-        "follow_ups_count": 2,
-        "escalations_count": 3,
-        "nota": "3 rodadas de code review (0 criticos) + QA P4 + VERIFY 3/3; branch pushada, merge humano pendente"
-      }
-    ],
+    "snapshots": [],
     "decisions_closed": {
-      "D1_D2": "retirar sdd-orquestrador + consolidar roster (funde codebase-analyzer em architect, remove stub code-reviewer/AGENT.md)",
-      "D3": "manter vendor-by-axis (25 vendorizadas classificadas pelo .vendor-lock.json, sem exigir agente consumidor)",
-      "D4": "reclassificar prd-adr-pipeline como modulo de checks+rules, reapontar 4 agentes",
-      "D5": "classificar prosa orfa neste ciclo; corrigir o texto no PRD 2",
-      "D6": "agente planner, modo subagent, consome skill dev-planner; 3 refs de planejador reapontadas",
-      "D7": "fechada: lista canonica = 10 itens"
-    },
-    "adr_plan": [
-      {
-        "order": 1,
-        "id": "ADR-001",
-        "titulo": "Roster de agentes: 1 primario, fusao codebase-analyzer->architect, remocao do stub, saida do sdd-orquestrador (10 refs)",
-        "depende_de": [],
-        "branch": "adr/prd-harness-inventory/01-roster-de-agentes",
-        "status": "merged",
-        "commit": "5dcc0e0",
-        "gate": "G2 pendente (interface congelada de 16 itens)",
-        "merge": "fe7c408 (PR #4, merge humano 2026-11-11)"
-      },
-      {
-        "order": 2,
-        "id": "ADR-002",
-        "titulo": "prd-adr-pipeline reclassificado como modulo (path, formato, 4 reapontamentos, impacto no installer)",
-        "depende_de": [],
-        "branch": "adr/prd-harness-inventory/02-prd-adr-pipeline-modulo",
-        "merge": "pending_human (branch 02-prd-adr-pipeline-modulo)"
-      },
-      {
-        "order": 3,
-        "id": "ADR-003",
-        "titulo": "Agente planner (subagent, consome dev-planner, fronteira com 4 vizinhos)",
-        "depende_de": [
-          "ADR-001"
-        ],
-        "branch": "adr/prd-harness-inventory/03-agente-planner",
-        "status": "merged",
-        "merge": "f9c5ca2 (PR #6, merge humano 2026-11-11)"
-      },
-      {
-        "order": 4,
-        "id": "ADR-004",
-        "titulo": "Inventario canonico re-derivavel + classificacao das 49 skills (vendor-by-axis)",
-        "depende_de": [],
-        "branch": "adr/prd-harness-inventory/04-inventario-canonico",
-        "status": "in-progress",
-        "merge": "pending_human (branch 04-inventario-canonico)"
-      },
-      {
-        "order": 5,
-        "id": "ADR-005",
-        "titulo": "Prosa orfa: 8 paths acionaveis + 5 vendor-internal + .doc + AGENTS.md + frontend/DESIGN.md + HERDADO do ADR-003 (I2 PLAN.md, I3 template de ADR na skill, autor de EXPLORATION.md, protocolo de delegacao, gatilho da Fase 0)",
-        "depende_de": [
-          "ADR-003"
-        ],
-        "branch": "adr/prd-harness-inventory/05-prosa-orfa",
-        "status": "merged",
-        "merge": "cb0f08d (PR #7, merge humano 2026-11-11)"
-      }
-    ],
-    "prd_verdict": "approved_user_2026_11_11",
-    "research": ".spec/prd/prd-harness-inventory/RESEARCH.md (248 linhas; 9 fontes abertas; 5 secoes de tema; §9 com 8 riscos; §11 com o ledger pronto)",
-    "adr_index_status": "materializado: 1 linha (ADR-001 in-progress) porque ADR-01 exige 1:1 indice<->disco; plano das 5 vive em adr_plan + PRD secao 16"
+      "D1": "gatear as 2 rules de frontend por eixo (formaliza o status quo)",
+      "D2": "proibicao citando tecnologia NAO e acoplamento (excecao permanente); A-2 mede prescricao",
+      "D3": "spec-review vira skill de projeto; workflow-rules §4 invoca revisor generico",
+      "D4": "remover as 52 citacoes de baseline Java e declarar fora de suporte ate o PRD-4",
+      "D5": "remover o ponteiro de frontend/DESIGN.md dos 3 agentes; DESIGN.md nasce no PRD-5",
+      "D6": "orchestrator ganha edit: allow restrito a .spec/**",
+      "D7": "criterio mede o repo inteiro menos vendor",
+      "D8": "ui-ux-pro-max e as 6 skills de stack ficam em SKILLS_COMMON (excecao declarada)"
+    }
   },
   "escalations": [
     {
