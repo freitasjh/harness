@@ -36,11 +36,11 @@ Jornada já sólida. Melhorias em **E** (estado no envelope, nunca em `stderr`) 
 
 | # | Risco | Mitigação |
 |---|---|---|
-| R1 | widget muda bytes do transcript | prompts line-based; `diff` vazio (item 2) |
-| R2 | tela grava no aborto | `grep -cE 'applyMerge|writeManifest|fs\.write'` = 0 (item 5) |
-| R3 | segredo vaza | `stdin` TTY sem eco, `serializeSkips` em pipe, `[REDACTED]` (itens 7/8) |
-| R4 | `SIGTERM` sem eco | handler idempotente + prova PTY (item 9) |
-| R5 | canais misturados | `stdout` envelope / `stderr` progresso (item 10) |
+| R-ADR2 | widget muda bytes do transcript | prompts line-based; `diff` vazio (item 2) |
+| R-ADR5 | tela grava no aborto | guarda dupla JS+Rust em RF-05 (item 5) |
+| R-ADR9 | segredo vaza | `stdin` TTY sem eco, `serializeSkips` em pipe, `[REDACTED]` (itens 7/8) |
+| R-ADR10 | `SIGTERM` sem eco | handler idempotente + prova PTY (item 9) |
+| R-ADR11 | canais misturados | `stdout` envelope / `stderr` progresso (item 10) |
 
 ## 7. Verificação
 

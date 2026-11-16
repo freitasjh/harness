@@ -1,7 +1,7 @@
 {
   "current_feature": "prd-installer-rust-adr-004",
-  "current_phase": "Discovery",
-  "previous_phase": "Completed",
+  "current_phase": "Planning",
+  "previous_phase": "Discovery",
   "next_phase": "Planning",
   "type": "refactor",
   "layer": "agents/skills/rules",
@@ -22,8 +22,8 @@
       "harness_report": "harness/harness-inventory.json"
     },
     "c1_previous_bug": ".spec/bugs/harness-eixos-stack-p2/TASKS.md",
-    "proposal": ".spec/backend/prd-installer-rust-adr-003/PROPOSAL.md",
-    "spec": ".spec/backend/prd-installer-rust-adr-003/SPEC.md",
+    "proposal": ".spec/frontend/prd-installer-rust-adr-004/PROPOSAL.md",
+    "spec": ".spec/frontend/prd-installer-rust-adr-004/SPEC.md",
     "plan": ".spec/backend/prd-installer-rust-adr-003/PLAN.md",
     "tasks": ".spec/backend/prd-installer-rust-adr-003/TASKS.md",
     "superseded_cycle": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/ (superseded: SPEC prescrevia `Plugin.define`, ausente no binario v2.0.32)",
@@ -33,9 +33,10 @@
     "adr_index": ".spec/prd/prd-installer-rust/ADR-INDEX.md",
     "adr": ".spec/prd/prd-installer-rust/ADRs/ADR-004-tui-dez-telas/ADR.md",
     "prd_lines": ".spec/prd/prd-harness-inventory/PRD.md (162 linhas, 16 secoes, PRD-01 PASS)",
-    "security": ".spec/backend/prd-installer-rust-adr-003/SECURITY.md",
-    "spec_gate": ".spec/backend/prd-installer-rust-adr-003/GATE-SPEC.md",
-    "jira_board": ".spec/backend/prd-installer-rust-adr-003/JIRA_BOARD.md"
+    "security": ".spec/frontend/prd-installer-rust-adr-004/SECURITY.md",
+    "spec_gate": ".spec/frontend/prd-installer-rust-adr-004/SPEC_GATE.md",
+    "jira_board": ".spec/backend/prd-installer-rust-adr-003/JIRA_BOARD.md",
+    "ux": ".spec/frontend/prd-installer-rust-adr-004/UX.md"
   },
   "scope": {
     "interpretation": "esteira PRD->ADR->SDD no harness (visibilidade de intencao antes do codigo)",
@@ -58,7 +59,7 @@
   "gates": {
     "P0_P1": "approved_user_2026_11_16 (Refactor; ADR-004 como entrada da SPEC; ux-designer obrigatorio na analise)",
     "G2_PRD": "approved_user_2026_10_22 (PRD prd-garantias-runtime aprovado sem ressalvas; §16 do PRD.md; 3 decisoes do owner)",
-    "P1_P2": "pending_user_approval",
+    "P1_P2": "pending_review_after_architecture_gaps (F1 🔴 guarda Rust, F2 🟠 superdeclaracao, F3 🟠 state drift; F4/F5 corrigidos) — AGUARDANDO RE-REVIEW",
     "P2_P3": "approved_user_2026_11_16 (PLAN 70 linhas, TASKS 12 microtasks, 17 RF mapeados; SDD verdes)",
     "P3_P4": "approved_auto_evidence_2026_11_16 (3 batches; review APPROVED 0/0 apos 1 iteracao de correcao; mutante 0/23)",
     "P4_P5": "approved_auto_evidence_QA_2026_11_16 (540+644 + cargo 60 + spec 20; 23/23 differential real; SI 1..6 medidos)",
@@ -227,7 +228,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T21:42:03.757Z",
+  "last_update": "2026-11-16T21:47:42.583Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -251,7 +252,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-004 ANALISE — ux-designer emitindo parecer das 10 telas x 5 campos (fonte da verdade visual) antes da SPEC",
+  "sdd_stage": "PRD-3 ADR-004 ANALISE — gaps do architect corrigidos (guarda Rust, 8/18 divida, state reancorado, canais §16); re-review pendente",
   "backlog": {
     "total": 12,
     "todo": 0,
@@ -1934,12 +1935,13 @@
     "gate": "P0_P1 aprovado pelo owner 2026-11-16; ux-designer OBRIGATORIO antes da SPEC (fonte da verdade visual)"
   },
   "spec": {
-    "score": "100% (6 aplicaveis atendidos / 5 N/A com motivo)",
-    "gate": ".spec/backend/prd-installer-rust-adr-003/GATE-SPEC.md",
-    "security": "Fase 1 pass — SECURITY.md, STRIDE, 0 criticos",
-    "rf_count": 17,
+    "score": "100% (6 aplicaveis / 5 N/A com motivo)",
+    "gate": ".spec/frontend/prd-installer-rust-adr-004/GATE-SPEC.md",
+    "ux": "parecer vinculante UX.md — M1..M8, zero byte",
+    "security": "Fase 1 pass — SECURITY.md STRIDE",
+    "rf_count": 18,
     "items": 17,
-    "at": "2026-11-16T17:53:09.382Z"
+    "at": "2026-11-16T21:47:42.582Z"
   },
   "plan": {
     "lines": 70,
