@@ -1,15 +1,14 @@
 {
   "version": 1,
-  "demand": "prd-installer-rust-adr-004-batch1",
+  "demand": "prd-installer-rust-adr-004",
   "agent": "developer-engineer",
   "phase": "Testing",
-  "gitSha": "a4b795ed9f9a83448bb48c627509a1be1f4316e5",
-  "batch": 2,
+  "gitSha": "287391a1c31f11ad654db86c020e000054c12b18",
+  "batch": 3,
   "tasks": [
-    "TUI-02",
-    "TUI-03",
-    "TUI-04",
-    "TUI-05"
+    "TUI-06",
+    "VAL-02",
+    "VAL-03"
   ],
   "branch": "adr/prd-installer-rust/04-tui-dez-telas-impl",
   "oraculo": "c63e333",
@@ -63,118 +62,118 @@
   "frozenVerdictsRecordedBeforeFirstComparison": true,
   "commands": [
     {
-      "cmd": "cargo test --manifest-path installer-rs/Cargo.toml",
-      "exitCode": 0,
-      "durationMs": 0,
-      "stdoutHash": "sha256:3c3e51927ed681e6cf497b09c727cb630eb8ca11ccaf5476f9cf2e0b223a793f",
-      "durationMsBasis": "nao capturado nesta execucao",
-      "durationMsMeasured": false
-    },
-    {
-      "cmd": "cargo test --manifest-path installer-rs/Cargo.toml --test tui_model_spec",
-      "exitCode": 0,
-      "durationMs": 0,
-      "stdoutHash": "sha256:b6feb46a9444540800aea94f790151cc87e3245c4e0e6b6bd2b1a1c639434068",
-      "durationMsBasis": "nao capturado nesta execucao",
-      "durationMsMeasured": false
-    },
-    {
-      "cmd": "node --test installer-rs/tests/tui-transcript.spec.mjs",
-      "exitCode": 0,
-      "durationMs": 0,
-      "stdoutHash": "sha256:a749d9e0c76058f4db37f3dac70030be3f92c8f3c38bbd1e0a7211b5bd782a2e",
-      "durationMsBasis": "nao capturado nesta execucao",
-      "durationMsMeasured": false
-    },
-    {
-      "cmd": "bash /tmp/opencode/adr004-guard-proof.sh (RF-05(b) 3 caminhos, comando exato)",
-      "exitCode": 0,
-      "durationMs": 0,
-      "stdoutHash": "sha256:8e250f4287e02cc23ef2d374aa37a94b9ecd4aecb45c305fbce105aafc35266f",
-      "stdoutHashBasis": "sha256 do vetor estavel (comando + exit codes 0/1/1 do guarda 3-caminhos) — nao e hash de stdout capturado",
-      "durationMsBasis": "nao capturado nesta execucao",
-      "durationMsMeasured": false
-    },
-    {
-      "cmd": "INSTALLER_BIN=installer-rs/target/debug/harness-installer node installer/parity-oracle.mjs --run-parity",
-      "exitCode": 0,
-      "durationMs": 0,
-      "stdoutHash": "sha256:624b8d71d5f78a98669c53a26cf842267b9dd474c97eb8c0f55015b3ba81f0c6",
-      "durationMsBasis": "nao capturado nesta execucao",
-      "durationMsMeasured": false
-    },
-    {
       "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
       "exitCode": 0,
-      "durationMs": 0,
-      "stdoutHash": "sha256:70a351b87bc956bee7014e7274958fe7ed0a117da36b1a284fe9b00e89628c9b",
-      "durationMsBasis": "nao capturado nesta execucao",
-      "durationMsMeasured": false
+      "durationMs": 794,
+      "durationMsMeasured": true,
+      "durationMsBasis": "cronometro date +%s%3N ao redor do comando real (2026-11-16T23:10:11.343Z)",
+      "stdoutHash": "sha256:35b668e222ba78a2b28d24b47d49f728a787809fab0c32ae75c3fa2a16ac05d2",
+      "stdoutHashBasis": "sha256 do stdout capturado em /tmp/opencode/adr004-final/<label>.out"
     },
     {
       "cmd": "node --test \"installer/__tests__/*.spec.mjs\"",
       "exitCode": 0,
-      "durationMs": 0,
-      "stdoutHash": "sha256:fdad4453cc32547a0c480cd551396195a2c20fc41f3a0e73dd1c02a864a2e83a",
-      "durationMsBasis": "nao capturado nesta execucao",
-      "durationMsMeasured": false
+      "durationMs": 6123,
+      "durationMsMeasured": true,
+      "durationMsBasis": "cronometro date +%s%3N ao redor do comando real (2026-11-16T23:10:11.343Z)",
+      "stdoutHash": "sha256:ea6f463ca37ad454c6046714bbf1681d23ddb4aacce630fda7d762a795b22ae0",
+      "stdoutHashBasis": "sha256 do stdout capturado em /tmp/opencode/adr004-final/<label>.out"
     },
     {
       "cmd": "node scripts/static-checks.mjs",
       "exitCode": 0,
-      "durationMs": 0,
+      "durationMs": 259,
+      "durationMsMeasured": true,
+      "durationMsBasis": "cronometro date +%s%3N ao redor do comando real (2026-11-16T23:10:11.343Z)",
       "stdoutHash": "sha256:4a1e734a85037a1e26e20ea8531b7b4e64cf76d4b1fd7890b3b62529b7652ad5",
-      "durationMsBasis": "nao capturado nesta execucao",
-      "durationMsMeasured": false
+      "stdoutHashBasis": "sha256 do stdout capturado em /tmp/opencode/adr004-final/<label>.out"
     },
     {
       "cmd": "node scripts/sdd-checks.mjs",
       "exitCode": 0,
-      "durationMs": 0,
+      "durationMs": 121,
+      "durationMsMeasured": true,
+      "durationMsBasis": "cronometro date +%s%3N ao redor do comando real (2026-11-16T23:10:11.343Z)",
       "stdoutHash": "sha256:1836d855cc8653106f792eb990cb9f6088b34a85e9725fc45fe504e0c2fbc7df",
-      "durationMsBasis": "nao capturado nesta execucao",
-      "durationMsMeasured": false
+      "stdoutHashBasis": "sha256 do stdout capturado em /tmp/opencode/adr004-final/<label>.out"
     },
     {
       "cmd": "node scripts/vendor-skills.mjs --check",
       "exitCode": 0,
-      "durationMs": 0,
+      "durationMs": 49,
+      "durationMsMeasured": true,
+      "durationMsBasis": "cronometro date +%s%3N ao redor do comando real (2026-11-16T23:10:11.343Z)",
       "stdoutHash": "sha256:e5e528c52d79fceaa1be828bd89116aa6e0be73294d2e99d39c4febe99e84516",
-      "durationMsBasis": "nao capturado nesta execucao",
-      "durationMsMeasured": false
+      "stdoutHashBasis": "sha256 do stdout capturado em /tmp/opencode/adr004-final/<label>.out"
+    },
+    {
+      "cmd": "cargo test --manifest-path installer-rs/Cargo.toml",
+      "exitCode": 0,
+      "durationMs": 2443,
+      "durationMsMeasured": true,
+      "durationMsBasis": "cronometro date +%s%3N ao redor do comando real (2026-11-16T23:10:11.343Z)",
+      "stdoutHash": "sha256:8bc1f78c7ab1825b9a58e19f4602cfda12b75dbf60c19c33a525b7f60fe5927e",
+      "stdoutHashBasis": "sha256 do stdout capturado em /tmp/opencode/adr004-final/<label>.out"
+    },
+    {
+      "cmd": "node installer-rs/tests/tui-parity.mjs (8 provas + mutacao + canais + segredo + guarda)",
+      "exitCode": 0,
+      "durationMs": 1666,
+      "durationMsMeasured": true,
+      "durationMsBasis": "cronometro date +%s%3N ao redor do comando real (2026-11-16T23:10:11.343Z)",
+      "stdoutHash": "sha256:2115f8b6216d1aa0b96f37f0daeb10e65be779c01200b6ed19d7076a6ec96883",
+      "stdoutHashBasis": "sha256 do stdout capturado em /tmp/opencode/adr004-final/<label>.out"
+    },
+    {
+      "cmd": "env INSTALLER_BIN=installer-rs/target/debug/harness-installer node installer/parity-oracle.mjs --run-parity",
+      "exitCode": 0,
+      "durationMs": 1562,
+      "durationMsMeasured": true,
+      "durationMsBasis": "cronometro date +%s%3N ao redor do comando real (2026-11-16T23:10:11.343Z)",
+      "stdoutHash": "sha256:624b8d71d5f78a98669c53a26cf842267b9dd474c97eb8c0f55015b3ba81f0c6",
+      "stdoutHashBasis": "sha256 do stdout capturado em /tmp/opencode/adr004-final/<label>.out"
+    },
+    {
+      "cmd": "bash /tmp/opencode/adr004-guard-proof.sh (RF-05(b) 3 caminhos)",
+      "exitCode": 0,
+      "durationMs": 11,
+      "durationMsMeasured": true,
+      "durationMsBasis": "cronometro date +%s%3N ao redor do comando real (2026-11-16T23:10:11.343Z)",
+      "stdoutHash": "sha256:304c23c263f05a4e6311d0df4e6cc1bb14e61d5ba5d38dd5592b78fe0393c23c",
+      "stdoutHashBasis": "sha256 do stdout capturado em /tmp/opencode/adr004-final/<label>.out"
     }
   ],
   "counts": {
     "unit": {
-      "passed": 63,
+      "passed": 540,
       "failed": 0,
       "skipped": 0
     },
     "it": {
-      "passed": 5,
+      "passed": 714,
       "failed": 0,
       "skipped": 0
     },
     "frontend": {
-      "passed": 0,
+      "passed": 8,
       "failed": 0,
       "skipped": 0
     }
   },
   "evaluation": {
-    "telas": "50 campos preenchidos (10 ids × I/C/P/E/A); prompts terminam em espaço preserved (:19/:24); sem ANSI; estado novo só no envelope, nunca em stderr",
-    "negocio": "0 prompt/default/range/mensagem/transição novo; nenhuma chave nova em result; nenhum crate/versão pinado",
-    "logica": "guarda RF-05(b) 3 caminhos (0/1/1); transcript 16336 B sha fe1f9187; oráculo detach c63e333 limpo antes de cada comparação; mutação 1 byte reprova; canais stdout=envelope / stderr=progresso — medicacao completa prevista no VAL-02 (nao medida neste batch)",
-    "perf": "N/A — modelo declarativo de dados, nenhum I/O em src/tui/",
-    "channelCoverage": "pending_VAL-02"
+    "telas": "8 ops TUI 1:1 com D-TUI, diff -u vazio; ponte 18->10 com os 10 D-ENGINE intactos; 10 telas x 5 campos intactas; 4 ramos e 16.336 B inalterados",
+    "negocio": "nenhum prompt/default/range/mensagem/transicao novo; 8 D-TUI saem da ponte sem perder consumidor (modulo local byte-fiel + Rust); rito ADR-002 reutilizado, sem rubrica nova",
+    "logica": "canais MEDIDOS (r.json 1 envelope, r.err 29 B, 0 envelope em err, 0 progresso em json); segredo 0 em /proc/PID/cmdline, stdout e stderr; guarda RF-05(b) 3/3 (0/1/1); 8 provas + 8 binarios mutantes reprovados; 2 sugestoes verdes corrigidas",
+    "perf": "N/A — operacoes puras de leitura/formatacao; nenhum I/O em src/tui/ alem de leitura de pubspec e da ancora",
+    "channelCoverage": "medido_no_VAL-02"
   },
   "brainStore": [
-    "regras/projetos/regras/projetos/projeto/harness/adr-004-batch1-guarda-dente-transcript-travado",
-    "regras/projetos/projetos/harness/adr-004-batch2-nav-segredo-cleanup"
+    "regras/projetos/harness/adr-004-batch3-ponte-18-para-10-sem-prova-por-omissao",
+    "regras/projetos/harness/adr-004-batch3-canais-medidos-e-evidencia-real"
   ],
   "cleanup": {
     "ports": [],
-    "note": "worktree do oráculo materializado e liberado em finally; nenhuma porta subida; cópias de mutação removidas de /tmp/opencode"
+    "note": "worktree do oraculo materializado/liberado em finally; nenhuma porta subida; processos de medicao encerrados por PID (child.kill)"
   },
   "selfReported": true,
   "code_review": {
@@ -189,7 +188,9 @@
     ]
   },
   "evidence_notes": [
-    "durationMs=0 e durationMsMeasured=false: tempo nao capturado nesta execucao; campo obrigatorio pelo schema, nao e medicao"
+    "durationMs medido com date +%s%3N em todas as 9 execucoes; stdoutHash = sha256 real do arquivo capturado",
+    "Nenhum Veredito: validated literal escrito por este agente; literal ADR-002 9fa4530b... reutilizado e verificado por sha256 do arquivo",
+    "12/12 NAO publicado como fato; nenhuma generalizacao de preset"
   ],
   "batch2": {
     "commandEvidence": [
@@ -286,6 +287,526 @@
       "negocio": "W5 aborto/flagged-open 0 writes; dry-run applied:false/checks skipped; upgrade flag -> collisions e continua; --yes pula",
       "logica": "segredo can_no_echo/tty+raw, q -> USER_ABORT, sanitizeLog token=[REDACTED], serializeSkips sem deployToken; cleanup idempotente registrado antes da leitura",
       "perf": "N/A — funcoes puras e FFI de terminal; nenhum I/O em src/tui/ alem da leitura protegida"
+    }
+  },
+  "gitShaBasis": "HEAD base do batch 3; SHA do commit final registrado no retorno ao orquestrador",
+  "countsBasis": "unit=540 specs .opencode/plugins; it=714 specs installer (703 baseline + 11 TUI-06); frontend=8 provas TUI; cargo=85 (batch3.counts.cargo)",
+  "batch3": {
+    "at": "2026-11-16T23:10:11.343Z",
+    "tasks": [
+      "TUI-06",
+      "VAL-02",
+      "VAL-03"
+    ],
+    "counts": {
+      "cargo": {
+        "passed": 85,
+        "failed": 0,
+        "skipped": 0
+      },
+      "provas": {
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0
+      },
+      "mutant": {
+        "reprovados": 8,
+        "total": 8
+      }
+    },
+    "opsTui": [
+      "askMenuStep",
+      "detect",
+      "printPlan",
+      "printUsage",
+      "promptAnswers",
+      "readSecretPrompt",
+      "readSecretRaw",
+      "sourceLineOf"
+    ],
+    "dispatcherDiff": {
+      "command": "diff -u <(inventario D-TUI) <(case \"...\" do dispatcher.rs) => vazio",
+      "empty": true,
+      "source": "tests/tui_ops_spec.rs::dispatcher_tem_31_ops_e_as_8_tui_1a1_com_adr001"
+    },
+    "bridge": {
+      "antes": 18,
+      "depois": 10,
+      "removidos": [
+        "askMenuStep",
+        "detect",
+        "printPlan",
+        "printUsage",
+        "promptAnswers",
+        "readSecretPrompt",
+        "readSecretRaw",
+        "sourceLineOf"
+      ],
+      "restantes": [
+        "runCli",
+        "runDoctor",
+        "runInit",
+        "runUpgrade",
+        "runWizard",
+        "collectAnswers",
+        "generateConfig",
+        "planMerge",
+        "runChecks",
+        "main"
+      ],
+      "grepLiteral": "grep -rn \"from '.*install\\.mjs'\" --include=*.mjs . => 1 (installer/installer-contract.mjs:57)",
+      "nota": "8 D-TUI reexistem como modulo local byte-fiel installer/contract-tui.mjs + 8 ops no dispatcher Rust; nenhum reexport vivo de install.mjs"
+    },
+    "provaTable": [
+      {
+        "op": "askMenuStep",
+        "oraculo": "ADR-004 §2.1 W2m-1/W2m-2 + transcript :13-25",
+        "comando": "node installer-rs/tests/tui-parity.mjs",
+        "mutacao": "mutatedRejects(1 byte) + binario mutante exit-preserving"
+      },
+      {
+        "op": "detect",
+        "oraculo": "ADR-004 §2.1 W2 + transcript :11-12",
+        "comando": "node installer-rs/tests/tui-parity.mjs",
+        "mutacao": "mutatedRejects(1 byte) + binario mutante exit-preserving"
+      },
+      {
+        "op": "printPlan",
+        "oraculo": "ADR-004 §2.1 W4 + transcript :40-42,262-263",
+        "comando": "node installer-rs/tests/tui-parity.mjs",
+        "mutacao": "mutatedRejects(1 byte) + binario mutante exit-preserving"
+      },
+      {
+        "op": "printUsage",
+        "oraculo": "text/usage.rs (9 linhas literais de install.mjs:2462-2470)",
+        "comando": "node installer-rs/tests/tui-parity.mjs",
+        "mutacao": "mutatedRejects(1 byte) + binario mutante exit-preserving"
+      },
+      {
+        "op": "promptAnswers",
+        "oraculo": "ADR-004 §2.4 pipe/serializeSkips + transcript :26-39",
+        "comando": "node installer-rs/tests/tui-parity.mjs",
+        "mutacao": "mutatedRejects(1 byte) + binario mutante exit-preserving"
+      },
+      {
+        "op": "readSecretPrompt",
+        "oraculo": "ADR-004 §2.4 + canNoEchoPipe=false",
+        "comando": "node installer-rs/tests/tui-parity.mjs",
+        "mutacao": "mutatedRejects(1 byte) + binario mutante exit-preserving"
+      },
+      {
+        "op": "readSecretRaw",
+        "oraculo": "ADR-001 §2.3 SECRET_TTY sem TTY",
+        "comando": "node installer-rs/tests/tui-parity.mjs",
+        "mutacao": "mutatedRejects(1 byte) + binario mutante exit-preserving"
+      },
+      {
+        "op": "sourceLineOf",
+        "oraculo": "install.mjs:2082-2090 (ultima ocorrencia do marcador)",
+        "comando": "node installer-rs/tests/tui-parity.mjs",
+        "mutacao": "mutatedRejects(1 byte) + binario mutante exit-preserving"
+      }
+    ],
+    "channels": {
+      "measured": true,
+      "envelopeLinesInStdout": 1,
+      "envelopeOp": "printUsage",
+      "stderrBytes": 29,
+      "stderrHasProtocol": true,
+      "grepV1InErr": 0,
+      "grepProgressInJson": 0,
+      "pass": true
+    },
+    "secret": {
+      "measured": true,
+      "cmdlineContainsSecret": false,
+      "stdoutContainsSecret": false,
+      "stderrContainsSecret": false,
+      "signal": "SIGTERM",
+      "exitCode": null,
+      "pass": true
+    },
+    "guard3": {
+      "exits": [
+        0,
+        1,
+        1
+      ],
+      "transcriptBytes": 0,
+      "pass": true,
+      "stdoutSha": "sha256:304c23c263f05a4e6311d0df4e6cc1bb14e61d5ba5d38dd5592b78fe0393c23c"
+    },
+    "transcript": {
+      "bytes": 16336,
+      "sha256": "fe1f918757f30afec7c43518b94fb19e341dca4a219d7f44848076d7ba165109",
+      "markers": [
+        "[1/2]",
+        "[2/2]",
+        "[1-5]",
+        "(default: 1)",
+        "(q cancela)"
+      ],
+      "oracleDiffEmpty": true,
+      "gitDiffEmpty": true,
+      "pass": true
+    },
+    "mutantGuard": {
+      "ops": [
+        {
+          "op": "askMenuStep",
+          "status": "reprovado",
+          "sideMatch": false
+        },
+        {
+          "op": "detect",
+          "status": "reprovado",
+          "sideMatch": false
+        },
+        {
+          "op": "printPlan",
+          "status": "reprovado",
+          "sideMatch": false
+        },
+        {
+          "op": "printUsage",
+          "status": "reprovado",
+          "sideMatch": false
+        },
+        {
+          "op": "promptAnswers",
+          "status": "reprovado",
+          "sideMatch": false
+        },
+        {
+          "op": "readSecretPrompt",
+          "status": "reprovado",
+          "sideMatch": false
+        },
+        {
+          "op": "readSecretRaw",
+          "status": "reprovado",
+          "sideMatch": false
+        },
+        {
+          "op": "sourceLineOf",
+          "status": "reprovado",
+          "sideMatch": false
+        }
+      ],
+      "reprovados": 8,
+      "pass": true
+    },
+    "provas": [
+      {
+        "op": "askMenuStep",
+        "status": "ok",
+        "sideSha": {
+          "oracle": "df2d79ca1018a1fb38e774e157d20ffbc3f8b0268aba9988241d64ae0a974ef9",
+          "bin": "df2d79ca1018a1fb38e774e157d20ffbc3f8b0268aba9988241d64ae0a974ef9"
+        },
+        "mutation": {
+          "op": "askMenuStep",
+          "rejected": true,
+          "path": "sha256:df2d79ca1018a1fb38e774e157d20ffbc3f8b0268aba9988241d64ae0a974ef9",
+          "original": "df2d79ca1018a1fb38e774e157d20ffbc3f8b0268aba9988241d64ae0a974ef9",
+          "mutated": "64e0538355190bbf3312cb930485effd44e11d48e86f7e8200ceac3ac85491e7"
+        },
+        "comparison": {
+          "sideMatch": true,
+          "okMatch": true,
+          "exitCodeMatch": true,
+          "oracleExitMatch": true,
+          "allMatch": true
+        },
+        "opDoEnvelope": "askMenuStep",
+        "v": 1,
+        "diff": ""
+      },
+      {
+        "op": "detect",
+        "status": "ok",
+        "sideSha": {
+          "oracle": "2336d675cbe2eb5a6a1c284b15dff588d5bd3020b170350d5b88b8ef3102bd12",
+          "bin": "2336d675cbe2eb5a6a1c284b15dff588d5bd3020b170350d5b88b8ef3102bd12"
+        },
+        "mutation": {
+          "op": "detect",
+          "rejected": true,
+          "path": "sha256:2336d675cbe2eb5a6a1c284b15dff588d5bd3020b170350d5b88b8ef3102bd12",
+          "original": "2336d675cbe2eb5a6a1c284b15dff588d5bd3020b170350d5b88b8ef3102bd12",
+          "mutated": "9a49f4f355dbd965a8b08a41db1505832465f713c9c3d8d6b4c608859cca38ba"
+        },
+        "comparison": {
+          "sideMatch": true,
+          "okMatch": true,
+          "exitCodeMatch": true,
+          "oracleExitMatch": true,
+          "allMatch": true
+        },
+        "opDoEnvelope": "detect",
+        "v": 1,
+        "diff": ""
+      },
+      {
+        "op": "printPlan",
+        "status": "ok",
+        "sideSha": {
+          "oracle": "4a71f0a808c82fd479e2de71e638e3fc3f4b94c87f826580bbb9b5502e30dbf0",
+          "bin": "4a71f0a808c82fd479e2de71e638e3fc3f4b94c87f826580bbb9b5502e30dbf0"
+        },
+        "mutation": {
+          "op": "printPlan",
+          "rejected": true,
+          "path": "sha256:4a71f0a808c82fd479e2de71e638e3fc3f4b94c87f826580bbb9b5502e30dbf0",
+          "original": "4a71f0a808c82fd479e2de71e638e3fc3f4b94c87f826580bbb9b5502e30dbf0",
+          "mutated": "3c1fc298370ce7f6cfe1af07792042d64a99e8545c5fba111ddcb3a838534556"
+        },
+        "comparison": {
+          "sideMatch": true,
+          "okMatch": true,
+          "exitCodeMatch": true,
+          "oracleExitMatch": true,
+          "allMatch": true
+        },
+        "opDoEnvelope": "printPlan",
+        "v": 1,
+        "diff": ""
+      },
+      {
+        "op": "printUsage",
+        "status": "ok",
+        "sideSha": {
+          "oracle": "3d42a1bcfa983bfbfb95c6d9e473cbdf0f9ffc58555a4afb9bb265207a41f5b8",
+          "bin": "3d42a1bcfa983bfbfb95c6d9e473cbdf0f9ffc58555a4afb9bb265207a41f5b8"
+        },
+        "mutation": {
+          "op": "printUsage",
+          "rejected": true,
+          "path": "sha256:3d42a1bcfa983bfbfb95c6d9e473cbdf0f9ffc58555a4afb9bb265207a41f5b8",
+          "original": "3d42a1bcfa983bfbfb95c6d9e473cbdf0f9ffc58555a4afb9bb265207a41f5b8",
+          "mutated": "ad625f6fbe8783e8b37ab5a68f0e32535bee10fb07f6b2fddcbd3a0ffc6d7a74"
+        },
+        "comparison": {
+          "sideMatch": true,
+          "okMatch": true,
+          "exitCodeMatch": true,
+          "oracleExitMatch": true,
+          "allMatch": true
+        },
+        "opDoEnvelope": "printUsage",
+        "v": 1,
+        "diff": ""
+      },
+      {
+        "op": "promptAnswers",
+        "status": "ok",
+        "sideSha": {
+          "oracle": "83c672fb0fb09fa21ef8d262e4132d355c2271e8a3754872d6cab5689612b4d1",
+          "bin": "83c672fb0fb09fa21ef8d262e4132d355c2271e8a3754872d6cab5689612b4d1"
+        },
+        "mutation": {
+          "op": "promptAnswers",
+          "rejected": true,
+          "path": "sha256:83c672fb0fb09fa21ef8d262e4132d355c2271e8a3754872d6cab5689612b4d1",
+          "original": "83c672fb0fb09fa21ef8d262e4132d355c2271e8a3754872d6cab5689612b4d1",
+          "mutated": "522d02084784290382e63a48c0d392990131ce280bb72615691b9e6eaf6e8a34"
+        },
+        "comparison": {
+          "sideMatch": true,
+          "okMatch": true,
+          "exitCodeMatch": true,
+          "oracleExitMatch": true,
+          "allMatch": true
+        },
+        "opDoEnvelope": "promptAnswers",
+        "v": 1,
+        "diff": ""
+      },
+      {
+        "op": "readSecretPrompt",
+        "status": "ok",
+        "sideSha": {
+          "oracle": "5638d53702d8f68bfd17555af4aba5651cabf0aab9d7a49e49bb0e14460bb88d",
+          "bin": "5638d53702d8f68bfd17555af4aba5651cabf0aab9d7a49e49bb0e14460bb88d"
+        },
+        "mutation": {
+          "op": "readSecretPrompt",
+          "rejected": true,
+          "path": "sha256:5638d53702d8f68bfd17555af4aba5651cabf0aab9d7a49e49bb0e14460bb88d",
+          "original": "5638d53702d8f68bfd17555af4aba5651cabf0aab9d7a49e49bb0e14460bb88d",
+          "mutated": "819ba44fff8163924059eb6147c42ea9dbbf1f9b7de07e7820e179ea36299653"
+        },
+        "comparison": {
+          "sideMatch": true,
+          "okMatch": true,
+          "exitCodeMatch": true,
+          "oracleExitMatch": true,
+          "allMatch": true
+        },
+        "opDoEnvelope": "readSecretPrompt",
+        "v": 1,
+        "diff": ""
+      },
+      {
+        "op": "readSecretRaw",
+        "status": "ok",
+        "sideSha": {
+          "oracle": "0ee1b344369e55601ff9b29366e9bbe74c4815dff0150098ddccc19571358f1e",
+          "bin": "0ee1b344369e55601ff9b29366e9bbe74c4815dff0150098ddccc19571358f1e"
+        },
+        "mutation": {
+          "op": "readSecretRaw",
+          "rejected": true,
+          "path": "sha256:0ee1b344369e55601ff9b29366e9bbe74c4815dff0150098ddccc19571358f1e",
+          "original": "0ee1b344369e55601ff9b29366e9bbe74c4815dff0150098ddccc19571358f1e",
+          "mutated": "bbe69a84ce7e8678930f1396785a3c040150c5fec378a5d8fde930dad3062120"
+        },
+        "comparison": {
+          "sideMatch": true,
+          "okMatch": true,
+          "exitCodeMatch": true,
+          "oracleExitMatch": true,
+          "allMatch": true
+        },
+        "opDoEnvelope": "readSecretRaw",
+        "v": 1,
+        "diff": ""
+      },
+      {
+        "op": "sourceLineOf",
+        "status": "ok",
+        "sideSha": {
+          "oracle": "66d89ab4aa7415b90aacb96db509eae964688693dcb42d1d0b9d0b8859a87189",
+          "bin": "66d89ab4aa7415b90aacb96db509eae964688693dcb42d1d0b9d0b8859a87189"
+        },
+        "mutation": {
+          "op": "sourceLineOf",
+          "rejected": true,
+          "path": "sha256:66d89ab4aa7415b90aacb96db509eae964688693dcb42d1d0b9d0b8859a87189",
+          "original": "66d89ab4aa7415b90aacb96db509eae964688693dcb42d1d0b9d0b8859a87189",
+          "mutated": "b9772de250790957db82373c62ce1a67f7e2da830b94b66c95e171aa31e35fa8"
+        },
+        "comparison": {
+          "sideMatch": true,
+          "okMatch": true,
+          "exitCodeMatch": true,
+          "oracleExitMatch": true,
+          "allMatch": true
+        },
+        "opDoEnvelope": "sourceLineOf",
+        "v": 1,
+        "diff": ""
+      }
+    ],
+    "rito": {
+      "reused": true,
+      "literalSha": "9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0",
+      "expected": "9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0",
+      "verdict": "Veredito: validated literal 9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0 2026-11-16T17:00:53.563Z c63e333",
+      "note": "rito ADR-002 reutilizado; nenhuma assinatura nova gravada por este agente"
+    },
+    "reviewFixes": [
+      {
+        "id": "FU-ADR004-01",
+        "arquivo": "installer-rs/src/tui/confirm.rs:48",
+        "acao": "resultado_aborto() alinhado ao error_envelope real (v/ok/op/error 5 campos; sem exitCode; why/where de wizard.rs)"
+      },
+      {
+        "id": "FU-ADR004-02",
+        "arquivo": "installer-rs/src/tui/cleanup.rs:62",
+        "acao": "ao_sinal usa restaurar_estado_signal_safe(): tcsetattr sem free(); ponteiro preservado; drop so no caminho normal"
+      }
+    ],
+    "verify": {
+      "completeness": "PASS — 3/3 tasks; 9/9 JIRA DONE; 8 ops 1:1; ponte 10; 5 suites + cargo + 8 provas + parity verdes; zero TODO",
+      "correctness": "PASS — 0 falhas; transcript 16.336 B byte-identico; canais medidos; segredo 0; guarda 3/3; selo c904f1c5 e suiteFull byte-identicos",
+      "coherence": "PASS — tela nao grava (guarda estrutural); apply no motor; nenhum crate/versao/toolchain decidido; nenhum path protegido tocado"
+    },
+    "securityFase4": [
+      {
+        "item": 1,
+        "nome": "Controle de acesso server-side",
+        "status": "N/A — CLI local, sem endpoint HTTP"
+      },
+      {
+        "item": 2,
+        "nome": "Input validation server-side",
+        "status": "aplicavel — parse_request valida v/op; EngineError tipado; N/A DTO HTTP"
+      },
+      {
+        "item": 3,
+        "nome": "SQL/JPQL parametrizado",
+        "status": "N/A — nenhuma query/banco"
+      },
+      {
+        "item": 4,
+        "nome": "Senhas Argon2id/bcrypt",
+        "status": "N/A — nenhuma senha; token em stdin sem eco"
+      },
+      {
+        "item": 5,
+        "nome": "JWT RS256/ES256",
+        "status": "N/A — sem autenticacao HTTP"
+      },
+      {
+        "item": 6,
+        "nome": "HTTPS/TLS 1.2+",
+        "status": "N/A — sem rede"
+      },
+      {
+        "item": 7,
+        "nome": "Security headers",
+        "status": "N/A — sem resposta HTTP"
+      },
+      {
+        "item": 8,
+        "nome": "Zero v-html nao sanitizado",
+        "status": "N/A — TUI line-based, sem frontend web"
+      },
+      {
+        "item": 9,
+        "nome": "Sem segredos em codigo/log/resposta",
+        "status": "PASS medido — /proc/PID/cmdline 0, stdout 0, stderr 0; sanitizeLog e serializeSkips"
+      },
+      {
+        "item": 10,
+        "nome": "Rate limiting em autenticacao",
+        "status": "N/A — sem autenticacao"
+      },
+      {
+        "item": 11,
+        "nome": "Dependencias auditadas",
+        "status": "N/A declarado — nenhuma dependencia nova; Cargo.lock versionado e congelado"
+      },
+      {
+        "item": 12,
+        "nome": "Actuator/Swagger protegidos",
+        "status": "N/A — sem servidor"
+      },
+      {
+        "item": 13,
+        "nome": "Mobile Keychain/Keystore",
+        "status": "N/A — nao mobile"
+      },
+      {
+        "item": 14,
+        "nome": "R5 — cleanup de terminal apos sinal (item especifico ADR-004)",
+        "status": "PASS medido — SIGTERM com prompt aberto, sinal preservado, sem free() no handler"
+      }
+    ],
+    "seal": {
+      "suiteFull": "c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2",
+      "commandsByteIdentical": true,
+      "protectedPathsDiff": "git diff --exit-code -- harness.config.json .opencode/plugins/lib/seal.mjs => 0",
+      "rustForaDoSelo": true
+    },
+    "cleanup": {
+      "ports": [],
+      "note": "nenhuma porta subida; worktree do oraculo liberado; processos de /tmp/prova encerrados por child.kill(SIGTERM)"
+    },
+    "presenca": {
+      "codeReviewStatus": "pendente — orquestrador delega code-reviewer apos este batch",
+      "push": "nao executado"
     }
   }
 }

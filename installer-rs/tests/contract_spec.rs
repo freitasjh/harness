@@ -88,21 +88,21 @@ fn envelope_error_has_five_fields_and_no_result() {
 }
 
 #[test]
-fn dispatcher_has_exactly_the_23_engine_names() {
-    assert_eq!(OP_NAMES.len(), 23);
-    assert_eq!(OP_NAMES.as_slice(), &ENGINE_FROM_ORACLE);
+fn dispatcher_tem_23_engine_names_congelados() {
+    assert_eq!(OP_NAMES.len(), 31, "23 D-ENGINE + 8 D-TUI (ADR-004)");
+    assert_eq!(&OP_NAMES[..23], &ENGINE_FROM_ORACLE);
     let mut sorted = OP_NAMES.to_vec();
     sorted.sort_unstable();
-    assert_eq!(sorted.len(), 23, "nenhum nome duplicado");
+    assert_eq!(sorted.len(), 31, "nenhum nome duplicado");
 }
 
 #[test]
-fn dispatcher_excludes_internal_and_tui_names() {
+fn dispatcher_excludes_internal_names_and_includes_tui() {
     for internal in ["planUpgrade", "applyUpgrade"] {
         assert!(!OP_NAMES.contains(&internal), "{} é interno (ADR-001 §5)", internal);
     }
     for tui in ["printUsage", "promptAnswers", "askMenuStep"] {
-        assert!(!OP_NAMES.contains(&tui), "{} é TUI (ADR-004)", tui);
+        assert!(OP_NAMES.contains(&tui), "{} é TUI (ADR-004) e está no dispatcher", tui);
     }
 }
 

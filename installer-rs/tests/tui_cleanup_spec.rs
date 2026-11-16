@@ -3,7 +3,8 @@
 // EOF/erro; 2ª chamada não corrompe estado. Prova PTY com sinal + stty -a fica
 // no RELATÓRIO (script adr004-pty-proof.sh).
 use harness_installer::tui::cleanup::{
-    proteger_leitura, register_cleanup, restauracoes, restore_echo, sinais_cobertos,
+    ponteiro_original, proteger_leitura, register_cleanup, restauracoes,
+    restaurar_estado_signal_safe, restore_echo, sinais_cobertos,
 };
 use std::sync::Mutex;
 
@@ -27,6 +28,18 @@ fn segunda_chamada_do_handler_nao_corrompe_estado() {
     restore_echo();
     restore_echo();
     assert_eq!(restauracoes(), uma, "restauração é idempotente — 2ª chamada é no-op");
+}
+
+#[test]
+fn ao_sinal_nao_chama_free_no_caminho_de_sinal() {
+    let _l = LOCK.lock().unwrap();
+    let antes = restauracoes();
+    let _guard = register_cleanup();
+    let ptr = ponteiro_original();
+    assert_ne!(ptr, 0, "estado original capitalizado");
+    restaurar_estado_signal_safe();
+    assert_eq!(restauracoes(), antes + 1, "restauração ocorreu uma vez");
+    assert_eq!(ponteiro_original(), ptr, "ponteiro PRESERVADO: free() não é chamado em handler de sinal");
 }
 
 #[test]

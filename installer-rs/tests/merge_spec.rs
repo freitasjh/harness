@@ -148,5 +148,5 @@ fn dispatcher_wires_all_batch2_ops() {
     for op in harness_installer::dispatcher::OP_NAMES {
         assert!(src.contains(&format!("case \"{}\"", op)), "op {} sem braço no dispatcher", op);
     }
-    assert_eq!(harness_installer::dispatcher::OP_NAMES.len(), 23);
+    assert_eq!(harness_installer::dispatcher::OP_NAMES.len(), 31, "23 engine + 8 TUI");
 }

@@ -5,4 +5,5 @@ pub mod cleanup;
 pub mod confirm;
 pub mod model;
 pub mod navigation;
+pub mod ops;
 pub mod secret;

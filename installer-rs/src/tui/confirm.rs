@@ -44,7 +44,9 @@ pub fn precisa_confirmar(yes: bool, dry_run: bool) -> bool {
     !yes && !dry_run
 }
 
-/// Envelope de aborto: `ok:false`, `USER_ABORT`, exit 1 — nenhum write.
+/// Envelope de aborto alinhado ao `error_envelope` real de `contract.rs`
+/// (FU-ADR004-01): v/ok/op/error com 5 campos, SEM `exitCode` — o código de
+/// saída é derivado por `exit_code()`. `why`/`where` são os de `wizard.rs::run`.
 pub fn resultado_aborto() -> Value {
     json!({
         "v": 1,
@@ -53,11 +55,10 @@ pub fn resultado_aborto() -> Value {
         "error": {
             "code": "USER_ABORT",
             "what": "cancelado pelo usuario no wizard",
-            "why": "q/EOF na confirmacao",
+            "why": "aborto",
             "fix": "rerode para continuar",
-            "where": "installer/install.mjs (runWizard)",
+            "where": "installer/install.mjs",
         },
-        "exitCode": 1,
     })
 }
 

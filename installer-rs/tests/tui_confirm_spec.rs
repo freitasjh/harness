@@ -23,9 +23,17 @@ fn aborto_e_flagged_open_nao_gravam() {
     let flagged = decidir(true, false, false, true, false);
     assert_eq!(flagged, Confirmacao::Abortado, "flagged-open aborta mesmo com --yes");
     let env = resultado_aborto();
+    // FU-ADR004-01: envelope de teste alinhado ao contract-v1 real
+    // (contract.rs::error_envelope) — sem campo `exitCode`, 5 campos de erro.
+    assert_eq!(env["v"], 1);
     assert_eq!(env["ok"], false);
+    assert_eq!(env["op"], "runWizard");
     assert_eq!(env["error"]["code"], "USER_ABORT");
-    assert_eq!(env["exitCode"], 1);
+    for k in ["code", "what", "why", "fix", "where"] {
+        assert!(env["error"].get(k).is_some(), "campo error.{} ausente", k);
+    }
+    assert!(env.get("exitCode").is_none(), "envelope real não tem exitCode");
+    assert!(env.get("result").is_none(), "envelope de erro não tem result");
 }
 
 #[test]

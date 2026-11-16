@@ -8,8 +8,8 @@
 | TUI-03 | W5 confirmação, aborto e dry-run 0 writes | 03,06,18 | P0 | Alto | TUI-02 | DONE |
 | TUI-04 | Segredo TTY sem eco + pipe serializeSkips | 07,08,18 | P0 | Alto | TUI-02 | DONE |
 | TUI-05 | Cleanup de terminal após SIGTERM (R5) | 09,06,18 | P0 | Alto | TUI-04 | DONE |
-| TUI-06 | 8 ops D-TUI no dispatcher + ponte reduzida a 10 | 04,11,12 | P0 | Alto | TUI-03,04,05 | TODO |
-| VAL-02 | Prova integral: transcript, canais, segredo, 8 ops | 02,04,07,10,13 | P0 | Alto | TUI-01..06,VAL-01 | TODO |
-| VAL-03 | Relatório + 5 suítes + selo + VERIFY | 14,15,16,18 | P0 | Médio | VAL-02 | TODO |
+| TUI-06 | 8 ops D-TUI no dispatcher + ponte reduzida a 10 | 04,11,12 | P0 | Alto | TUI-03,04,05 | DONE |
+| VAL-02 | Prova integral: transcript, canais, segredo, 8 ops | 02,04,07,10,13 | P0 | Alto | TUI-01..06,VAL-01 | DONE |
+| VAL-03 | Relatório + 5 suítes + selo + VERIFY | 14,15,16,18 | P0 | Médio | VAL-02 | DONE |
 
 **Regra**: uma task por loop; teste antes do código; `code-reviewer` ao fim de cada batch; ux-designer `UX.md` vinculante (zero byte); guarda RF-05 com dente. Fora de escopo: 10 D-ENGINE (`FU-D1-ENGINE10`).

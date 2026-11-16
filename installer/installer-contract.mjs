@@ -2,8 +2,10 @@
 // Node é o chamador: monta o request, despacha por spawn/spawnSync, valida envelope.
 // Quitação PARCIAL da ponte D1-two-motors (2026-11-16): 9 D-DATA vêm da registry,
 // 29 D-PURE do módulo local byte-fiel a c63e333, 13 D-ENGINE rodam no binário
-// Rust por subprocesso síncrono. 8 D-TUI + 10 D-ENGINE permanecem como dívida
-// declarada (streams/callbacks/marcadores de tela e ordem de chaves congelada).
+// Rust por subprocesso síncrono. ADR-004/TUI-06 quita os 8 D-TUI: saem do
+// reexport vivo de install.mjs e viram módulo local byte-fiel (`contract-tui.mjs`)
+// com 8 `op`s 1:1 no dispatcher Rust. Restam 10 D-ENGINE em dívida de
+// byte-paridade (FU-D1-ENGINE10 — decisão owner pendente).
 // Nenhuma escrita pelo adapter, nenhum FFI, nenhum valor sensível em argv.
 
 import { spawn, spawnSync } from 'node:child_process'
@@ -41,27 +43,29 @@ export {
 } from './contract-pure.mjs'
 export { sanitizeLog } from './contract-pure.mjs'
 
-// --- DÍVIDA DECLARADA (D1-two-motors): 8 D-TUI + 10 D-ENGINE -----------------
-// 8 D-TUI (ADR-004): askMenuStep, detect, printPlan, printUsage, promptAnswers,
-// readSecretPrompt, readSecretRaw, sourceLineOf.
-// 10 D-ENGINE: runCli, runDoctor, runInit, runUpgrade, runWizard (streams +
-// callbacks de `apply` + marcadores de tela que o Rust não emite) e
-// collectAnswers, generateConfig, planMerge, runChecks, main divergem em ordem
-// de chaves de JSON.stringify ou no bloco 4-linhas — specs comparam byte a byte.
-// Os outros 13 D-ENGINE rodam no binário Rust.
-// Ponte datada 2026-11-16 — não é conformidade, é dívida explícita.
+// --- DÍVIDA DECLARADA (D1-two-motors-restante): 10 D-ENGINE ------------------
+// runCli, runDoctor, runInit, runUpgrade, runWizard (streams + callbacks de
+// `apply` + marcadores de tela que o Rust não emite) e collectAnswers,
+// generateConfig, planMerge, runChecks, main divergem em ordem de chaves de
+// JSON.stringify ou no bloco 4-linhas — specs comparam byte a byte.
+// Os outros 13 D-ENGINE rodam no binário Rust. Os 8 D-TUI saíram da ponte
+// (ADR-004): são módulo local + 8 `op`s no dispatcher Rust.
+// Ponte de 10 nomes, datada 2026-11-16 — dívida explícita (FU-D1-ENGINE10).
 import {
   runCli, runDoctor, runInit, runUpgrade, runWizard,
-  askMenuStep, detect, printPlan, printUsage, promptAnswers,
-  readSecretPrompt, readSecretRaw, sourceLineOf,
   collectAnswers, generateConfig, planMerge, runChecks, main,
 } from './install.mjs'
 export {
   runCli, runDoctor, runInit, runUpgrade, runWizard,
-  askMenuStep, detect, printPlan, printUsage, promptAnswers,
-  readSecretPrompt, readSecretRaw, sourceLineOf,
   collectAnswers, generateConfig, planMerge, runChecks, main,
 }
+
+// --- 8 D-TUI quitadas (ADR-004): módulo local byte-fiel, NÃO reexport vivo ---
+export {
+  askMenuStep, detect, printPlan, printUsage, promptAnswers,
+  readSecretPrompt, readSecretRaw, sourceLineOf,
+  menuChoices, menuItemLine, pubspecDeclaresFlutter,
+} from './contract-tui.mjs'
 
 export { CONTRACT_VERSION, SUBCOMMAND, EXIT, OP_NAMES }
 

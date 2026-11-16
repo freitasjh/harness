@@ -45,24 +45,44 @@ static SINAL: AtomicI32 = AtomicI32::new(0);
 
 unsafe extern "C" fn ao_sinal(sig: i32) {
     SINAL.store(sig, Ordering::SeqCst);
-    restaurar_estado();
+    // FU-ADR004-02: tcsetattr/signal/kill são async-signal-safe; free() não é.
+    // No handler NÃO liberamos o Box — o ponteiro é preservado e o processo
+    // terminará pelo sinal. A liberação (drop) fica só no caminho normal.
+    restaurar_estado_signal_safe();
     signal(sig, SIG_DFL);
     kill(getpid(), sig);
 }
 
-/// Restauração efetiva, idempotente e async-signal-safe.
-fn restaurar_estado() {
+/// Restauração efetiva e idempotente. `liberar=false` é o caminho do sinal:
+/// só `tcsetattr` (async-signal-safe), sem `free()` e sem troca do ponteiro.
+fn restaurar_estado_com_free(liberar: bool) {
     if RESTAURADO.swap(true, Ordering::SeqCst) {
         return;
     }
-    let p = ORIGINAL.swap(std::ptr::null_mut(), Ordering::SeqCst);
+    let p = ORIGINAL.load(Ordering::SeqCst);
     if !p.is_null() {
-        unsafe {
-            tcsetattr(STDIN_FD, TCSANOW, p);
-            drop(Box::from_raw(p));
+        unsafe { tcsetattr(STDIN_FD, TCSANOW, p) };
+        if liberar {
+            ORIGINAL.store(std::ptr::null_mut(), Ordering::SeqCst);
+            unsafe { drop(Box::from_raw(p)) };
         }
     }
     RESTAURACOES.fetch_add(1, Ordering::SeqCst);
+}
+
+fn restaurar_estado() {
+    restaurar_estado_com_free(true);
+}
+
+/// Caminho do handler de sinal: restaura sem liberar memória (R5).
+pub fn restaurar_estado_signal_safe() {
+    restaurar_estado_com_free(false);
+}
+
+/// Endereço do estado original (0 = nenhum capitalizado) — prova de que o
+/// handler preservou o ponteiro em vez de chamar `free()`.
+pub fn ponteiro_original() -> usize {
+    ORIGINAL.load(Ordering::SeqCst) as usize
 }
 
 /// Registra o handler e capitaliza o estado original do terminal. Deve ser
@@ -72,13 +92,14 @@ pub fn register_cleanup() -> Guard {
     RESTAURADO.store(false, Ordering::SeqCst);
     SINAL.store(0, Ordering::SeqCst);
 
-    let mut estado = std::mem::MaybeUninit::<Termios>::uninit();
-    if unsafe { tcgetattr(STDIN_FD, estado.as_mut_ptr()) } == 0 {
-        let boxed = Box::into_raw(Box::new(unsafe { estado.assume_init() }));
-        let anterior = ORIGINAL.swap(boxed, Ordering::SeqCst);
-        if !anterior.is_null() {
-            unsafe { drop(Box::from_raw(anterior)) };
-        }
+    // Sempre capitalizar um estado (zeroado quando não há TTY): o handler
+    // precisa de um ponteiro estável e a prova do caminho sem-free é observável.
+    let mut estado = std::mem::MaybeUninit::<Termios>::zeroed();
+    let _ = unsafe { tcgetattr(STDIN_FD, estado.as_mut_ptr()) };
+    let boxed = Box::into_raw(Box::new(unsafe { estado.assume_init() }));
+    let anterior = ORIGINAL.swap(boxed, Ordering::SeqCst);
+    if !anterior.is_null() {
+        unsafe { drop(Box::from_raw(anterior)) };
     }
     unsafe {
         signal(SIGTERM, ao_sinal as usize);
