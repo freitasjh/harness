@@ -1,7 +1,7 @@
 {
   "current_feature": "prd-installer-rust-adr-003",
-  "current_phase": "Discovery",
-  "previous_phase": "Completed",
+  "current_phase": "Planning",
+  "previous_phase": "Discovery",
   "next_phase": "Planning",
   "type": "refactor",
   "layer": "agents/skills/rules",
@@ -22,8 +22,8 @@
       "harness_report": "harness/harness-inventory.json"
     },
     "c1_previous_bug": ".spec/bugs/harness-eixos-stack-p2/TASKS.md",
-    "proposal": ".spec/backend/prd-installer-rust-adr-002/PROPOSAL.md",
-    "spec": ".spec/backend/prd-installer-rust-adr-002/SPEC.md",
+    "proposal": ".spec/backend/prd-installer-rust-adr-003/PROPOSAL.md",
+    "spec": ".spec/backend/prd-installer-rust-adr-003/SPEC.md",
     "plan": ".spec/backend/prd-installer-rust-adr-002/PLAN.md",
     "tasks": ".spec/backend/prd-installer-rust-adr-002/TASKS.md",
     "superseded_cycle": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/ (superseded: SPEC prescrevia `Plugin.define`, ausente no binario v2.0.32)",
@@ -32,7 +32,9 @@
     "research": null,
     "adr_index": ".spec/prd/prd-installer-rust/ADR-INDEX.md",
     "adr": ".spec/prd/prd-installer-rust/ADRs/ADR-003-motor-init-doctor-upgrade/ADR.md",
-    "prd_lines": ".spec/prd/prd-harness-inventory/PRD.md (162 linhas, 16 secoes, PRD-01 PASS)"
+    "prd_lines": ".spec/prd/prd-harness-inventory/PRD.md (162 linhas, 16 secoes, PRD-01 PASS)",
+    "security": ".spec/backend/prd-installer-rust-adr-003/SECURITY.md",
+    "spec_gate": ".spec/backend/prd-installer-rust-adr-003/GATE-SPEC.md"
   },
   "scope": {
     "interpretation": "esteira PRD->ADR->SDD no harness (visibilidade de intencao antes do codigo)",
@@ -53,9 +55,9 @@
     "rigor": "E1/E2 bloqueiam"
   },
   "gates": {
-    "P0_P1": "approved_user_2026_11_11 (Refactor; bloco PICCO confirmado; 1o ciclo = levantamento + roster de agentes + agente de planejamento)",
+    "P0_P1": "approved_user_2026_11_16 (Refactor; isencao de planner aceita; ADR-003 como entrada da SPEC)",
     "G2_PRD": "approved_user_2026_10_22 (PRD prd-garantias-runtime aprovado sem ressalvas; §16 do PRD.md; 3 decisoes do owner)",
-    "P1_P2": "approved_user_2026_11_11 (SPEC 49 linhas, 12 RF mapeados aos 16 itens do ADR-001, 6 invariantes)",
+    "P1_P2": "pending_user_approval (SPEC 100%; architect em validacao)",
     "P2_P3": "approved_user_2026_11_11 (PLAN 57 linhas, TASKS 12 microtasks RV-01..RV-12)",
     "P3_P4": "approved_auto_evidence_2026_11_16 (commits 0b9a9e2..e6438c25; 2 criticos + 3 importantes fechados)",
     "P4_P5": "approved_auto_evidence_QA_2026_11_16 (REPORT schema-valido; assinatura do owner pendente aferida depois - literalProven true)",
@@ -75,7 +77,7 @@
       "B1_B2": "approved_user_2026_09_29",
       "FU32": "closed_approved_decision_B"
     },
-    "G2_ADR": "approved_user_2026_11_16 (ADR-003 motor init/doctor/upgrade — fonte: branch de autoria)",
+    "G2_ADR": "approved_user_2026_11_16 (ADR-003 motor init/doctor/upgrade — branch de autoria)",
     "G1_PRD": "approved_user_2026_11_16 (PRD-3 prd-installer-rust; D1-D8 fechadas)"
   },
   "code_review": {
@@ -203,7 +205,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T17:50:28.820Z",
+  "last_update": "2026-11-16T17:53:09.383Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -227,7 +229,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-003 DESCOBERTA — aguardando portão P0->P1 (Refactor, motor Rust, 23 ops, quita ponte D1-two-motors no merge)",
+  "sdd_stage": "PRD-3 ADR-003 ANALISE — SPEC 100%, seguranca Fase 1 pass; aguardando parecer do architect + portao P1->P2",
   "backlog": {
     "total": 11,
     "todo": 0,
@@ -1810,5 +1812,13 @@
     ],
     "exempt_from_planner": "refactor sem comportamento observável (.agents/rules/prd-adr-pipeline.md §3)",
     "gate": "P0_P1 pendente — classificação Refactor a confirmar pelo owner"
+  },
+  "spec": {
+    "score": "100% (6 aplicaveis atendidos / 5 N/A com motivo)",
+    "gate": ".spec/backend/prd-installer-rust-adr-003/GATE-SPEC.md",
+    "security": "Fase 1 pass — SECURITY.md, STRIDE, 0 criticos",
+    "rf_count": 17,
+    "items": 17,
+    "at": "2026-11-16T17:53:09.382Z"
   }
 }
