@@ -1,0 +1,316 @@
+{
+  "version": 1,
+  "demand": "prd-installer-rust-adr-002",
+  "agent": "developer-engineer",
+  "phase": "Execution",
+  "gitSha": "b901eef4be9b3feb84931014c9272596d0c46b32",
+  "commands": [
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 748,
+      "stdoutHash": "13eaf1fb6bbb44ad1e5ca551f25e2b26a1b8afc9bc89d1d98bb5f19bf70c2141"
+    },
+    {
+      "cmd": "node --test \"installer/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 5592,
+      "stdoutHash": "be0fa584bce7e4d2945187fe20ba5e31ac492e046769a3693037606ffa1e5534"
+    },
+    {
+      "cmd": "node scripts/static-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 192,
+      "stdoutHash": "4a1e734a85037a1e26e20ea8531b7b4e64cf76d4b1fd7890b3b62529b7652ad5"
+    },
+    {
+      "cmd": "node scripts/sdd-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 90,
+      "stdoutHash": "6f7e815d5cbb1affc7bc93c0fd653a29e740197075602a46abaada2924b799b1"
+    },
+    {
+      "cmd": "node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 53,
+      "stdoutHash": "e5e528c52d79fceaa1be828bd89116aa6e0be73294d2e99d39c4febe99e84516"
+    }
+  ],
+  "counts": {
+    "unit": {
+      "passed": 540,
+      "failed": 0,
+      "skipped": 0
+    },
+    "it": {
+      "passed": 616,
+      "failed": 0,
+      "skipped": 0
+    },
+    "frontend": {
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "validationVerdict": "Veredito: validated literal 17a704c37a018e1efd4fd7f4658d024c79e20cf874f73c5203a3a04ec3201a8d 2026-11-16T15:49:38.533Z c63e333",
+  "oracle": {
+    "commit": "c63e333",
+    "full": "c63e33307710e1c6271f5c68b2dd9fb15283f49c",
+    "sourceSha256": "17a704c37a018e1efd4fd7f4658d024c79e20cf874f73c5203a3a04ec3201a8d",
+    "frozenLiteralSha256": "17a704c37a018e1efd4fd7f4658d024c79e20cf874f73c5203a3a04ec3201a8d",
+    "provenance": "git-object:c63e333",
+    "materialized": {
+      "sha": "c63e33307710e1c6271f5c68b2dd9fb15283f49c",
+      "clean": true,
+      "released": true
+    }
+  },
+  "evaluation": {
+    "telas": "N/A — sem UI/DB/portas; TUI e ADR-004 (fora deste ciclo)",
+    "negocio": "15/15 itens verificáveis; rito com assinatura sha em validationVerdict; 9+2 publicado como medido, 12/12 só como meta re-derivável; nenhum literal de golden/eixos-stack/transcript reescrito",
+    "logica": "oráculo c63e333 anterior/imutável; 6 predicados SI puros, cada um com mutação que derruba; proveniência subject reprova; worktree sujo/SHA divergente reprova; selo c904f1c5 intacto; commands.suiteFull byte-idêntico; comandos paralelos fora do selo",
+    "perf": "5 suites exit 0; soma durations 6675ms; sem regressão de duração"
+  },
+  "brainStore": [
+    "sessoes/sessoes/projetos/harness/2026-11-16-dev-prd-installer-rust-adr-002",
+    "regras/projetos/regras/projetos/projeto/oraculo-paridade-sem-tautologia"
+  ],
+  "cleanup": {
+    "ports": [],
+    "processes": [],
+    "note": "Nada subido: infra null, stack N/A — zero lsof/kill, zero kill por nome, zero push, zero gh. Worktree oráculo /tmp/opencode/harness-oracle-c63e333 materializado via git worktree add --detach, verificado limpo no SHA exato e liberado via git worktree remove. Scripts temporários em /tmp/opencode. Nenhum processo residual.",
+    "worktree": {
+      "path": "/tmp/opencode/harness-oracle-c63e333",
+      "added": true,
+      "clean": true,
+      "released": true
+    },
+    "repoWrites": [
+      "harness/prd-installer-rust-adr-002.json",
+      "installer/parity-oracle.mjs",
+      "installer/__tests__/parity-oracle.spec.mjs"
+    ]
+  },
+  "selfReported": true,
+  "p11": {
+    "verdict": "PASSA",
+    "branch": "adr/prd-installer-rust/02-oraculo-paridade-impl",
+    "base": "331e44f",
+    "seal": "c904f1c5",
+    "sealFull": "c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2",
+    "rederiveCommand": "node --test \"installer/__tests__/golden.spec.mjs\" \"installer/__tests__/eixos-stack.spec.mjs\" 2>&1 | tail -8",
+    "adrItems": [
+      {
+        "item": 1,
+        "rf": "RF-01",
+        "verdict": "PASS",
+        "evidence": "git diff --exit-code em golden.spec.mjs/eixos-stack.spec.mjs/wizard.spec.mjs = vazio (exit 0)"
+      },
+      {
+        "item": 2,
+        "rf": "RF-02",
+        "verdict": "PASS",
+        "evidence": "worktree detach c63e333: SHA c63e33307710e1c6271f5c68b2dd9fb15283f49c, status --porcelain vazio; assertOracleIdentity fail-closed (parity-oracle.mjs:32)"
+      },
+      {
+        "item": 3,
+        "rf": "RF-03",
+        "verdict": "PASS",
+        "evidence": "ritualVerdict/parseRitual/isLiteralProven (parity-oracle.mjs:76-91); assinatura em validationVerdict; sem assinatura isLiteralProven=false (spec:88-99)"
+      },
+      {
+        "item": 4,
+        "rf": "RF-04",
+        "verdict": "PASS",
+        "evidence": "si1_configByteEqual (parity-oracle.mjs:93); mutação 1 valor derruba (spec:106); golden 42/42"
+      },
+      {
+        "item": 5,
+        "rf": "RF-05",
+        "verdict": "PASS",
+        "evidence": "si2_payloadDifferential (parity-oracle.mjs:105); mutação body/extra derruba (spec:119)"
+      },
+      {
+        "item": 6,
+        "rf": "RF-06",
+        "verdict": "PASS",
+        "evidence": "si3_dryRunZeroWrites (parity-oracle.mjs:117); mutação write/porcelain derruba (spec:131); baseline histórico 063c1ddc em 2 presets (PRD §3.5 SI-3)"
+      },
+      {
+        "item": 7,
+        "rf": "RF-07",
+        "verdict": "PASS",
+        "evidence": "si4_transcriptMarkers + TRANSCRIPT_MARKERS (parity-oracle.mjs:122-135); mutação marcador/texto derruba (spec:143,149); literal ADR_MENU_LINES em wizard.spec.mjs:820-832 intacto"
+      },
+      {
+        "item": 8,
+        "rf": "RF-08",
+        "verdict": "PASS",
+        "evidence": "si5_checksManifestParity (parity-oracle.mjs:136); mutação veredito derruba (spec:159); V18=1, V19 consumer=21, V20 baseline=0"
+      },
+      {
+        "item": 9,
+        "rf": "RF-09",
+        "verdict": "PASS",
+        "evidence": "si6_noNewKeys (parity-oracle.mjs:150); mutação path protegido derruba (spec:169); git diff --name-only c63e333 HEAD em protegidos restrito ao contrato ADR-001 (declarado)"
+      },
+      {
+        "item": 10,
+        "rf": "RF-10",
+        "verdict": "PASS",
+        "evidence": "registry 6 mapas: contract-registry.spec.mjs 5/5 pass, REGISTRY_ALL_DIGEST e13f11d…; herança ADR-001 (item 8)"
+      },
+      {
+        "item": 11,
+        "rf": "RF-11",
+        "verdict": "PASS",
+        "evidence": "assertNoInstaAccept + snapNewFiles (parity-oracle.mjs:155-170); grep em código executável vazio; 0 *.snap.new; mutação aceitação cega derruba (spec:178)"
+      },
+      {
+        "item": 12,
+        "rf": "RF-03",
+        "verdict": "PASS",
+        "evidence": "sem assinatura, asserção dependente não conta como prova: isLiteralProven=false (spec:88-90); rito em validationVerdict"
+      },
+      {
+        "item": 13,
+        "rf": "RF-12",
+        "verdict": "PASS",
+        "evidence": "measurement {byteEqual:9,partial:2,mobilePresetsDryRun:2,claimed12of12:false} (parity-oracle.mjs:178); rederiveCommand (:186) re-executa 115/115 nos literais"
+      },
+      {
+        "item": 14,
+        "rf": "RF-13",
+        "verdict": "PASS",
+        "evidence": "selo c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2 intacto; commands.suiteFull byte-idêntico ao config"
+      },
+      {
+        "item": 15,
+        "rf": "RF-13",
+        "verdict": "PASS",
+        "evidence": "comandos paralelos fora do selo: 5 comandos rodados individualmente; suiteFull composto não alterado; trailer Harness-Gate-Change no commit"
+      }
+    ],
+    "si": [
+      {
+        "id": "SI-1",
+        "predicate": "chaves+valores de config byte-equal",
+        "oracle": "baseline literal congelado golden.spec.mjs:14-46 + git show c63e333",
+        "command": "node --test installer/__tests__/golden.spec.mjs",
+        "mutation": "1 valor de config trocado => mismatches (spec:106)"
+      },
+      {
+        "id": "SI-2",
+        "predicate": "caminhos+bodies do payload idênticos",
+        "oracle": "collectIncoming do instalador c63e333, listas ordenadas + sha256",
+        "command": "node --test installer/__tests__/parity-oracle.spec.mjs",
+        "mutation": "body alterado ou arquivo extra => pass=false (spec:119)"
+      },
+      {
+        "id": "SI-3",
+        "predicate": "dry-run 0 writes",
+        "oracle": "find . | sort | sha256 antes=depois (histórico 063c1ddc, 2 presets)",
+        "command": "node --test installer/__tests__/parity-oracle.spec.mjs",
+        "mutation": "afterHash divergente ou porcelain sujo => pass=false (spec:131)"
+      },
+      {
+        "id": "SI-4",
+        "predicate": "transcript W0..W7/W2m com 5 marcadores",
+        "oracle": "ADR_MENU_LINES wizard.spec.mjs:820-832 + transcript congelado",
+        "command": "node --test installer/__tests__/wizard.spec.mjs",
+        "mutation": "marcador ausente ou texto divergente => pass=false (spec:143,149)"
+      },
+      {
+        "id": "SI-5",
+        "predicate": "checks/manifesto mesmos campos/vereditos",
+        "oracle": "V18/V19/V20 do static-checks + manifesto do oráculo",
+        "command": "node scripts/static-checks.mjs",
+        "mutation": "1 veredito trocado => pass=false (spec:159)"
+      },
+      {
+        "id": "SI-6",
+        "predicate": "nenhum preset/chave/comando/default novo sem §16",
+        "oracle": "git diff --name-only c63e333 HEAD -- <protegidos>",
+        "command": "git diff --exit-code -- installer/__tests__/golden.spec.mjs installer/__tests__/eixos-stack.spec.mjs installer/__tests__/wizard.spec.mjs",
+        "mutation": "path protegido no diff => violations (spec:169)"
+      }
+    ],
+    "measurement": {
+      "byteEqual": 9,
+      "partial": 2,
+      "dryRunPresets": 2,
+      "status": "medido",
+      "claimed12of12": "meta — re-derivável por node --test \"installer/__tests__/golden.spec.mjs\" \"installer/__tests__/eixos-stack.spec.mjs\" 2>&1 | tail -8"
+    },
+    "microtasks": [
+      {
+        "id": "PO-01",
+        "verdict": "PASS"
+      },
+      {
+        "id": "PO-02",
+        "verdict": "PASS"
+      },
+      {
+        "id": "PO-03",
+        "verdict": "PASS"
+      },
+      {
+        "id": "PO-04",
+        "verdict": "PASS"
+      },
+      {
+        "id": "PO-05",
+        "verdict": "PASS"
+      },
+      {
+        "id": "PO-06",
+        "verdict": "PASS"
+      },
+      {
+        "id": "PO-07",
+        "verdict": "PASS"
+      },
+      {
+        "id": "PO-08",
+        "verdict": "PASS"
+      },
+      {
+        "id": "PO-09",
+        "verdict": "PASS"
+      },
+      {
+        "id": "PO-10",
+        "verdict": "PASS"
+      },
+      {
+        "id": "PO-11",
+        "verdict": "PASS"
+      }
+    ],
+    "divergences": [
+      {
+        "id": "D-1",
+        "severity": "P3",
+        "claim": "ADR-002/ADR.md §2/§3/§4 no disco",
+        "measured": "ausente nesta branch (só ADR-001); 15 itens reconstruídos de SPEC §1 (RF-01..RF-13), PLAN, TASKS, PRD SI-1..SI-6 e RESEARCH §7",
+        "note": "Não autores ADR (papel do architect). Nenhum item inventado: todos mapeados a RF/§3.6. Não bloqueia o mecanismo."
+      },
+      {
+        "id": "D-2",
+        "severity": "P3",
+        "claim": "RF-11: grep -rn 'cargo insta accept' vazio",
+        "measured": "vazio em código executável (installer/, .opencode/, scripts/); presentes 4 ocorrências em prosa de planejamento (.spec/**, RESEARCH.md) onde a proibição é declarada",
+        "note": "Escopo corrigido: comando proibido é código, não a declaração da proibição. 0 *.snap.new."
+      },
+      {
+        "id": "D-3",
+        "severity": "P3",
+        "claim": "9 byte-equal + 2 parciais",
+        "measured": "golden.spec.mjs:48 NON_MOBILE=9 byte-equal; :118-165 C-2 java+react e 5 novos também byte-equal (evolução pós-baseline); flutter/dart asserts parciais",
+        "note": "Publica-se só 9+2 como medido (linha de base declarada); 12/12 permanece meta re-derivável. Nenhum número inflado."
+      }
+    ]
+  }
+}
