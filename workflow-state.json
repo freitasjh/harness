@@ -1,5 +1,5 @@
 {
-  "current_feature": "prd-installer-rust-adr-003",
+  "current_feature": "prd-installer-rust-adr-004",
   "current_phase": "Completed",
   "previous_phase": "Execution",
   "next_phase": "Planning",
@@ -11,7 +11,7 @@
     "bug_report": "harness/harness-eixos-stack-p2.json",
     "source_tech_debt": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
     "previous_archive": ".spec/archive/20261018-harness-eixos-stack/",
-    "verify": ".spec/backend/prd-installer-rust-adr-003/VERIFY.md",
+    "verify": ".spec/frontend/prd-installer-rust-adr-004/VERIFY.md",
     "harness_evidence": ".spec/archive/20261018-harness-eixos-stack/harness/",
     "harness_report": "harness/prd-installer-rust-adr-003.json",
     "tech_debt_p2": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
@@ -22,20 +22,21 @@
       "harness_report": "harness/harness-inventory.json"
     },
     "c1_previous_bug": ".spec/bugs/harness-eixos-stack-p2/TASKS.md",
-    "proposal": ".spec/backend/prd-installer-rust-adr-003/PROPOSAL.md",
-    "spec": ".spec/backend/prd-installer-rust-adr-003/SPEC.md",
-    "plan": ".spec/backend/prd-installer-rust-adr-003/PLAN.md",
-    "tasks": ".spec/backend/prd-installer-rust-adr-003/TASKS.md",
+    "proposal": ".spec/frontend/prd-installer-rust-adr-004/PROPOSAL.md",
+    "spec": ".spec/frontend/prd-installer-rust-adr-004/SPEC.md",
+    "plan": ".spec/frontend/prd-installer-rust-adr-004/PLAN.md",
+    "tasks": ".spec/frontend/prd-installer-rust-adr-004/TASKS.md",
     "superseded_cycle": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/ (superseded: SPEC prescrevia `Plugin.define`, ausente no binario v2.0.32)",
     "archive": ".spec/archive/20261028-harness-design-system-agent/",
     "prd": ".spec/prd/prd-installer-rust/PRD.md",
     "research": null,
     "adr_index": ".spec/prd/prd-installer-rust/ADR-INDEX.md",
-    "adr": ".spec/prd/prd-installer-rust/ADRs/ADR-003-motor-init-doctor-upgrade/ADR.md",
+    "adr": ".spec/prd/prd-installer-rust/ADRs/ADR-004-tui-dez-telas/ADR.md",
     "prd_lines": ".spec/prd/prd-harness-inventory/PRD.md (162 linhas, 16 secoes, PRD-01 PASS)",
-    "security": ".spec/backend/prd-installer-rust-adr-003/SECURITY.md",
-    "spec_gate": ".spec/backend/prd-installer-rust-adr-003/GATE-SPEC.md",
-    "jira_board": ".spec/backend/prd-installer-rust-adr-003/JIRA_BOARD.md"
+    "security": ".spec/frontend/prd-installer-rust-adr-004/SECURITY.md",
+    "spec_gate": ".spec/frontend/prd-installer-rust-adr-004/GATE-SPEC.md",
+    "jira_board": ".spec/frontend/prd-installer-rust-adr-004/JIRA_BOARD.md",
+    "ux": ".spec/frontend/prd-installer-rust-adr-004/UX.md"
   },
   "scope": {
     "interpretation": "esteira PRD->ADR->SDD no harness (visibilidade de intencao antes do codigo)",
@@ -56,14 +57,14 @@
     "rigor": "E1/E2 bloqueiam"
   },
   "gates": {
-    "P0_P1": "approved_user_2026_11_16 (Refactor; isencao de planner aceita; ADR-003 como entrada da SPEC)",
+    "P0_P1": "approved_user_2026_11_16 (Refactor; ADR-004 como entrada da SPEC; ux-designer obrigatorio na analise)",
     "G2_PRD": "approved_user_2026_10_22 (PRD prd-garantias-runtime aprovado sem ressalvas; §16 do PRD.md; 3 decisoes do owner)",
-    "P1_P2": "approved_user_2026_11_16 (SPEC 100%; architect 17/17 sem criticos; seguranca pass)",
-    "P2_P3": "approved_user_2026_11_16 (PLAN 70 linhas, TASKS 12 microtasks, 17 RF mapeados; SDD verdes)",
-    "P3_P4": "approved_auto_evidence_2026_11_16 (3 batches; review APPROVED 0/0 apos 1 iteracao de correcao; mutante 0/23)",
-    "P4_P5": "approved_auto_evidence_QA_2026_11_16 (540+644 + cargo 60 + spec 20; 23/23 differential real; SI 1..6 medidos)",
-    "P5_P6": "approved_auto_2026_11_16 (VERIFY 3/3 com evidencia re-executada no repo real; owner aprovou cada batch; rito ADR-002 literalProven true)",
-    "P6_fim": "done_commit_98f5900 (PR #19 merge humano 2026-11-16; ADR-003 na main; ponte D1 ainda viva — quitação pendente)",
+    "P1_P2": "approved_user_2026_11_16 (SPEC 100%; architect APPROVED apos 3 rodadas; UX vinculante; guarda com dente)",
+    "P2_P3": "approved_user_2026_11_16 (PLAN 62 linhas, TASKS 9 microtasks, 18 RF mapeados; SDD verdes)",
+    "P3_P4": "approved_auto_evidence_2026_11_16 (3 batches; review APPROVED apos 1 iteracao; R9 restaurado)",
+    "P4_P5": "approved_auto_evidence_QA_2026_11_16 (540+716 + cargo 85 + 8/8 provas + mutante 8/8; canais medidos; PTY cleanup com sinal)",
+    "P5_P6": "approved_auto_2026_11_16 (VERIFY 3/3 com evidencia re-executada; rito reutilizado sem auto-assinatura)",
+    "P6_fim": "pending_human_push_merge (branch 04-tui-dez-telas-impl @ c71ea32)",
     "B1_B2": "approved_user_2026_09_29",
     "FU32": "closed_approved_decision_B",
     "_previous_cycle_opencode_v2_only": {
@@ -78,17 +79,17 @@
       "B1_B2": "approved_user_2026_09_29",
       "FU32": "closed_approved_decision_B"
     },
-    "G2_ADR": "approved_user_2026_11_16 (ADR-003 motor init/doctor/upgrade — branch de autoria)",
+    "G2_ADR": "approved_user_2026_11_16 (ADR-004 TUI 10 telas — branch de autoria)",
     "G1_PRD": "approved_user_2026_11_16 (PRD-3 prd-installer-rust; D1-D8 fechadas)",
-    "P4_5": "approved_auto_2026_11_16 (security-review 14/14 — 9 N/A declarados, 5 aplicaveis; zero segredos; Cargo.lock versionado)"
+    "P4_5": "approved_auto_2026_11_16 (security-review 14 itens: 3 PASS + 11 N/A motivados; zero segredos; Cargo.lock)"
   },
   "code_review": {
-    "last_invoked_at": "2026-11-16T21:36:23.230Z",
+    "last_invoked_at": "2026-11-16T23:26:57.484Z",
     "last_status": "passed",
     "critical_issues": 0,
-    "attention_issues": 1,
+    "attention_issues": 0,
     "suggestions": 2,
-    "reviewer_notes": "Quitacao parcial D1: APPROVED 0 critical. 1 importante nao-bloqueante: Symbol.hasInstance em InstallError vaza para ContractError (sem dano vivo; 7 call-sites internos). 2 sugestoes: alinhar campo decisao (feito) e fechar rationale da divida (feito — 10 ops sideCanon:true, so ordem de chaves). Apto ao push."
+    "reviewer_notes": "ADR-004 re-review APPROVED apos loop 1/3: R9 byte-idêntico nos 2 motores, mutação reprova, 3/8 byte-iguais medido independentemente, 0 vereditos congelados tocados. Apto push/merge."
   },
   "overrides": [
     {
@@ -227,7 +228,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T21:36:23.230Z",
+  "last_update": "2026-11-16T23:26:57.484Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -251,25 +252,22 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 — quitacao parcial D1 APPROVED (0 criticos); pronta para push da main; ADR-004 quita os 8 D-TUI",
+  "sdd_stage": "PRD-3 ADR-004 CONCLUIDO (9/9 tasks; 8 ops TUI; ponte 18->10; VERIFY 3/3; review APPROVED). Aguardando push + merge humano",
   "backlog": {
-    "total": 12,
+    "total": 9,
     "todo": 0,
     "doing": 0,
-    "done": 12,
+    "done": 9,
     "ids": [
-      "HARN-BE-01",
-      "HARN-VAL-01",
-      "HARN-BE-02",
-      "HARN-BE-03",
-      "HARN-BE-04",
-      "HARN-BE-05",
-      "HARN-BE-06",
-      "HARN-BE-07",
-      "HARN-BE-08",
-      "HARN-VAL-02",
-      "HARN-VAL-03",
-      "HARN-VAL-04"
+      "TUI-01",
+      "VAL-01",
+      "TUI-02",
+      "TUI-03",
+      "TUI-04",
+      "TUI-05",
+      "TUI-06",
+      "VAL-02",
+      "VAL-03"
     ]
   },
   "next_task": "ADR-002",
@@ -867,6 +865,31 @@
       "origem": "developer + owner (aceite do desvio 2026-11-16)",
       "bloqueia": false,
       "target": "SDD byte-paridade / owner"
+    },
+    {
+      "id": "FU-ADR004-01",
+      "created_at": "2026-11-16T22:52:20.798Z",
+      "texto": "Alinhar envelope de resultado_aborto() em tui/confirm.rs:48 ao envelope real de wizard.rs (where/why) — oráculo morto em teste",
+      "origem": "code-reviewer batch 2 ADR-004",
+      "bloqueia": false,
+      "target": "TUI-06/VAL-03"
+    },
+    {
+      "id": "FU-ADR004-02",
+      "created_at": "2026-11-16T22:52:20.798Z",
+      "texto": "Avaliar free() (drop(Box::from_raw)) dentro de ao_sinal em tui/cleanup.rs:62 — tcsetattr/signal/kill sao async-signal-safe, free nao estritamente",
+      "origem": "code-reviewer batch 2 ADR-004",
+      "bloqueia": false,
+      "target": "VAL-03"
+    },
+    {
+      "id": "FU-DOCTOR-FLAKY",
+      "created_at": "2026-11-16T23:13:00.048Z",
+      "texto": "doctor.spec.mjs:61 intermitente: sufixo mkdtemp pode conter D0..D6 e poluir text.indexOf; arquivo congelado (f10ef580), nao alterar no batch; saneamento em task propria",
+      "origem": "developer batch 3 ADR-004",
+      "bloqueia": false,
+      "target": "tech-debt",
+      "registrado_em": ".spec/tech-debts/doctor-spec-mkdtemp-flake/TASKS.md (P3)"
     }
   ],
   "batches": [
@@ -1089,15 +1112,14 @@
     "pos_restart3": "orcamento ESGOTADO (2/2: fix + review); proxima delegacao nega; restart #4 necessario"
   },
   "verify": {
-    "at": "2026-11-16T19:27:22.829Z",
-    "verdict": "3/3 PASS (differential real, mutante 0/23 reprova)",
-    "completude": "12/12 tasks; rito completo; VERIFY 3 dimensoes",
-    "corretude": "540+644 testes + cargo 60 + prova-spec 20; 23/23 provas com result+ok+exit-code; 23 mutacoes no caminho real",
-    "coerencia": "oraculo externo c63e333; selo c904f1c5 intacto; ponte D1-two-motors intacta ate o merge; seguranca 14/14",
-    "traceability": "17/17 RF",
-    "artefato": ".spec/backend/prd-installer-rust-adr-003/VERIFY.md",
-    "report": "harness/prd-installer-rust-adr-003.json",
-    "gitSha": "60741daa05e466a232e86c9199fdf64f8e981b52"
+    "at": "2026-11-16T23:26:57.484Z",
+    "verdict": "3/3 PASS (review aprovado apos correcao do atestado)",
+    "completude": "9/9 tasks; Rito ADR-002 literal 9fa4530b reutilizado sem auto-assinatura",
+    "corretude": "540+716 testes + cargo 85 + 8/8 provas + 8/8 mutantes; warning R9 byte-idêntico; canais medidos",
+    "coerencia": "ponte 10 D-ENGINE; transcript 16336B; guarda 3/3; selo c904f1c5; seguranca 14 (3 PASS + 11 N/A)",
+    "traceability": "18/18 RF",
+    "artefato": ".spec/frontend/prd-installer-rust-adr-004/VERIFY.md",
+    "report": "harness/prd-installer-rust-adr-004.json"
   },
   "commit": "a19acab",
   "remote": "git@github.com:freitasjh/harness.git (SSH; push + CI pendentes)",
@@ -1192,11 +1214,12 @@
   "prd_adr": {
     "prd_id": "prd-installer-rust",
     "prd_status": "approved",
-    "active_adr": "ADR-004 (preparacao)",
+    "active_adr": "ADR-004",
     "adr_order": [
       "ADR-001",
       "ADR-002",
-      "ADR-003"
+      "ADR-003",
+      "ADR-004"
     ],
     "snapshots": [
       {
@@ -1220,6 +1243,12 @@
         "at": "2026-11-16T20:11:40.975Z",
         "merge": "98f5900",
         "nota": "loop de correcao 1/3 (tautologia do differential); divergencia real buildManifest.version corrigida"
+      },
+      {
+        "adr": "ADR-004",
+        "at": "2026-11-16T21:41:33.700Z",
+        "status": "in-progress",
+        "branch": "04-tui-dez-telas-impl"
       }
     ],
     "decisions_closed": {
@@ -1919,58 +1948,68 @@
     "nota": "arquivamento refeito a partir da main pos-PRD-2; o PR #9 ficou stale e nao deve ser mergeado"
   },
   "cycle_in_progress": {
-    "adr": "ADR-003",
-    "title": "Motor init/doctor/upgrade — 23 ops de engine mapeadas 1:1",
-    "branch": "adr/prd-installer-rust/03-motor-init-doctor-upgrade-impl",
-    "base": "fbdca4c",
-    "planned_artifacts": [
-      ".spec/backend/prd-installer-rust-adr-003/PROPOSAL.md",
-      ".spec/backend/prd-installer-rust-adr-003/SPEC.md",
-      ".spec/backend/prd-installer-rust-adr-003/PLAN.md",
-      ".spec/backend/prd-installer-rust-adr-003/TASKS.md",
-      ".spec/backend/prd-installer-rust-adr-003/VERIFY.md"
-    ],
-    "exempt_from_planner": "refactor sem comportamento observável (.agents/rules/prd-adr-pipeline.md §3)",
-    "gate": "P0_P1 pendente — classificação Refactor a confirmar pelo owner"
+    "adr": "ADR-004",
+    "title": "TUI de 10 telas — modelo declarativo, 5 campos/tela, 8 ops D-TUI",
+    "branch": "adr/prd-installer-rust/04-tui-dez-telas-impl",
+    "base": "9a74ba9",
+    "exempt_from_planner": "refactor de apresentação (ADR §rota); ADR-004 como entrada da SPEC",
+    "gate": "P0_P1 aprovado pelo owner 2026-11-16; ux-designer OBRIGATORIO antes da SPEC (fonte da verdade visual)"
   },
   "spec": {
-    "score": "100% (6 aplicaveis atendidos / 5 N/A com motivo)",
-    "gate": ".spec/backend/prd-installer-rust-adr-003/GATE-SPEC.md",
-    "security": "Fase 1 pass — SECURITY.md, STRIDE, 0 criticos",
-    "rf_count": 17,
+    "score": "100% (6 aplicaveis / 5 N/A com motivo)",
+    "gate": ".spec/frontend/prd-installer-rust-adr-004/GATE-SPEC.md",
+    "ux": "parecer vinculante UX.md — M1..M8, zero byte",
+    "security": "Fase 1 pass — SECURITY.md STRIDE",
+    "rf_count": 18,
     "items": 17,
-    "at": "2026-11-16T17:53:09.382Z"
+    "at": "2026-11-16T21:47:42.582Z"
   },
   "plan": {
-    "lines": 70,
-    "tasks": 12,
+    "lines": 62,
+    "tasks": 9,
     "layers": {
-      "be": 8,
-      "val": 4,
-      "fe": 0
+      "tui": 8,
+      "val": 3
     },
-    "mapped_rf": 17,
-    "at": "2026-11-16T17:57:16.131Z"
+    "mapped_rf": 18,
+    "at": "2026-11-16T22:03:23.398Z"
   },
   "batch": {
     "id": 3,
     "status": "review_approved",
     "iteration": 1,
     "commits": [
-      "60741da",
-      "6e16711",
-      "dc27c1d"
+      "e49037c",
+      "c71ea32"
     ],
-    "mutation_guard": {
-      "proved": 0,
-      "failed": 23
-    },
-    "real_divergence_fixed": "buildManifest.version 0.1.0 -> 1.0.0 (oracle c63e333 install.mjs:15)"
+    "ops_tui": 8,
+    "ponte": "10 D-ENGINE (8 D-TUI removidos)",
+    "byte_equal": "3/8 + 5 deltas nao-funcionais + 0 funcionais"
   },
-  "next_gate": "loop de correcao (developer -> reviewer) ate 3 iteracoes; nao encadear push antes de review APPROVED",
+  "next_gate": "loop de correcao (developer -> reviewer) ate 3 iteracoes; nao fazer push antes de APPROVED",
   "governance_note": {
     "at": "2026-11-16T21:26:46.319Z",
     "texto": "Developer escreveu no retorno que owner havia aprovado migrar só JSON-safe — falso. Owner aprovou 23 e depois ACEITOU o desvio para 13 com razao medida. Corrigido aqui para nao deixar decisao reescrita.",
     "commit": "b7c8c58"
-  }
+  },
+  "architecture_review": {
+    "rounds": 3,
+    "verdicts": [
+      "REPROVADO (F1 guarda JS sobre Rust; F2 18; F3 drift)",
+      "REPROVADO (F1 glob tui/** inexistente + entry/*.rs 9 hits; F3 spec_gate)",
+      "REPROVADO (F1 guarda vacua: grep -c 0 = match, test $? -le 1 passa; arquivo ausente passa)"
+    ],
+    "final_fix": "RF-05(b) = test -f wizard.rs && test \"$(grep -cE ...)\" -eq 0 — medido: limpo exit 0, match injetado exit 1, arquivo ausente exit 1",
+    "escalation": "limite de 3 iteracoes atingido; confirmacao final requisitada fora do loop",
+    "at": "2026-11-16T21:53:25.870Z",
+    "final_verdict": "APPROVED (confirmacao pos-3a correcao; guarda 3 caminhos: limpo 0, match 1, ausente 1)"
+  },
+  "env_notes": [
+    {
+      "porta": 5173,
+      "pid": 2221367,
+      "dono": "node-Main",
+      "nota": "pre-existente, NAO iniciada pelo batch 2 do ADR-004; nao matar — regra H5.1: conferir dono pela porta antes de qualquer kill"
+    }
+  ]
 }
