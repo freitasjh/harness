@@ -84,11 +84,11 @@
     "P4_5": "approved_auto_2026_11_16 (security-review 14/14 — 9 N/A declarados, 5 aplicaveis; zero segredos; Cargo.lock versionado)"
   },
   "code_review": {
-    "last_invoked_at": "2026-11-16T21:53:46.859Z",
+    "last_invoked_at": "2026-11-16T22:27:04.922Z",
     "last_status": "passed",
     "critical_issues": 0,
     "attention_issues": 0,
-    "reviewer_notes": "SPEC ADR-004 aprovada apos 3 rodadas de architect. Guarda RF-05(tela nunca grava) reancorada como asserção com dente. 17 RF 1:1, byte/transicao fechados, UX vinculante M1..M8."
+    "reviewer_notes": "Batch 1 ADR-004 APPROVED 0 criticos; 2 importantes de evidencia (stdoutHash rotulo, canais medidos) fechados em 8abb8b1 antes do batch 2. Guarda 3/3 com dente, transcript 16336B provado."
   },
   "overrides": [
     {
@@ -227,7 +227,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T22:22:46.259Z",
+  "last_update": "2026-11-16T22:27:04.922Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -251,7 +251,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-004 EXECUTION batch 1/3 CONCLUIDO (2/2; 50 campos, guarda 3/3, transcript 16336B) — code-reviewer em curso",
+  "sdd_stage": "PRD-3 ADR-004 EXECUTION batch 1 REVIEW APPROVED (0/0; evidencia corrigida). PARADA HITL antes do batch 2",
   "backlog": {
     "total": 9,
     "todo": 7,
@@ -1959,15 +1959,16 @@
     "skills": [
       "rust-architecture-specialist"
     ],
-    "status": "review_running",
+    "status": "review_approved",
     "commit": "d816e251fd5682d8b009e2802e13bef629a41eda",
     "tasks": 2,
     "fields": 50,
     "transcript_bytes": 16336,
     "guard_paths": "3/3 com dente",
-    "incident": "report commands:[] corrigido para 10 execucoes reais; 540/540 restaurado"
+    "incident": "report commands:[] corrigido para 10 execucoes reais; 540/540 restaurado",
+    "evidence_fixes": "8abb8b1 — stdoutHash 64hex + basis, durationMsMeasured:false, canais pending_VAL-02"
   },
-  "next_gate": "loop de correcao (developer -> reviewer) ate 3 iteracoes; nao encadear push antes de review APPROVED",
+  "next_gate": "HITL batch 1->2: posso avancar para o batch 2 (TUI-02 navegacao, TUI-03 W5/aborto, TUI-04 segredo, TUI-05 cleanup SIGTERM)?",
   "governance_note": {
     "at": "2026-11-16T21:26:46.319Z",
     "texto": "Developer escreveu no retorno que owner havia aprovado migrar só JSON-safe — falso. Owner aprovou 23 e depois ACEITOU o desvio para 13 com razao medida. Corrigido aqui para nao deixar decisao reescrita.",
