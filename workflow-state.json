@@ -182,17 +182,18 @@
     },
     {
       "name": "harness-inventory",
-      "stage": "Discovery",
-      "progress": 10,
+      "stage": "Archived",
+      "progress": 100,
       "type": "refactor",
       "depends_on": [],
       "artifacts": {
-        "prd": ".spec/prd/prd-harness-inventory/PRD.md"
+        "prd": ".spec/prd/prd-harness-inventory/PRD.md",
+        "archive": ".spec/archive/20261111-prd-prd-harness-inventory"
       },
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T12:06:32.826Z",
+  "last_update": "2026-11-12T11:57:33.896Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -1751,7 +1752,8 @@
         "id": "prd-harness-inventory",
         "ordem": 1,
         "escopo": "inventario 1:1 agentes/skills/rules + roster de agentes + agente de planejamento",
-        "status": "draft"
+        "status": "archived",
+        "archive": ".spec/archive/20261111-prd-prd-harness-inventory"
       },
       {
         "id": "prd-agnostic-artifacts",
@@ -1792,10 +1794,11 @@
     ],
     "d7": "closed_orquestrador_2026_11_11 (contagem 8 era erro do orquestrador no bloco PICCO; canonico = 10 itens)"
   },
-  "adr002_i1": "workflow-state.json: a pendencia que dizia 'orchestrator segue com edit: deny' foi corrigida em 2026-11-12 (ADR-002 item 1); a evasao por bash permanece declarada apenas para workflow-state.json e .agents/**",
-  "qa_findings_p3": [
-    "F-1: dois baselines (refs e cdl) com ids de alarme distintos — nomear modulo junto do id",
-    "F-2: residuo TaskFlow em security-engineer/AGENT.md:26 — dono ADR-005",
-    "F-3: REPORT gitSha pinado em b760df5; re-key no merge"
-  ]
+  "prd1_archived": {
+    "prd_id": "prd-harness-inventory",
+    "adrs": "5/5 merged (001 fe7c408, 002 67e8162, 003 f9c5ca2, 005 cb0f08d, 004 2c314de)",
+    "archive": ".spec/archive/20261111-prd-prd-harness-inventory",
+    "at": "2026-11-12",
+    "nota": "arquivamento refeito a partir da main pos-PRD-2; o PR #9 ficou stale e nao deve ser mergeado"
+  }
 }
