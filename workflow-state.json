@@ -227,7 +227,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T22:27:04.922Z",
+  "last_update": "2026-11-16T22:30:11.022Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -251,11 +251,11 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-004 EXECUTION batch 1 REVIEW APPROVED (0/0; evidencia corrigida). PARADA HITL antes do batch 2",
+  "sdd_stage": "PRD-3 ADR-004 EXECUTION batch 2/3 — navegacao W0-W4 + W5/aborto + segredo + cleanup SIGTERM",
   "backlog": {
     "total": 9,
-    "todo": 7,
-    "doing": 0,
+    "todo": 5,
+    "doing": 4,
     "done": 2,
     "ids": [
       "TUI-01",
@@ -271,6 +271,12 @@
     "done_ids": [
       "TUI-01",
       "VAL-01"
+    ],
+    "doing_ids": [
+      "TUI-02",
+      "TUI-03",
+      "TUI-04",
+      "TUI-05"
     ]
   },
   "next_task": "ADR-002",
@@ -1954,19 +1960,15 @@
     "at": "2026-11-16T22:03:23.398Z"
   },
   "batch": {
-    "id": 1,
+    "id": 2,
     "agent": "developer-engineer",
     "skills": [
       "rust-architecture-specialist"
     ],
-    "status": "review_approved",
-    "commit": "d816e251fd5682d8b009e2802e13bef629a41eda",
-    "tasks": 2,
-    "fields": 50,
-    "transcript_bytes": 16336,
-    "guard_paths": "3/3 com dente",
-    "incident": "report commands:[] corrigido para 10 execucoes reais; 540/540 restaurado",
-    "evidence_fixes": "8abb8b1 — stdoutHash 64hex + basis, durationMsMeasured:false, canais pending_VAL-02"
+    "status": "running",
+    "tasks": 4,
+    "base": "aab8f28",
+    "ux_parecer": "vinculante — 0 byte, 4 ramos, cleanup antes da leitura"
   },
   "next_gate": "HITL batch 1->2: posso avancar para o batch 2 (TUI-02 navegacao, TUI-03 W5/aborto, TUI-04 segredo, TUI-05 cleanup SIGTERM)?",
   "governance_note": {
