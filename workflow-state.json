@@ -1,8 +1,8 @@
 {
-  "current_feature": "prd-agnostic-artifacts-adr-005",
-  "current_phase": "Completed",
-  "previous_phase": "Testing",
-  "next_phase": "Discovery",
+  "current_feature": "prd-installer-rust",
+  "current_phase": "Discovery",
+  "previous_phase": "Completed",
+  "next_phase": "Planning",
   "type": "refactor",
   "layer": "agents/skills/rules",
   "repo": "harness",
@@ -11,7 +11,7 @@
     "bug_report": "harness/harness-eixos-stack-p2.json",
     "source_tech_debt": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
     "previous_archive": ".spec/archive/20261018-harness-eixos-stack/",
-    "verify": ".spec/backend/prd-agnostic-artifacts-adr-005/VERIFY.md",
+    "verify": null,
     "harness_evidence": ".spec/archive/20261018-harness-eixos-stack/harness/",
     "harness_report": "harness/prd-agnostic-artifacts-adr-005.json",
     "tech_debt_p2": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
@@ -22,16 +22,16 @@
       "harness_report": "harness/harness-inventory.json"
     },
     "c1_previous_bug": ".spec/bugs/harness-eixos-stack-p2/TASKS.md",
-    "proposal": ".spec/backend/prd-agnostic-artifacts-adr-005/PROPOSAL.md",
-    "spec": ".spec/backend/prd-agnostic-artifacts-adr-005/SPEC.md",
-    "plan": ".spec/backend/prd-agnostic-artifacts-adr-005/PLAN.md",
-    "tasks": ".spec/backend/prd-agnostic-artifacts-adr-005/TASKS.md",
+    "proposal": null,
+    "spec": null,
+    "plan": null,
+    "tasks": null,
     "superseded_cycle": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/ (superseded: SPEC prescrevia `Plugin.define`, ausente no binario v2.0.32)",
     "archive": ".spec/archive/20261028-harness-design-system-agent/",
-    "prd": ".spec/archive/20261116-prd-prd-agnostic-artifacts/PRD.md",
-    "research": ".spec/archive/20261116-prd-prd-agnostic-artifacts/RESEARCH.md",
-    "adr_index": ".spec/archive/20261116-prd-prd-agnostic-artifacts/ADR-INDEX.md",
-    "adr": ".spec/archive/20261116-prd-prd-agnostic-artifacts/ADRs/ADR-005-frota-restante/ADR.md",
+    "prd": ".spec/prd/prd-installer-rust/PRD.md",
+    "research": null,
+    "adr_index": null,
+    "adr": null,
     "prd_lines": ".spec/prd/prd-harness-inventory/PRD.md (162 linhas, 16 secoes, PRD-01 PASS)"
   },
   "scope": {
@@ -76,7 +76,7 @@
       "FU32": "closed_approved_decision_B"
     },
     "G2_ADR": "approved_user_2026_11_16 (ADR-005 rubrica FR0-FR5)",
-    "G1_PRD": "approved_user_2026_11_11 (PRD-2 prd-agnostic-artifacts; D1-D8 fechadas)"
+    "G1_PRD": "pending_user_approval (PRD-3 prd-installer-rust em redacao)"
   },
   "code_review": {
     "last_invoked_at": "2026-11-16T00:00:00-03:00",
@@ -193,7 +193,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T13:10:38.211Z",
+  "last_update": "2026-11-16T13:35:58.996Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -217,7 +217,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-agnostic-artifacts-adr-005: APPROVED (0 criticos; 3 debitos de governanca fechados)",
-  "sdd_stage": "PRD-2 arquivado apos 5/5 ADRs. Proximo: PRD-3 prd-installer-rust (CLI Rust, 12 presets, TUI)",
+  "sdd_stage": "PRD-3 prd-installer-rust: Discovery — PRD em redacao pelo product-manager. Base: main be8a348, 540/540 verde",
   "backlog": {
     "total": 10,
     "todo": 0,
@@ -1072,66 +1072,11 @@
     "env": "HARNESS_GATES=off (host)"
   },
   "prd_adr": {
-    "prd_id": "prd-agnostic-artifacts",
-    "prd_status": "archived",
-    "active_adr": "ADR-005",
-    "adr_order": [
-      "ADR-001",
-      "ADR-002",
-      "ADR-003",
-      "ADR-004",
-      "ADR-005"
-    ],
-    "snapshots": [
-      {
-        "adr": "ADR-001",
-        "at": "2026-11-11",
-        "follow_ups_count": 0,
-        "escalations_count": 3,
-        "nota": "3 rodadas de predicado (CHANGES_REQUIRED x2, aprovado na 3a com heuristica declarada fp=5/90 fn=4/90); QA P4 PASSA; VERIFY 3/3"
-      }
-    ],
-    "decisions_closed": {
-      "D1": "gatear as 2 rules de frontend por eixo (formaliza o status quo)",
-      "D2": "proibicao citando tecnologia NAO e acoplamento (excecao permanente); A-2 mede prescricao",
-      "D3": "spec-review vira skill de projeto; workflow-rules §4 invoca revisor generico",
-      "D4": "remover as 52 citacoes de baseline Java e declarar fora de suporte ate o PRD-4",
-      "D5": "remover o ponteiro de frontend/DESIGN.md dos 3 agentes; DESIGN.md nasce no PRD-5",
-      "D6": "orchestrator ganha edit: allow restrito a .spec/**",
-      "D7": "criterio mede o repo inteiro menos vendor",
-      "D8": "ui-ux-pro-max e as 6 skills de stack ficam em SKILLS_COMMON (excecao declarada)"
-    },
-    "adr_plan": [
-      {
-        "order": 2,
-        "id": "ADR-002",
-        "status": "in-progress",
-        "merge": "pending_human (branch 02-entradas-sempre-instaladas)",
-        "titulo": "Classe (b) nas 2 entradas sempre-instaladas + autoria de SPEC/PLAN/TASKS (D6)"
-      },
-      {
-        "order": 3,
-        "id": "ADR-003",
-        "status": "in-progress",
-        "merge": "pending_human (branch 03-skills-comuns-e-spec-review)",
-        "titulo": "Skills comuns + spec-review fora do payload; R1 mecanico na revisao de SPEC"
-      },
-      {
-        "order": 4,
-        "id": "ADR-004",
-        "status": "in-progress",
-        "merge": "pending_human (branch 04-referencias-e-design-md)",
-        "titulo": "Referencias e DESIGN.md — SSoT reapontada, Java fora de suporte, N30"
-      },
-      {
-        "order": 5,
-        "id": "ADR-005",
-        "status": "in-progress",
-        "merge": "pending_human (branch 05-frota-restante)",
-        "titulo": "Frota restante — identidades, corpos de eixo, .doc com dono, excecoes com expiracao"
-      }
-    ],
-    "prd_archived_to": ".spec/archive/20261116-prd-prd-agnostic-artifacts"
+    "prd_id": "prd-installer-rust",
+    "prd_status": "draft",
+    "active_adr": null,
+    "adr_order": [],
+    "snapshots": []
   },
   "escalations": [
     {
@@ -1775,7 +1720,7 @@
         "id": "prd-installer-rust",
         "ordem": 3,
         "escopo": "CLI Rust, reescrita completa do instalador, paridade dos 12 presets, TUI",
-        "status": "planned"
+        "status": "draft"
       },
       {
         "id": "prd-axes-split",
