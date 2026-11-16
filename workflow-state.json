@@ -82,11 +82,11 @@
     "G1_PRD": "approved_user_2026_11_16 (PRD-3 prd-installer-rust; D1-D8 fechadas)"
   },
   "code_review": {
-    "last_invoked_at": "2026-11-16T18:17:00.064Z",
+    "last_invoked_at": "2026-11-16T18:50:34.633Z",
     "last_status": "passed",
     "critical_issues": 0,
-    "attention_issues": 0,
-    "reviewer_notes": "Batch 1 ADR-003: APPROVED, 0 criticos/0 importantes; 4 followups para batch 2 (symlink resolveBackupDir; ok+exit-code na prova; citacao stale contract-inventory; clap 4.6.6 vs S1 4.6.7)"
+    "attention_issues": 2,
+    "reviewer_notes": "Batch 2 ADR-003 APPROVED 0/0 criticos/importantes; 2 🟡 donos do batch 3: report stale (VAL-04) e razao SI-2/SI-3 stale (VAL-03). Mutacoes MUT1 (ordem) e MUT2 (doctor-gate) reprovam."
   },
   "overrides": [
     {
@@ -206,7 +206,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T18:44:44.105Z",
+  "last_update": "2026-11-16T18:50:34.633Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -230,7 +230,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-003 EXECUTION batch 2/3 CONCLUIDO (5/5; cargo 60/60; 23 ops implementadas, 7 provadas, 16 aguardando VAL-02) — code-reviewer em curso",
+  "sdd_stage": "PRD-3 ADR-003 EXECUTION — batch 2 REVIEW APPROVED (0/0; 2 🟡 para batch 3). PARADA HITL antes do batch 3",
   "backlog": {
     "total": 12,
     "todo": 4,
@@ -814,6 +814,22 @@
       "bloqueia": false,
       "target": "HARN-BE-01/V AL-04",
       "created_at": "2026-11-16T18:17:00.064Z"
+    },
+    {
+      "id": "FU-ADR003-05",
+      "texto": "VAL-04: corrigir batch/counts/gitSha/evaluation stale em prova-engine.mjs:210-230 e reancorar REPORT no commit final",
+      "origem": "code-reviewer batch 2",
+      "bloqueia": false,
+      "target": "HARN-VAL-04",
+      "created_at": "2026-11-16T18:50:34.633Z"
+    },
+    {
+      "id": "FU-ADR003-06",
+      "texto": "VAL-03: atualizar razao de SI-2/SI-3 em parity-oracle.mjs (binario Rust ja existe desde batch 2) — path protegido exige trailer",
+      "origem": "code-reviewer batch 2",
+      "bloqueia": false,
+      "target": "HARN-VAL-03",
+      "created_at": "2026-11-16T18:50:34.633Z"
     }
   ],
   "batches": [
@@ -1896,14 +1912,14 @@
     "skills": [
       "rust-architecture-specialist"
     ],
-    "status": "review_running",
+    "status": "review_approved",
     "commit": "0794670fb9cfdc2cba37e4498cfca7d6f61d12be",
     "tasks": 5,
     "ops_implemented": 23,
     "ops_proven": 7,
     "ops_pending_proof": 16,
-    "explicitly_not_measured": true,
-    "followups_closed": 4
+    "followups_closed": 4,
+    "followups_batch3": 2
   },
-  "next_gate": "HITL batch 1->2: posso avancar para o batch 2 (HARN-BE-04..08: texto congelado, doctor, escrita segura, entrypoints)?"
+  "next_gate": "HITL batch 2->3: posso avancar para o batch 3 (HARN-VAL-02/03/04: 23 ops provadas, SI-2/SI-3 medidos, RELATORIO + VERIFY)?"
 }
