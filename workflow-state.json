@@ -1,8 +1,8 @@
 {
-  "current_feature": "prd-agnostic-artifacts-adr-003",
-  "current_phase": "Completed",
-  "previous_phase": "Testing",
-  "next_phase": "Planning",
+  "current_feature": "prd-agnostic-artifacts-adr-004",
+  "current_phase": "Planning",
+  "previous_phase": "Completed",
+  "next_phase": "Discovery",
   "type": "refactor",
   "layer": "agents/skills/rules",
   "repo": "harness",
@@ -11,7 +11,7 @@
     "bug_report": "harness/harness-eixos-stack-p2.json",
     "source_tech_debt": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
     "previous_archive": ".spec/archive/20261018-harness-eixos-stack/",
-    "verify": ".spec/backend/prd-agnostic-artifacts-adr-003/VERIFY.md",
+    "verify": null,
     "harness_evidence": ".spec/archive/20261018-harness-eixos-stack/harness/",
     "harness_report": "harness/prd-agnostic-artifacts-adr-003.json",
     "tech_debt_p2": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
@@ -22,16 +22,16 @@
       "harness_report": "harness/harness-inventory.json"
     },
     "c1_previous_bug": ".spec/bugs/harness-eixos-stack-p2/TASKS.md",
-    "proposal": ".spec/backend/prd-agnostic-artifacts-adr-003/PROPOSAL.md",
-    "spec": ".spec/backend/prd-agnostic-artifacts-adr-003/SPEC.md",
-    "plan": ".spec/backend/prd-agnostic-artifacts-adr-003/PLAN.md",
-    "tasks": ".spec/backend/prd-agnostic-artifacts-adr-003/TASKS.md",
+    "proposal": null,
+    "spec": null,
+    "plan": null,
+    "tasks": null,
     "superseded_cycle": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/ (superseded: SPEC prescrevia `Plugin.define`, ausente no binario v2.0.32)",
     "archive": ".spec/archive/20261028-harness-design-system-agent/",
     "prd": ".spec/prd/prd-agnostic-artifacts/PRD.md",
     "research": ".spec/prd/prd-harness-inventory/RESEARCH.md",
     "adr_index": ".spec/prd/prd-harness-inventory/ADR-INDEX.md",
-    "adr": ".spec/prd/prd-agnostic-artifacts/ADRs/ADR-003-skills-comuns-e-spec-review/ADR.md",
+    "adr": null,
     "prd_lines": ".spec/prd/prd-harness-inventory/PRD.md (162 linhas, 16 secoes, PRD-01 PASS)"
   },
   "scope": {
@@ -192,7 +192,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-12T13:28:09.698Z",
+  "last_update": "2026-11-16T11:36:29.678Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -216,7 +216,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-agnostic-artifacts-adr-003: 0 criticos; H1-H4 fechados",
-  "sdd_stage": "prd-agnostic-artifacts ADR-003 CONCLUIDO (VERIFY 3/3). Restam ADR-004 e ADR-005",
+  "sdd_stage": "PRD-2 / ADR-004 referencias e DESIGN.md: ADR em redacao pelo architect. Base: main b5c23dd (ADR-003 merged), V20 baseline=38, refs-undetected=20",
   "backlog": {
     "total": 10,
     "todo": 0,
@@ -1074,11 +1074,12 @@
   "prd_adr": {
     "prd_id": "prd-agnostic-artifacts",
     "prd_status": "approved",
-    "active_adr": "ADR-003",
+    "active_adr": "ADR-004",
     "adr_order": [
       "ADR-001",
       "ADR-002",
-      "ADR-003"
+      "ADR-003",
+      "ADR-004"
     ],
     "snapshots": [
       {
