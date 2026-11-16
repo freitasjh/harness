@@ -1,0 +1,33 @@
+[package]
+name = "harness-installer"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.74"
+
+# Critério ADR-003 §2.4 / RESEARCH.md §2 (A1); crate/versão NÃO são decisão do ADR.
+# Toda crate abaixo tem fonte. Texto de help/erro é saída comparada ao oráculo (§2.4.1):
+# nunca se edita o oráculo nem a expectativa para acomodar a crate.
+# S1 = RESEARCH.md:13 (docs.rs/clap, parser/subcomandos, MSRV 1.74).
+# DESVIO DE SDD (rastreabilidade, sem comportamento observável): S1 registra clap 4.6.7
+# (publicado em 2026-11-16); o cache offline do ambiente tem 4.6.6, fixado abaixo com `=`.
+# Escolha do SDD pelo critério ADR-003 §2.4 (texto é saída comparada, nunca gerada pela
+# crate): a diferença de patch não altera usage/erro/help, que vêm de src/text/*. ADR
+# não pinou versão (§2.4/§6); nenhuma rubrica é reaberta. Se o cache passar a ter 4.6.7,
+# bump é acompanhado de re-prova (VAL-02), nunca de presunção de paridade.
+# S2 = RESEARCH.md:14 (docs.rs/anyhow, contexto de erro de aplicação).
+# S3 = RESEARCH.md:15 (docs.rs/thiserror, tipos de domínio sem poluir API pública).
+# JSON = ADR-001 §2.1 (stdin documento JSON / stdout envelope JSON) — serde/serde_json.
+[dependencies]
+clap = { version = "=4.6.6", features = ["derive"] } # RESEARCH.md:13 S1
+anyhow = "=1.0.104" # RESEARCH.md:14 S2
+thiserror = "=2.0.21" # RESEARCH.md:15 S3
+serde = { version = "=1.0.229", features = ["derive"] } # ADR-001 §2.1 (contrato JSON)
+serde_json = "=1.0.151" # ADR-001 §2.1 (contrato JSON)
+
+[lib]
+name = "harness_installer"
+path = "src/lib.rs"
+
+[[bin]]
+name = "harness-installer"
+path = "src/main.rs"

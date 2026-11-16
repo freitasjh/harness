@@ -22,13 +22,13 @@ export const ORACLE_LITERAL_REL = 'installer/__tests__/oracle-literal.sha256'
 export const FIXTURE_SOURCE_SHA256 = '5d23de40fdedd658e5aa61fc6e51e4b3940a7e3a802dee255a0e998066c00d22'
 // F5: hash de CONTEÚDO (nomes só detectam rename, não mudança de 1 byte).
 export const SI3_HASH_COMMAND = 'find -type f -print0 | sort -z | xargs -0 sha256sum'
-// F3: comandos medidos sem binário Rust (oráculo/literais apenas).
+// F3: comandos medidos com oráculo/literais (independentes do binário Rust).
 export const SI_MEASURED_COMMANDS = Object.freeze({
   'SI-1': ['--test', 'installer/__tests__/golden.spec.mjs'],
   'SI-5': ['--test', 'installer/__tests__/checks.spec.mjs', 'installer/__tests__/merge-manifest.spec.mjs', 'installer/__tests__/suite.spec.mjs'],
   'SI-6': ['scripts/static-checks.mjs'],
 })
-export const BINARY_NOT_MEASURED_REASON = 'sem binário Rust — depende do motor do ADR-003 (não existe neste ciclo)'
+export const BINARY_NOT_MEASURED_REASON = '$INSTALLER_BIN ausente — SI-2/SI-3 exigem differential real (binário Rust + oráculo c63e333); not_measured, nunca PASS por omissão'
 export const DEFAULT_PROTECTED_PATHS = Object.freeze([
   'harness.config.json', 'opencode.json', 'gate.js', '.agents/**', '.opencode/plugins/**',
 ])
@@ -257,6 +257,99 @@ export function snapNewFiles(root) {
   return found
 }
 
+// F3 (VAL-03) — differential real SI-2/SI-3. Oráculo = install.mjs do worktree
+// c63e333 executado via oracle-bridge (nunca registry do sujeito); binário =
+// $INSTALLER_BIN contract-v1. Ambos recebem o MESMO REQ. Hash de CONTEÚDO no
+// destino do dry-run (SI3_HASH_COMMAND), porcelania do worktree no finally.
+const BRIDGE_REL = path.join('installer-rs', 'tests', 'oracle-bridge.mjs')
+
+function defaultBridgeRun(req, env) {
+  return execFileSync(process.execPath, [path.join(repoRoot, BRIDGE_REL)], {
+    input: JSON.stringify(req) + '\n',
+    env: { ...process.env, ...env },
+    cwd: repoRoot,
+    encoding: 'utf8',
+    maxBuffer: 32 * 1024 * 1024,
+  })
+}
+
+function defaultBinRun(bin, req, cwd) {
+  return execFileSync(bin, ['contract-v1'], {
+    input: JSON.stringify(req) + '\n',
+    cwd,
+    encoding: 'utf8',
+    maxBuffer: 32 * 1024 * 1024,
+  })
+}
+
+function defaultHashTree(dir) {
+  const out = execFileSync('bash', ['-c', SI3_HASH_COMMAND], {
+    cwd: dir,
+    encoding: 'utf8',
+    maxBuffer: 32 * 1024 * 1024,
+  })
+  return sha256(out)
+}
+
+function defaultPorcelain(worktreeDir) {
+  return String(execFileSync('git', ['status', '--porcelain'], {
+    cwd: worktreeDir,
+    encoding: 'utf8',
+  }))
+}
+
+export function runInstallerDifferential({
+  installerBin,
+  worktreeDir,
+  runBridge = defaultBridgeRun,
+  runBin = defaultBinRun,
+  hashTree = defaultHashTree,
+  porcelain = defaultPorcelain,
+  tmpRoot = os.tmpdir(),
+} = {}) {
+  if (!installerBin) {
+    throw new Error('runInstallerDifferential: $INSTALLER_BIN obrigatório — sem binário não há differential (not_measured, não PASS)')
+  }
+  const binary = path.isAbsolute(installerBin) ? installerBin : path.resolve(repoRoot, installerBin)
+  const stamp = `${process.pid}-${Date.now()}`
+  const sourceDir = fs.mkdtempSync(path.join(tmpRoot, `si2-source-${stamp}-`))
+  const targetDir = fs.mkdtempSync(path.join(tmpRoot, `si3-target-${stamp}-`))
+  try {
+    fs.mkdirSync(path.join(sourceDir, '.agents', 'rules'), { recursive: true })
+    fs.writeFileSync(path.join(sourceDir, 'opencode.json'), '{"agent":{}}\n')
+    fs.writeFileSync(path.join(sourceDir, '.agents', 'rules', 'probe.md'), 'probe rule\n')
+    fs.writeFileSync(path.join(targetDir, 'marker.txt'), 'dry-run target\n')
+
+    const collectReq = {
+      v: 1, op: 'collectIncoming',
+      args: { sourceDir, stacks: [], stack: null },
+      answers: {}, target: null,
+    }
+    const oracleOut = runBridge(collectReq, { ORACLE_MJS: path.join(worktreeDir, 'installer', 'install.mjs') })
+    const binOut = runBin(binary, collectReq, sourceDir)
+    const oracleEnv = JSON.parse(oracleOut.trim())
+    const binEnv = JSON.parse(binOut.trim())
+    if (oracleEnv.ok !== true || binEnv.ok !== true) {
+      throw new Error(`SI-2: envelope não-ok (oracle=${oracleEnv.ok} bin=${binEnv.ok}) — differential inválido`)
+    }
+    const si2 = { subject: binEnv.result, oracle: oracleEnv.result }
+
+    const beforeHash = hashTree(targetDir)
+    const dryReq = {
+      v: 1, op: 'writeManifest',
+      args: { target: targetDir, manifest: { manifestSchemaVersion: 1 }, dryRun: true },
+      answers: {}, target: targetDir,
+    }
+    runBin(binary, dryReq, targetDir)
+    const afterHash = hashTree(targetDir)
+    const si3 = { beforeHash, afterHash, porcelain: porcelain(worktreeDir) }
+    return { si2, si3 }
+  } finally {
+    fs.rmSync(sourceDir, { recursive: true, force: true })
+    fs.rmSync(targetDir, { recursive: true, force: true })
+  }
+}
+
 // 9 byte-equal + 2 parciais é medição; 12/12 é meta re-derivável, nunca fato publicado.
 export const measurement = Object.freeze({
   byteEqual: 9,
@@ -271,7 +364,8 @@ export function rederiveCommand() {
 }
 
 // F3 — driver de produção: materializa o oráculo e expõe SI-1..SI-6.
-// Nenhum predicado é PASS por omissão: sem binário Rust, SI-2/SI-3 são not_measured.
+// VAL-03: SI-2/SI-3 são medidos SÓ com $INSTALLER_BIN e differential real;
+// sem binário são not_measured com motivo explícito — nunca PASS por omissão.
 export function runParity({
   root = repoRoot,
   runGit = defaultRun,
@@ -284,6 +378,8 @@ export function runParity({
   literalRel = ORACLE_LITERAL_REL,
   validationVerdict,
   protectedPaths = DEFAULT_PROTECTED_PATHS,
+  installerBin = process.env.INSTALLER_BIN || null,
+  differential = null,
 } = {}) {
   const si = []
   let sourceSha256
@@ -312,12 +408,49 @@ export function runParity({
     }
     const notMeasured = (id) => si.push({ id, status: 'not_measured', pass: null, reason: BINARY_NOT_MEASURED_REASON, evidence: null })
 
+    // VAL-03: SI-2/SI-3 só são medidos quando $INSTALLER_BIN existe E o
+    // differential real roda. Cache local evita executar o binário duas vezes.
+    let differentialResult
+    const getDifferential = () => {
+      if (!installerBin) throw new Error(BINARY_NOT_MEASURED_REASON)
+      if (!differentialResult) {
+        differentialResult = differential
+          ? differential({ worktreeDir, installerBin })
+          : runInstallerDifferential({ worktreeDir, installerBin })
+      }
+      return differentialResult
+    }
+    const measuredDifferential = (id) => measured(id, () => {
+      const d = getDifferential()
+      if (id === 'SI-2') {
+        const r = si2_payloadDifferential(d.si2.subject, d.si2.oracle)
+        const subjectHash = sha256(canonicalJson(d.si2.subject))
+        const oracleHash = sha256(canonicalJson(d.si2.oracle))
+        return {
+          pass: r.pass,
+          reason: r.pass ? null : `paths/bodies divergentes: ${r.mismatches.join(', ')}${r.extra.length ? `; extras=${r.extra.join(', ')}` : ''}`,
+          evidence: `sha256 payload paths+bodies: oráculo=${oracleHash} bin=${subjectHash} (collectIncoming, 2 arquivos)`,
+        }
+      }
+      const r = si3_dryRunZeroWrites(d.si3)
+      return {
+        pass: r.pass,
+        reason: r.reason,
+        evidence: `hash de conteúdo SI3_HASH_COMMAND antes=${d.si3.beforeHash} depois=${d.si3.afterHash}; worktree porcelain=${JSON.stringify(d.si3.porcelain)}`,
+      }
+    })
+
     measured('SI-1', () => {
       const code = runNode(SI_MEASURED_COMMANDS['SI-1'], { cwd: root })
       return { pass: code === 0, reason: code === 0 ? null : `golden.spec.mjs exit ${code}` }
     })
-    notMeasured('SI-2')
-    notMeasured('SI-3')
+    if (installerBin) {
+      measuredDifferential('SI-2')
+      measuredDifferential('SI-3')
+    } else {
+      notMeasured('SI-2')
+      notMeasured('SI-3')
+    }
 
     measured('SI-4', () => {
       const transcript = readFile(path.join(root, ARCHIVED_TRANSCRIPT_REL))
