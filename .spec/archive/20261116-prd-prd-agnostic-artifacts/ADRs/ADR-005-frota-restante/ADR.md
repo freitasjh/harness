@@ -28,7 +28,7 @@ Todos os números abaixo foram **re-medidos** em `main @ e297d82` (2026-11-16), 
 | Identidade viva (A-1) | **4 linhas / 3 arquivos**: 3 `TaskFlow` + 1 `Pulse` | `node -e 'import("./.opencode/plugins/lib/cdl/checks.mjs").then(m=>{for(const x of m.BASELINE.filter(x=>x.verdict==="identity"))console.log(x.file+":"+x.line)})'` |
 | `PROJECT_TERMS` com dono aberto | `TaskFlow` (prova `developer-engineer/AGENT.md:1`) e `Pulse` (prova `design-system-specialist/AGENT.md:42`) — ambos `owner: ADR-005`, termo ainda não tratado | módulo `cdl/checks.mjs`, `PROJECT_TERMS` |
 | Corpo stack-bound em skill de eixo | `nestjs-architecture-specialist/SKILL.md:81` (`Jest`), `node-architecture-specialist/SKILL.md:86` (`Jest/Vitest`) — 2 entradas de baseline `owner: ADR-005`; `declaredAxis` por nome = `{nestjs}` / `{node}` | `node --input-type=module` com `exports` do instalador ⇒ `[nestjs]` / `[node]` |
-| Resíduo ADR-003 fora da baseline | `security-review/SKILL.md:132` prescreve `npm audit + Dependency-Check` num bloco `exemplo` — sem dono explícito | `sed -n '132p' .agents/skills/security-review/SKILL.md` |
+| Resíduo ADR-003 fora da baseline | `security-review/SKILL.md:131` prescreve `npm audit + Dependency-Check` num bloco `exemplo` — sem dono explícito | `sed -n '131p' .agents/skills/security-review/SKILL.md` |
 | Posição D2 escrita no repo | `harness-installer/SKILL.md:161-164` — "citam Vuetify/Lombok/… para bani-los … sem falso-positivo" | `sed -n '161,164p' .agents/skills/harness-installer/SKILL.md` |
 
 **O defeito que este ADR existe para não cometer** tem duas caras, e as duas são decisão, não detalhe de implementação:
@@ -54,7 +54,7 @@ Todos os números abaixo foram **re-medidos** em `main @ e297d82` (2026-11-16), 
 | **FR1** | `identidade-reatribuida` | linha em `BASELINE` com `verdict: identity` e termo em `PROJECT_TERMS` (`TaskFlow`/`Pulse`) com `proof` nela ⇒ `identity=4/3` | `reescrever-escopo` — substituir nome de projeto por escopo de papel/domínio; re-apontar `PROJECT_TERMS.proof`; remover entrada `identity` da baseline | SDD deste ADR (1 dono por linha) | `cdl-identity-term-stale` FAIL se a prova morrer sem reescrita; `identity=0/0` quando fechado |
 | **FR2** | `corpo-stack-bound-em-skill-de-eixo` | nome declara eixo (E-3), mas `∃ termo` cujos eixos `⊄ declaredAxis(skill)` ⇒ `classifyLine` devolve `incondicional` (`nestjs:81` Jest∈node ⊄ `{nestjs}`; `node:86` Vitest∈{vue,react} ⊄ `{node}`) | `condicionar-corpo` (B1+B3): manter a skill em `SKILLS_COMMON` e o nome intacto, tornar o gate visível no início do corpo — "**NestJS**: Jest", "**Node**: Jest/Vitest" | SDD deste ADR | reclassifica para `condicional` ⇒ `cdl-baseline-stale` remove as 2 entradas; **nunca** `remover-skill` (D8) |
 | **FR3** | `prescricao-generica-em-comum` | `declaredAxis = ∅` + termo de `STACK_VOCAB` em checklist `[ ]` sob heading normativo (ADR-001 §2.3-bis 1b/1c) ⇒ `spec-gate.md:13` Flyway∈java; `spec-gate.md:8` JWT é termo cross-stack, fora do vocabulário | `condicionar` — "Flyway **ou** Liquibase" (padrão `database.md:60`) e "modelo de autenticação do destino" para JWT; `internalizar` quando o item vira exemplo | SDD deste ADR | sai de `incondicional`; entrada da baseline removida por `cdl-baseline-stale`; item do checklist **preservado** |
-| **FR4** | `residual-sem-dono` | linha em bloco `exemplo`/tabela de achados, já `exemplo`, **fora** da baseline e sem `owner` explícito ⇒ `security-review/SKILL.md:132` | `internalizar` com dono explícito — "dependency scanning (`npm audit` / OWASP Dependency-Check / equivalente do eixo)" — ou `manter-exemplo` com dono registrado | SDD deste ADR (dono implícito → explícito) | dono escrito; 0 efeito em contador (fora da baseline); não vira dívida nova |
+| **FR4** | `residual-sem-dono` | linha em bloco `exemplo`/tabela de achados, já `exemplo`, **fora** da baseline e sem `owner` explícito ⇒ `security-review/SKILL.md:131` | `internalizar` com dono explícito — "dependency scanning (`npm audit` / OWASP Dependency-Check / equivalente do eixo)" — ou `manter-exemplo` com dono registrado | SDD deste ADR (dono implícito → explícito) | dono escrito; 0 efeito em contador (fora da baseline); não vira dívida nova |
 | **FR5** | `referencia-com-dono-posterior` | path `.doc/**` em prosa viva, `test -e` falso, classificado RC3 pelo ADR-004 com dono ADR-005 ⇒ 9 linhas / 5 paths | `reapontar-ou-remover-com-dono` — cada linha recebe dono de destino (PRD-4 para backend/arquitetura, PRD-5 para frontend/design) e só então o ponteiro sai | ADR-005 (9 linhas, dono por linha) + PRD-4/PRD-5 para criação eventual | `refs-undetected=0` **com 9 donos no registro**; se sobrar ponteiro por razão documentada, o contador fica >0 com dono — nunca "0 por apagão" |
 
 **Regra de precedência — fixa, logo determinística.** `FR0 → FR2 → FR3 → FR4 → FR1 → FR5`. A exceção é avaliada **antes** da conversão (não se condiciona o que já é exceção, nem se apaga exceção para zerar contador); as conversões de corpo vêm antes da identidade (a reescrita de escopo pode tocar a mesma linha, e a classe de corpo é a que decide o comando); `FR5` vem por último porque é a única classe cuja ação pode remover texto e, por isso, exige dono já resolvido.
@@ -88,7 +88,7 @@ Ação: manter as skills em `SKILLS_COMMON` (D8) e reescrever **só o corpo** no
 
 Ação em `:13`: "Flyway **ou** Liquibase" (o padrão correto que o próprio `database.md:60` já usa e que o ADR-001 §4 cita como exemplo) — sai de `incondicional` para `catálogo`/`condicional`, a entrada da baseline é removida, e o item permanece no assert. **Proibido:** apagar o item do checklist para zerar a entrada — isso derrubaria a cobertura de migrations do portão P1→P2.
 
-### 2.6 `security-review/SKILL.md:132` — resíduo fora da baseline (FR4)
+### 2.6 `security-review/SKILL.md:131` — resíduo fora da baseline (FR4)
 
 **Veredito: `internalizar` com dono explícito.** A linha `| A06 Vulnerable Components | ✅ | npm audit + Dependency-Check clean |` está num bloco de **exemplo** de relatório, já classificada `exemplo` pela rubrica e, por isso, **fora** da baseline — não há número de contador para mudar. O defeito é outro: é resíduo do ADR-003 sem dono, e prescreve duas ferramentas concretas como se fossem as únicas. Ação: reescrever como "dependency scanning (`npm audit` / OWASP Dependency-Check / equivalente do eixo)" e registrar `owner: ADR-005` na prosa de escopo da skill. Efeito em `V20`: **nenhum contador muda**;efeito em governança: dívida sem dono passa a ter dono. É o caso de teste da regra "dono não é opcional" — uma linha fora do contador ainda precisa de classe.
 
@@ -116,11 +116,11 @@ Cada item é verificável por comando, da raiz do repo. Itens *(SDD)* só passam
 
 5. **FR1 — 4 identidades reatribuídas com prova re-apontada.** Antes: `identity=4/3`. *(SDD)*: `identity=0/0`; `node -e 'import("./.opencode/plugins/lib/cdl/checks.mjs").then(m=>console.log(m.PROJECT_TERMS.filter(t=>t.owner==="ADR-005").map(t=>t.term+":"+t.proof).join(" ")))'` ⇒ provas apontam para as linhas **reescritas** (ou os termos saem do registro com `reason`); `grep -rn 'TaskFlow' .agents/agents/developer-engineer/AGENT.md .agents/agents/ux-designer/AGENT.md` ⇒ `0`.
 
-6. **FR2 — as 2 skills de eixo condicionadas no corpo, não removidas.** Antes: `node -e 'import("./.opencode/plugins/lib/cdl/checks.mjs").then(m=>console.log(m.BASELINE.filter(x=>/nestjs-architecture|node-architecture/.test(x.file)&&x.owner==="ADR-005").length))'` ⇒ `2`. *(SDD)*: `grep -n '^\*\*NestJS\*\*:\|^\*\*Node\*\*:' .agents/skills/nestjs-architecture-specialist/SKILL.md .agents/skills/node-architecture-specialist/SKILL.md` ⇒ `≥2`; `V20` publica `incondicional` menor em exatamente 2 (ou as 2 seguem na baseline com `owner` e prazo — nunca silêncio).
+6. **FR2 — as 2 skills de eixo condicionadas no corpo, não removidas.** Antes: `node -e 'import("./.opencode/plugins/lib/cdl/checks.mjs").then(m=>console.log(m.BASELINE.filter(x=>/nestjs-architecture|node-architecture/.test(x.file)&&x.owner==="ADR-005").length))'` ⇒ `2`. *(SDD)*: `grep -n '\*\*NestJS\*\*:\|\*\*Node\*\*:' .agents/skills/nestjs-architecture-specialist/SKILL.md .agents/skills/node-architecture-specialist/SKILL.md` ⇒ `≥2`; `V20` publica `incondicional` menor em exatamente 2 (ou as 2 seguem na baseline com `owner` e prazo — nunca silêncio).
 
 7. **FR3 — `spec-gate.md` condicionado sem perder o checklist.** *(SDD)*: `grep -n 'Flyway\|Liquibase' .agents/skills/sdd-compiler/asserts/spec-gate.md` ⇒ `≥1` com conectivo de alternativa; `grep -n '\[ \] \*\*Migrations\*\*' …` ⇒ `≥1` (item preservado); `grep -n 'JWT' …` ⇒rede neutra, sem nome de mecanismo obrigatório; entrada `spec-gate.md:13` sai da baseline por `cdl-baseline-stale`.
 
-8. **FR4 — resíduo `security-review:132` com dono, 0 efeito em contador.** *(SDD)*: `sed -n '132p' .agents/skills/security-review/SKILL.md` ⇒ linguagem de "dependency scanning" com alternativas; `grep -c 'ADR-005' .agents/skills/security-review/SKILL.md` ⇒ `≥1` (dono explícito); `V20` `baseline` não muda por esta linha (estava fora dela).
+8. **FR4 — resíduo `security-review:131` com dono, 0 efeito em contador.** *(SDD)*: `sed -n '131p' .agents/skills/security-review/SKILL.md` ⇒ linguagem de "dependency scanning" com alternativas; `grep -c 'ADR-005' .agents/skills/security-review/SKILL.md` ⇒ `≥1` (dono explícito); `V20` `baseline` não muda por esta linha (estava fora dela).
 
 9. **FR5 — 9 linhas `.doc/**` com dono antes da remoção.** Antes: `grep -rPn '\`?\.doc/[\w./-]+\`?' .agents opencode.json | wc -l` ⇒ `9`. *(SDD)*: `grep -rPn '\`?\.doc/[\w./-]+\`?' .agents opencode.json | wc -l` ⇒ `0`, e `grep -c 'PRD-4\|PRD-5' .spec/prd/prd-agnostic-artifacts/ADRs/ADR-005-frota-restante/ADR.md` ⇒ `≥1` por linha na tabela de §4.1; `V20` publica `refs-undetected=0` **com** os 9 donos no registro (ou >0 com dono, se ponteiro mantido por razão documentada).
 
@@ -178,7 +178,7 @@ Regra de leitura: **classe** vem da árvore de §2.1; **ação** é a de §2.1; 
 |---|---|---|---|---|---|---|
 | G1 | `sdd-compiler/asserts/spec-gate.md:13` | `- [ ] **Migrations**: Arquivos Flyway planejados com V{YYYYMMDD}{NNN}` | FR3 | condicionar → "Flyway **ou** Liquibase", item preservado | `sed -n '13p' …`; baseline entry `290d91f4…` | SDD ADR-005 |
 | G2 | `sdd-compiler/asserts/spec-gate.md:8` | `- [ ] **Segurança/IAM**: Modelo de autenticação (JWT) e @HasPermission definidos` | FR3 | condicionar vocabulário → "modelo de autenticação do destino" (0 entrada de baseline) | `sed -n '8p' …` | SDD ADR-005 |
-| G3 | `security-review/SKILL.md:132` | `| A06 Vulnerable Components | ✅ | npm audit + Dependency-Check clean |` | FR4 | internalizar + dono explícito ("dependency scanning … / equivalente do eixo") | `sed -n '132p' …` | SDD ADR-005 |
+| G3 | `security-review/SKILL.md:131` | `| A06 Vulnerable Components | ✅ | npm audit + Dependency-Check clean |` | FR4 | internalizar + dono explícito ("dependency scanning … / equivalente do eixo") | `sed -n '131p' …` | SDD ADR-005 |
 
 ### 4.5 Proibições — 27 linhas, classe FR0 (amostra nomeada; o número é do oráculo)
 
@@ -216,7 +216,7 @@ Regra de leitura: **classe** vem da árvore de §2.1; **ação** é a de §2.1; 
 | **Remover as 2 skills de stack do `SKILLS_COMMON`** (B2) | 6 entradas de mapa + revalidação de 12 presets + risco de o destino Java perder a skill | Owner fechou D8 = exceção permanente; mover é trabalho de mapa do PRD-3 e `RESEARCH.md` §4-B2 mede o risco. A correção certa é o corpo (B3), não o payload |
 | **Reescrever as 6 skills inteiras (~1.000 l.) para genérico** | 6 `SKILL.md`, risco R2 ("agnóstico vira vazio") | `RESEARCH.md` §4-B3 resolve A-2 com 2 linhas condicionadas nas skills de eixo; reescrever o resto destruiria a especificidade que D8 protege |
 | **Apagar as 9 linhas `.doc/**` para zerar `refs-undetected`** | 9 linhas, 5 ponteiros sem dono | ADR-001 §3-IF10: contador com dono, nunca silêncio. Sem dono PRD-4/PRD-5, o ponteiro volta na próxima auditoria e o contador mente |
-| **Apagar a linha de `security-review:132`** (fora da baseline) | 1 linha, 0 efeito em contador | O defeito é dono implícito + ferramenta única, não presença. Apagar não muda número nenhum e deixa o resíduo sem classificação — a prova da regra "sem dono não está classificado" |
+| **Apagar a linha de `security-review:131`** (fora da baseline) | 1 linha, 0 efeito em contador | O defeito é dono implícito + ferramenta única, não presença. Apagar não muda número nenhum e deixa o resíduo sem classificação — a prova da regra "sem dono não está classificado" |
 | **Criar as 5 rules `.doc/**` agora** | 5 artefatos novos no payload comum | PRD §7 não autoriza artefato novo neste ciclo; os paths são documentação de destino, dono PRD-4/PRD-5, não conteúdo do harness |
 | **Abrir `gate.js` para deny de nova exceção** | 1 `DenyError` novo + trailer + risco de gate órfão | PRD §7: `gate.js` byte-idêntico. O CDL é **medição**, não negação (`gate-contract.md`, DOC-01); a expiração é FAIL de check selado, não runtime deny |
 
@@ -283,7 +283,7 @@ node scripts/static-checks.mjs | grep V19        # consumer=21, skills=47 — id
 node -e 'import("./.opencode/plugins/lib/cdl/checks.mjs").then(m=>console.log(m.BASELINE.filter(x=>x.owner==="ADR-005").length))'  # 0 (ou >0 com reason)
 grep -rn 'TaskFlow' .agents/agents/developer-engineer/AGENT.md .agents/agents/ux-designer/AGENT.md  # 0
 grep -n 'Flyway\|Liquibase' .agents/skills/sdd-compiler/asserts/spec-gate.md                          # ≥1
-sed -n '132p' .agents/skills/security-review/SKILL.md                                              # dono explícito
+sed -n '131p' .agents/skills/security-review/SKILL.md                                              # dono explícito
 
 # IF-9/10/11: FR5, sem apagão, V18/V19
 grep -rPn '\`?\.doc/[\w./-]+\`?' .agents opencode.json | wc -l   # 0 com 9 donos
@@ -318,7 +318,7 @@ node scripts/static-checks.mjs; echo $?                # 0
 | **G2-B** | SDD "fechar" `identity=4/3` apagando as 4 linhas — perde o papel e o design system | 4 entradas `identity` (N2) | FR1 = `reescrever-escopo`, não `remover`; item 5 exige `PROJECT_TERMS.proof` re-apontado e `grep TaskFlow ⇒ 0` **com** a norma preservada |
 | **G2-C** | SDD tratar E-3 como isenção do corpo e deixar `nestjs:81`/`node:86` fora da baseline sem corrigir | 2 entradas `owner: ADR-005` medidas | §2.4 explicita: E-3 cobre nome/identidade, não corpo. FR2 condiciona o corpo; se não condicionar, as 2 ficam na baseline com dono e prazo — nunca silêncio |
 | **G2-D** | SDD zerar `refs-undetected` removendo as 9 de `.doc/**` sem dono | ADR-004 §4.3 asssinalou ADR-005 | FR5 exige dono por linha **antes** da remoção; item 9 prova os donos PRD-4/PRD-5 na tabela de §4.1. Contador sem dono é dívida escondida |
-| **G2-E** | SDD apagar a proibição `security-review:132` por estar fora da baseline | linha fora da baseline, 0 efeito em contador | FR4: dono implícito → explícito; é o caso de teste da regra "sem dono não está classificada". Apagar não melhora número nenhum |
+| **G2-E** | SDD apagar a proibição `security-review:131` por estar fora da baseline | linha fora da baseline, 0 efeito em contador | FR4: dono implícito → explícito; é o caso de teste da regra "sem dono não está classificada". Apagar não melhora número nenhum |
 | **G2-F** | Proibição convertida em prescrição sem `substituto-positivo` (RF-04) | PRD §13; `harness-installer:161-164` | FR0 expira e a linha entra em A-2 com dono; item 3 exige `prohibition-cited` inalterado ou maior, com substituto registrado por linha |
 | **G2-G** | `V19 consumer` mudar porque alguém " aproveita" para mover skill (D8) | `consumer=21` medido | Item 4 trava `skills=47`/`consumer=21` idênticos; mapa é PRD-3, D8 é decisão do owner, não deste ADR |
 | **G2-H** | Este ADR não implementa nada — risco de "decisão sem consequência" se o SDD não vier | Escopo = 2 arquivos | É o modelo do fatiamento aprovado (ADR-001..004 nasceram iguais); os 12 itens de interface são contrato do SDD, com comando por item |
@@ -332,9 +332,21 @@ Nesta ordem (a ordem importa: a exceção é avaliada antes da conversão, e o d
 
 1. **FR0** — registrar `predicate`/`reason`/`proof`/`expires_when` para D2, E-1 e E-3; confirmar `prohibition-cited=27` e a posição em `harness-installer/SKILL.md:161-164`. Nenhuma proibição removida.
 2. **FR2** — condicionar o corpo de `nestjs:81` e `node:86`, mantendo skills em `SKILLS_COMMON`; remover as 2 entradas da baseline por `cdl-baseline-stale` (ou mantê-las com prazo).
-3. **FR3/FR4** — condicionar `spec-gate.md:13` (e o vocabulário de `:8`) preservando o checklist; internalizar `security-review:132` com dono explícito.
+3. **FR3/FR4** — condicionar `spec-gate.md:13` (e o vocabulário de `:8`) preservando o checklist; internalizar `security-review:131` com dono explícito.
 4. **FR1** — reescrever as 4 identidades (3 `TaskFlow` + 1 `Pulse`), re-apontar `PROJECT_TERMS.proof`, remover as 4 entradas `identity`.
 5. **FR5** — atribuir dono PRD-4/PRD-5 às 9 linhas `.doc/**` e só então remover ou reapontar cada ponteiro; atualizar a etiqueta `owner` de `refs-undetected`.
 6. **Verificar** os 12 itens de interface, rodar `commands.suiteFull` + `node scripts/sdd-checks.mjs` e transcrever a linha do `V18`/`V19`/`V20` no `VERIFY.md`. Nenhuma linha sai de contador sem entrada correspondente na tabela de §4 — é a prova de que dívida não foi apagada para zerar número.
 
 **Fora do SDD (declarado):** mover skills no instalador (PRD-3), criar rules/`.doc/**`/`DESIGN.md` (PRD-4/PRD-5), reabrir D2/D8 ou a rubrica do ADR-001, e qualquer alteração em `gate.js`, `harness.config.json` ou selo.
+
+## 13. Correções do review final (APPROVED, 0 críticos)
+
+- **N4 — comando do item 6 tinha `^` demais.** O texto real começa com `- **Node**:`; o `^` antes de `**` fazia o `grep` devolver 0. Prova válida permanece: `declaredAxis` = `{nestjs}`/`{node}`, `classifyLine` ⇒ `condicional`, `incondicional=0`, `consumer=21`.
+- **N5 — fixture E-1 do item 2 descrita errada.** `cdl-exception-stale` dispara quando o **diretório do catálogo** deixa de existir, não quando um `.csv` é removido. A mutação do review provou a expiração por E-2 e E-6.
+- **N6 — etiqueta `refs-undetected=0 (owner ADR-004)` permanece.** Vem do motor (intocável); o dono real das 9 linhas está em §4.1 e no rastro por linha. Declarado no VERIFY como dívida documental, não como falha.
+- **N7 — `prescriptions 138→137`.** Uma linha saiu do registro de prescrição quando virou `exemplo`/`catálogo`; as 38 entradas antigas da baseline mudaram de classe com sucessor rastreável (37 na mesma linha, 1 reescrita). Nenhuma linha foi apagada sem classificação.
+- **N8 — 11 ocorrências de `Pulse` em corpos de `template-*`/`ui-ux-pro-max`.** Não são posições identitárias (heading/`description:`/`license:`), nunca contadas pelo `V20`; dono **PRD-5**, fora deste ADR.
+
+- **N9 — A06 migrou 132→131.** Ao mover o comentário FR4 para fora da tabela GFM (correção do review), a linha A06 passou a 131; `sed -n '131p' .agents/skills/security-review/SKILL.md` agora mostra a reescrita com dono ADR-005. As 8 referências `:132` foram atualizadas.
+
+- **N10 — population re-medido 223/30373 após o fix de governança.** O comentário FR4 saiu de dentro da tabela GFM (correção do review), reduzindo `security-review/SKILL.md` de 217 para 216 linhas; o pino em `cdl.spec.mjs:803,805` foi re-medido no mesmo commit. O QA encontrou exatamente este defeito (539/540) — número medido **antes** de uma mudança própria posterior. É o mesmo anti-pattern que o `V20` existe para caçar.
