@@ -5,6 +5,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { Readable, Writable } from 'node:stream';
 import { execFileSync } from 'node:child_process';
+import { oracleSource } from './oracle.mjs';
 import {
   main,
   runInit,
@@ -21,7 +22,7 @@ import {
   readSecretRaw,
   readSecretPrompt,
   InstallError,
-} from '../install.mjs';
+} from '../installer-contract.mjs';
 
 let dirs = [];
 function mkTarget(files = {}) {
@@ -304,7 +305,7 @@ describe('CLI-05: incoming canonico documentado no codigo', () => {
     assert.ok(incoming['.opencode/plugins/p/gate.js'], 'inclui plugin');
     assert.ok(!Object.keys(incoming).some((k) => k.includes('node_modules')), 'exclui node_modules');
     assert.ok(!Object.keys(incoming).some((k) => k.includes('.git')), 'exclui .git');
-    const srcText = fs.readFileSync(new URL('../install.mjs', import.meta.url), 'utf8');
+    const srcText = oracleSource();
     assert.match(srcText, /INCOMING_ROOTS|lista can[oô]nica/i, 'lista canonica documentada no codigo');
   });
 });

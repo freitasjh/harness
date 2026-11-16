@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import os from 'node:os';
 import path from 'node:path';
 import fs from 'node:fs';
-import { validateAnswer, collectIncoming, InstallError } from '../install.mjs';
+import { validateAnswer, collectIncoming, InstallError } from '../installer-contract.mjs';
 
 let dirs = [];
 function mkTarget(files = {}) {

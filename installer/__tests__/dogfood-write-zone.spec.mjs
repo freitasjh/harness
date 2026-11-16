@@ -22,7 +22,7 @@ import assert from 'node:assert/strict';
 import os from 'node:os';
 import path from 'node:path';
 import fs from 'node:fs';
-import { assertDogfoodTarget } from '../install.mjs';
+import { assertDogfoodTarget } from '../installer-contract.mjs';
 import { isInsideTmp, realOrResolved, tmpRealRoot } from '../zone.mjs';
 import { runDogfood } from '../dogfood.mjs';
 import { sweepOrphans } from '../../scripts/test-temp.mjs';

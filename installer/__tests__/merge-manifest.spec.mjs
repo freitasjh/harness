@@ -13,7 +13,7 @@ import {
   applyMerge,
   buildManifest,
   InstallError,
-} from '../install.mjs';
+} from '../installer-contract.mjs';
 
 let dirs = [];
 function mkTarget(files = {}) {

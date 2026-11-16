@@ -5,7 +5,7 @@
 // este teste (regressao bloqueia merge).
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { generateConfig, STACK_PROFILES, profileOf, AXIS_IDS } from '../install.mjs';
+import { generateConfig, STACK_PROFILES, profileOf, AXIS_IDS } from '../installer-contract.mjs';
 
 const NODE_BE = 'N/A — no Java/Maven backend declared by destination Q&A; Node-only stack';
 const NODE_FE = 'N/A — no Vue/Vite frontend declared by destination Q&A; Node-only stack';

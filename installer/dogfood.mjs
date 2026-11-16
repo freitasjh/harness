@@ -18,7 +18,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { execFileSync } from 'node:child_process';
-import { main, runChecks, scanLiterals, DENYLIST, assertDogfoodTarget, VERSION } from './install.mjs';
+import { main, runChecks, scanLiterals, DENYLIST, assertDogfoodTarget, VERSION } from './installer-contract.mjs';
 import {
   assertDisjointSourceTarget,
   assertNoShortcutTarget,

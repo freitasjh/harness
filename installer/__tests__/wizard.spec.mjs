@@ -8,7 +8,8 @@ import os from 'node:os';
 import path from 'node:path';
 import fs from 'node:fs';
 import { Readable, Writable } from 'node:stream';
-import { runWizard, runInit, assertCreateOnly, isAbortToken, detect, promptAnswers, runCli, InstallError, WIZARD_MENU, askMenuStep, sourceLineOf, W2M_MARKER, validateAnswer, QUESTIONS } from '../install.mjs';
+import { runWizard, runInit, assertCreateOnly, isAbortToken, detect, promptAnswers, runCli, InstallError, WIZARD_MENU, askMenuStep, sourceLineOf, W2M_MARKER, validateAnswer, QUESTIONS } from '../installer-contract.mjs';
+import { oracleSource } from './oracle.mjs';
 
 let dirs = [];
 function mkTarget(files = {}) {
@@ -1004,7 +1005,7 @@ describe('EX-VAL-09 asserção de itens ESCOPADA ao W2m-1 (regex global daria fa
 
 describe('EX-FE-08 bloco de erro de 4 linhas por passo (ADR-004 §5)', () => {
   it('AT-2: sourceLineOf(W2M_MARKER) aponta o BLOCO W2m em runWizard (nunca a declaracao)', () => {
-    const src = fs.readFileSync(new URL('../install.mjs', import.meta.url), 'utf8').split('\n');
+    const src = oracleSource().split('\n');
     const n = sourceLineOf(W2M_MARKER);
     assert.equal(typeof n, 'number', 'marcador presente no arquivo');
     const declLine = src.findIndex((l) => /^(export )?const W2M_MARKER/.test(l)) + 1;

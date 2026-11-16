@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { generateConfig, STACK_PROFILES, profileOf, defaultSuiteFor } from '../install.mjs';
+import { generateConfig, STACK_PROFILES, profileOf, defaultSuiteFor } from '../installer-contract.mjs';
+import { oracleSource } from './oracle.mjs';
 
 describe('IN-03 S1: answers validos => config valido', () => {
   it('gera chaves do SPEC §5.1 / config do repo', () => {
@@ -34,14 +35,14 @@ describe('FU-25 infra (composeFile/ports) — N/A justificado, nao lacuna silenc
   });
 
   it('a justificativa FU-25 esta documentada no codigo (QUESTIONS/infra)', () => {
-    const src = fs.readFileSync(new URL('../install.mjs', import.meta.url), 'utf8');
+    const src = oracleSource();
     assert.match(src, /FU-25/, 'justificativa cita o item');
     assert.match(src, /composeFile/, 'a justificativa nomeia composeFile');
     assert.ok(/mobile[^]*N\/A|N\/A[^]*mobile/i.test(src), 'justifica N/A no perfil mobile');
   });
 
   it('QUESTIONS continua sem composeFile/ports (escopo do Q&A inalterado)', () => {
-    const src = fs.readFileSync(new URL('../install.mjs', import.meta.url), 'utf8');
+    const src = oracleSource();
     const block = src.slice(src.indexOf('export const QUESTIONS'), src.indexOf('---------- perfis'));
     assert.ok(!/composeFile/.test(block), 'nenhuma pergunta nova sobre composeFile');
     assert.ok(!/key: 'ports'/.test(block), 'nenhuma pergunta nova sobre ports');
@@ -60,14 +61,14 @@ describe('IN-03 S2: sem backend java => sem chaves maven + N/A justificado', () 
 
 describe('IN-03 S3: sem funcao de copia no codigo', () => {
   it('grep: install.mjs nao expoe caminho de copia', () => {
-    const src = fs.readFileSync(new URL('../install.mjs', import.meta.url), 'utf8');
+    const src = oracleSource();
     assert.ok(!/copyTemplate|copyConfig|cp\s+-r|readFileSync\(.*template/i.test(src), 'sem copia de template');
     assert.ok(!/pkill\s+-f/.test(src), 'nunca pkill -f');
   });
   it('gerador puro: deterministico e sem I/O', () => {
     const a = { project: 'demo', stack: 'node', suiteCommand: 'node --test', pluginsDir: '/tmp/x' };
     assert.deepEqual(generateConfig(a), generateConfig(a));
-    const src = fs.readFileSync(new URL('../install.mjs', import.meta.url), 'utf8');
+    const src = oracleSource();
     const fn = src.slice(src.indexOf('export function generateConfig'));
     assert.ok(!/readFileSync|writeFileSync|copyFileSync/.test(fn.split('export function')[0] || fn.slice(0, 2000)), 'gerador sem I/O');
   });

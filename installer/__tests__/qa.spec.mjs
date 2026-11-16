@@ -15,7 +15,8 @@ import {
   runCli,
   loadAnswersFile,
   formatError,
-} from '../install.mjs';
+} from '../installer-contract.mjs';
+import { oracleSource } from './oracle.mjs';
 
 let dirs = [];
 function mkTemp(files = {}) {
@@ -107,7 +108,7 @@ describe('INS-05 S1: log com token canario redigido', () => {
 
 describe('INS-05 S2: scan estatico — zero sanitizeLog( sem answers', () => {
   it('toda chamada passa o 2º argumento (contexto vigente)', () => {
-    const src = fs.readFileSync(new URL('../install.mjs', import.meta.url), 'utf8');
+    const src = oracleSource();
     const bad = [];
     src.split('\n').forEach((raw, i) => {
       const code = raw.replace(/\/\/.*$/, '');
@@ -226,7 +227,7 @@ describe('INS-17 S3: token do arquivo so-memoria (nunca serializado)', () => {
 // INS-18 segredo sem eco em W3 (REQ-16/M2) — TDD FIRST
 describe('INS-18 pipe (nao-TTY): leitor historico, sem hang', () => {
   it('token via pipe capturado sem eco e sem travar (retrocompat)', async () => {
-    const { promptAnswers } = await import('../install.mjs');
+    const { promptAnswers } = await import('../installer-contract.mjs');
     const d = mkTemp({});
     const input = Readable.from(['demo\n', 'node\n', 'node\n', `${d}\n`, 'TOKEN-pipe-1\n']);
     let buf = '';
@@ -240,7 +241,7 @@ describe('INS-18 pipe (nao-TTY): leitor historico, sem hang', () => {
 
 describe('INS-18 wizard W3: token mascarado, proxima resposta intacta', () => {
   it('token digitado nao aparece no output e nao vaza p/ proxima', async () => {
-    const { runWizard } = await import('../install.mjs');
+    const { runWizard } = await import('../installer-contract.mjs');
     const d = mkTemp({});
     const src = mkTemp({ '.agents/rules/a.md': '# a\n', 'opencode.json': JSON.stringify({ plugin: ['harness'] }) });
     const input = Readable.from(['3\n', 'demo\n', '\n', '\n', '\n', 'TOKEN-w3-9\n']);

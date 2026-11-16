@@ -23,7 +23,8 @@ import {
   runCli,
   runWizard,
   runInit,
-} from '../install.mjs';
+} from '../installer-contract.mjs';
+import { oracleSource } from './oracle.mjs';
 
 let dirs = [];
 function mkTarget(files = {}) {
@@ -62,7 +63,7 @@ describe('IN-06 S1: cobertura por invariante (2 ramos cada)', () => {
   it('I3 config gerado: chaves presentes / sem caminho de copia no codigo', () => {
     const cfg = generateConfig({ project: 'p', stack: 'node', suiteCommand: 'node --test' });
     assert.equal(cfg.project, 'p');
-    const src = fs.readFileSync(new URL('../install.mjs', import.meta.url), 'utf8');
+    const src = oracleSource();
     assert.ok(!/copyTemplate|copyConfig/i.test(src));
   });
 

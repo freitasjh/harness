@@ -78,7 +78,7 @@ import {
   RULES_BY_AXIS,
   RULES_COMMON,
   STACKS_FOR_EXCEPTIONS,
-} from "../installer/install.mjs";
+} from "../installer/contract-registry.mjs";
 
 // Fonte de eixo do V20 — a declaração do instalador, injetada. É o único
 // caminho pelo qual o módulo conhece eixos: ele não importa `installer/`.

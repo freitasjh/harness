@@ -46,7 +46,7 @@ import {
   RULES_COMMON,
   SKILLS_BY_AXIS,
   SKILLS_COMMON,
-} from "../../../installer/install.mjs";
+} from "../../../installer/contract-registry.mjs";
 
 const TMP = tempScope({ label: "inventory-checks" });
 afterEach(() => TMP.cleanup());

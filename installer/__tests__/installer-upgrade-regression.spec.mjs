@@ -29,7 +29,8 @@ import {
   generateConfig,
   configReferenceTargets,
   writtenPathsOf,
-} from '../install.mjs';
+} from '../installer-contract.mjs';
+import { oracleSource } from './oracle.mjs';
 
 let dirs = [];
 function mkDir(files = {}) {
@@ -365,7 +366,7 @@ describe('BF-03 (installer-upgrade-regression): contrato de exitCode', () => {
 // Este caso enumera os call-sites em install.mjs e exige writtenPaths em cada.
 describe('BF-04 (installer-upgrade-regression): call-sites de generateConfig passam writtenPaths', () => {
   it('todo call-site de instalacao em install.mjs passa { writtenPaths }', () => {
-    const src = fs.readFileSync(new URL('../install.mjs', import.meta.url), 'utf8');
+    const src = oracleSource();
     const sites = [];
     const re = /(?<!function )generateConfig\(/g;
     let m;

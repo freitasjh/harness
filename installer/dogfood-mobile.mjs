@@ -33,7 +33,7 @@ import os from 'node:os';
 import { execFileSync } from 'node:child_process';
 import { Readable, Writable } from 'node:stream';
 import { fileURLToPath } from 'node:url';
-import { runCli, assertDogfoodTarget, MANIFEST_NAME } from './install.mjs';
+import { runCli, assertDogfoodTarget, MANIFEST_NAME } from './installer-contract.mjs';
 import {
   CONTENT_HASH_LIMIT,
   assertDisjointSourceTarget,

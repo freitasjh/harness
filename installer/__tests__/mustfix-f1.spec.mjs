@@ -14,7 +14,7 @@ import {
   runWizard,
   runCli,
   InstallError,
-} from '../install.mjs';
+} from '../installer-contract.mjs';
 
 const INSTALL_MJS_URL = new URL('../install.mjs', import.meta.url);
 const srcLines = () => fs.readFileSync(INSTALL_MJS_URL, 'utf8').split('\n');
