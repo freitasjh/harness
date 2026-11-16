@@ -206,7 +206,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T19:16:14.135Z",
+  "last_update": "2026-11-16T19:23:53.408Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -230,7 +230,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "failed_correction_loop",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-003 — LOOP DE CORRECAO 1/3 (review final reprovou differential tautologico). PUSH/MERGE BLOQUEADOS",
+  "sdd_stage": "PRD-3 ADR-003 LOOP DE CORRECAO 1/3 — fix entregue (mutante 0/23 reprova), re-review em curso; push/merge bloqueados",
   "backlog": {
     "total": 12,
     "todo": 0,
@@ -1909,11 +1909,26 @@
   "batch": {
     "id": 3,
     "agent": "developer-engineer",
-    "status": "correction_loop",
+    "status": "review_running_iter1",
     "commit": "14e0a64ebd6abb98746411bed08e56d9efc070d7",
     "iteration": 1,
     "max_iterations": 3,
-    "blocker": "C1 double-unwrap + C2 VERIFY sem evidencia"
+    "blocker": "C1 double-unwrap + C2 VERIFY sem evidencia",
+    "correction": {
+      "commits": [
+        "60741da",
+        "6e16711"
+      ],
+      "mutantGuard": {
+        "proved": 0,
+        "failed": 23
+      },
+      "real_divergence": "buildManifest.version 0.1.0 -> 1.0.0 exposta pela correcao",
+      "tests": {
+        "cargo": 60,
+        "prova_spec": 20
+      }
+    }
   },
   "next_gate": "loop de correcao (developer -> reviewer) ate 3 iteracoes; nao encadear push antes de review APPROVED"
 }
