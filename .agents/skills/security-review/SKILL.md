@@ -120,10 +120,9 @@ After the `code-reviewer` completes the general review, run the security-specifi
 ## Security Code Review — Fase 3
 
 ### OWASP Top 10 Status
+<!-- Dono FR4/ADR-005 registrado na linha A06; ADR §4.4 cita :132. -->
 | Category | Status | Finding |
 |----------|--------|---------|
-<!-- Dono FR4/ADR-005 registrado na linha A06; ADR §4.4 cita :132. -->
-
 | A01 Broken Access Control | ✅ | @HasPermission on all endpoints |
 | A02 Cryptographic Failures | ✅ | RS256 JWT, Argon2id passwords |
 | A03 Injection | ✅ | Parameterized queries, @Valid |
