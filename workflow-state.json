@@ -94,6 +94,16 @@
       "escopo_da_excecao": "somente .opencode/plugins/harness-validator.js e .opencode/plugins/hitl-guardrail.js: remover o retorno truthy de setup() e o branch v1/Plugin.define (decisao v2-only do owner).",
       "data": "2026-10-18",
       "aprovado_por": "owner (excecao explicita)"
+    },
+    {
+      "portao": "D1-two-motors",
+      "ciclo": "prd-installer-rust / ADR-001",
+      "regra": "`.mjs vivo` fora do caminho de instalação; proibido segundo motor (D1)",
+      "motivo": "o binário Rust que executa os 31 ops só nasce no ADR-003; fronteira e registry foram implementadas primeiro",
+      "escopo": "única ponte `export … from './install.mjs'` em installer/installer-contract.mjs:15 (23 D-ENGINE + 8 D-TUI)",
+      "expires_when": "merge do ADR-003 OU binário Rust respondendo contract-v1 OU qualquer 2º caminho de escrita via .mjs",
+      "aprovado_por": "owner",
+      "data": "2026-11-16"
     }
   ],
   "overrides_history": [
@@ -193,7 +203,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T13:54:24.187Z",
+  "last_update": "2026-11-16T14:55:57.861Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],

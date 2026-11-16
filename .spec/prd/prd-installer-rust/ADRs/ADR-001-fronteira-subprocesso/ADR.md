@@ -242,3 +242,13 @@ git rev-parse HEAD                                   # SHA local registrado no c
 node scripts/static-checks.mjs                       # exit 0; PASS PRD-01 / ADR-01 / ADR-02 não-vacuosos
 grep -ciE 'TO''DO|S''TUB' .spec/prd/prd-installer-rust/ADRs/ADR-001-fronteira-subprocesso/ADR.md   # 0
 ```
+
+## 16. Exceção registrada pelo owner (2026-11-16) — ponte do adapter até o ADR-003
+
+O owner autoriza, **como exceção explícita e datada**, a única ponte `export … from './install.mjs'` em `installer/installer-contract.mjs:15`, cobrindo os 23 `D-ENGINE` + 8 `D-TUI` ops.
+
+- **Motivo**: a fronteira `contract-v1` e os adapters foram implementados no ADR-001, mas o binário Rust que executa os 31 ops só nasce no **ADR-003** (motor init/doctor/upgrade). Exigir `.mjs vivo = 0` agora forçaria um motor Rust improvisado antes da decisão de motor.
+- **Escopo autorizado**: somente a linha `:15` e somente os 31 ops; os 6 mapas (`D-INJ`) e os 9 dados (`D-DATA`) já vieram da registry e **não** dependem da ponte.
+- **Expiração (primeira ocorrência)**: merge do ADR-003 · binário Rust capaz de responder `contract-v1` · qualquer segundo caminho de escrita via `.mjs` no caminho de instalação.
+- **Critério corrigido (item 9)**: `grep -rn "from '.*install\.mjs'" scripts/ installer/ .opencode/ | wc -l` ⇒ **1**, e essa 1 linha deve ser exatamente `installer/installer-contract.mjs:15`; qualquer outra ocorrência ⇒ FAIL.
+- **Débito**: a ponte é transição, não conformidade; o ADR-003 a remove. Registrada também em `workflow-state.json.overrides` com `portao: D1-two-motors`.
