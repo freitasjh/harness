@@ -22,8 +22,8 @@
       "harness_report": "harness/harness-inventory.json"
     },
     "c1_previous_bug": ".spec/bugs/harness-eixos-stack-p2/TASKS.md",
-    "proposal": ".spec/frontend/prd-installer-rust-adr-004/PROPOSAL.md",
-    "spec": ".spec/frontend/prd-installer-rust-adr-004/SPEC.md",
+    "proposal": ".spec/backend/prd-installer-rust-adr-005/PROPOSAL.md",
+    "spec": ".spec/backend/prd-installer-rust-adr-005/SPEC.md",
     "plan": ".spec/frontend/prd-installer-rust-adr-004/PLAN.md",
     "tasks": ".spec/frontend/prd-installer-rust-adr-004/TASKS.md",
     "superseded_cycle": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/ (superseded: SPEC prescrevia `Plugin.define`, ausente no binario v2.0.32)",
@@ -33,8 +33,8 @@
     "adr_index": ".spec/prd/prd-installer-rust/ADR-INDEX.md",
     "adr": ".spec/prd/prd-installer-rust/ADRs/ADR-005-publicacao-runtime-selo/ADR.md",
     "prd_lines": ".spec/prd/prd-harness-inventory/PRD.md (162 linhas, 16 secoes, PRD-01 PASS)",
-    "security": ".spec/frontend/prd-installer-rust-adr-004/SECURITY.md",
-    "spec_gate": ".spec/frontend/prd-installer-rust-adr-004/GATE-SPEC.md",
+    "security": ".spec/backend/prd-installer-rust-adr-005/SECURITY.md",
+    "spec_gate": ".spec/backend/prd-installer-rust-adr-005/SPEC_GATE.md",
     "jira_board": ".spec/frontend/prd-installer-rust-adr-004/JIRA_BOARD.md",
     "ux": ".spec/frontend/prd-installer-rust-adr-004/UX.md"
   },
@@ -57,9 +57,9 @@
     "rigor": "E1/E2 bloqueiam"
   },
   "gates": {
-    "P0_P1": "pending_user_approval (ADR-005 publicacao/runtime/selo)",
+    "P0_P1": "approved_user_2026_11_16 (Refactor de distribuicao; ux-designer N/A — publicacao sem tela)",
     "G2_PRD": "approved_user_2026_10_22 (PRD prd-garantias-runtime aprovado sem ressalvas; §16 do PRD.md; 3 decisoes do owner)",
-    "P1_P2": "pending_user_approval",
+    "P1_P2": "pending_architect_review (SPEC 16 RF, score 100%, seguranca pass)",
     "P2_P3": "approved_user_2026_11_16 (PLAN 62 linhas, TASKS 9 microtasks, 18 RF mapeados; SDD verdes)",
     "P3_P4": "approved_auto_evidence_2026_11_16 (3 batches; review APPROVED apos 1 iteracao; R9 restaurado)",
     "P4_P5": "approved_auto_evidence_QA_2026_11_16 (540+716 + cargo 85 + 8/8 provas + mutante 8/8; canais medidos; PTY cleanup com sinal)",
@@ -230,7 +230,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T23:31:53.888Z",
+  "last_update": "2026-11-16T23:33:13.920Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -254,7 +254,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-005 DESCOBERTA — publicacao do binario, runtime do adotante e selo c904f1c5 invariante",
+  "sdd_stage": "PRD-3 ADR-005 ANALISE — SPEC 16 RF score 100%; aguardando security + architect",
   "backlog": {
     "total": 9,
     "todo": 0,
@@ -1957,13 +1957,12 @@
     "gate": "P0_P1 pendente — última frente do PRD-3; ux-designer N/A (sem tela; publicação/cli)"
   },
   "spec": {
-    "score": "100% (6 aplicaveis / 5 N/A com motivo)",
-    "gate": ".spec/frontend/prd-installer-rust-adr-004/GATE-SPEC.md",
-    "ux": "parecer vinculante UX.md — M1..M8, zero byte",
-    "security": "Fase 1 pass — SECURITY.md STRIDE",
-    "rf_count": 18,
-    "items": 17,
-    "at": "2026-11-16T21:47:42.582Z"
+    "score": "100%",
+    "gate": ".spec/backend/prd-installer-rust-adr-005/GATE-SPEC.md",
+    "security": "Fase 1 pass",
+    "rf_count": 16,
+    "items": 16,
+    "at": "2026-11-16T23:33:13.919Z"
   },
   "plan": {
     "lines": 62,
