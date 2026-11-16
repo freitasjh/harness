@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { generateConfig, STACK_PROFILES, profileOf, defaultSuiteFor } from '../install.mjs';
+import { generateConfig, STACK_PROFILES, profileOf, defaultSuiteFor } from '../installer-contract.mjs';
 
 describe('IN-03 S1: answers validos => config valido', () => {
   it('gera chaves do SPEC §5.1 / config do repo', () => {

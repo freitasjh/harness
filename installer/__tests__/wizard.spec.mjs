@@ -8,7 +8,7 @@ import os from 'node:os';
 import path from 'node:path';
 import fs from 'node:fs';
 import { Readable, Writable } from 'node:stream';
-import { runWizard, runInit, assertCreateOnly, isAbortToken, detect, promptAnswers, runCli, InstallError, WIZARD_MENU, askMenuStep, sourceLineOf, W2M_MARKER, validateAnswer, QUESTIONS } from '../install.mjs';
+import { runWizard, runInit, assertCreateOnly, isAbortToken, detect, promptAnswers, runCli, InstallError, WIZARD_MENU, askMenuStep, sourceLineOf, W2M_MARKER, validateAnswer, QUESTIONS } from '../installer-contract.mjs';
 
 let dirs = [];
 function mkTarget(files = {}) {

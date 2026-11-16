@@ -10,7 +10,7 @@ import {
   generateConfig,
   defaultSuiteFor,
   InstallError,
-} from '../install.mjs';
+} from '../installer-contract.mjs';
 
 function mkTemp() {
   const d = fs.mkdtempSync(path.join(os.tmpdir(), 'harness-adr005-'));

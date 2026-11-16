@@ -10,7 +10,7 @@ import {
   InstallError,
   MIN_NODE_VERSION,
   assertInside,
-} from '../install.mjs';
+} from '../installer-contract.mjs';
 
 // FU-43: o target é rastreado (remoção exata). O backup, não: resolveBackupDir
 // sem --backup-dir o cria AO LADO do target em /tmp com nome próprio

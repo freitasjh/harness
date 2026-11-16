@@ -49,7 +49,7 @@ import {
   SKILLS_BY_AXIS,
   SKILLS_COMMON,
   STACKS_FOR_EXCEPTIONS,
-} from "../../../installer/install.mjs";
+} from "../../../installer/contract-registry.mjs";
 import { cdlCheckResults, runStaticChecks } from "../../../scripts/static-checks.mjs";
 
 // Fonte de eixo REAL, injetada — o módulo não a importa (C5).

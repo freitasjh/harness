@@ -10,7 +10,7 @@ import {
   resolveBackupDir,
   formatError,
   InstallError,
-} from '../install.mjs';
+} from '../installer-contract.mjs';
 
 let dirs = [];
 function mkTarget(files = {}) {

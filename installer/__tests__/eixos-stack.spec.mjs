@@ -30,7 +30,7 @@ import {
   SKILLS_BY_AXIS,
   SKILLS_COMMON,
   InstallError,
-} from '../install.mjs';
+} from '../installer-contract.mjs';
 import { buildVendor, REPO_ROOT } from '../../scripts/vendor-skills.mjs';
 
 // ORAculo INDEPENDENTE (CR-1): tabela literal, escrita a mao a partir da tabela

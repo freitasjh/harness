@@ -29,7 +29,7 @@ import {
   generateConfig,
   configReferenceTargets,
   writtenPathsOf,
-} from '../install.mjs';
+} from '../installer-contract.mjs';
 
 let dirs = [];
 function mkDir(files = {}) {
