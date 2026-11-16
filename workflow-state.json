@@ -206,7 +206,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T18:50:34.633Z",
+  "last_update": "2026-11-16T18:58:11.487Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -230,12 +230,12 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-003 EXECUTION — batch 2 REVIEW APPROVED (0/0; 2 🟡 para batch 3). PARADA HITL antes do batch 3",
+  "sdd_stage": "PRD-3 ADR-003 EXECUTION batch 3/3 — 23 provas differential, SI-2/SI-3 medidos, VERIFY",
   "backlog": {
     "total": 12,
-    "todo": 4,
-    "doing": 0,
-    "done": 8,
+    "todo": 0,
+    "doing": 3,
+    "done": 9,
     "ids": [
       "HARN-BE-01",
       "HARN-VAL-01",
@@ -250,18 +250,7 @@
       "HARN-VAL-03",
       "HARN-VAL-04"
     ],
-    "done_ids": [
-      "HARN-BE-01",
-      "HARN-VAL-01",
-      "HARN-BE-02",
-      "HARN-BE-03",
-      "HARN-BE-04",
-      "HARN-BE-05",
-      "HARN-BE-06",
-      "HARN-BE-07",
-      "HARN-BE-08"
-    ],
-    "todo_ids": [
+    "doing_ids": [
       "HARN-VAL-02",
       "HARN-VAL-03",
       "HARN-VAL-04"
@@ -1907,19 +1896,17 @@
     "at": "2026-11-16T17:57:16.131Z"
   },
   "batch": {
-    "id": 2,
+    "id": 3,
     "agent": "developer-engineer",
     "skills": [
-      "rust-architecture-specialist"
+      "rust-architecture-specialist",
+      "node-architecture-specialist",
+      "security-review"
     ],
-    "status": "review_approved",
-    "commit": "0794670fb9cfdc2cba37e4498cfca7d6f61d12be",
-    "tasks": 5,
-    "ops_implemented": 23,
-    "ops_proven": 7,
-    "ops_pending_proof": 16,
-    "followups_closed": 4,
-    "followups_batch3": 2
+    "status": "running",
+    "tasks": 3,
+    "base": "2671f20",
+    "carry_over_followups": 2
   },
   "next_gate": "HITL batch 2->3: posso avancar para o batch 3 (HARN-VAL-02/03/04: 23 ops provadas, SI-2/SI-3 medidos, RELATORIO + VERIFY)?"
 }
