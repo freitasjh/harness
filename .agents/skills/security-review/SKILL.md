@@ -12,7 +12,7 @@ Security review as a **phase-integrated gate** in the Spec-Driven Development (S
 ### Must Use
 - **Fase 1 (Analysis):** After SPEC is generated — validate security requirements coverage.
 - **Fase 3 (Review):** After code review — security-focused review of implementation.
-- **Fase 4 (Verify):** Before archive — validate against `security-standard.md` zero-tolerance checklist.
+- **Fase 4 (Verify):** Before archive — validate against this skill's zero-tolerance checklist (OWASP Top 10 / ASVS 4.x / MASVS 2.x).
 - **Bugfix:** When the bug affects auth, authorization, data exposure, or input handling.
 - **Any feature** with authentication, authorization, user data, external integrations, or file uploads.
 
@@ -33,10 +33,8 @@ Security review as a **phase-integrated gate** in the Spec-Driven Development (S
 
 | Document | Purpose |
 |----------|---------|
-| `.agents/rules/security-standard.md` | **Fonte da verdade** — OWASP Top 10, ASVS 4.x, MASVS 2.x, regras do projeto |
-| `.agents/rules/backend-coding-standards.md` | Backend coding patterns (injection prevention, DTO projection) |
+| `security-review` (esta skill — SSoT declarada) | **Fonte da verdade** — OWASP Top 10, ASVS 4.x, MASVS 2.x, regras do projeto |
 | `.agents/rules/frontend-coding-standards.md` | Frontend security (XSS, CSP, CSRF, token storage) |
-| `.agents/rules/backend-integration-tests.md` | Security test patterns (401/403, IDOR, injection) |
 | `.agents/agents/security-engineer/AGENT.md` | Deep audit agent (invoke for complex findings) |
 
 ---
@@ -149,7 +147,7 @@ After the `code-reviewer` completes the general review, run the security-specifi
 
 ### Fase 4 — Verify: Security Validation Gate
 
-Before archive, validate against `security-standard.md` zero-tolerance checklist:
+Before archive, validate against this skill's zero-tolerance checklist (OWASP Top 10 / ASVS 4.x / MASVS 2.x):
 
 #### 4.1 Zero-Tolerance Checklist
 - [ ] Controle de acesso server-side em todos os endpoints (`@HasPermission`)?

@@ -40,7 +40,7 @@ Você é o compilador central da metodologia SDD (Specification-Driven Developme
 
 ### 2. `generate-spec` (Discovery & Architecture)
 **Objetivo**: Gerar especificação prescritiva (SPEC) a partir do PROPOSAL aprovado.
-- **Entradas**: `PROPOSAL.md`, `.agents/rules/backend-coding-standards.md`, `.agents/rules/frontend-coding-standards.md`.
+- **Entradas**: `PROPOSAL.md`, `.agents/rules/frontend-coding-standards.md`.
 - **Processo**:
   1. Recuperar contexto tecnológico e padrões do projeto.
   2. Aplicar template em `references/spec-template.md`.
