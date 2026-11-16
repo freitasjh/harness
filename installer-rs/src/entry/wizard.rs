@@ -4,7 +4,14 @@
 use crate::contract::Request;
 use crate::entry::support as s;
 use crate::error::EngineError;
+use crate::tui::model::{total_campos, TELAS};
 use serde_json::{json, Value};
+
+/// Catálogo declarativo das 10 telas × 5 campos (ADR-004 §2.1). Somente
+/// leitura: a tela interpela/formata; `apply` permanece no motor (ADR-003).
+pub fn declaracao_telas() -> (&'static [crate::tui::model::Tela], usize) {
+    (&TELAS, total_campos())
+}
 
 pub fn run(req: &Request) -> Result<Value, EngineError> {
     let target_raw = s::str_arg(req, "target").or(req.target.as_deref()).unwrap_or("");

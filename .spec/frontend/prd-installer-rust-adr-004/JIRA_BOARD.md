@@ -2,8 +2,8 @@
 
 | Key | Summary | RF | Prioridade | Risco | Depende de | Status |
 |---|---|---|---|---|---|---|
-| TUI-01 | Modelo 10×5 + guarda de escrita com dente | 01,05,10,17,18 | P0 | Alto | — | TODO |
-| VAL-01 | Transcript 16.336 B + oráculo c63e333 travados | 02,05,13 | P0 | Alto | TUI-01 | TODO |
+| TUI-01 | Modelo 10×5 + guarda de escrita com dente | 01,05,10,17,18 | P0 | Alto | — | DONE |
+| VAL-01 | Transcript 16.336 B + oráculo c63e333 travados | 02,05,13 | P0 | Alto | TUI-01 | DONE |
 | TUI-02 | Navegação W0→W4, 4 ramos, 0 transição | 03,12,18 | P0 | Alto | VAL-01 | TODO |
 | TUI-03 | W5 confirmação, aborto e dry-run 0 writes | 03,06,18 | P0 | Alto | TUI-02 | TODO |
 | TUI-04 | Segredo TTY sem eco + pipe serializeSkips | 07,08,18 | P0 | Alto | TUI-02 | TODO |
