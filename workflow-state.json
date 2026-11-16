@@ -227,7 +227,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T22:16:24.978Z",
+  "last_update": "2026-11-16T22:22:46.259Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -251,12 +251,12 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-004 EXECUTION batch 1/3 — modelo 10x5 + guarda com dente + transcript travado",
+  "sdd_stage": "PRD-3 ADR-004 EXECUTION batch 1/3 CONCLUIDO (2/2; 50 campos, guarda 3/3, transcript 16336B) — code-reviewer em curso",
   "backlog": {
     "total": 9,
     "todo": 7,
-    "doing": 2,
-    "done": 0,
+    "doing": 0,
+    "done": 2,
     "ids": [
       "TUI-01",
       "VAL-01",
@@ -268,7 +268,7 @@
       "VAL-02",
       "VAL-03"
     ],
-    "doing_ids": [
+    "done_ids": [
       "TUI-01",
       "VAL-01"
     ]
@@ -1959,11 +1959,13 @@
     "skills": [
       "rust-architecture-specialist"
     ],
-    "status": "running",
+    "status": "review_running",
+    "commit": "d816e251fd5682d8b009e2802e13bef629a41eda",
     "tasks": 2,
-    "base": "f3c140f",
-    "ux_parecer": "UX.md vinculante M1..M8, zero byte",
-    "guarda": "RF-05(b) asserção com dente — 3 caminhos"
+    "fields": 50,
+    "transcript_bytes": 16336,
+    "guard_paths": "3/3 com dente",
+    "incident": "report commands:[] corrigido para 10 execucoes reais; 540/540 restaurado"
   },
   "next_gate": "loop de correcao (developer -> reviewer) ate 3 iteracoes; nao encadear push antes de review APPROVED",
   "governance_note": {
