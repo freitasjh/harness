@@ -1,7 +1,7 @@
 {
-  "current_feature": "prd-installer-rust-adr-002",
-  "current_phase": "Completed",
-  "previous_phase": "Testing",
+  "current_feature": "prd-installer-rust-adr-003",
+  "current_phase": "Discovery",
+  "previous_phase": "Completed",
   "next_phase": "Planning",
   "type": "refactor",
   "layer": "agents/skills/rules",
@@ -30,8 +30,8 @@
     "archive": ".spec/archive/20261028-harness-design-system-agent/",
     "prd": ".spec/prd/prd-installer-rust/PRD.md",
     "research": null,
-    "adr_index": null,
-    "adr": ".spec/prd/prd-installer-rust/ADRs/ADR-002-oraculo-paridade/ADR.md",
+    "adr_index": ".spec/prd/prd-installer-rust/ADR-INDEX.md",
+    "adr": ".spec/prd/prd-installer-rust/ADRs/ADR-003-motor-init-doctor-upgrade/ADR.md",
     "prd_lines": ".spec/prd/prd-harness-inventory/PRD.md (162 linhas, 16 secoes, PRD-01 PASS)"
   },
   "scope": {
@@ -60,7 +60,7 @@
     "P3_P4": "approved_auto_evidence_2026_11_16 (commits 0b9a9e2..e6438c25; 2 criticos + 3 importantes fechados)",
     "P4_P5": "approved_auto_evidence_QA_2026_11_16 (REPORT schema-valido; assinatura do owner pendente aferida depois - literalProven true)",
     "P5_P6": "approved_user_2026_11_16 (VERIFY 3/3; owner aprovou sha 9fa4530b)",
-    "P6_fim": "pending_human_merge (branch 02-oraculo-paridade-impl)",
+    "P6_fim": "done_commit_fbdca4c (PR #18 merge humano 2026-11-16; ADR-002 na main)",
     "B1_B2": "approved_user_2026_09_29",
     "FU32": "closed_approved_decision_B",
     "_previous_cycle_opencode_v2_only": {
@@ -75,7 +75,7 @@
       "B1_B2": "approved_user_2026_09_29",
       "FU32": "closed_approved_decision_B"
     },
-    "G2_ADR": "approved_user_2026_11_16 (ADR-002 oraculo de paridade)",
+    "G2_ADR": "approved_user_2026_11_16 (ADR-003 motor init/doctor/upgrade — fonte: branch de autoria)",
     "G1_PRD": "approved_user_2026_11_16 (PRD-3 prd-installer-rust; D1-D8 fechadas)"
   },
   "code_review": {
@@ -203,7 +203,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T17:03:39.963Z",
+  "last_update": "2026-11-16T17:50:28.820Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -227,7 +227,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-002 CONCLUIDO (VERIFY 3/3 com rito assinado). Proxima frente: ADR-003 motor Rust (init/doctor/upgrade), que desliga a ponte .mjs",
+  "sdd_stage": "PRD-3 ADR-003 DESCOBERTA — aguardando portão P0->P1 (Refactor, motor Rust, 23 ops, quita ponte D1-two-motors no merge)",
   "backlog": {
     "total": 11,
     "todo": 0,
@@ -1085,12 +1085,28 @@
   "prd_adr": {
     "prd_id": "prd-installer-rust",
     "prd_status": "approved",
-    "active_adr": "ADR-002",
+    "active_adr": "ADR-003",
     "adr_order": [
       "ADR-001",
-      "ADR-002"
+      "ADR-002",
+      "ADR-003"
     ],
-    "snapshots": [],
+    "snapshots": [
+      {
+        "adr": "ADR-001",
+        "follow_ups_count": 0,
+        "escalations_count": 0,
+        "at": "2026-11-16T00:00:00-03:00",
+        "merge": "331e44f"
+      },
+      {
+        "adr": "ADR-002",
+        "follow_ups_count": 0,
+        "escalations_count": 0,
+        "at": "2026-11-16T00:00:00-03:00",
+        "merge": "fbdca4c"
+      }
+    ],
     "decisions_closed": {
       "D1": "subprocesso/CLI — Rust e binario, 22 consumidores adaptados",
       "D2": "paridade total antes de trocar",
@@ -1779,5 +1795,20 @@
     "archive": ".spec/archive/20261111-prd-prd-harness-inventory",
     "at": "2026-11-12",
     "nota": "arquivamento refeito a partir da main pos-PRD-2; o PR #9 ficou stale e nao deve ser mergeado"
+  },
+  "cycle_in_progress": {
+    "adr": "ADR-003",
+    "title": "Motor init/doctor/upgrade — 23 ops de engine mapeadas 1:1",
+    "branch": "adr/prd-installer-rust/03-motor-init-doctor-upgrade-impl",
+    "base": "fbdca4c",
+    "planned_artifacts": [
+      ".spec/backend/prd-installer-rust-adr-003/PROPOSAL.md",
+      ".spec/backend/prd-installer-rust-adr-003/SPEC.md",
+      ".spec/backend/prd-installer-rust-adr-003/PLAN.md",
+      ".spec/backend/prd-installer-rust-adr-003/TASKS.md",
+      ".spec/backend/prd-installer-rust-adr-003/VERIFY.md"
+    ],
+    "exempt_from_planner": "refactor sem comportamento observável (.agents/rules/prd-adr-pipeline.md §3)",
+    "gate": "P0_P1 pendente — classificação Refactor a confirmar pelo owner"
   }
 }
