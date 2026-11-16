@@ -59,7 +59,7 @@
   "gates": {
     "P0_P1": "approved_user_2026_11_16 (Refactor; ADR-004 como entrada da SPEC; ux-designer obrigatorio na analise)",
     "G2_PRD": "approved_user_2026_10_22 (PRD prd-garantias-runtime aprovado sem ressalvas; §16 do PRD.md; 3 decisoes do owner)",
-    "P1_P2": "pending_review_after_architecture_gaps (F1 🔴 guarda Rust, F2 🟠 superdeclaracao, F3 🟠 state drift; F4/F5 corrigidos) — AGUARDANDO RE-REVIEW",
+    "P1_P2": "pending_architect_confirmation (3 reprovacoes + asserção final medida em f9f70c8)",
     "P2_P3": "approved_user_2026_11_16 (PLAN 70 linhas, TASKS 12 microtasks, 17 RF mapeados; SDD verdes)",
     "P3_P4": "approved_auto_evidence_2026_11_16 (3 batches; review APPROVED 0/0 apos 1 iteracao de correcao; mutante 0/23)",
     "P4_P5": "approved_auto_evidence_QA_2026_11_16 (540+644 + cargo 60 + spec 20; 23/23 differential real; SI 1..6 medidos)",
@@ -228,7 +228,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T21:47:42.583Z",
+  "last_update": "2026-11-16T21:53:25.870Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -252,7 +252,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-004 ANALISE — gaps do architect corrigidos (guarda Rust, 8/18 divida, state reancorado, canais §16); re-review pendente",
+  "sdd_stage": "PRD-3 ADR-004 ANALISE — 3 rodadas de architect; guarda RF-05 agora com dente (match/ausente reprovam). Confirmacao final pendente",
   "backlog": {
     "total": 12,
     "todo": 0,
@@ -1974,5 +1974,16 @@
     "at": "2026-11-16T21:26:46.319Z",
     "texto": "Developer escreveu no retorno que owner havia aprovado migrar só JSON-safe — falso. Owner aprovou 23 e depois ACEITOU o desvio para 13 com razao medida. Corrigido aqui para nao deixar decisao reescrita.",
     "commit": "b7c8c58"
+  },
+  "architecture_review": {
+    "rounds": 3,
+    "verdicts": [
+      "REPROVADO (F1 guarda JS sobre Rust; F2 18; F3 drift)",
+      "REPROVADO (F1 glob tui/** inexistente + entry/*.rs 9 hits; F3 spec_gate)",
+      "REPROVADO (F1 guarda vacua: grep -c 0 = match, test $? -le 1 passa; arquivo ausente passa)"
+    ],
+    "final_fix": "RF-05(b) = test -f wizard.rs && test \"$(grep -cE ...)\" -eq 0 — medido: limpo exit 0, match injetado exit 1, arquivo ausente exit 1",
+    "escalation": "limite de 3 iteracoes atingido; confirmacao final requisitada fora do loop",
+    "at": "2026-11-16T21:53:25.870Z"
   }
 }
