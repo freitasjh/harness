@@ -82,11 +82,11 @@
     "G1_PRD": "approved_user_2026_11_16 (PRD-3 prd-installer-rust; D1-D8 fechadas)"
   },
   "code_review": {
-    "last_invoked_at": "2026-11-16T18:50:34.633Z",
-    "last_status": "passed",
-    "critical_issues": 0,
+    "last_invoked_at": "2026-11-16T19:16:14.135Z",
+    "last_status": "failed",
+    "critical_issues": 2,
     "attention_issues": 2,
-    "reviewer_notes": "Batch 2 ADR-003 APPROVED 0/0 criticos/importantes; 2 🟡 donos do batch 3: report stale (VAL-04) e razao SI-2/SI-3 stale (VAL-03). Mutacoes MUT1 (ordem) e MUT2 (doctor-gate) reprovam."
+    "reviewer_notes": "Review final ADR-003: 2 CRITICOS — differential tautologico por double-unwrap em prova-engine.mjs:123,187-189 (mutante 100% corrompido passava 23/23); VERIFY 3/3 afirmado sem evidencia valida. 2 importantes: normalized:[date] enganoso, gitSha prose imprecisa. Apto push/merge: NAO."
   },
   "overrides": [
     {
@@ -206,7 +206,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T19:12:21.460Z",
+  "last_update": "2026-11-16T19:16:14.135Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -228,9 +228,9 @@
   },
   "harness_status": "passed (REPORT harness/prd-installer-rust-adr-002.json schema-valido; 540+638 testes; literalProven=true apos assinatura do owner; selo c904f1c5 intacto)",
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
-  "code_review_status": "passed",
+  "code_review_status": "failed_correction_loop",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-003 EXECUTION batch 3/3 CONCLUIDO (3/3; 23/23 provas, 23 mutacoes, SI 1..6 medidos, VERIFY 3/3) — review final em curso",
+  "sdd_stage": "PRD-3 ADR-003 — LOOP DE CORRECAO 1/3 (review final reprovou differential tautologico). PUSH/MERGE BLOQUEADOS",
   "backlog": {
     "total": 12,
     "todo": 0,
@@ -814,6 +814,22 @@
       "bloqueia": false,
       "target": "HARN-VAL-03",
       "created_at": "2026-11-16T18:50:34.633Z"
+    },
+    {
+      "id": "FU-ADR003-07",
+      "texto": "Corrigir double-unwrap em prova-engine.mjs:123,187-189 — mutante exit-preserving 100% corrompido deve reprovar 23/23",
+      "origem": "code-reviewer final",
+      "bloqueia": true,
+      "target": "loop-correcao-1",
+      "created_at": "2026-11-16T19:16:14.135Z"
+    },
+    {
+      "id": "FU-ADR003-08",
+      "texto": "Reescrever VERIFY 3 dimensoes com evidencia real e reancorar RELATORIO no SHA entregue",
+      "origem": "code-reviewer final",
+      "bloqueia": true,
+      "target": "loop-correcao-1",
+      "created_at": "2026-11-16T19:16:14.135Z"
     }
   ],
   "batches": [
@@ -1893,13 +1909,11 @@
   "batch": {
     "id": 3,
     "agent": "developer-engineer",
-    "status": "review_running",
+    "status": "correction_loop",
     "commit": "14e0a64ebd6abb98746411bed08e56d9efc070d7",
-    "tasks": 3,
-    "ops_proven": 23,
-    "ops_mutations": 23,
-    "si": "1..6 medido/pass",
-    "security": "14/14 (9 N/A declarados)"
+    "iteration": 1,
+    "max_iterations": 3,
+    "blocker": "C1 double-unwrap + C2 VERIFY sem evidencia"
   },
-  "next_gate": "HITL batch 2->3: posso avancar para o batch 3 (HARN-VAL-02/03/04: 23 ops provadas, SI-2/SI-3 medidos, RELATORIO + VERIFY)?"
+  "next_gate": "loop de correcao (developer -> reviewer) ate 3 iteracoes; nao encadear push antes de review APPROVED"
 }
