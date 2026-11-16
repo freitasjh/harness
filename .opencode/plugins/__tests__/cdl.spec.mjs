@@ -834,7 +834,7 @@ describe("repo real — os 7 ids PASS e os contadores publicados (RF-08, RF-09, 
     assert.equal(report.counters.refsUndetected, 0);
     const adr = readFileSync(
       new URL(
-        "../../../.spec/prd/prd-agnostic-artifacts/ADRs/ADR-005-frota-restante/ADR.md",
+        "../../../.spec/archive/20261116-prd-prd-agnostic-artifacts/ADRs/ADR-005-frota-restante/ADR.md",
         import.meta.url,
       ),
       "utf8",
