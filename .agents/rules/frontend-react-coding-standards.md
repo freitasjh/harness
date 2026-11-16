@@ -1,6 +1,6 @@
 # Frontend Coding Standards (React)
 
-Padrões de codificação para o frontend Atlas ECM (React 18+ + TypeScript + shadcn/ui + Zustand/Redux + Tailwind).
+Padrões de codificação para o frontend (React 18+ + TypeScript + shadcn/ui + Zustand/Redux + Tailwind).
 
 > Espelho React do padrão Vue/shadcn-vue. **Vuetify/PrimeVue proibidos** neste projeto — usar shadcn/ui (Radix UI + Tailwind CSS).
 
@@ -18,7 +18,7 @@ Padrões de codificação para o frontend Atlas ECM (React 18+ + TypeScript + sh
 | Icons | lucide-react | `Lucide*` |
 | Build | Vite | alias `@` → `src/` |
 
-## ESLint / Formatação
+## ESLint / Formatação (React)
 
 - `semi`: never (sem ponto e vírgula) — herdado, manter se já configurado; novo projeto usa Prettier + `eslint-config-prettier`
 - `indent`: 2 espaços
@@ -156,9 +156,9 @@ Frontend usa `/api/v1/{resource}` → backend ` /v1/{resource}` (sem rewrite `/t
 ## Icons
 
 - `lucide-react` — ex: `<Search className="h-4 w-4" />`
-- Não usar `@iconify-json/ri` / `mdi` no Atlas ECM
+- Não usar `@iconify-json/ri` / `mdi`
 
-## Dependências Principais (Atlas ECM)
+## Dependências Principais (React)
 
 | Pacote | Uso |
 |--------|-----|

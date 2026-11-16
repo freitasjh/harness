@@ -1,10 +1,10 @@
 # Frontend Coding Standards
 
-Padrões de codificação para o frontend Atlas ECM (Vue 3 + TypeScript + shadcn-vue + Pinia).
+Padrões de codificação para o frontend (Vue 3 + TypeScript + shadcn-vue + Pinia).
 
 > Substitui completamente padrão TaskFlow/Vuetify legado. **Vuetify é proibido** neste projeto — usar shadcn-vue.
 
-## Stack definitiva
+## Stack definitiva (Vue)
 
 | Camada | Tecnologia | Obs |
 |--------|------------|-----|
@@ -149,9 +149,9 @@ Frontend usa `/api/v1/{resource}` → backend ` /v1/{resource}` (sem rewrite `/t
 ## Icons
 
 - `lucide-vue-next` — ex: `<Search class="h-4 w-4" />`
-- Não usar `@iconify-json/ri` / `mdi` no Atlas ECM
+- Não usar `@iconify-json/ri` / `mdi`
 
-## Dependências Principais (Atlas ECM)
+## Dependências Principais (Vue)
 
 | Pacote | Uso |
 |--------|-----|

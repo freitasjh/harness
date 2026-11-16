@@ -15,7 +15,10 @@
       "prompt": "{file:./.agents/agents/orchestrator/AGENT.md}",
       "description": "Triagem, governance, SPEC/PLAN/TASKS e orquestracao do harness. NAO implementa codigo.",
       "permission": {
-        "edit": "deny",
+        "edit": {
+          "*": "deny",
+          ".spec/**": "allow"
+        },
         "bash": "allow"
       }
     },

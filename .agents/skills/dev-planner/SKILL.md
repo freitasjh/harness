@@ -203,8 +203,8 @@ Exemplos rápidos:
 |-----------|-----------|
 | `.agents/rules/backend-coding-standards.md` | Padrões backend (Java EE 7 / EJB) |
 | `.agents/rules/frontend-coding-standards.md` | Padrões frontend (JSF + Vue) |
-| `.agents/rules/unit-testing-standards.md` | Regras de testes unitários |
-| `.agents/rules/db-migration-liquibase.md` | Regras de migração |
+| _Regras de testes unitários backend — dívida PRD-4_ | — |
+| _Regras de migração — dívida PRD-4_ | — |
 | `.agents/rules/workflow-rules.md` | Workflow SDD completo |
 | `.doc/ARCHITECTURE.md` | Arquitetura detalhada do projeto |
 | `.doc/STACK.md` | Stack tecnológica e versões |

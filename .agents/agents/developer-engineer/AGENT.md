@@ -134,11 +134,11 @@ skill("template-deepsearch")
 | Documento | Propósito |
 |-----------|-----------|
 | `AGENTS.md` | Stack, comandos, convenções do projeto |
-| `.agents/rules/backend-coding-standards.md` | Padrões de código backend |
+| _Padrões de código backend — dívida PRD-4_ | — |
 | `.agents/rules/frontend-coding-standards.md` | Padrões de código frontend |
-| `.agents/rules/backend-unit-tests.md` | Regras de testes unitários |
-| `.agents/rules/backend-integration-tests.md` | Regras de testes de integração |
-| `.agents/rules/db-migration-flyway.md` | Regras de migração Flyway |
-| `.agents/rules/security-standard.md` | **Fonte da verdade** de segurança (OWASP) — web, API, mobile |
+| _Regras de testes unitários backend — dívida PRD-4_ | — |
+| _Regras de testes de integração backend — dívida PRD-4_ | — |
+| _Regras de migração — dívida PRD-4_ | — |
+| Skill `security-review` | **Fonte da verdade** de segurança (OWASP/ASVS/MASVS) — web, API, mobile |
 | Skill `java-architecture-specialist` | Arquitetura Java, DDD, SOLID |
 | Skill `frontend-vue-specialist` | Arquitetura Vue 3, Composition API, testes |

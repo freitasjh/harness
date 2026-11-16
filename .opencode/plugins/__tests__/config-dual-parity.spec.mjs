@@ -40,6 +40,33 @@ const REPO_ROOT = join(HERE, "..", "..", "..");
 const readText = (rel) => readFileSync(join(REPO_ROOT, rel), "utf8");
 const opencodeJson = () => JSON.parse(readText("opencode.json"));
 
+// Runtime semantics measured on v2.2.4 (`opencode debug config`): permission
+// is an ORDERED rule list and "the last matching rule wins". Presence of a
+// string is not resolution — the index decides (ADR-002 §3 item 2).
+const pathMatches = (pattern, path) => {
+  if (pattern === "*") return true;
+  if (pattern.endsWith("/**")) {
+    const prefix = pattern.slice(0, -2);
+    return path === prefix.slice(0, -1) || path.startsWith(prefix);
+  }
+  return pattern === path;
+};
+const resolveEdit = (rules, path) => {
+  let effect;
+  for (const [pattern, value] of Object.entries(rules ?? {})) {
+    if (pathMatches(pattern, path)) effect = value;
+  }
+  return effect;
+};
+const indexOfEditRule = (rules, effect, resource) =>
+  Object.entries(rules ?? {}).findIndex(([pattern, value]) => pattern === resource && value === effect);
+// E1 (medido): the plural `agents.orchestrator` entry SUBSTITUTES the singular
+// `agent.*` one, dropping `prompt`/`description` (`system:""`).
+const resolvedPrompt = (json) =>
+  json.agents?.orchestrator
+    ? (json.agents.orchestrator.prompt ?? "")
+    : (json.agent?.orchestrator?.prompt ?? "");
+
 const SATELLITES = [
   { name: "harness-validator", mod: validatorDefault, bare: HarnessValidator, rel: ".opencode/plugins/harness-validator.js" },
   { name: "hitl-guardrail", mod: guardrailDefault, bare: HitlGuardrail, rel: ".opencode/plugins/hitl-guardrail.js" },
@@ -149,15 +176,50 @@ describe("PL-05 — opencode.json is v2-only (dual keys ABSENT, v2 shape PRESENT
     }
   });
 
-  it("I3/RF-03: orchestrator / code-reviewer / ux-designer / design-system-specialist deny edit", () => {
+  it("I3/RF-03: code-reviewer / ux-designer / design-system-specialist deny edit", () => {
     const json = opencodeJson();
-    for (const name of ["orchestrator", "code-reviewer", "ux-designer", "design-system-specialist"]) {
+    for (const name of ["code-reviewer", "ux-designer", "design-system-specialist"]) {
       assert.equal(
         json.agent?.[name]?.permission?.edit,
         "deny",
         `${name} must deny edit (native layer)`,
       );
     }
+  });
+
+  it("I3/RF-03: orchestrator edit is the ORDERED pair `deny *` -> `allow .spec/**`", () => {
+    const edit = opencodeJson().agent?.orchestrator?.permission?.edit;
+    assert.equal(typeof edit, "object", "ordered object, not a scalar string");
+    assert.deepEqual(Object.keys(edit), ["*", ".spec/**"], "written order is the resolution order");
+    assert.equal(edit["*"], "deny", "the wide rule denies first");
+    assert.equal(edit[".spec/**"], "allow", "the scoped rule allows last");
+  });
+
+  it("RF-01/I1: resolution over 3 probe paths (deny * THEN allow .spec/**)", () => {
+    const edit = opencodeJson().agent?.orchestrator?.permission?.edit;
+    assert.equal(resolveEdit(edit, ".spec/prd/x/ADR.md"), "allow", "SPEC/PLAN/TASKS author writes");
+    assert.equal(resolveEdit(edit, ".agents/rules/x.md"), "deny", "governance prose stays denied");
+    assert.equal(resolveEdit(edit, "harness.config.json"), "deny", "config stays denied");
+  });
+
+  it("RF-01/I1 (fixture vermelha): the inverted object reproves — deny wins", () => {
+    const inverted = { ".spec/**": "allow", "*": "deny" };
+    assert.equal(resolveEdit(inverted, ".spec/prd/x/ADR.md"), "deny", "inverted order is a REAL failure");
+    assert.ok(
+      indexOfEditRule(inverted, "deny", "*") > indexOfEditRule(inverted, "allow", ".spec/**"),
+      "index assertion catches the inversion (deny after allow)",
+    );
+  });
+
+  it("E1 (fixture vermelha): `agents.orchestrator` replaces the legacy entry and empties the prompt", () => {
+    const shadowed = {
+      agent: {
+        orchestrator: { prompt: "kept", description: "d", permission: { edit: { "*": "deny" } } },
+      },
+      agents: { orchestrator: { permissions: [{ action: "edit", resource: "*", effect: "allow" }] } },
+    };
+    assert.equal(resolvedPrompt(shadowed), "", "plural entry substitutes => system:\"\" (reproves)");
+    assert.ok(resolvedPrompt(opencodeJson()).length > 0, "the live config keeps the orchestrator prompt");
   });
 
   it("v2-only is declared next to the config", () => {

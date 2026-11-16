@@ -202,7 +202,7 @@ O **estado canônico** é o de `sdd-workflow-standard.md` (é o que vive em
    - Validar contra `asserts/proposal-gate.md` antes de avançar
 9. **Gerar SPEC**: `sdd-compiler` modo `generate-spec` → `.spec/[feature]/SPEC.md`
    - SPEC inclui seção **Delta Specs** (impacto em `.doc/`)
-10. **Revisar SPEC**: skill `spec-review` — gerar relatório de gaps e conformidade
+10. **Revisar SPEC**: aplicar `asserts/spec-gate.md` do `sdd-compiler` — relatório de gaps e conformidade; conformidade com as regras do projeto = revisor de SPEC do destino, quando houver
 11. **Corrigir gaps**: endereçar todos 🔴 críticos e 🟠 alta prioridade
 12. Salvar artefatos em `.spec/backend/{dominio}/` ou `.spec/frontend/{dominio}/`
 13. **Aprovação do usuário**: perguntar se deseja prosseguir com a implementação
@@ -214,15 +214,15 @@ O **estado canônico** é o de `sdd-workflow-standard.md` (é o que vive em
 2. **Gerar PLAN**: `sdd-compiler` modo `generate-plan` → `PLAN.md` a partir do `SPEC.md`
 3. **Gerar TASKS**: `sdd-compiler` modo `generate-tasks` → `TASKS.md` a partir do `PLAN.md`
 4. Implementar código seguindo as tasks (TDD — teste antes da implementação)
-5. Escrever **testes unitários** (JUnit 5 + Mockito) — coverage: 80% service, 90% domain
-6. Escrever **testes de integração** (`*IT.java` no módulo `integration-test/`) — todo controller deve ter IT
-7. Verificar quebras de contrato com `mvn compile` a cada task concluída
+5. Escrever **testes unitários** do eixo declarado — §5.1–§5.3 por eixo; comando: `commands.unit` do `harness.config.json`
+6. Escrever **testes de integração** do eixo declarado — todo controller com IT; comando: `commands.suiteFull` do `harness.config.json` (o instalador publica só `suiteFull`/`unit`/`analyze`; chave de integração do eixo ausente ⇒ use `commands.suiteFull`)
+7. Verificar quebras de contrato a cada task concluída com o comando canônico do eixo em `harness.config.json` — `commands.suiteFull`, pois chave de build do eixo não é publicada pelo instalador; ausente ⇒ use `commands.suiteFull`
 
 ### Fase 3 — Review
 1. Invocar agente `code-reviewer` para revisar o código
 2. Corrigir todos os débitos 🔴 **Críticos**
 3. Avaliar e corrigir débitos 🟡 **Atenção** se aplicável
-4. **Ao final**: `mvn clean install` na raiz do backend (zero erros, testes passando)
+4. **Ao final**: `commands.suiteFull` do `harness.config.json` na raiz do projeto (zero erros, testes passando)
 
 ### Fase 4 — Verify (pós-implementação)
 1. Carregar `sdd-compiler` modo `verify`
@@ -334,7 +334,7 @@ Toda correção de bug (backend, frontend ou fullstack) **OBRIGATORIAMENTE** seg
 > 🚨 **Violação = retrabalho completo do bugfix.**
 
 #### R1 — Harness-First: ver o erro REAL na tela antes de codificar
-- O agente (`developer-engineer` ou `qa-engineer`) **DEVE**: subir o sistema com os comandos de `harness.config.json` (`commands.backendRun`/`frontendRun`, portas de `infra.ports`); abrir via **Chrome DevTools** (`new_page` → `take_snapshot` → `list_network_requests` → `list_console_messages` → `take_screenshot`); reproduzir o fluxo exato e confirmar o erro (status 4xx/5xx, console `[ERROR]`/`[WARN]`, snapshot vazio).
+- O agente (`developer-engineer` ou `qa-engineer`) **DEVE**: subir o sistema com o comando de execução declarado no `AGENTS.md` do destino — o instalador publica só `suiteFull`/`unit`/`analyze`, logo chave de execução do eixo ausente ⇒ comando documentado — e as portas de `infra.ports`; abrir via **Chrome DevTools** (`new_page` → `take_snapshot` → `list_network_requests` → `list_console_messages` → `take_screenshot`); reproduzir o fluxo exato e confirmar o erro (status 4xx/5xx, console `[ERROR]`/`[WARN]`, snapshot vazio).
 - **PROIBIDO adivinhar no escuro.** Sem evidência de harness, a análise é inválida → re-delegar.
 - Retorno obrigatório: `backend UP/DOWN`, `frontend UP/DOWN`, `console N errors`, `network M 2xx/5xx`, `screenshot path`, erro reproduzido ✅/❌.
 
@@ -388,7 +388,7 @@ Suite completa com zero falhas **incluindo pré-existentes** (ver §5 H1+H2); `w
 
 ### H3. Harness E2E Greenfield (Wipe + Re-cadastro)
 **Quando (MANDATORY):** fim de cada sub-fase SDD, cada bug UI/fullstack, fim de sprint, release, mudança em stack/router/i18n/auth/migration base.
-**Protocolo:** subir dependências (`infra.composeFile` se houver) → WIPE + recreate → subir backend/frontend (`commands.backendRun`/`frontendRun`, portas de `infra.ports`) → Chrome DevTools (`new_page` na URL do front → snapshot).
+**Protocolo:** subir dependências (`infra.composeFile` se houver) → WIPE + recreate → subir backend/frontend (comando de execução do `AGENTS.md` do destino; o instalador publica só `suiteFull`/`unit`/`analyze` — chave de execução ausente no eixo ⇒ comando documentado — portas de `infra.ports`) → Chrome DevTools (`new_page` na URL do front → snapshot).
 **Re-cadastro manual via UI:** login → admin → 2 employees → team → project → workflow → kanban → task completa → transicionar TODOS os status → dashboard/backlog → i18n (trocar locale) → logout.
 **Por passo (DevTools):** Network sem rota duplicada e sem 4xx/5xx; Console zero `[ERROR]`/`[WARN]`; snapshot renderiza; screenshot bate com o padrão visual; navegação preserva state; 1280x800 + 375x800; aria-labels + foco visível.
 Testes unitários/integração **não pegam** tela branca, rota duplicada, i18n faltando, CORS/auth em browser real — só este harness pega.
@@ -418,7 +418,7 @@ Build+testes (suite completa 0 falhas; front test+build 0 erros) · H3 quando ap
 Suite por task/bug/feature (`developer-engineer`) · E2E por sub-fase/sprint/release (`qa-engineer`/`developer-engineer`, ~30–60min) · H4 por entrega UI · Brain por achado (2–5min) · saneamento quando débito > 0 · auditoria mensal (`architect`+`qa-engineer`).
 
 ### Anexo A — Comandos
-Resolver sempre de `harness.config.json`: `commands.suiteFull` (referência absoluta), `commands.unit`, e por stack `integration`/`frontendTest`/`frontendBuild`/`backendRun`/`frontendRun` (ausente com justificativa `N/A` quando a stack não existe). Infra: `infra.composeFile` + `infra.ports`. Neste repo: `node --test ".opencode/plugins/__tests__/*.spec.mjs" && node scripts/static-checks.mjs`.
+Resolver sempre de `harness.config.json`: `commands.suiteFull` (referência absoluta), `commands.unit` e, quando o eixo declarar, `commands.analyze` — o instalador publica só `suiteFull`/`unit`/`analyze`, logo chave de integração, de front test/build ou de execução do eixo ausente ⇒ use `commands.suiteFull` (e, para subir o sistema, o comando de execução documentado no `AGENTS.md` do destino; `N/A` quando a stack não existe). Infra: `infra.composeFile` + `infra.ports`. Neste repo: `node --test ".opencode/plugins/__tests__/*.spec.mjs" && node scripts/static-checks.mjs`.
 
 ### Anexo B — Template de Relatório de Harness
 Retorno de developer/qa que executou H1/H3/H4 **DEVE** conter: H1 (comando, ✅/❌, counts unit/IT, falhas classe:linha); H2 (débito antes do dev + ação); H3 (wipe, UPs, 12 passos, Network/Console, screenshots, processos finalizados); H4 (telas/regras/lógica/perf); H5 (brain_store paths); conclusão + bloqueios.
@@ -428,25 +428,25 @@ Mudanças exigem aprovação do orquestrador + `workflow-state.json`. Violação
 
 ---
 
-## 5.1 Backend — Testes Unitários (obrigatório)
+## 5.1 Backend (Java) — Testes Unitários (obrigatório)
 
 - **Service**: todo `*ServiceImpl` cobre happy path, erros (validação, não-encontrado, conflito) e bordas. **Domain**: invariantes, fábricas, validações. **Converters** (construtor privado + `of()` estático, nunca MapStruct): testar direto, nunca mockar. **Validators** e **Utils** puros: testar direto.
 - **Proibido no unitário:** repository/controller (`*IT.java`), `@SpringBootTest`, `@WebMvcTest`, H2/banco, Lombok, `Thread.sleep()` (usar Awaitility).
-- Ferramentas: JUnit 5 (`@ExtendWith(MockitoExtension.class)`), Mockito (`@Mock`/`@InjectMocks`/`verify`/`ArgumentCaptor`), AssertJ, Fakes em `src/test/java/.../fake/`, padrão `when{Action}_then{Expected}`.
-- Execução: `mvn test` / `mvn test -pl {modulo}` (ou `commands.unit` do config).
+- Ferramentas (backend=java): JUnit 5 (`@ExtendWith(MockitoExtension.class)`), Mockito (`@Mock`/`@InjectMocks`/`verify`/`ArgumentCaptor`), AssertJ, Fakes em `src/test/java/.../fake/`, padrão `when{Action}_then{Expected}`.
+- Execução (backend=java): `mvn test` / `mvn test -pl {modulo}` (ou `commands.unit` do config).
 
-## 5.2 Backend — Testes de Integração (obrigatório)
+## 5.2 Backend (Java) — Testes de Integração (obrigatório)
 
-- **Controllers**: todo controller tem `*IT.java` (200/201/204, 400/404/409, 401/403, isolamento multi-tenant). **Repositories**: queries/`@Query`/paginação/constraints. **Cross-module** (outbox, eventos) e **Flyway** (bootstrap valida migrations).
-- Regras: `*IT.java` só em `integration-test/`; PostgreSQL real via Testcontainers (nunca H2); base `WebIntegrationTest`; limpeza com `DatabaseCleaner.reset()` (nunca `deleteAll`); auth via `JwtTestHelper`; dados via `TestUserFactory`/`seedCommonData()`. Proibido `@WebMvcTest` e RestAssured (usar MockMvc).
-- Execução: `mvn verify -pl integration-test` / `-Dit.test=XxxIT` (ou `commands.integration`).
+- **Controllers** (backend=java): todo controller tem `*IT.java` (200/201/204, 400/404/409, 401/403, isolamento multi-tenant). **Repositories**: queries/`@Query`/paginação/constraints. **Cross-module** (outbox, eventos) e **Flyway** (bootstrap valida migrations).
+- Regras (backend=java): `*IT.java` só em `integration-test/`; PostgreSQL real via Testcontainers (nunca H2); base `WebIntegrationTest`; limpeza com `DatabaseCleaner.reset()` (nunca `deleteAll`); auth via `JwtTestHelper`; dados via `TestUserFactory`/`seedCommonData()`. Proibido `@WebMvcTest` e RestAssured (usar MockMvc).
+- Execução (backend=java): `mvn verify -pl integration-test` / `-Dit.test=XxxIT` (ou `commands.suiteFull`, pois o instalador não publica chave de integração do eixo).
 
-## 5.3 Frontend — Testes (obrigatório)
+## 5.3 Frontend (Vue/React) — Testes (obrigatório)
 
-Stores (Pinia), views, serviços API e componentes: Vitest + happy-dom (nunca jsdom), `src/**/__tests__/*.spec.ts`, coverage ≥70% no novo. Execução: `npm run test:run` + `npm run build` (ou `commands.frontendTest`/`frontendBuild`).
+- **Obrigatório**: Stores (Pinia), views, serviços API e componentes: Vitest + happy-dom (nunca jsdom), `src/**/__tests__/*.spec.ts`, coverage ≥70% no novo. Execução: `npm run test:run` + `npm run build` (ou `commands.suiteFull`, pois o instalador não publica chave de front test/build).
 
 ## 5.4 Regra Geral
-Testes passam **antes** de commit/push — novo, existente ou pré-existente. Falhou ⇒ corrigir até passar (H1.2). Suite completa 0 falhas antes de finalizar a tarefa **e** antes do próximo dev (H2.2).
+Testes passam **antes** de commit/push — novo, existente ou pré-existente. Falhou ⇒ corrigir até passar (H1.2). Suite completa 0 falhas antes de finalizar a tarefa **e** antes do próximo dev (H2.2). Eixos sem seção própria (ex.: eixo `node`, `nestjs`, `rust`) resolvem a obrigação de testar por `commands.suiteFull`/`commands.unit` do `harness.config.json` do destino; chave do eixo ausente ⇒ use `commands.suiteFull`.
 
 ---
 
@@ -555,15 +555,15 @@ Para **TODO** desenvolvimento, as skills apropriadas **OBRIGATORIAMENTE** devem 
 | **Análise inicial** | `brain` | Consultar memória de longo prazo do sistema |
 | **Planejamento Técnico** | (subagent) `planner` | Delegação do planejamento detalhado de features: descoberta, análise de restrições, desafio de soluções, projeto de arquitetura, estimativa e validação (6 fases; saída = 4 artefatos + parecer ao `sdd-compiler`) |
 | **Arquitetura** | `sdd-architecture-board` | Decisões arquiteturais, ADRs, validação de design |
-| **Desenvolvimento Backend** | `java-architecture-specialist` | DDD, JPA, serviços, segurança, testes |
-| **Desenvolvimento Backend** | `nestjs-architecture-specialist` | NestJS, módulos, DI, guards, testes |
-| **Desenvolvimento Backend** | `node-architecture-specialist` | Node.js, Express/Fastify, módulos, testes |
-| **Desenvolvimento Backend** | `rust-architecture-specialist` | Rust, Axum/Actix, Cargo, async, testes |
-| **Desenvolvimento Frontend** | `frontend-vue-specialist` + `frontend-design` | Componentes, stores, router, API, testes + design visual |
-| **Desenvolvimento Frontend** | `frontend-react-specialist` + `frontend-design` | Componentes React, stores, router, API, testes + design visual |
+| **Desenvolvimento Backend** (`backend=java`) | `java-architecture-specialist` | DDD, JPA, serviços, segurança, testes |
+| **Desenvolvimento Backend** (`backend=nestjs`) | `nestjs-architecture-specialist` | NestJS, módulos, DI, guards, testes |
+| **Desenvolvimento Backend** (`backend=node`) | `node-architecture-specialist` | Node.js, Express/Fastify, módulos, testes |
+| **Desenvolvimento Backend** (`backend=rust`) | `rust-architecture-specialist` | Rust, Axum/Actix, Cargo, async, testes |
+| **Desenvolvimento Frontend** (`frontend=vue`) | `frontend-vue-specialist` + `frontend-design` | Componentes **Vue**, stores, router, API, testes + design visual |
+| **Desenvolvimento Frontend** (`frontend=react`) | `frontend-react-specialist` + `frontend-design` | Componentes React, stores, router, API, testes + design visual |
 | **Design System / Templates** | `template-structure` + `template-best-practices` + `template-deepsearch` (subagente `design-system-specialist`) | Templates de componentes reutilizáveis (props/slots/estados/variantes), boas práticas, estado da arte via deepsearch |
 | **SDD Compiler** | `sdd-compiler` | Geração de SPEC, PLAN, TASK com validação |
-| **Revisão de Spec** | `spec-review` | Revisar SPEC.md contra regras do projeto, gerar relatório de gaps e conformidade |
+| **Revisão de Spec** | `sdd-compiler` (`asserts/spec-gate.md`) | Aplicar o portão à SPEC.md e registrar gaps; regras do projeto = revisor do destino |
 | **Revisão de Segurança** | `security-review` | Revisão de segurança integrada ao SDD (Fase 1, 3, 4.5) — OWASP, ASVS, MASVS |
 | **Revisão de Código** | *(invocar agente `code-reviewer`)* | Code review completo |
 | **Microtasks** | `jira-microtask-breaker` | Quebrar tarefas complexas em microtasks |
@@ -588,18 +588,16 @@ Para **TODO** desenvolvimento, as skills apropriadas **OBRIGATORIAMENTE** devem 
 
 ## 9. Documentos de Referência
 
+> **Dívida declarada (ADR-004 §4):** dependências de eixo Java/db (backend, migração) saíram do payload comum — dono **PRD-4** (`prd-axes-split`), reativadas quando `harness.config.json.stack.backend` deixar de ser `N/A`. O ponteiro para o design system de frontend saiu dos agentes — dono **PRD-5** (cria o arquivo). Referências a documentos de arquitetura/stack seguem com dono **ADR-005**. Nada aqui autoriza remover a SSoT de segurança: ela agora é a skill `security-review`.
+
 | Documento | Propósito |
 |-----------|-----------|
 | `.doc/stacks.md` | Stacks e versões |
 | `.doc/arquitetura-backend.md` | Arquitetura detalhada do sistema |
 | `.doc/especificacao-sistema.md` | Especificação completa do sistema |
 | `.spec/backend/sdd-etapa{N}-{dominio}.md` | SDD de cada domínio |
-| `.agents/rules/backend-unit-tests.md` | Regras detalhadas de testes unitários |
-| `.agents/rules/backend-integration-tests.md` | Regras detalhadas de testes de integração |
-| `.agents/rules/backend-coding-standards.md` | Padrões de codificação backend |
 | `.agents/rules/frontend-coding-standards.md` | Padrões de codificação frontend |
-| `.agents/rules/db-migration-flyway.md` | Regras de migração Flyway |
-| `.agents/rules/security-standard.md` | **Fonte da verdade** de segurança (OWASP) — web, API, mobile |
+| Skill `security-review` | **Fonte da verdade** de segurança (OWASP/ASVS/MASVS) — web, API, mobile |
 | `.agents/rules/brain-context.md` | Ponte fina → `BRAIN.MCP.md` (dono brain) |
 | `.agents/rules/sdd-workflow-standard.md` | Padrão do workflow SDD |
 | Skill de planejamento consumida pelo `planner` (metodologia, `SKILL.md`) | **Planejamento técnico detalhado** — 6 fases (Descubra→Analise→Desafie→Projete→Estime→Valide); saída = 4 artefatos + parecer ao `sdd-compiler` |

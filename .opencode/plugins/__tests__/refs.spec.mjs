@@ -76,10 +76,12 @@ function cleanTree(extra = {}) {
 const CITED = "rules/nao-existe.md";
 
 describe("PO-01 — BASELINE é dívida declarada com dono (SPEC I2)", () => {
-  it("7 entradas = 2 C1 + 5 C2, todas com class/owner/prd/reason", () => {
-    assert.equal(BASELINE.length, 7);
+  it("ADR-004 reduz a baseline de 7 para 1: só a dívida ainda citada, com dono PRD-4", () => {
+    assert.equal(BASELINE.length, 1);
     const byClass = BASELINE.reduce((acc, e) => ({ ...acc, [e.class]: (acc[e.class] ?? 0) + 1 }), {});
-    assert.deepEqual(byClass, { C1: 2, C2: 5 });
+    assert.deepEqual(byClass, { C2: 1 });
+    assert.equal(BASELINE[0].owner, "PRD-4");
+    assert.match(BASELINE[0].reason, /reativar/);
     for (const e of BASELINE) {
       assert.ok(BASELINE_CLASSES.has(e.class), `class inválida: ${e.class}`);
       for (const key of ["path", "reason", "owner", "prd"]) {
@@ -100,17 +102,19 @@ describe("PO-01 — BASELINE é dívida declarada com dono (SPEC I2)", () => {
     assert.match(badClass.join("; "), /class fora de \{C1, C2\}/);
   });
 
-  it("a baseline real cobre exatamente os 2 live-orphan e os 5 foreign-baseline da ADR", () => {
+  it("a baseline real é a única citação viva pinned pelo CDL (dev-planner/SKILL.md:204)", () => {
     const paths = BASELINE.map((e) => e.path).sort();
-    assert.deepEqual(paths, [
-      "rules/backend-coding-standards.md",
+    assert.deepEqual(paths, ["rules/backend-coding-standards.md"]);
+    for (const gone of [
+      "rules/security-standard.md",
+      "rules/unit-testing-standards.md",
       "rules/backend-integration-tests.md",
       "rules/backend-unit-tests.md",
       "rules/db-migration-flyway.md",
       "rules/db-migration-liquibase.md",
-      "rules/security-standard.md",
-      "rules/unit-testing-standards.md",
-    ]);
+    ]) {
+      assert.equal(BASELINE.some((e) => e.path === gone), false, `${gone} saiu da baseline no ADR-004`);
+    }
     assert.equal(CLASS_LABELS.C1, "live-orphan");
     assert.equal(CLASS_LABELS.C2, "foreign-baseline");
   });
@@ -199,12 +203,12 @@ describe("PO-02/PO-03 — os dois modos de falha (RF-03)", () => {
 
   it("modo (b): entrada que passou a existir no disco reprova (baseline não infla)", () => {
     const root = fixture(
-      cleanTree({ ".agents/rules/unit-testing-standards.md": "# a rule apareceu\n" }),
+      cleanTree({ [diskPathOf(BASELINE[0].path)]: "# a rule apareceu\n" }),
     );
     const report = runRefsChecks(root);
     const r = byId(report, "stale-baseline-entry");
     assert.equal(r.status, "FAIL");
-    assert.match(r.detail, /unit-testing-standards\.md .*passou a existir/);
+    assert.match(r.detail, /passou a existir/);
     assert.equal(report.ok, false);
   });
 
@@ -349,7 +353,7 @@ describe("PO-04 — supressões separadas por mecanismo (C3/C4)", () => {
 
 describe("PO-04/review F5 — baseline viva por citação vendorizada é visível, não silenciosa", () => {
   it("única citação vendorizada: PASS, mas o detalhe nomeia a entrada (limite N13)", () => {
-    const alvo = BASELINE.find((e) => e.class === "C1").path;
+    const alvo = BASELINE[0].path;
     const tree = treeWithLock({ "react-best-practices": {} }, {
       ".agents/rules/_baseline.md":
         BASELINE.filter((e) => e.path !== alvo).map((e) => `- \`${e.path}\``).join("\n") + "\n",
@@ -392,17 +396,18 @@ describe("PO-04 — pureza e propagabilidade (SPEC I1, ADR §4 item 2)", () => {
 });
 
 describe("PO-05 — adapter V18 em scripts/static-checks.mjs (RF-06)", () => {
-  it("no repo real o runner reporta V18 PASS com a baseline de 7 e o contador vendor-only", () => {
+  it("no repo real o runner reporta V18 PASS com baseline=1 (meta RF-05 <=1) e non-defect=1", () => {
     const report = runStaticChecks();
     const v18 = byId(report, "V18");
     assert.equal(v18.status, "PASS", v18.detail);
-    assert.match(v18.detail, /baseline=7/);
+    assert.match(v18.detail, /baseline=1/);
+    assert.match(v18.detail, /non-defect=1/);
     // H-B4 (§8-N18): o contador não pode sumir no único ramo que roda.
     assert.match(v18.detail, /stale-baseline-entry=ok\[vendor-only=0\]/);
   });
 
   it("dívida vendorizada aparece no PASS do V18 sem tornar o check vermelho", () => {
-    const alvo = BASELINE.find((e) => e.class === "C1").path;
+    const alvo = BASELINE[0].path;
     const tree = treeWithLock({ "react-best-practices": {} }, {
       ".agents/rules/_baseline.md":
         BASELINE.filter((e) => e.path !== alvo).map((e) => `- \`${e.path}\``).join("\n") + "\n",
@@ -426,5 +431,40 @@ describe("PO-05 — adapter V18 em scripts/static-checks.mjs (RF-06)", () => {
     const root = fixture(cleanTree({ "docs/registro.md": `cita \`${CITED}\`\n` }));
     const v18 = byId(runStaticChecks(root), "V18");
     assert.equal(v18.status, "PASS", v18.detail);
+  });
+});
+
+// RC6 / N30 (ADR-004 §2.4): `citesToken` do V19 ainda casa o rótulo de um
+// link-ref markdown. O detector de refs reprova a FORMA antes do incidente —
+// duas árvores com o MESMO token, só a forma muda.
+describe("RC6/N30 — link-ref não compra consumer (ADR-004 §2.4)", () => {
+  it("[//]: # (skill) reprova; o mesmo token em prosa normal PASSA", () => {
+    const skill = "security-review";
+    const withLinkRef = fixture(
+      treeWithLock({ [skill]: {} }, {
+        ".agents/rules/linkref.md": `texto\n[//]: # (${skill})\n`,
+      }),
+    );
+    const bad = byId(runRefsChecks(withLinkRef), "link-ref-citation-form");
+    assert.equal(bad.status, "FAIL", bad.detail);
+    assert.match(bad.detail, new RegExp(skill));
+    assert.match(bad.detail, /\.agents\/rules\/linkref\.md:2/);
+
+    const plainProse = fixture(
+      treeWithLock({ [skill]: {} }, {
+        ".agents/rules/linkref.md": `texto\n${skill} em prosa normal\n`,
+      }),
+    );
+    const good = byId(runRefsChecks(plainProse), "link-ref-citation-form");
+    assert.equal(good.status, "PASS", good.detail);
+  });
+
+  it("link-ref com rótulo que não é skill não reprova (predicado restrito)", () => {
+    const root = fixture(
+      treeWithLock({ "security-review": {} }, {
+        ".agents/rules/linkref.md": "texto\n[//]: # (ancora-generica)\n",
+      }),
+    );
+    assert.equal(byId(runRefsChecks(root), "link-ref-citation-form").status, "PASS");
   });
 });
