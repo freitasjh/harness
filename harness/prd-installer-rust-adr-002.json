@@ -1,0 +1,435 @@
+{
+  "version": 1,
+  "demand": "prd-installer-rust-adr-002",
+  "agent": "qa-engineer",
+  "phase": "Testing",
+  "gitSha": "e6438c25ea4bda0d4958bfe2096dcfbc9d476b10",
+  "commands": [
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 707,
+      "stdoutHash": "1caedbfd0bc9b1852a6863dd43d2952cf900b2ae3a2ce07933a382a82ecd3e03"
+    },
+    {
+      "cmd": "node --test \"installer/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 5716,
+      "stdoutHash": "b333a163511cede9ec3d7222a26cbca5e75d4fb09e09af9941bb3064ebe3e231"
+    },
+    {
+      "cmd": "node scripts/static-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 173,
+      "stdoutHash": "4a1e734a85037a1e26e20ea8531b7b4e64cf76d4b1fd7890b3b62529b7652ad5"
+    },
+    {
+      "cmd": "node scripts/sdd-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 80,
+      "stdoutHash": "6f7e815d5cbb1affc7bc93c0fd653a29e740197075602a46abaada2924b799b1"
+    },
+    {
+      "cmd": "node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 41,
+      "stdoutHash": "e5e528c52d79fceaa1be828bd89116aa6e0be73294d2e99d39c4febe99e84516"
+    }
+  ],
+  "counts": {
+    "unit": {
+      "passed": 540,
+      "failed": 0,
+      "skipped": 0
+    },
+    "it": {
+      "passed": 638,
+      "failed": 0,
+      "skipped": 0
+    },
+    "frontend": {
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "literalProven": true,
+  "evaluation": {
+    "telas": "N/A — sem UI/DB/portas (infra null, stack N/A); TUI e ADR-004, fora deste ciclo. H3 N/A.",
+    "negocio": "15 itens do ADR §3 verificados: 14 PASS + item 12 (validacao humana do literal) PENDENTE_OWNER por desenho do rito — QA nao assina. 9 byte-equal + 2 parciais publicado como medido; 12/12 apenas meta re-derivavel; SI-2/SI-3 not_measured por ausencia de binario Rust (ADR-003), nunca PASS por omissao.",
+    "logica": "Autoridade do rito = sha256 do ARQUIVO installer/__tests__/oracle-literal.sha256 (9fa4530b…), nao a constante da origem (17a704…) — casar constante com constante seria tautologia. driver runParity materializa/libera oraculo detach c63e333, verifica SHA + porcelain; canonicalJson em SI-1/SI-2; SI-3 usa hash de conteudo; registry 6 mapas ALL e13f11d5… 6/6 OK; selo c904f1c5… intacto; commands.suiteFull byte-identico.",
+    "perf": "5 suites exit 0; soma durations 6717ms; sem regressao de duracao observada.",
+    "bugs_identified": [
+      {
+        "id": "P4-OBS-1",
+        "severity": "P3",
+        "achado": "Estado entregue pelo batch anterior (REPORT F7) trazia agent=developer-engineer, phase=Execution e selfReported=true; este REPORT e a re-medicao independente do portao P4 e corrige os 3 campos.",
+        "bloqueia": false
+      },
+      {
+        "id": "P4-OBS-2",
+        "severity": "P3",
+        "achado": "SI-2 e SI-3 permanecem not_measured: dependem do motor Rust do ADR-003, inexistente neste ciclo. Declarado no driver, nao e defeito — impede qualquer claiming de 12/12.",
+        "bloqueia": false
+      },
+      {
+        "id": "P4-OBS-3",
+        "severity": "P3",
+        "achado": "SKILLS_BY_AXIS aparenta invertido (frontend=react -> frontend-vue-specialist); e mapa de EXCLUSAO e esta byte-igual a c63e333 (digest 793e3eca…). Sem drift; semacao fora do escopo do ADR-002.",
+        "bloqueia": false
+      }
+    ]
+  },
+  "brainStore": [
+    "sessoes/projetos/harness/2026-11-16-qa-prd-installer-rust-adr-002-p4"
+  ],
+  "cleanup": {
+    "ports": [],
+    "processes": [],
+    "note": "Nada subido: infra null, stack N/A — zero lsof/kill, zero pkill -f, zero push, zero gh. Todos os 5 comandos e os 3 ataques rodaram sincronamente; nenhum processo residual. Worktree do oraculo materializado e liberado pelo driver --run-parity (git worktree list limpo). Copia de ataque em /tmp/opencode/qa-p4-002/repo: 3 mutacoes aplicadas e revertidas com git checkout --, status --porcelain vazio ao final; copia mantida apenas como evidencia, sem escrita no repo. REPO_STATUS vazio, HEAD e6438c25. Unica escrita no repo: este REPORT.",
+    "worktree": {
+      "path": "/tmp/opencode/harness-oracle-parity",
+      "released": true
+    },
+    "attackCopy": {
+      "path": "/tmp/opencode/qa-p4-002/repo",
+      "restored": true,
+      "status": ""
+    },
+    "repoWrites": [
+      "harness/prd-installer-rust-adr-002.json"
+    ]
+  },
+  "selfReported": false,
+  "literalRubric": {
+    "status": "PRONTA_PARA_OWNER — NAO ASSINADA POR QA",
+    "rito": "ADR-002 §2.4: preparacao=q-engineer (concluida); revisao=owner (cargo insta review, somente leitura do diff); registro=orquestrador (linha de assinatura em harness/<demand>.json ANTES do literal entrar no baseline).",
+    "file": "installer/__tests__/oracle-literal.sha256",
+    "fileLine": "installer/__tests__/oracle-literal.sha256:1",
+    "fileSha256": "9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0",
+    "fileContent": "17a704c37a018e1efd4fd7f4658d024c79e20cf874f73c5203a3a04ec3201a8d",
+    "source": {
+      "commit": "c63e33307710e1c6271f5c68b2dd9fb15283f49c",
+      "path": "installer/install.mjs",
+      "sha256": "17a704c37a018e1efd4fd7f4658d024c79e20cf874f73c5203a3a04ec3201a8d",
+      "command": "git show c63e333:installer/install.mjs | sha256sum",
+      "measuredOutput": "17a704c37a018e1efd4fd7f4658d024c79e20cf874f73c5203a3a04ec3201a8d  -",
+      "provenance": "git-object:c63e333"
+    },
+    "distincao": "fileSha256 (9fa4530b…) e o valor a assinar; fileContent/sourceSha256 (17a704…) e o conteudo do arquivo. Assinar a origem em vez do arquivo reprova (ataque A2).",
+    "rubricLines": [
+      {
+        "literalFileLine": "installer/__tests__/oracle-literal.sha256:1",
+        "oracleOutput": "git show c63e333:installer/install.mjs | sha256sum ⇒ 17a704c3… (conteudo) | sha256sum installer/__tests__/oracle-literal.sha256 ⇒ 9fa4530b… (arquivo)",
+        "authorization": "PRD.md §16 D4 (linha 315: 'Node congelado como oráculo') + ADR.md §2.4 itens 1-4",
+        "resultingLiteralFileSha256": "9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0"
+      },
+      {
+        "literalFileLine": "installer/__tests__/golden.spec.mjs:14-46, :48-60, :87-114, :118-170",
+        "oracleOutput": "node --test installer/__tests__/golden.spec.mjs ⇒ exit 0 (9 byte-equal + 2 parciais; 12/12 meta)",
+        "authorization": "PRD.md §16 D4/D5 (linhas 315-316) + ADR.md §3 item 4 (SI-1)",
+        "resultingLiteralFileSha256": "591a340a7e1aa1bcba13f0f8d09b0e5e1b63128e20ac26e2b29a55b8d4b264cd"
+      },
+      {
+        "literalFileLine": "installer/__tests__/eixos-stack.spec.mjs:3-9 (CR-1), :39-52 (EXPECTED_STACKS literal), :54-60",
+        "oracleOutput": "node --test installer/__tests__/eixos-stack.spec.mjs ⇒ exit 0 (tabela literal cobre exatamente os 12 presets)",
+        "authorization": "PRD.md §16 D5 (linha 316: congelar os 12 presets) + ADR.md §3 item 9 (SI-6)",
+        "resultingLiteralFileSha256": "33d7a715815d3df0924f6f6717277f909cc42ae52447570e8edd290a65710b35"
+      },
+      {
+        "literalFileLine": ".spec/archive/20261018-harness-eixos-stack/harness/wizard-react-transcript.txt:1 (5 marcadores)",
+        "oracleOutput": "grep -nE '\\[1/2\\]|\\[2/2\\]|\\[1-5\\]|\\(default: 1\\)|\\(q cancela\\)' …transcript.txt ⇒ 5 marcadores",
+        "authorization": "PRD.md §16 D4 (linha 315) + ADR.md §3 item 7 (SI-4)",
+        "resultingLiteralFileSha256": "fe1f918757f30afec7c43518b94fb19e341dca4a219d7f44848076d7ba165109"
+      },
+      {
+        "literalFileLine": "installer/contract-registry.mjs:5-13 (6 mapas + ALL digest)",
+        "oracleOutput": "REGISTRY_ALL_DIGEST = e13f11d51c840588654f10765241c445b88e3adb090285296dead1c6006afb00 (recalculado = constante; 6/6 digests OK)",
+        "authorization": "ADR.md §2.5 + PRD.md §16 D6 (linha 317: selo invariante)",
+        "resultingLiteralFileSha256": "e13f11d51c840588654f10765241c445b88e3adb090285296dead1c6006afb00"
+      }
+    ],
+    "protectedLiterals": [
+      {
+        "file": "installer/__tests__/golden.spec.mjs",
+        "sha256": "591a340a7e1aa1bcba13f0f8d09b0e5e1b63128e20ac26e2b29a55b8d4b264cd",
+        "unchangedInCycle": true
+      },
+      {
+        "file": "installer/__tests__/eixos-stack.spec.mjs",
+        "sha256": "33d7a715815d3df0924f6f6717277f909cc42ae52447570e8edd290a65710b35",
+        "unchangedInCycle": true
+      },
+      {
+        "file": ".spec/archive/20261018-harness-eixos-stack/harness/wizard-react-transcript.txt",
+        "sha256": "fe1f918757f30afec7c43518b94fb19e341dca4a219d7f44848076d7ba165109",
+        "unchangedInCycle": true
+      },
+      {
+        "file": "installer/contract-registry.mjs (REGISTRY_MAPS)",
+        "sha256All": "e13f11d51c840588654f10765241c445b88e3adb090285296dead1c6006afb00",
+        "maps": 6,
+        "digestsOk": 6
+      }
+    ],
+    "registryMapDigests": {
+      "AXIS_IDS": "02215342cba5c3541ffce75fdb27d122168135c1ef3273d776eb5e51345c31b2",
+      "SKILLS_BY_AXIS": "793e3eca8f6391b1f58291e07a2e1a643b277c66654c5c37fe9ea4923e24b931",
+      "SKILLS_COMMON": "6b9d86f7a54318cd094966c96f5e41c3279d1ebc113d9f8213cd29f4a1b39491",
+      "RULES_BY_AXIS": "8f823529157dfd54de3eab926d36d4636ec41f1b48a15e66ea9f745dcaf72e3b",
+      "RULES_COMMON": "66e4a89fe5849a502144d5eff183e3e9f2ed50fec41cb7223a2caf54594e305d",
+      "STACKS_FOR_EXCEPTIONS": "10d9874f4e916b70980319b45efae3e3d3266533fb2ffb1017c395f70c769c08"
+    },
+    "remeasureCommand": "cd /home/joao/fusionlf/wsProjeto/harness\nsha256sum installer/__tests__/oracle-literal.sha256\ngit show c63e333:installer/install.mjs | sha256sum\nsha256sum installer/__tests__/golden.spec.mjs installer/__tests__/eixos-stack.spec.mjs .spec/archive/20261018-harness-eixos-stack/harness/wizard-react-transcript.txt\nnode --input-type=module -e 'import crypto from \"node:crypto\";import {REGISTRY_MAPS,REGISTRY_ALL_DIGEST} from \"./installer/contract-registry.mjs\";const s=v=>crypto.createHash(\"sha256\").update(JSON.stringify(v)).digest(\"hex\");console.log(s(REGISTRY_MAPS),s(REGISTRY_MAPS)===REGISTRY_ALL_DIGEST)'\nnode installer/parity-oracle.mjs --run-parity\nnode --test \".opencode/plugins/__tests__/*.spec.mjs\"\nnode --test \"installer/__tests__/*.spec.mjs\"\nnode scripts/static-checks.mjs\nnode scripts/sdd-checks.mjs\nnode scripts/vendor-skills.mjs --check",
+    "ownerApproval": {
+      "pending": true,
+      "reviewer": "owner do harness",
+      "reviewTool": "cargo insta review (somente leitura do diff; cargo insta accept proibido como validacao)",
+      "signer": "orquestrador — ADR §2.4 item 3",
+      "signatureTarget": "harness/prd-installer-rust-adr-002.json",
+      "signatureFormatReference": "ADR.md §2.4 item 3 (linha de veredito: sha256 do arquivo + ISO-8601 + oraculo c63e333)",
+      "expectedShaToApprove": "9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0",
+      "ownerMustConfirm": [
+        "conteudo do literal 17a704c3… e byte-igual ao git show c63e333:installer/install.mjs",
+        "sha do ARQUIVO a assinar e 9fa4530b… (nao 17a704…)",
+        "literais protegidos e registry nao foram reescritos (shas acima)",
+        "9 byte-equal + 2 parciais e medicao; 12/12 e meta; SI-2/SI-3 not_measured",
+        "divergencia nao autorizada => rejeicao, nao ajuste de baseline"
+      ],
+      "expiration": [
+        "decisao PRD §16 mudar preset/eixo/comando/chave/default",
+        "c63e333 deixar de ser o oraculo pinado",
+        "sha256 do arquivo de literal divergir do assinado",
+        "arquivamento do PRD"
+      ],
+      "qaStatement": "QA NAO assinou. Nenhuma linha de assinatura foi escrita neste REPORT; literalProven permanece false ate o owner revisar e o orquestrador registrar o veredito."
+    }
+  },
+  "p4": {
+    "verdict": "PASSA_COM_RESSALVA — assinatura pendente",
+    "ressalva": "Substancia do portao P4 passa (5 suites verdes, 3 ataques sangram, 15 itens do ADR verificados). A assinatura do literal NAO foi dada: e rito do owner registrado pelo orquestrador (ADR §2.4 item 3 / §3 item 12). Sem ela o literal e unvalidated e a asserção dependente nao conta como prova. Verdict final fica pendente de HITL; NAO ha push.",
+    "branch": "adr/prd-installer-rust/02-oraculo-paridade-impl",
+    "base": "e6438c25",
+    "seal": "c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2",
+    "context": "Sem UI/DB/portas — H3 N/A. Nao ha e2eGreenfield: nenhum riskPath tocado; mcp chrome-devtools nao exercitado neste ciclo (sem frontend).",
+    "adrItems": [
+      {
+        "item": 1,
+        "verdict": "PASS",
+        "evidence": "predicado de externalidade: literal anterior/imutavel/legivel sem executar Rust; git diff exit 0 nos literais"
+      },
+      {
+        "item": 2,
+        "verdict": "PASS",
+        "evidence": "worktree detach c63e333: SHA full + status --porcelain vazio por corrida; assertOracleIdentity fail-closed"
+      },
+      {
+        "item": 3,
+        "verdict": "PASS",
+        "evidence": "literais nao reescritos: sha estaveis 591a340a/33d7a715/fe1f9187; git diff exit 0"
+      },
+      {
+        "item": 4,
+        "verdict": "PASS",
+        "evidence": "SI-1 medido/pass; golden 42/42; canonicalJson; 9 byte-equal + 2 parciais"
+      },
+      {
+        "item": 5,
+        "verdict": "PASS",
+        "evidence": "SI-2 mecanismo implementado (canonicalJson), status not_measured sem binario Rust (ADR-003)"
+      },
+      {
+        "item": 6,
+        "verdict": "PASS",
+        "evidence": "SI-3 mecanismo implementado (hash de conteudo + porcelain obrigatorio), status not_measured sem binario Rust"
+      },
+      {
+        "item": 7,
+        "verdict": "PASS",
+        "evidence": "SI-4 medido/pass: 5 marcadores do transcript arquivado fe1f9187"
+      },
+      {
+        "item": 8,
+        "verdict": "PASS",
+        "evidence": "SI-5 medido/pass: checks/manifest; V18/V19/V20 estaveis"
+      },
+      {
+        "item": 9,
+        "verdict": "PASS",
+        "evidence": "SI-6 medido/pass: git diff protegidos => 2 declarados ADR-001, 0 nao-declarados"
+      },
+      {
+        "item": 10,
+        "verdict": "PASS",
+        "evidence": "registry 6 mapas ALL e13f11d5… recalculado = constante; 6/6 OK; ataque A3 sangra"
+      },
+      {
+        "item": 11,
+        "verdict": "PASS",
+        "evidence": "insta so revisor: 0 *.snap.new; nenhum comando de aceitacao cega em codigo executavel"
+      },
+      {
+        "item": 12,
+        "verdict": "PENDENTE_OWNER",
+        "evidence": "rito NAO assinado por QA (F2, por desenho): isLiteralProven falso sem assinatura; mecanismo provado pelos ataques A1/A2 + controle positivo; rubrica entregue ao owner"
+      },
+      {
+        "item": 13,
+        "verdict": "PASS",
+        "evidence": "numero re-derivavel: 9+2 medido; 12/12 apenas rederiveCommand; claimsConciliados"
+      },
+      {
+        "item": 14,
+        "verdict": "PASS",
+        "evidence": "selo c904f1c5 intacto; commands.suiteFull byte-identico"
+      },
+      {
+        "item": 15,
+        "verdict": "PASS",
+        "evidence": "nenhum crate/preset/comando/default novo; escrita restrita a harness/ neste portao; sem push"
+      }
+    ],
+    "si": [
+      {
+        "id": "SI-1",
+        "status": "medido",
+        "pass": true
+      },
+      {
+        "id": "SI-2",
+        "status": "not_measured",
+        "pass": null,
+        "reason": "sem binario Rust — depende do motor do ADR-003 (nao existe neste ciclo)"
+      },
+      {
+        "id": "SI-3",
+        "status": "not_measured",
+        "pass": null,
+        "reason": "sem binario Rust — depende do motor do ADR-003 (nao existe neste ciclo)"
+      },
+      {
+        "id": "SI-4",
+        "status": "medido",
+        "pass": true
+      },
+      {
+        "id": "SI-5",
+        "status": "medido",
+        "pass": true
+      },
+      {
+        "id": "SI-6",
+        "status": "medido",
+        "pass": true
+      }
+    ],
+    "attacks": [
+      {
+        "id": "A1",
+        "description": "mutar 1 byte do arquivo de literal (17a704... -> 07a704...) na copia",
+        "expected": "literalProven=false / fail-closed",
+        "result": "FAIL_FECHADO",
+        "literal": "sha256 do arquivo mutado: 89030f6233944ec3951ace8cac9449f4324a068c38bed2bd61d2b76ff5e0ba7f (original 9fa4530b...) | isLiteralProven(verdict valido, sha do arquivo mutado) = false | runParity exit 1: 'oráculo c63e333: literal divergente da origem (07a704... != 17a704...) — drift do literal, sem revalidação por herança'",
+        "artifact": "/tmp/opencode/qa-p4-002/final/attack1.out",
+        "restored": true
+      },
+      {
+        "id": "A2",
+        "description": "assinar a sha da ORIGEM (17a704...) em vez da sha do ARQUIVO (9fa4530b...), na copia",
+        "expected": "literalProven=false",
+        "result": "FALSE",
+        "literal": "exit 0; JSON do driver: \"sourceSha256\": \"17a704c3...\", \"literalSha256\": \"9fa4530b...\", \"literalProven\": false; SI-1/SI-4/SI-5/SI-6 medido/pass; SI-2/SI-3 not_measured",
+        "artifact": "/tmp/opencode/qa-p4-002/final/attack2.out",
+        "restored": true
+      },
+      {
+        "id": "A3",
+        "description": "corromper 1 mapa da registry (AXIS_IDS.backend: rust -> rustX), na copia",
+        "expected": "FAIL",
+        "result": "FAIL",
+        "exitCode": 1,
+        "literal": "✖ 6 mapas com sha congelado (JSON.stringify, ordem de chaves preservada) — AssertionError: digest divergente: AXIS_IDS (actual a6da63339a61f..., expected 02215342cba5c...) | ✖ RF-07 / item 8 — registry congelado byte-idêntico ao oráculo | ℹ fail 2",
+        "artifact": "/tmp/opencode/qa-p4-002/final/attack3.out",
+        "restored": true
+      },
+      {
+        "id": "CTRL+",
+        "description": "controle positivo: assinar a sha CORRETA do arquivo (9fa4530b...) na copia",
+        "expected": "literalProven=true",
+        "result": "TRUE",
+        "literal": "exit 0; \"literalSha256\": \"9fa4530b...\", \"literalProven\": true — prova que os false de A1/A2 nao sao sempre-falso",
+        "artifact": "/tmp/opencode/qa-p4-002/final/positive.out",
+        "restored": true
+      }
+    ],
+    "claimsVsMeasured": {
+      "plugins": {
+        "claim": "540/540",
+        "measured": "540/540",
+        "match": true
+      },
+      "installer": {
+        "claim": "638/638",
+        "measured": "638/638",
+        "match": true
+      },
+      "static_sdd_vendor": {
+        "claim": "exit 0",
+        "measured": "0/0/0",
+        "match": true
+      },
+      "seal": {
+        "claim": "c904f1c5",
+        "measured": "c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2",
+        "match": true
+      },
+      "literal_file_sha": {
+        "claim": "9fa4530b…",
+        "measured": "9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0",
+        "match": true
+      },
+      "source_sha": {
+        "claim": "17a704c3…",
+        "measured": "17a704c37a018e1efd4fd7f4658d024c79e20cf874f73c5203a3a04ec3201a8d",
+        "match": true
+      },
+      "registry_all": {
+        "claim": "e13f11d5…",
+        "measured": "e13f11d51c840588654f10765241c445b88e3adb090285296dead1c6006afb00",
+        "match": true
+      },
+      "literalProven": {
+        "claim": "false (F2 por desenho)",
+        "measured": false,
+        "match": true
+      }
+    }
+  },
+  "test_results": {
+    "plugins": "540 passed / 0 failed / 0 skipped (exit 0)",
+    "installer": "638 passed / 0 failed / 0 skipped (exit 0)",
+    "static": "exit 0 (PRD-01/ADR-01/ADR-02 PASS)",
+    "sdd": "exit 0 (SDD-01/02/03 PASS)",
+    "vendor": "exit 0 (vendor-check OK)",
+    "parityDriver": "SI-1/SI-4/SI-5/SI-6 medido/pass; SI-2/SI-3 not_measured; literalProven=false"
+  },
+  "coverage_report": {
+    "adr002": "14/15 itens PASS; item 12 PENDENTE_OWNER (rito nao assinado)",
+    "si": "4 medidos (SI-1/4/5/6) + 2 not_measured declarados (SI-2/3, ADR-003)",
+    "literal": "rubrica completa com arquivo, sha do arquivo, sha da origem, literais protegidos, comando de re-medicao e aprovacao pendente"
+  },
+  "video_screenshots": {
+    "available": false,
+    "note": "N/A — sem UI/portas neste ciclo; H3 N/A (TUI em ADR-004). Evidencias textuais em /tmp/opencode/qa-p4-002/final/*.out; nenhuma screenshot de browser gerada."
+  },
+  "validationVerdict": "Veredito: validated literal 9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0 2026-11-16T17:00:53.563Z c63e333",
+  "ritual": {
+    "aprovado_por": "owner",
+    "aprovado_em": "2026-11-16T17:00:53.563Z",
+    "registrado_por": "orchestrator",
+    "sha_literal": "9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0",
+    "sha_origem": "17a704c37a018e1efd4fd7f4658d024c79e20cf874f73c5203a3a04ec3201a8d",
+    "oraculo": "c63e333",
+    "expira_em": "mudanca PRD §16 | troca de oraculo | divergencia de sha | arquivamento"
+  }
+}
