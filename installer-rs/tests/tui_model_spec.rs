@@ -44,9 +44,13 @@ fn gotchas_byte_level_preservados_sem_ansi_sem_ramo_novo() {
 
 #[test]
 fn modulo_de_tela_nao_tem_primitivas_de_escrita() {
-    let fontes: [(&str, &str); 3] = [
+    let fontes: [(&str, &str); 7] = [
         ("tui/model.rs", include_str!("../src/tui/model.rs")),
         ("tui/mod.rs", include_str!("../src/tui/mod.rs")),
+        ("tui/navigation.rs", include_str!("../src/tui/navigation.rs")),
+        ("tui/confirm.rs", include_str!("../src/tui/confirm.rs")),
+        ("tui/secret.rs", include_str!("../src/tui/secret.rs")),
+        ("tui/cleanup.rs", include_str!("../src/tui/cleanup.rs")),
         ("entry/wizard.rs", include_str!("../src/entry/wizard.rs")),
     ];
     let primitivas = [

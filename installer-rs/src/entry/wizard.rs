@@ -5,6 +5,7 @@ use crate::contract::Request;
 use crate::entry::support as s;
 use crate::error::EngineError;
 use crate::tui::model::{total_campos, TELAS};
+use crate::tui::{confirm, navigation};
 use serde_json::{json, Value};
 
 /// Catálogo declarativo das 10 telas × 5 campos (ADR-004 §2.1). Somente
@@ -24,15 +25,37 @@ pub fn run(req: &Request) -> Result<Value, EngineError> {
     }), &req.answers, &target))?;
     let t = pf["target"].as_str().unwrap_or(&target).to_string();
 
-    if s::bool_arg(req, "abort") || req.args.get("abortToken").and_then(|v| v.as_str()) == Some("q") {
-        return Err(EngineError::new("USER_ABORT", "cancelado pelo usuario no wizard", "aborto", "rerode para continuar"));
-    }
-    if s::bool_arg(req, "noStdin") {
-        return Err(EngineError::new("NO_STDIN", "stdin fechado (EOF) no wizard", "sem fonte de respostas", "rode interativo ou passe --answers-file"));
-    }
-    if s::bool_arg(req, "dryRun") {
-        let plan: Vec<Value> = Vec::new();
-        return Ok(s::dry_result(&t, &req.answers, &plan));
+    let abort = s::bool_arg(req, "abort")
+        || req.args.get("abortToken").and_then(|v| v.as_str()) == Some("q");
+    let no_stdin = s::bool_arg(req, "noStdin");
+    let decisao = confirm::decidir(
+        s::bool_arg(req, "yes"),
+        s::bool_arg(req, "dryRun"),
+        abort || no_stdin,
+        s::bool_arg(req, "flaggedOpen"),
+        s::bool_arg(req, "missingIncoming"),
+    );
+    let ctx = navigation::Contexto {
+        aborto: decisao == confirm::Confirmacao::Abortado,
+        dry_run: decisao == confirm::Confirmacao::DryRun,
+        ..navigation::Contexto::default()
+    };
+    let _destino = navigation::proxima(navigation::Ecra::W0, &ctx);
+    match decisao {
+        confirm::Confirmacao::Abortado => {
+            if no_stdin && !abort {
+                return Err(EngineError::new("NO_STDIN", "stdin fechado (EOF) no wizard", "sem fonte de respostas", "rode interativo ou passe --answers-file"));
+            }
+            return Err(EngineError::new("USER_ABORT", "cancelado pelo usuario no wizard", "aborto", "rerode para continuar"));
+        }
+        confirm::Confirmacao::MissingIncoming => {
+            return Err(EngineError::new("MISSING_INCOMING", "conteudo de entrada ausente no wizard", "arquivo de entrada missing", "fornea o conteudo de entrada antes de aplicar"));
+        }
+        confirm::Confirmacao::DryRun => {
+            let plan: Vec<Value> = Vec::new();
+            return Ok(s::dry_result(&t, &req.answers, &plan));
+        }
+        confirm::Confirmacao::Confirmado => {}
     }
 
     let out = crate::entry::main::run(req)?;

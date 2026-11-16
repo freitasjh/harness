@@ -3,11 +3,13 @@
   "demand": "prd-installer-rust-adr-004-batch1",
   "agent": "developer-engineer",
   "phase": "Testing",
-  "gitSha": "a63a2d533e75abbe0022fc877e8eedf30cb540b4",
-  "batch": 1,
+  "gitSha": "a4b795ed9f9a83448bb48c627509a1be1f4316e5",
+  "batch": 2,
   "tasks": [
-    "TUI-01",
-    "VAL-01"
+    "TUI-02",
+    "TUI-03",
+    "TUI-04",
+    "TUI-05"
   ],
   "branch": "adr/prd-installer-rust/04-tui-dez-telas-impl",
   "oraculo": "c63e333",
@@ -167,7 +169,8 @@
     "channelCoverage": "pending_VAL-02"
   },
   "brainStore": [
-    "regras/projetos/regras/projetos/projeto/harness/adr-004-batch1-guarda-dente-transcript-travado"
+    "regras/projetos/regras/projetos/projeto/harness/adr-004-batch1-guarda-dente-transcript-travado",
+    "regras/projetos/projetos/harness/adr-004-batch2-nav-segredo-cleanup"
   ],
   "cleanup": {
     "ports": [],
@@ -187,5 +190,102 @@
   },
   "evidence_notes": [
     "durationMs=0 e durationMsMeasured=false: tempo nao capturado nesta execucao; campo obrigatorio pelo schema, nao e medicao"
-  ]
+  ],
+  "batch2": {
+    "commandEvidence": [
+      {
+        "cmd": "bash /tmp/opencode/adr004-guard-proof.sh (RF-05(b) 3 caminhos)",
+        "exitCode": 0,
+        "durationMs": 0,
+        "stdoutHash": "sha256:304c23c263f05a4e6311d0df4e6cc1bb14e61d5ba5d38dd5592b78fe0393c23c",
+        "durationMsBasis": "nao capturado nesta execucao",
+        "durationMsMeasured": false
+      },
+      {
+        "cmd": "cargo test --manifest-path installer-rs/Cargo.toml",
+        "exitCode": 0,
+        "durationMs": 0,
+        "stdoutHash": "sha256:85dd206390fcf1ce8cf90d298c4e1ec893aee90506dfa84c6564f0fb4b85e5a8",
+        "durationMsBasis": "nao capturado nesta execucao",
+        "durationMsMeasured": false
+      },
+      {
+        "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
+        "exitCode": 0,
+        "durationMs": 0,
+        "stdoutHash": "sha256:c8367a82961fd3fa0835f33110f8539450efd2ff10a8173d4ce48002f12f5f1d",
+        "durationMsBasis": "nao capturado nesta execucao",
+        "durationMsMeasured": false
+      },
+      {
+        "cmd": "node --test \"installer/__tests__/*.spec.mjs\"",
+        "exitCode": 0,
+        "durationMs": 0,
+        "stdoutHash": "sha256:2f35820e7ae611f4c70910019b3a3e5349187bbd91085a1b923c5bbb3424ae4c",
+        "durationMsBasis": "nao capturado nesta execucao",
+        "durationMsMeasured": false
+      },
+      {
+        "cmd": "node scripts/static-checks.mjs",
+        "exitCode": 0,
+        "durationMs": 0,
+        "stdoutHash": "sha256:4a1e734a85037a1e26e20ea8531b7b4e64cf76d4b1fd7890b3b62529b7652ad5",
+        "durationMsBasis": "nao capturado nesta execucao",
+        "durationMsMeasured": false
+      },
+      {
+        "cmd": "node scripts/sdd-checks.mjs",
+        "exitCode": 0,
+        "durationMs": 0,
+        "stdoutHash": "sha256:1836d855cc8653106f792eb990cb9f6088b34a85e9725fc45fe504e0c2fbc7df",
+        "durationMsBasis": "nao capturado nesta execucao",
+        "durationMsMeasured": false
+      },
+      {
+        "cmd": "node scripts/vendor-skills.mjs --check",
+        "exitCode": 0,
+        "durationMs": 0,
+        "stdoutHash": "sha256:e5e528c52d79fceaa1be828bd89116aa6e0be73294d2e99d39c4febe99e84516",
+        "durationMsBasis": "nao capturado nesta execucao",
+        "durationMsMeasured": false
+      },
+      {
+        "cmd": "INSTALLER_BIN=installer-rs/target/debug/harness-installer node installer/parity-oracle.mjs --run-parity",
+        "exitCode": 0,
+        "durationMs": 0,
+        "stdoutHash": "sha256:624b8d71d5f78a98669c53a26cf842267b9dd474c97eb8c0f55015b3ba81f0c6",
+        "durationMsBasis": "nao capturado nesta execucao",
+        "durationMsMeasured": false
+      }
+    ],
+    "guard3": {
+      "exits": [
+        0,
+        1,
+        1
+      ],
+      "transcriptBytes": 16336,
+      "seal": "c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2"
+    },
+    "treeHash": {
+      "before": "a41807315bd6ae3aa12c158c9e22080fcf70badd65807ab9bd2fae4533bf6a73",
+      "afterAbort": "a41807315bd6ae3aa12c158c9e22080fcf70badd65807ab9bd2fae4533bf6a73",
+      "afterDryRun": "a41807315bd6ae3aa12c158c9e22080fcf70badd65807ab9bd2fae4533bf6a73",
+      "abortExit": 1,
+      "dryRunExit": 0
+    },
+    "pty": {
+      "term": "script -qec \"python3 /tmp/opencode/adr004-pty-proof.py\" /dev/null",
+      "termEvidence": "DURING_ECHO=OFF; RETURNCODE=-15; WIFSIGNALED=sim; AFTER_ECHO=ON; SEGREDO_STDOUT_COUNT=0; SEGREDO_STDERR_COUNT=0; NOVA_LEITURA_VISIVEL=ECO_VISIVEL",
+      "secret": "printf SEGREDO_PROVA | script -qec \"python3 /tmp/opencode/adr004-pty-secret.py\" /dev/null",
+      "secretEvidence": "CMDLINE sem segredo; SECRETO_STDOUT_COUNT=0; SECRETO_STDERR_COUNT=0; REDACTED_OK=True",
+      "caveat": "eco do proprio script no typescript nao e stdout/stderr do binario; estes foram redirecionados a arquivos e medidos"
+    },
+    "evaluation": {
+      "telas": "nav 4 ramos exatos (ramos_medidos.len=4), 0 transicao nova, verdict nunca gate",
+      "negocio": "W5 aborto/flagged-open 0 writes; dry-run applied:false/checks skipped; upgrade flag -> collisions e continua; --yes pula",
+      "logica": "segredo can_no_echo/tty+raw, q -> USER_ABORT, sanitizeLog token=[REDACTED], serializeSkips sem deployToken; cleanup idempotente registrado antes da leitura",
+      "perf": "N/A — funcoes puras e FFI de terminal; nenhum I/O em src/tui/ alem da leitura protegida"
+    }
+  }
 }
