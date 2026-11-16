@@ -3,7 +3,7 @@
   "demand": "prd-installer-rust-adr-003",
   "agent": "developer-engineer",
   "phase": "Testing",
-  "gitSha": "f18d528c4a70bb879e1527c1d3400dd89c740e31",
+  "gitSha": "adea155d46a712f180ac52bea210a4c6a7dfcd83",
   "commands": [
     {
       "cmd": "cargo test --manifest-path installer-rs/Cargo.toml",
@@ -15,7 +15,7 @@
       "cmd": "node installer-rs/tests/prova-engine.mjs",
       "exitCode": 0,
       "durationMs": 0,
-      "stdoutHash": "sha256:f98e1b9bd70b8019b15dfc44cc70e59fd56cebf79ad29f8b32b2f6978ee4b886"
+      "stdoutHash": "sha256:d92dd1a8d64d0df1a38bc11bf3c916f6b3114c4e786548ad31b91017a1de6b2a"
     },
     {
       "cmd": "INSTALLER_BIN=installer-rs/target/debug/harness-installer node installer/parity-oracle.mjs --run-parity",
@@ -155,138 +155,184 @@
       "op": "preflight",
       "oracle": "preflight.spec.mjs IN-01 S1/S2/S3 + c63e333",
       "command": "node --test installer/__tests__/preflight.spec.mjs && prova(preflight)",
+      "sideShaOracle": "5d8e7460c0f58d4d733a0b41804bb074dd254d62916ddc87d182a680542150a8",
+      "sideShaBin": "5d8e7460c0f58d4d733a0b41804bb074dd254d62916ddc87d182a680542150a8",
       "mutation": "1 byte em sha256:5d8e7460c0f58d4d733a0b41804bb074dd254d62916ddc87d182a680542150a8 ⇒ reprova (5d8e7460c0f5… → f7a962bd65a4…)"
     },
     {
       "op": "inventory",
       "oracle": "preflight.spec.mjs:37-43 + c63e333",
       "command": "node --test installer/__tests__/preflight.spec.mjs && prova(inventory)",
+      "sideShaOracle": "54178b21e2b86e49313fa91080033980544565c55af33ab60490493666bcfb95",
+      "sideShaBin": "54178b21e2b86e49313fa91080033980544565c55af33ab60490493666bcfb95",
       "mutation": "1 byte em sha256:54178b21e2b86e49313fa91080033980544565c55af33ab60490493666bcfb95 ⇒ reprova (54178b21e2b8… → 91244544a93a…)"
     },
     {
       "op": "backup",
       "oracle": "preflight.spec.mjs:68-75 + suite.spec.mjs:44-53",
       "command": "node --test installer/__tests__/preflight.spec.mjs installer/__tests__/suite.spec.mjs && prova(backup)",
+      "sideShaOracle": "90b9a12bab85257c8e9b73661c30357caf1039083234da533627fd1abea0ca92",
+      "sideShaBin": "90b9a12bab85257c8e9b73661c30357caf1039083234da533627fd1abea0ca92",
       "mutation": "1 byte em sha256:90b9a12bab85257c8e9b73661c30357caf1039083234da533627fd1abea0ca92 ⇒ reprova (90b9a12bab85… → 595e9f8187e3…)"
     },
     {
       "op": "resolveBackupDir",
       "oracle": "doctor.spec.mjs:136-180 (INS-13)",
       "command": "node --test installer/__tests__/doctor.spec.mjs && prova(resolveBackupDir)",
+      "sideShaOracle": "6bf730528a69d6f3e463667bed5f018f1ec445d17f762f526ca6e8935dc49939",
+      "sideShaBin": "6bf730528a69d6f3e463667bed5f018f1ec445d17f762f526ca6e8935dc49939",
       "mutation": "1 byte em sha256:6bf730528a69d6f3e463667bed5f018f1ec445d17f762f526ca6e8935dc49939 ⇒ reprova (6bf730528a69… → 7043d22d38d7…)"
     },
     {
       "op": "loadAnswersFile",
       "oracle": "suite.spec.mjs + golden.spec.mjs",
       "command": "node --test installer/__tests__/suite.spec.mjs installer/__tests__/golden.spec.mjs && prova(loadAnswersFile)",
+      "sideShaOracle": "17958d7c104945b72bf0b9792223f24b41aff15313ba55dfe4e544b9d4e9951e",
+      "sideShaBin": "17958d7c104945b72bf0b9792223f24b41aff15313ba55dfe4e544b9d4e9951e",
       "mutation": "1 byte em sha256:17958d7c104945b72bf0b9792223f24b41aff15313ba55dfe4e544b9d4e9951e ⇒ reprova (17958d7c1049… → 87599362baa1…)"
     },
     {
       "op": "collectAnswers",
       "oracle": "suite.spec.mjs:161-195 (INS-01) + qa.spec.mjs",
       "command": "node --test installer/__tests__/suite.spec.mjs && prova(collectAnswers)",
+      "sideShaOracle": "18eb376ee7f675e58f5861504feba7a39ee7e83a924fbd070315a1b0ea81965d",
+      "sideShaBin": "18eb376ee7f675e58f5861504feba7a39ee7e83a924fbd070315a1b0ea81965d",
       "mutation": "1 byte em sha256:18eb376ee7f675e58f5861504feba7a39ee7e83a924fbd070315a1b0ea81965d ⇒ reprova (18eb376ee7f6… → 53cd2a96a621…)"
     },
     {
       "op": "generateConfig",
       "oracle": "golden.spec.mjs:48-60,87-170 (SI-1) + generate.spec.mjs",
       "command": "node --test installer/__tests__/golden.spec.mjs installer/__tests__/generate.spec.mjs && prova(generateConfig)",
+      "sideShaOracle": "540033f43ffa82e35f5f3abb4fdb45575d3b56f76ab9599649be7c62b373c69c",
+      "sideShaBin": "540033f43ffa82e35f5f3abb4fdb45575d3b56f76ab9599649be7c62b373c69c",
       "mutation": "1 byte em sha256:540033f43ffa82e35f5f3abb4fdb45575d3b56f76ab9599649be7c62b373c69c ⇒ reprova (540033f43ffa… → fd2a0c04fcd4…)"
     },
     {
       "op": "collectIncoming",
       "oracle": "eixos-stack.spec.mjs:39-60 + harness-eixos-stack-p2.json:159 (SI-2)",
       "command": "node --test installer/__tests__/eixos-stack.spec.mjs && prova(collectIncoming)",
+      "sideShaOracle": "68faa5af88405f5949665c739ad9c4e675eb0cbb072f8bedad829aa08426ab2e",
+      "sideShaBin": "68faa5af88405f5949665c739ad9c4e675eb0cbb072f8bedad829aa08426ab2e",
       "mutation": "1 byte em sha256:68faa5af88405f5949665c739ad9c4e675eb0cbb072f8bedad829aa08426ab2e ⇒ reprova (68faa5af8840… → 9d9f79740f19…)"
     },
     {
       "op": "planMerge",
       "oracle": "merge-manifest.spec.mjs:33-125 + suite.spec.mjs:54-61",
       "command": "node --test installer/__tests__/merge-manifest.spec.mjs installer/__tests__/suite.spec.mjs && prova(planMerge)",
+      "sideShaOracle": "8ff96f2c7c22485195cc112757cfe9b2722dc0980e2fd178c64686a67fbeb1d0",
+      "sideShaBin": "8ff96f2c7c22485195cc112757cfe9b2722dc0980e2fd178c64686a67fbeb1d0",
       "mutation": "1 byte em sha256:8ff96f2c7c22485195cc112757cfe9b2722dc0980e2fd178c64686a67fbeb1d0 ⇒ reprova (8ff96f2c7c22… → c0c2f3b02324…)"
     },
     {
       "op": "applyMerge",
       "oracle": "merge-manifest.spec.mjs:33-63,117-124 + suite.spec.mjs:115-131",
       "command": "node --test installer/__tests__/merge-manifest.spec.mjs installer/__tests__/suite.spec.mjs && prova(applyMerge)",
+      "sideShaOracle": "1cf0a97eef3821328f11088cc884818cd539310c3f156f4ee249ebfcac1285c8",
+      "sideShaBin": "1cf0a97eef3821328f11088cc884818cd539310c3f156f4ee249ebfcac1285c8",
       "mutation": "1 byte em sha256:1cf0a97eef3821328f11088cc884818cd539310c3f156f4ee249ebfcac1285c8 ⇒ reprova (1cf0a97eef38… → 0435bd8754b2…)"
     },
     {
       "op": "buildManifest",
       "oracle": "merge-manifest.spec.mjs:34-63 (FU-21, schema v1)",
       "command": "node --test installer/__tests__/merge-manifest.spec.mjs && prova(buildManifest)",
-      "mutation": "1 byte em sha256:4b3ed0ea6730aa3954ca89d6bd5e31aeb125fb6676d7596bd897eb8509d9637d ⇒ reprova (4b3ed0ea6730… → 2147b9bd6b5a…)"
+      "sideShaOracle": "c7f6fd1ae538abf66cbab5e1de760d9078b29b1929b11bc13174328be0a60254",
+      "sideShaBin": "c7f6fd1ae538abf66cbab5e1de760d9078b29b1929b11bc13174328be0a60254",
+      "mutation": "1 byte em sha256:4e1531aab01508b4dcbc5a0aa178fa5fc59c70e6b3f130433c8e5911849fffdc ⇒ reprova (4e1531aab015… → 7b3a3b17b55b…)"
     },
     {
       "op": "writeManifest",
       "oracle": "suite.spec.mjs:69-81 (I4)",
       "command": "node --test installer/__tests__/suite.spec.mjs && prova(writeManifest)",
+      "sideShaOracle": "1ff9c3c88ffce83e922918f176ca72cf2fc783ffa8fd4b60b710eb713f0659ec",
+      "sideShaBin": "1ff9c3c88ffce83e922918f176ca72cf2fc783ffa8fd4b60b710eb713f0659ec",
       "mutation": "1 byte em sha256:1ff9c3c88ffce83e922918f176ca72cf2fc783ffa8fd4b60b710eb713f0659ec ⇒ reprova (1ff9c3c88ffc… → 4b6721a49df8…)"
     },
     {
       "op": "requireVerifiedBackup",
       "oracle": "checks.spec.mjs:329-351 (FU-20)",
       "command": "node --test installer/__tests__/checks.spec.mjs && prova(requireVerifiedBackup)",
+      "sideShaOracle": "3ca2b6fcab30784e864ec018bc28b1c022e29dd5ff5f948497235896844378dd",
+      "sideShaBin": "3ca2b6fcab30784e864ec018bc28b1c022e29dd5ff5f948497235896844378dd",
       "mutation": "1 byte em sha256:3ca2b6fcab30784e864ec018bc28b1c022e29dd5ff5f948497235896844378dd ⇒ reprova (3ca2b6fcab30… → e5b8a4581838…)"
     },
     {
       "op": "runChecks",
       "oracle": "checks.spec.mjs:44-325 (IN-05/INS-02/FU-32/FU-33)",
       "command": "node --test installer/__tests__/checks.spec.mjs && prova(runChecks)",
+      "sideShaOracle": "56095e3ddc182d19a23877ed0620246a0f6e653d0b311ec636dba83f777f025c",
+      "sideShaBin": "56095e3ddc182d19a23877ed0620246a0f6e653d0b311ec636dba83f777f025c",
       "mutation": "1 byte em sha256:56095e3ddc182d19a23877ed0620246a0f6e653d0b311ec636dba83f777f025c ⇒ reprova (56095e3ddc18… → fdef524b0b93…)"
     },
     {
       "op": "mergeOpencodeJson",
       "oracle": "merge-v2-only.spec.mjs:113-260 (T1..T8)",
       "command": "node --test installer/__tests__/merge-v2-only.spec.mjs && prova(mergeOpencodeJson)",
+      "sideShaOracle": "c7f8c0a8a998150d9dc276abc43ec3d021df969d6866cae736e9fa132626cd80",
+      "sideShaBin": "c7f8c0a8a998150d9dc276abc43ec3d021df969d6866cae736e9fa132626cd80",
       "mutation": "1 byte em sha256:c7f8c0a8a998150d9dc276abc43ec3d021df969d6866cae736e9fa132626cd80 ⇒ reprova (c7f8c0a8a998… → 2f38018770f8…)"
     },
     {
       "op": "mergeAgentFile",
       "oracle": "merge-manifest.spec.mjs:85-125 (IN-04 S3)",
       "command": "node --test installer/__tests__/merge-manifest.spec.mjs && prova(mergeAgentFile)",
+      "sideShaOracle": "684201ff638ba09b22a69582a8273542e8d163c40a4e88a082baf6b9defad15d",
+      "sideShaBin": "684201ff638ba09b22a69582a8273542e8d163c40a4e88a082baf6b9defad15d",
       "mutation": "1 byte em sha256:684201ff638ba09b22a69582a8273542e8d163c40a4e88a082baf6b9defad15d ⇒ reprova (684201ff638b… → 25d8aaae5672…)"
     },
     {
       "op": "main",
       "oracle": "installer-upgrade-regression.spec.mjs:110-145,286-308 + suite.spec.mjs:337-370",
       "command": "node --test installer/__tests__/installer-upgrade-regression.spec.mjs installer/__tests__/suite.spec.mjs && prova(main)",
+      "sideShaOracle": "367bc8be77938f88affe8666311f44bc7358c314479c90ebca769b18174707b1",
+      "sideShaBin": "367bc8be77938f88affe8666311f44bc7358c314479c90ebca769b18174707b1",
       "mutation": "1 byte em sha256:367bc8be77938f88affe8666311f44bc7358c314479c90ebca769b18174707b1 ⇒ reprova (367bc8be7793… → 09a8bd63cd2d…)"
     },
     {
       "op": "runDoctor",
       "oracle": "doctor.spec.mjs:46-135 (INS-11/12) + :222-241 (EX-BE-05)",
       "command": "node --test installer/__tests__/doctor.spec.mjs && prova(runDoctor)",
+      "sideShaOracle": "e69fdf72dca7b8ecd76b34148a4f39fac3f47c3cba46d25803b42c0f4834e6a5",
+      "sideShaBin": "e69fdf72dca7b8ecd76b34148a4f39fac3f47c3cba46d25803b42c0f4834e6a5",
       "mutation": "1 byte em sha256:e69fdf72dca7b8ecd76b34148a4f39fac3f47c3cba46d25803b42c0f4834e6a5 ⇒ reprova (e69fdf72dca7… → 639c79703a45…)"
     },
     {
       "op": "runInit",
       "oracle": "suite.spec.mjs:268-365 (INS-04) + installer-upgrade-regression.spec.mjs:250-285",
       "command": "node --test installer/__tests__/suite.spec.mjs installer/__tests__/installer-upgrade-regression.spec.mjs && prova(runInit)",
+      "sideShaOracle": "367bc8be77938f88affe8666311f44bc7358c314479c90ebca769b18174707b1",
+      "sideShaBin": "367bc8be77938f88affe8666311f44bc7358c314479c90ebca769b18174707b1",
       "mutation": "1 byte em sha256:367bc8be77938f88affe8666311f44bc7358c314479c90ebca769b18174707b1 ⇒ reprova (367bc8be7793… → 09a8bd63cd2d…)"
     },
     {
       "op": "runUpgrade",
       "oracle": "installer-upgrade-regression.spec.mjs:146-248 (BF-02/BF-02b) + doctor.spec.mjs:222",
       "command": "node --test installer/__tests__/installer-upgrade-regression.spec.mjs && prova(runUpgrade)",
+      "sideShaOracle": "0f15dc23249e5ae41849d7f070b24f8aea5d052fe3d20972b004e8b9e07349ba",
+      "sideShaBin": "0f15dc23249e5ae41849d7f070b24f8aea5d052fe3d20972b004e8b9e07349ba",
       "mutation": "1 byte em sha256:0f15dc23249e5ae41849d7f070b24f8aea5d052fe3d20972b004e8b9e07349ba ⇒ reprova (0f15dc23249e… → f7b2502cf442…)"
     },
     {
       "op": "runCli",
       "oracle": "installer-upgrade-regression.spec.mjs:309-334 (BF-03) + cli.spec.mjs",
       "command": "node --test installer/__tests__/installer-upgrade-regression.spec.mjs installer/__tests__/cli.spec.mjs && prova(runCli)",
+      "sideShaOracle": "842a147667a236b842dc3ca75cdc9cc622a62faa8782e751399899bb325e12d6",
+      "sideShaBin": "842a147667a236b842dc3ca75cdc9cc622a62faa8782e751399899bb325e12d6",
       "mutation": "1 byte em sha256:842a147667a236b842dc3ca75cdc9cc622a62faa8782e751399899bb325e12d6 ⇒ reprova (842a147667a2… → c57835038ba2…)"
     },
     {
       "op": "parseArgs",
       "oracle": "cli.spec.mjs + install.mjs:2741-2754 (INS-19)",
       "command": "node --test installer/__tests__/cli.spec.mjs && prova(parseArgs)",
+      "sideShaOracle": "bffeb60cb68b3513bb5d7abd8b9e12c94d0beaa15466e20b533aa02da1c8ca50",
+      "sideShaBin": "bffeb60cb68b3513bb5d7abd8b9e12c94d0beaa15466e20b533aa02da1c8ca50",
       "mutation": "1 byte em sha256:bffeb60cb68b3513bb5d7abd8b9e12c94d0beaa15466e20b533aa02da1c8ca50 ⇒ reprova (bffeb60cb68b… → 2ceec5d37f26…)"
     },
     {
       "op": "runWizard",
       "oracle": "wizard.spec.mjs + transcript SI-4 (ADR-002)",
       "command": "node --test installer/__tests__/wizard.spec.mjs && prova(runWizard)",
+      "sideShaOracle": "973d5d076a7371ac8f35f99056e360edffe28003f20d887628ffb596a42668d2",
+      "sideShaBin": "973d5d076a7371ac8f35f99056e360edffe28003f20d887628ffb596a42668d2",
       "mutation": "1 byte em sha256:973d5d076a7371ac8f35f99056e360edffe28003f20d887628ffb596a42668d2 ⇒ reprova (973d5d076a73… → 457a7d11ef5b…)"
     }
   ],
@@ -306,6 +352,10 @@
         "exitCodeMatch": true,
         "oracleExitMatch": true,
         "allMatch": true
+      },
+      "sideSha": {
+        "oracle": "5d8e7460c0f58d4d733a0b41804bb074dd254d62916ddc87d182a680542150a8",
+        "bin": "5d8e7460c0f58d4d733a0b41804bb074dd254d62916ddc87d182a680542150a8"
       },
       "mutation": {
         "op": "preflight",
@@ -332,6 +382,10 @@
         "oracleExitMatch": true,
         "allMatch": true
       },
+      "sideSha": {
+        "oracle": "54178b21e2b86e49313fa91080033980544565c55af33ab60490493666bcfb95",
+        "bin": "54178b21e2b86e49313fa91080033980544565c55af33ab60490493666bcfb95"
+      },
       "mutation": {
         "op": "inventory",
         "rejected": true,
@@ -356,6 +410,10 @@
         "exitCodeMatch": true,
         "oracleExitMatch": true,
         "allMatch": true
+      },
+      "sideSha": {
+        "oracle": "90b9a12bab85257c8e9b73661c30357caf1039083234da533627fd1abea0ca92",
+        "bin": "90b9a12bab85257c8e9b73661c30357caf1039083234da533627fd1abea0ca92"
       },
       "mutation": {
         "op": "backup",
@@ -382,6 +440,10 @@
         "oracleExitMatch": true,
         "allMatch": true
       },
+      "sideSha": {
+        "oracle": "6bf730528a69d6f3e463667bed5f018f1ec445d17f762f526ca6e8935dc49939",
+        "bin": "6bf730528a69d6f3e463667bed5f018f1ec445d17f762f526ca6e8935dc49939"
+      },
       "mutation": {
         "op": "resolveBackupDir",
         "rejected": true,
@@ -406,6 +468,10 @@
         "exitCodeMatch": true,
         "oracleExitMatch": true,
         "allMatch": true
+      },
+      "sideSha": {
+        "oracle": "17958d7c104945b72bf0b9792223f24b41aff15313ba55dfe4e544b9d4e9951e",
+        "bin": "17958d7c104945b72bf0b9792223f24b41aff15313ba55dfe4e544b9d4e9951e"
       },
       "mutation": {
         "op": "loadAnswersFile",
@@ -432,6 +498,10 @@
         "oracleExitMatch": true,
         "allMatch": true
       },
+      "sideSha": {
+        "oracle": "18eb376ee7f675e58f5861504feba7a39ee7e83a924fbd070315a1b0ea81965d",
+        "bin": "18eb376ee7f675e58f5861504feba7a39ee7e83a924fbd070315a1b0ea81965d"
+      },
       "mutation": {
         "op": "collectAnswers",
         "rejected": true,
@@ -456,6 +526,10 @@
         "exitCodeMatch": true,
         "oracleExitMatch": true,
         "allMatch": true
+      },
+      "sideSha": {
+        "oracle": "540033f43ffa82e35f5f3abb4fdb45575d3b56f76ab9599649be7c62b373c69c",
+        "bin": "540033f43ffa82e35f5f3abb4fdb45575d3b56f76ab9599649be7c62b373c69c"
       },
       "mutation": {
         "op": "generateConfig",
@@ -482,6 +556,10 @@
         "oracleExitMatch": true,
         "allMatch": true
       },
+      "sideSha": {
+        "oracle": "68faa5af88405f5949665c739ad9c4e675eb0cbb072f8bedad829aa08426ab2e",
+        "bin": "68faa5af88405f5949665c739ad9c4e675eb0cbb072f8bedad829aa08426ab2e"
+      },
       "mutation": {
         "op": "collectIncoming",
         "rejected": true,
@@ -506,6 +584,10 @@
         "exitCodeMatch": true,
         "oracleExitMatch": true,
         "allMatch": true
+      },
+      "sideSha": {
+        "oracle": "8ff96f2c7c22485195cc112757cfe9b2722dc0980e2fd178c64686a67fbeb1d0",
+        "bin": "8ff96f2c7c22485195cc112757cfe9b2722dc0980e2fd178c64686a67fbeb1d0"
       },
       "mutation": {
         "op": "planMerge",
@@ -532,6 +614,10 @@
         "oracleExitMatch": true,
         "allMatch": true
       },
+      "sideSha": {
+        "oracle": "1cf0a97eef3821328f11088cc884818cd539310c3f156f4ee249ebfcac1285c8",
+        "bin": "1cf0a97eef3821328f11088cc884818cd539310c3f156f4ee249ebfcac1285c8"
+      },
       "mutation": {
         "op": "applyMerge",
         "rejected": true,
@@ -557,12 +643,16 @@
         "oracleExitMatch": true,
         "allMatch": true
       },
+      "sideSha": {
+        "oracle": "c7f6fd1ae538abf66cbab5e1de760d9078b29b1929b11bc13174328be0a60254",
+        "bin": "c7f6fd1ae538abf66cbab5e1de760d9078b29b1929b11bc13174328be0a60254"
+      },
       "mutation": {
         "op": "buildManifest",
         "rejected": true,
-        "path": "sha256:4b3ed0ea6730aa3954ca89d6bd5e31aeb125fb6676d7596bd897eb8509d9637d",
-        "original": "4b3ed0ea6730aa3954ca89d6bd5e31aeb125fb6676d7596bd897eb8509d9637d",
-        "mutated": "2147b9bd6b5abc48317c83a3f2068ef1c5fad5abcf9b51122a273b3c31eae6fa"
+        "path": "sha256:4e1531aab01508b4dcbc5a0aa178fa5fc59c70e6b3f130433c8e5911849fffdc",
+        "original": "4e1531aab01508b4dcbc5a0aa178fa5fc59c70e6b3f130433c8e5911849fffdc",
+        "mutated": "7b3a3b17b55be2d82b9a6b87d8865868428eaca5feb2ce209aa75be72a4fb1c0"
       },
       "normalized": [
         "date"
@@ -583,6 +673,10 @@
         "exitCodeMatch": true,
         "oracleExitMatch": true,
         "allMatch": true
+      },
+      "sideSha": {
+        "oracle": "1ff9c3c88ffce83e922918f176ca72cf2fc783ffa8fd4b60b710eb713f0659ec",
+        "bin": "1ff9c3c88ffce83e922918f176ca72cf2fc783ffa8fd4b60b710eb713f0659ec"
       },
       "mutation": {
         "op": "writeManifest",
@@ -609,6 +703,10 @@
         "oracleExitMatch": true,
         "allMatch": true
       },
+      "sideSha": {
+        "oracle": "3ca2b6fcab30784e864ec018bc28b1c022e29dd5ff5f948497235896844378dd",
+        "bin": "3ca2b6fcab30784e864ec018bc28b1c022e29dd5ff5f948497235896844378dd"
+      },
       "mutation": {
         "op": "requireVerifiedBackup",
         "rejected": true,
@@ -633,6 +731,10 @@
         "exitCodeMatch": true,
         "oracleExitMatch": true,
         "allMatch": true
+      },
+      "sideSha": {
+        "oracle": "56095e3ddc182d19a23877ed0620246a0f6e653d0b311ec636dba83f777f025c",
+        "bin": "56095e3ddc182d19a23877ed0620246a0f6e653d0b311ec636dba83f777f025c"
       },
       "mutation": {
         "op": "runChecks",
@@ -659,6 +761,10 @@
         "oracleExitMatch": true,
         "allMatch": true
       },
+      "sideSha": {
+        "oracle": "c7f8c0a8a998150d9dc276abc43ec3d021df969d6866cae736e9fa132626cd80",
+        "bin": "c7f8c0a8a998150d9dc276abc43ec3d021df969d6866cae736e9fa132626cd80"
+      },
       "mutation": {
         "op": "mergeOpencodeJson",
         "rejected": true,
@@ -683,6 +789,10 @@
         "exitCodeMatch": true,
         "oracleExitMatch": true,
         "allMatch": true
+      },
+      "sideSha": {
+        "oracle": "684201ff638ba09b22a69582a8273542e8d163c40a4e88a082baf6b9defad15d",
+        "bin": "684201ff638ba09b22a69582a8273542e8d163c40a4e88a082baf6b9defad15d"
       },
       "mutation": {
         "op": "mergeAgentFile",
@@ -709,6 +819,10 @@
         "oracleExitMatch": true,
         "allMatch": true
       },
+      "sideSha": {
+        "oracle": "367bc8be77938f88affe8666311f44bc7358c314479c90ebca769b18174707b1",
+        "bin": "367bc8be77938f88affe8666311f44bc7358c314479c90ebca769b18174707b1"
+      },
       "mutation": {
         "op": "main",
         "rejected": true,
@@ -733,6 +847,10 @@
         "exitCodeMatch": true,
         "oracleExitMatch": true,
         "allMatch": true
+      },
+      "sideSha": {
+        "oracle": "e69fdf72dca7b8ecd76b34148a4f39fac3f47c3cba46d25803b42c0f4834e6a5",
+        "bin": "e69fdf72dca7b8ecd76b34148a4f39fac3f47c3cba46d25803b42c0f4834e6a5"
       },
       "mutation": {
         "op": "runDoctor",
@@ -759,6 +877,10 @@
         "oracleExitMatch": true,
         "allMatch": true
       },
+      "sideSha": {
+        "oracle": "367bc8be77938f88affe8666311f44bc7358c314479c90ebca769b18174707b1",
+        "bin": "367bc8be77938f88affe8666311f44bc7358c314479c90ebca769b18174707b1"
+      },
       "mutation": {
         "op": "runInit",
         "rejected": true,
@@ -783,6 +905,10 @@
         "exitCodeMatch": true,
         "oracleExitMatch": true,
         "allMatch": true
+      },
+      "sideSha": {
+        "oracle": "0f15dc23249e5ae41849d7f070b24f8aea5d052fe3d20972b004e8b9e07349ba",
+        "bin": "0f15dc23249e5ae41849d7f070b24f8aea5d052fe3d20972b004e8b9e07349ba"
       },
       "mutation": {
         "op": "runUpgrade",
@@ -809,6 +935,10 @@
         "oracleExitMatch": true,
         "allMatch": true
       },
+      "sideSha": {
+        "oracle": "842a147667a236b842dc3ca75cdc9cc622a62faa8782e751399899bb325e12d6",
+        "bin": "842a147667a236b842dc3ca75cdc9cc622a62faa8782e751399899bb325e12d6"
+      },
       "mutation": {
         "op": "runCli",
         "rejected": true,
@@ -833,6 +963,10 @@
         "exitCodeMatch": true,
         "oracleExitMatch": true,
         "allMatch": true
+      },
+      "sideSha": {
+        "oracle": "bffeb60cb68b3513bb5d7abd8b9e12c94d0beaa15466e20b533aa02da1c8ca50",
+        "bin": "bffeb60cb68b3513bb5d7abd8b9e12c94d0beaa15466e20b533aa02da1c8ca50"
       },
       "mutation": {
         "op": "parseArgs",
@@ -859,6 +993,10 @@
         "oracleExitMatch": true,
         "allMatch": true
       },
+      "sideSha": {
+        "oracle": "973d5d076a7371ac8f35f99056e360edffe28003f20d887628ffb596a42668d2",
+        "bin": "973d5d076a7371ac8f35f99056e360edffe28003f20d887628ffb596a42668d2"
+      },
       "mutation": {
         "op": "runWizard",
         "rejected": true,
@@ -869,6 +1007,130 @@
       "normalized": []
     }
   ],
+  "mutantGuard": {
+    "fixtures": 23,
+    "proved": 0,
+    "failed": 23,
+    "mode": "all",
+    "note": "binário mutante exit-preserving: __MUTANT__ em todo result + MUTANTCODE em todo error.code",
+    "ops": [
+      {
+        "op": "preflight",
+        "status": "reprovado",
+        "sideMatch": false
+      },
+      {
+        "op": "inventory",
+        "status": "reprovado",
+        "sideMatch": false
+      },
+      {
+        "op": "backup",
+        "status": "reprovado",
+        "sideMatch": false
+      },
+      {
+        "op": "resolveBackupDir",
+        "status": "reprovado",
+        "sideMatch": false
+      },
+      {
+        "op": "loadAnswersFile",
+        "status": "reprovado",
+        "sideMatch": false
+      },
+      {
+        "op": "collectAnswers",
+        "status": "reprovado",
+        "sideMatch": false
+      },
+      {
+        "op": "generateConfig",
+        "status": "reprovado",
+        "sideMatch": false
+      },
+      {
+        "op": "collectIncoming",
+        "status": "reprovado",
+        "sideMatch": false
+      },
+      {
+        "op": "planMerge",
+        "status": "reprovado",
+        "sideMatch": false
+      },
+      {
+        "op": "applyMerge",
+        "status": "reprovado",
+        "sideMatch": false
+      },
+      {
+        "op": "buildManifest",
+        "status": "reprovado",
+        "sideMatch": false
+      },
+      {
+        "op": "writeManifest",
+        "status": "reprovado",
+        "sideMatch": false
+      },
+      {
+        "op": "requireVerifiedBackup",
+        "status": "reprovado",
+        "sideMatch": false
+      },
+      {
+        "op": "runChecks",
+        "status": "reprovado",
+        "sideMatch": false
+      },
+      {
+        "op": "mergeOpencodeJson",
+        "status": "reprovado",
+        "sideMatch": false
+      },
+      {
+        "op": "mergeAgentFile",
+        "status": "reprovado",
+        "sideMatch": false
+      },
+      {
+        "op": "main",
+        "status": "reprovado",
+        "sideMatch": false
+      },
+      {
+        "op": "runDoctor",
+        "status": "reprovado",
+        "sideMatch": false
+      },
+      {
+        "op": "runInit",
+        "status": "reprovado",
+        "sideMatch": false
+      },
+      {
+        "op": "runUpgrade",
+        "status": "reprovado",
+        "sideMatch": false
+      },
+      {
+        "op": "runCli",
+        "status": "reprovado",
+        "sideMatch": false
+      },
+      {
+        "op": "parseArgs",
+        "status": "reprovado",
+        "sideMatch": false
+      },
+      {
+        "op": "runWizard",
+        "status": "reprovado",
+        "sideMatch": false
+      }
+    ]
+  },
   "mutation": {
     "rejected": true,
     "path": "installer/__tests__/golden.spec.mjs",
@@ -886,5 +1148,5 @@
     "claimed12of12": false,
     "source": "PRD §3.5 / golden.spec.mjs:48"
   },
-  "note": "VAL-02: 23/23 provas differential com gate result/ok/exit-code e mutação 1 byte por op; VAL-03: SI-2/SI-3 medidos; VAL-04: 9+2 é medição, 12/12 nunca fato. Nenhum PASS por omissão."
+  "note": "VAL-02: 23/23 provas differential REAIS (sideSha oracle==bin por op, apos normalizeSide) com gate result/ok/exit-code e mutação 1 byte por op; anti-C1: mutante exit-preserving corrompendo 100% dos envelopes reprova 23/23 no MESMO prova(); VAL-03: SI-2/SI-3 medidos; VAL-04: 9+2 é medição, 12/12 nunca fato. Nenhum PASS por omissão."
 }

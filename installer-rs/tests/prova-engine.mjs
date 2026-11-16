@@ -22,10 +22,11 @@ import {
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(HERE, '..', '..')
-const WORKTREE = path.join('/tmp/opencode', 'harness-oracle-c63e333')
+export const WORKTREE = path.join('/tmp/opencode', 'harness-oracle-c63e333')
 const REPORT = path.join(ROOT, 'harness', 'prd-installer-rust-adr-003.json')
 const FIXTURES = path.join(HERE, 'req-fixtures.json')
 const BRIDGE = path.join(HERE, 'oracle-bridge.mjs')
+export const MUTANT_BIN = path.join(HERE, 'fixtures', 'mutant-bin.mjs')
 const PROVA_TMP = path.join('/tmp/opencode', 'harness-prova-engine')
 
 // 8 arquivos de vereditos congelados (ADR-003 §2.3 item 3) — lidos como arquivos.
@@ -116,12 +117,6 @@ function diffUnified(oracleText, binText, run = defaultRun) {
   return { empty: d.status === 0, text: d.stdout || '' }
 }
 
-// O envelope do bin é JSON. `side` compara result (ok) ou código de erro
-// (render_error_code: 22 códigos + UNKNOWN). Prosa de erro 4-linhas é prova
-// separada (HARN-BE-04 / 60 testes cargo); aqui o differential cobre resultado,
-// ok, exit-code e código — nunca só result|error (VAL-02).
-const side = (e) => canonicalJson(e.ok ? e.result : (e.error && e.error.code))
-
 // buildManifest.date é timestamp volátil por construção (Date.now() nos dois
 // lados). Normalização SIMÉTRICA e declarada: só esse campo, só nessa op.
 export function normalizeSide(op, value) {
@@ -132,6 +127,17 @@ export function normalizeSide(op, value) {
   }
   return value
 }
+
+// O envelope do bin é JSON. `side` RECEBE O ENVELOPE INTEIRO e extrai result
+// (ok) ou código de erro (render_error_code: 22 códigos + UNKNOWN) DEPOIS de
+// normalizeSide. Extrair antes (double-unwrap) fazia `e.ok` ser sempre
+// undefined e `canonicalJson(undefined)` os dois lados ⇒ diff vazio ⇒ prova
+// vacua (review ADR-003 C1). Prosa de erro 4-linhas é prova separada
+// (HARN-BE-04 / 60 testes cargo); aqui o differential cobre resultado,
+// ok, exit-code e código — nunca só result|error (VAL-02).
+const side = (envelope, op) => canonicalJson(
+  normalizeSide(op, envelope.ok ? envelope.result : (envelope.error && envelope.error.code)),
+)
 
 // Followup de review #4 + VAL-02: compara result, ok E exit-code. `2` é só
 // protocolo da fronteira; nenhuma op de motor o emite (ADR-001 §2.2).
@@ -184,8 +190,8 @@ export function prova({ bin, op, request, run = defaultRun }) {
   try { binEnv = JSON.parse(subject.stdout.trim()) } catch {
     return { op, status: 'reprovado', reason: 'stdout não é envelope', oracleExit: oracle.status, binExit: subject.status }
   }
-  const o = side(normalizeSide(op, oracleEnv.ok ? oracleEnv.result : oracleEnv.error && oracleEnv.error.code))
-  const b = side(normalizeSide(op, binEnv.ok ? binEnv.result : binEnv.error && binEnv.error.code))
+  const o = side(oracleEnv, op)
+  const b = side(binEnv, op)
   const d = diffUnified(o, b, run)
   const comparison = fullComparison(oracleEnv, binEnv, oracle.status, subject.status, d.empty)
   const mutation = mutatedRejects(op, oracleEnv.ok ? oracleEnv.result : (oracleEnv.error && oracleEnv.error.code), run)
@@ -199,6 +205,10 @@ export function prova({ bin, op, request, run = defaultRun }) {
     opDoEnvelope: binEnv.op,
     ok: binEnv.ok,
     comparison,
+    // Evidência literal do differential real: sha da saída canonical de cada
+    // lado (após normalizeSide). Sem isso, `diff:''` sozinho não prova que as
+    // saídas foram de fato comparadas — foi exatamente o que C1 explorou.
+    sideSha: { oracle: sha256(o === undefined ? '∅' : o), bin: sha256(b === undefined ? '∅' : b) },
     mutation,
     normalized: op === 'buildManifest' ? ['date'] : [],
   }
@@ -256,6 +266,21 @@ function main() {
   try {
     for (const op of OP_TABLE) {
       results.push(prova({ bin, op, request: resolveFixture(fixturesRaw[op]) }))
+    }
+    // Anti-C1: o MESMO `prova()` agora é exercitado com um binário mutante
+    // exit-preserving que corrompe 100% dos envelopes (result + error.code).
+    // Se o differential ainda fosse vacuo, este laço daria 23/23 `ok` e a
+    // guarda abaixo reprovaria. Mutation em `diffUnified` isolado NÃO serve.
+    const mutantResults = OP_TABLE.map((op) => prova({
+      bin: MUTANT_BIN, op, request: resolveFixture(fixturesRaw[op]),
+    }))
+    const mutantGuard = {
+      fixtures: mutantResults.length,
+      proved: mutantResults.filter((r) => r.status === 'ok').length,
+      failed: mutantResults.filter((r) => r.status === 'reprovado').length,
+      mode: 'all',
+      note: 'binário mutante exit-preserving: __MUTANT__ em todo result + MUTANTCODE em todo error.code',
+      ops: mutantResults.map((r) => ({ op: r.op, status: r.status, sideMatch: r.comparison.sideMatch })),
     }
     const mutation = mutationRejectsOneByte({ frozen })
     const afterHash = treeHash(PROVA_TMP)
@@ -316,12 +341,15 @@ function main() {
           op,
           oracle: ORACLE_TABLE[op].oracle,
           command: ORACLE_TABLE[op].command,
+          sideShaOracle: p && p.sideSha ? p.sideSha.oracle : 'sem prova',
+          sideShaBin: p && p.sideSha ? p.sideSha.bin : 'sem prova',
           mutation: p && p.mutation
             ? `1 byte em ${p.mutation.path} ⇒ reprova (${p.mutation.original.slice(0, 12)}… → ${p.mutation.mutated.slice(0, 12)}…)`
             : 'sem mutação certificada — não é prova',
         }
       }),
       prova: results,
+      mutantGuard,
       mutation,
       zeroWrites: beforeHash === afterHash,
       frozenUnchanged: frozenStill,
@@ -329,12 +357,14 @@ function main() {
       literalProven: isLiteralProven({ validationVerdict }, sha256(read(path.join(ROOT, 'installer', '__tests__', 'oracle-literal.sha256')))),
       comparisonRunnerReady: true,
       measurement: { byteEqual: 9, partial: 2, claimed12of12: false, source: 'PRD §3.5 / golden.spec.mjs:48' },
-      note: 'VAL-02: 23/23 provas differential com gate result/ok/exit-code e mutação 1 byte por op; VAL-03: SI-2/SI-3 medidos; VAL-04: 9+2 é medição, 12/12 nunca fato. Nenhum PASS por omissão.',
+      note: 'VAL-02: 23/23 provas differential REAIS (sideSha oracle==bin por op, apos normalizeSide) com gate result/ok/exit-code e mutação 1 byte por op; anti-C1: mutante exit-preserving corrompendo 100% dos envelopes reprova 23/23 no MESMO prova(); VAL-03: SI-2/SI-3 medidos; VAL-04: 9+2 é medição, 12/12 nunca fato. Nenhum PASS por omissão.',
     }
     fs.writeFileSync(REPORT, JSON.stringify(report, null, 2) + '\n')
     const failed = results.filter((r) => r.status === 'reprovado')
-    if (failed.length || !report.zeroWrites || !frozenStill || !guards || !mutation.rejected || !report.literalProven) {
-      process.stderr.write(`prova reprovada: ${failed.map((f) => f.op).join(', ') || 'guards'}\n`)
+    const mutantOk = mutantGuard.failed === 23 && mutantGuard.proved === 0
+    if (failed.length || !report.zeroWrites || !frozenStill || !guards || !mutation.rejected
+      || !report.literalProven || !mutantOk) {
+      process.stderr.write(`prova reprovada: ${failed.map((f) => f.op).join(', ') || 'guards'}; mutante ${mutantGuard.proved} provado / ${mutantGuard.failed} reprovado\n`)
       process.exitCode = 1
     }
     process.stdout.write(JSON.stringify({
@@ -343,6 +373,7 @@ function main() {
       failed: failed.length,
       frozenShas: frozen.length,
       mutations: results.filter((r) => r.mutation && r.mutation.rejected).length,
+      mutantGuard: { proved: mutantGuard.proved, failed: mutantGuard.failed, mode: mutantGuard.mode },
       zeroWrites: report.zeroWrites,
       literalProven: report.literalProven,
       report: REPORT,

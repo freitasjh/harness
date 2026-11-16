@@ -125,6 +125,9 @@ fn build_manifest_is_schema_v1_and_write_manifest_dry_run_skips() {
         "installed": [{"path": "opencode.json", "kind": "file"}],
     }));
     assert_eq!(m["manifestSchemaVersion"], 1);
+    // Paridade com o oráculo c63e333 (install.mjs:15 VERSION = '1.0.0').
+    // O differential vazio do C1 mascarava esta divergência real.
+    assert_eq!(m["version"], "1.0.0");
     assert_eq!(m["source"], "harness@0.1.0");
     assert_eq!(m["fileHashes"][0]["path"], "opencode.json");
     assert_eq!(m["fileHashes"][0]["sha256"].as_str().unwrap().len(), 64);

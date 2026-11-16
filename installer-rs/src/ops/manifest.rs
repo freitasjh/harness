@@ -63,7 +63,8 @@ pub fn build_manifest(p: &Value) -> Value {
     let backup_resolved = backup_dir.as_str().map(|s| Value::String(crate::ops::pathutil::resolve_path(s))).unwrap_or(backup_dir.clone());
 
     json!({
-        "version": "0.1.0",
+        // install.mjs:15 @ c63e333 — VERSION = '1.0.0'.
+        "version": "1.0.0",
         "date": iso_z(),
         "source": source,
         "target": crate::ops::pathutil::resolve_path(target),
