@@ -3,11 +3,11 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import crypto from 'node:crypto'
 import path from 'node:path'
-import { pathToFileURL } from 'node:url'
 import {
   REGISTRY_MAPS, REGISTRY_MAP_DIGESTS, REGISTRY_ALL_DIGEST,
   AXIS_IDS, SKILLS_BY_AXIS, SKILLS_COMMON, RULES_BY_AXIS, RULES_COMMON, STACKS_FOR_EXCEPTIONS,
 } from '../contract-registry.mjs'
+import { oracleModule } from './oracle.mjs'
 
 const sha = (v) => crypto.createHash('sha256').update(JSON.stringify(v)).digest('hex')
 const names = ['AXIS_IDS', 'SKILLS_BY_AXIS', 'SKILLS_COMMON', 'RULES_BY_AXIS', 'RULES_COMMON', 'STACKS_FOR_EXCEPTIONS']
@@ -21,13 +21,8 @@ describe('RF-07 / item 8 — registry congelado byte-idêntico ao oráculo', () 
     assert.equal(sha(REGISTRY_MAPS), REGISTRY_ALL_DIGEST)
   })
 
-  it('sha congelado confere com o oráculo c63e333 quando o worktree está materializado', async () => {
-    const oracle = '/tmp/opencode/harness-oracle-c63e333/installer/install.mjs'
-    if (!fs.existsSync(oracle)) {
-      assert.ok(Object.values(REGISTRY_MAP_DIGESTS).every((d) => /^[0-9a-f]{64}$/.test(d)))
-      return
-    }
-    const ora = await import(pathToFileURL(oracle).href)
+  it('sha congelado confere com a identidade REAL do oráculo c63e333 (fail-closed)', async () => {
+    const ora = await oracleModule()
     for (const n of names) assert.equal(sha(ora[n]), REGISTRY_MAP_DIGESTS[n], `oráculo divergente: ${n}`)
   })
 

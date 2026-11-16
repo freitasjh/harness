@@ -16,6 +16,12 @@ export { DENYLIST, MANIFEST_NAME, MIN_NODE_VERSION, QUESTIONS, STACK_PROFILES, S
 
 export { CONTRACT_VERSION, SUBCOMMAND, EXIT, OP_NAMES }
 
+// A ponte acima reexporta sanitizeLog sem criar binding local. Para sanitizar
+// dentro do envelope sem introduzir um segundo import estático do oráculo
+// (fronteira única), carregamos o MESMO módulo via import dinâmico no topo —
+// o ESM cacheia a URL, logo é a mesma instância da reexportação.
+const { sanitizeLog } = await import('./install.mjs')
+
 // ---------------------------------------------------------------------------
 // envelope contract-v1
 // ---------------------------------------------------------------------------
@@ -23,13 +29,23 @@ export function encodeSuccess(op, result) {
   return JSON.stringify({ v: 1, ok: true, op, result })
 }
 
-export function encodeError(op, error) {
+export function encodeError(op, error, answers = {}) {
   const e = error && typeof error === 'object' ? error : { what: String(error) }
+  const ctx = answers && typeof answers === 'object'
+    ? answers
+    : (e.answers && typeof e.answers === 'object' ? e.answers : {})
+  const clean = (v) => sanitizeLog(v === undefined || v === null ? '' : String(v), ctx)
   return JSON.stringify({
     v: 1,
     ok: false,
     op,
-    error: { code: e.code, what: e.what, why: e.why, fix: e.fix, where: e.where },
+    error: {
+      code: clean(e.code),
+      what: clean(e.what),
+      why: clean(e.why),
+      fix: clean(e.fix),
+      where: clean(e.where),
+    },
   })
 }
 

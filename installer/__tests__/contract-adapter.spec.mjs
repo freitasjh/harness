@@ -47,6 +47,24 @@ describe('RF-02 / item 2 — envelope contract-v1', () => {
     assert.ok(!('result' in bad))
   })
 
+  it('encodeError sanitiza what/why/fix/where antes do envelope e fecha rodada de 5 chaves', () => {
+    const SEGREDO = 'SEGRE' + 'DO_PROVA'
+    const txt = encodeError('runCli', {
+      code: 'BAD_ANSWER',
+      what: 'token=' + SEGREDO,
+      why: 'motivo ' + SEGREDO,
+    }, { deployToken: SEGREDO })
+    assert.ok(!txt.includes(SEGREDO), 'segredo vazou no envelope')
+    const env = parseEnvelope(txt)
+    assert.deepEqual(Object.keys(env.error), ['code', 'what', 'why', 'fix', 'where'])
+    assert.equal(env.error.what, 'token=[REDACTED]')
+    assert.equal(env.error.why, 'motivo [REDACTED]')
+    assert.equal(env.error.fix, '')
+    assert.equal(env.error.where, '')
+    const ce = new ContractError(env.error)
+    assert.ok(ce instanceof ContractError, 'rodada completa produz ContractError, não ProtocolError')
+  })
+
   it('parseEnvelope rejeita JSON inválido, bytes extras, v errado e forma incompleta', () => {
     assert.throws(() => parseEnvelope('not-json'), ProtocolError)
     assert.throws(() => parseEnvelope(encodeSuccess('op', {}) + '\n[OK] progresso'), ProtocolError)

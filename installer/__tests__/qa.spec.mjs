@@ -16,6 +16,7 @@ import {
   loadAnswersFile,
   formatError,
 } from '../installer-contract.mjs';
+import { oracleSource } from './oracle.mjs';
 
 let dirs = [];
 function mkTemp(files = {}) {
@@ -107,7 +108,7 @@ describe('INS-05 S1: log com token canario redigido', () => {
 
 describe('INS-05 S2: scan estatico — zero sanitizeLog( sem answers', () => {
   it('toda chamada passa o 2º argumento (contexto vigente)', () => {
-    const src = fs.readFileSync(new URL('../install.mjs', import.meta.url), 'utf8');
+    const src = oracleSource();
     const bad = [];
     src.split('\n').forEach((raw, i) => {
       const code = raw.replace(/\/\/.*$/, '');
