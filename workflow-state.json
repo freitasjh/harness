@@ -84,11 +84,12 @@
     "P4_5": "approved_auto_2026_11_16 (security-review 14/14 — 9 N/A declarados, 5 aplicaveis; zero segredos; Cargo.lock versionado)"
   },
   "code_review": {
-    "last_invoked_at": "2026-11-16T22:27:04.922Z",
+    "last_invoked_at": "2026-11-16T22:52:20.798Z",
     "last_status": "passed",
     "critical_issues": 0,
     "attention_issues": 0,
-    "reviewer_notes": "Batch 1 ADR-004 APPROVED 0 criticos; 2 importantes de evidencia (stdoutHash rotulo, canais medidos) fechados em 8abb8b1 antes do batch 2. Guarda 3/3 com dente, transcript 16336B provado."
+    "suggestions": 2,
+    "reviewer_notes": "Batch 2 ADR-004 APPROVED 0/0. PTY cleanup reproducida (AFTER_ECHO=ON, -15, nunca exit 0); segredo 0 em stdout/stderr reais; hash aborto/dry-run de CONTEUIDO a4180731; 4 ramos exatos, 0 novo. 2 sugestoes nao bloqueantes (envelope de teste em confirm.rs:48; free em ao_sinal cleanup.rs:62)."
   },
   "overrides": [
     {
@@ -227,7 +228,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T22:47:26.863Z",
+  "last_update": "2026-11-16T22:52:20.798Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -251,7 +252,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-004 EXECUTION batch 2/3 CONCLUIDO (4/4; cargo 80; 4 ramos/0 novos; PTY cleanup com sinal; segredo 0) — code-reviewer em curso",
+  "sdd_stage": "PRD-3 ADR-004 EXECUTION batch 2 REVIEW APPROVED (0/0). PARADA HITL antes do batch 3",
   "backlog": {
     "total": 9,
     "todo": 3,
@@ -877,6 +878,22 @@
       "origem": "developer + owner (aceite do desvio 2026-11-16)",
       "bloqueia": false,
       "target": "SDD byte-paridade / owner"
+    },
+    {
+      "id": "FU-ADR004-01",
+      "created_at": "2026-11-16T22:52:20.798Z",
+      "texto": "Alinhar envelope de resultado_aborto() em tui/confirm.rs:48 ao envelope real de wizard.rs (where/why) — oráculo morto em teste",
+      "origem": "code-reviewer batch 2 ADR-004",
+      "bloqueia": false,
+      "target": "TUI-06/VAL-03"
+    },
+    {
+      "id": "FU-ADR004-02",
+      "created_at": "2026-11-16T22:52:20.798Z",
+      "texto": "Avaliar free() (drop(Box::from_raw)) dentro de ao_sinal em tui/cleanup.rs:62 — tcsetattr/signal/kill sao async-signal-safe, free nao estritamente",
+      "origem": "code-reviewer batch 2 ADR-004",
+      "bloqueia": false,
+      "target": "VAL-03"
     }
   ],
   "batches": [
@@ -1965,7 +1982,7 @@
   "batch": {
     "id": 2,
     "agent": "developer-engineer",
-    "status": "review_running",
+    "status": "review_approved",
     "commit": "320c82471733fd23b27cae2279ed556265f0fd09",
     "tasks": 4,
     "cargo": 80,
@@ -1979,7 +1996,7 @@
     },
     "segredo_ocorrencias": 0
   },
-  "next_gate": "HITL batch 1->2: posso avancar para o batch 2 (TUI-02 navegacao, TUI-03 W5/aborto, TUI-04 segredo, TUI-05 cleanup SIGTERM)?",
+  "next_gate": "HITL batch 2->3: posso avancar para o batch 3 (TUI-06 8 ops + ponte 18->10, VAL-02 prova integral, VAL-03 VERIFY)?",
   "governance_note": {
     "at": "2026-11-16T21:26:46.319Z",
     "texto": "Developer escreveu no retorno que owner havia aprovado migrar só JSON-safe — falso. Owner aprovou 23 e depois ACEITOU o desvio para 13 com razao medida. Corrigido aqui para nao deixar decisao reescrita.",
