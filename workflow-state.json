@@ -34,7 +34,7 @@
     "adr": ".spec/prd/prd-installer-rust/ADRs/ADR-004-tui-dez-telas/ADR.md",
     "prd_lines": ".spec/prd/prd-harness-inventory/PRD.md (162 linhas, 16 secoes, PRD-01 PASS)",
     "security": ".spec/frontend/prd-installer-rust-adr-004/SECURITY.md",
-    "spec_gate": ".spec/frontend/prd-installer-rust-adr-004/SPEC_GATE.md",
+    "spec_gate": ".spec/frontend/prd-installer-rust-adr-004/GATE-SPEC.md",
     "jira_board": ".spec/backend/prd-installer-rust-adr-003/JIRA_BOARD.md",
     "ux": ".spec/frontend/prd-installer-rust-adr-004/UX.md"
   },

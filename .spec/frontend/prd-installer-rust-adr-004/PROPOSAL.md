@@ -37,10 +37,10 @@ Jornada já sólida. Melhorias em **E** (estado no envelope, nunca em `stderr`) 
 | # | Risco | Mitigação |
 |---|---|---|
 | R-ADR2 | widget muda bytes do transcript | prompts line-based; `diff` vazio (item 2) |
-| R-ADR5 | tela grava no aborto | guarda dupla JS+Rust em RF-05 (item 5) |
-| R-ADR9 | segredo vaza | `stdin` TTY sem eco, `serializeSkips` em pipe, `[REDACTED]` (itens 7/8) |
-| R-ADR10 | `SIGTERM` sem eco | handler idempotente + prova PTY (item 9) |
-| R-ADR11 | canais misturados | `stdout` envelope / `stderr` progresso (item 10) |
+| R-ADR2b | tela grava no aborto | guarda dupla JS+Rust **restrita a wizard.rs** em RF-05 (item 5) |
+| R-ADR3 | segredo vaza / transcript em TTY | `stdin` TTY sem eco, `serializeSkips` em pipe, `[REDACTED]`, diff 16.336 B (itens 2/7/8) |
+| R-ADR5 | `SIGTERM` sem eco | handler idempotente + prova PTY (item 9) |
+| R-ADR6 | canais misturados | `stdout` envelope / `stderr` progresso (item 10) |
 
 ## 7. Verificação
 
