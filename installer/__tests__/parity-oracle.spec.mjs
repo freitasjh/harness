@@ -35,6 +35,7 @@ import {
   measurement,
   rederiveCommand,
   runParity,
+  runInstallerDifferential,
 } from '../parity-oracle.mjs'
 
 const TEST_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
@@ -333,7 +334,7 @@ describe('runParity — driver de produção do oráculo (F3)', () => {
   const ORACLE_MARKERS = ARCHIVED_TRANSCRIPT_MARKERS
   const lastMarker = ORACLE_MARKERS[ORACLE_MARKERS.length - 1]
 
-  function harness({ transcript = ORACLE_MARKERS.join('\n'), exitCode = 0, binaryAvailable = false, literalText = LITERAL_TEXT, diffNames = '' } = {}) {
+  function harness({ transcript = ORACLE_MARKERS.join('\n'), exitCode = 0, installerBin = null, runBin = null, differential = null, literalText = LITERAL_TEXT, diffNames = '' } = {}) {
     const calls = { materialize: 0, release: 0, node: [] }
     const runGit = (args) => {
       const k = args.join(' ')
@@ -357,7 +358,9 @@ describe('runParity — driver de produção do oráculo (F3)', () => {
         runNode,
         readFile,
         worktreeDir: WORKTREE,
-        binaryAvailable,
+        installerBin,
+        runBin,
+        differential,
         validationVerdict: ritualVerdict({ sha256: LITERAL_SHA, iso8601: '2026-11-16T12:00:00.000Z', oraculo: ORACLE_COMMIT }),
         materialize: (args) => { calls.materialize++; return { worktreeDir: args.worktreeDir, sha: ORACLE_FULL, clean: true } },
         release: () => { calls.release++ },
@@ -378,14 +381,49 @@ describe('runParity — driver de produção do oráculo (F3)', () => {
     assert.deepEqual(r.si.map((x) => x.id), ['SI-1', 'SI-2', 'SI-3', 'SI-4', 'SI-5', 'SI-6'])
   })
 
-  it('SI-2 e SI-3 são not_measured com motivo explícito (binário Rust do ADR-003), nunca PASS por omissão', () => {
-    const r = runParity(harness({ binaryAvailable: false }).opts)
+  const DIFF_OK = {
+    si2: { subject: { 'opencode.json': '{"agent":{}}' }, oracle: { 'opencode.json': '{"agent":{}}' } },
+    si3: { beforeHash: 'abc', afterHash: 'abc', porcelain: '' },
+  }
+
+  it('sem $INSTALLER_BIN: SI-2/SI-3 são not_measured com motivo explícito (nunca PASS por omissão)', () => {
+    const r = runParity(harness().opts)
     for (const id of ['SI-2', 'SI-3']) {
       const si = r.si.find((x) => x.id === id)
       assert.equal(si.status, 'not_measured', `${id} não pode ser PASS sem binário`)
       assert.equal(si.pass, null)
-      assert.match(si.reason, /ADR-003/)
+      assert.match(si.reason, /INSTALLER_BIN/)
+      assert.doesNotMatch(si.reason, /sem binário Rust/)
     }
+  })
+
+  it('com $INSTALLER_BIN: SI-2/SI-3 passam a medido/pass SÓ com differential real', () => {
+    const r = runParity(harness({ installerBin: '/fake/installer', differential: () => DIFF_OK }).opts)
+    for (const id of ['SI-2', 'SI-3']) {
+      const si = r.si.find((x) => x.id === id)
+      assert.equal(si.status, 'medido')
+      assert.equal(si.pass, true)
+      assert.equal(si.reason, null)
+      assert.match(si.evidence, /sha256|hash/)
+    }
+    assert.equal(r.literalProven, true)
+  })
+
+  it('MUTAÇÃO: body/path divergente derruba SI-2 medido (não é verde por omissão)', () => {
+    const bad = { ...DIFF_OK, si2: { subject: { 'opencode.json': '{"agent":X}' }, oracle: DIFF_OK.si2.oracle } }
+    const r = runParity(harness({ installerBin: '/fake/installer', differential: () => bad }).opts)
+    const si = r.si.find((x) => x.id === 'SI-2')
+    assert.equal(si.status, 'medido')
+    assert.equal(si.pass, false)
+  })
+
+  it('MUTAÇÃO: 1 write no destino do dry-run derruba SI-3 medido (hash de conteúdo)', () => {
+    const bad = { ...DIFF_OK, si3: { ...DIFF_OK.si3, afterHash: 'def' } }
+    const r = runParity(harness({ installerBin: '/fake/installer', differential: () => bad }).opts)
+    const si = r.si.find((x) => x.id === 'SI-3')
+    assert.equal(si.status, 'medido')
+    assert.equal(si.pass, false)
+    assert.match(si.reason, /writes/)
   })
 
   it('SI-1/SI-4/SI-5/SI-6 são medidos de verdade quando oráculo+literais estão íntegros', () => {
@@ -440,6 +478,48 @@ describe('runParity — driver de produção do oráculo (F3)', () => {
       /divergente/,
     )
     assert.equal(h.calls.release, 1, 'libera o worktree mesmo no throw')
+  })
+})
+
+describe('runInstallerDifferential — SI-2/SI-3 contra oráculo c63e333 e binário (TDD FIRST)', () => {
+  const envelope = (result) => JSON.stringify({ v: 1, ok: true, op: 'collectIncoming', result })
+  const runBridge = (req, env) => {
+    assert.equal(env.ORACLE_MJS, path.join('/tmp/oracle', 'installer', 'install.mjs'))
+    assert.equal(req.op, 'collectIncoming')
+    return envelope({ 'opencode.json': '{"agent":{}}' })
+  }
+  const runBin = (bin, req) => {
+    assert.equal(bin, '/fake/installer')
+    if (req.op === 'collectIncoming') return envelope({ 'opencode.json': '{"agent":{}}' })
+    return envelope({ skipped: true, path: null })
+  }
+  const hashOnce = () => 'aaa'
+
+  it('executa differential real: collectIncoming paths+bodies e dry-run 0 writes com hash de conteúdo', () => {
+    const r = runInstallerDifferential({
+      installerBin: '/fake/installer', worktreeDir: '/tmp/oracle',
+      runBridge, runBin, hashTree: hashOnce, porcelain: () => '',
+    })
+    assert.deepEqual(r.si2.subject, r.si2.oracle)
+    assert.equal(si2_payloadDifferential(r.si2.subject, r.si2.oracle).pass, true)
+    assert.equal(si3_dryRunZeroWrites(r.si3).pass, true)
+  })
+
+  it('MUTAÇÃO: 1 byte no body do binário derruba SI-2', () => {
+    const r = runInstallerDifferential({
+      installerBin: '/fake/installer', worktreeDir: '/tmp/oracle',
+      runBridge, runBin: (bin, req) => envelope({ 'opencode.json': '{"agent":X}' }),
+      hashTree: hashOnce, porcelain: () => '',
+    })
+    assert.equal(si2_payloadDifferential(r.si2.subject, r.si2.oracle).pass, false)
+  })
+
+  it('fail-closed: porcelania suja derruba SI-3', () => {
+    const r = runInstallerDifferential({
+      installerBin: '/fake/installer', worktreeDir: '/tmp/oracle',
+      runBridge, runBin, hashTree: hashOnce, porcelain: () => ' M installer/install.mjs',
+    })
+    assert.equal(si3_dryRunZeroWrites(r.si3).pass, false)
   })
 })
 
