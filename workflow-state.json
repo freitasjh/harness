@@ -227,7 +227,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T22:30:11.022Z",
+  "last_update": "2026-11-16T22:47:26.863Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -251,12 +251,12 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-004 EXECUTION batch 2/3 — navegacao W0-W4 + W5/aborto + segredo + cleanup SIGTERM",
+  "sdd_stage": "PRD-3 ADR-004 EXECUTION batch 2/3 CONCLUIDO (4/4; cargo 80; 4 ramos/0 novos; PTY cleanup com sinal; segredo 0) — code-reviewer em curso",
   "backlog": {
     "total": 9,
-    "todo": 5,
-    "doing": 4,
-    "done": 2,
+    "todo": 3,
+    "doing": 0,
+    "done": 6,
     "ids": [
       "TUI-01",
       "VAL-01",
@@ -270,13 +270,16 @@
     ],
     "done_ids": [
       "TUI-01",
-      "VAL-01"
-    ],
-    "doing_ids": [
+      "VAL-01",
       "TUI-02",
       "TUI-03",
       "TUI-04",
       "TUI-05"
+    ],
+    "todo_ids": [
+      "TUI-06",
+      "VAL-02",
+      "VAL-03"
     ]
   },
   "next_task": "ADR-002",
@@ -1962,13 +1965,19 @@
   "batch": {
     "id": 2,
     "agent": "developer-engineer",
-    "skills": [
-      "rust-architecture-specialist"
-    ],
-    "status": "running",
+    "status": "review_running",
+    "commit": "320c82471733fd23b27cae2279ed556265f0fd09",
     "tasks": 4,
-    "base": "aab8f28",
-    "ux_parecer": "vinculante — 0 byte, 4 ramos, cleanup antes da leitura"
+    "cargo": 80,
+    "branches": 4,
+    "transicoes_novas": 0,
+    "abort_hash": "a4180731…",
+    "pty": {
+      "eco_restaurado": true,
+      "wifsignaled": true,
+      "exit_sinal": 15
+    },
+    "segredo_ocorrencias": 0
   },
   "next_gate": "HITL batch 1->2: posso avancar para o batch 2 (TUI-02 navegacao, TUI-03 W5/aborto, TUI-04 segredo, TUI-05 cleanup SIGTERM)?",
   "governance_note": {
@@ -1987,5 +1996,13 @@
     "escalation": "limite de 3 iteracoes atingido; confirmacao final requisitada fora do loop",
     "at": "2026-11-16T21:53:25.870Z",
     "final_verdict": "APPROVED (confirmacao pos-3a correcao; guarda 3 caminhos: limpo 0, match 1, ausente 1)"
-  }
+  },
+  "env_notes": [
+    {
+      "porta": 5173,
+      "pid": 2221367,
+      "dono": "node-Main",
+      "nota": "pre-existente, NAO iniciada pelo batch 2 do ADR-004; nao matar — regra H5.1: conferir dono pela porta antes de qualquer kill"
+    }
+  ]
 }
