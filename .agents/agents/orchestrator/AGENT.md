@@ -149,7 +149,7 @@ contrato de saída e exemplos em `references/picco-template.md`.
 - O `ux-designer` **analisa o que já existe** no sistema (telas, componentes, fluxos) e decide **o que deve ser melhorado ou inovado** para a experiência do usuário.
 - Nenhuma decisão visual/UX deve ser tomada ou aprovada sem o parecer do `ux-designer`.
 - As decisões do `ux-designer` são **vinculantes** para o `developer-engineer` na implementação frontend.
-- O `ux-designer` segue o Design System **Pulse** (`frontend/DESIGN.md`) e a skill `ui-ux-pro-max` como base de decisão.
+- O `ux-designer` segue o Design System **Pulse** e a skill `ui-ux-pro-max` como base de decisão.
 
 ### 4.1 Design System / Templates (NON-NEGOTIABLE)
 
@@ -296,7 +296,7 @@ Validação da esteira: `PRD-01`/`ADR-01`/`ADR-02`
 4. Carregue `sdd-architecture-board` — gere relatório de análise arquitetural.
 5. Se frontend (ou a demanda envolver telas/fluxos/UX): **invocar OBRIGATORIAMENTE o subagente `ux-designer`** via `task` tool para análise visual. Ele é a **fonte da verdade** visual/UX.
    - O `ux-designer` deve: analisar o que **já existe** no sistema (telas, componentes, fluxos atuais) e propor **o que melhorar ou inovar** para a experiência do usuário.
-   - Basear a análise no Design System **Pulse** (`frontend/DESIGN.md`) e na skill `ui-ux-pro-max`.
+   - Basear a análise no Design System **Pulse** e na skill `ui-ux-pro-max`.
    - Retornar: parecer do visual existente, propostas de melhoria/inovação, fluxos recomendados, adesão ao Pulse.
 6. Carregue `frontend-design` apenas como apoio complementar à direção visual — não substitui o parecer do `ux-designer`.
 7. Incorpore as decisões do `ux-designer` na PROPOSTA e na SPEC (seção de UX/visual).
@@ -356,7 +356,7 @@ Delegacao para code-reviewer
 ```
 Delegacao para ux-designer (OBRIGATORIA em demanda frontend/visual)
 - Contexto: [feature, escopo, telas/fluxos afetados]
-- Fonte da verdade visual: Design System Pulse (frontend/DESIGN.md)
+- Fonte da verdade visual: Design System Pulse
 - Obrigacoes:
   1. Analisar o que JA EXISTE no sistema (telas, componentes, fluxos atuais)
   2. Propor o que MELHORAR ou INOVAR para a experiencia do usuario
@@ -403,7 +403,7 @@ Delegacao para ux-designer (OBRIGATORIA em demanda frontend/visual)
 
 ### Fase 4.5: Security Verify (Gate Obrigatório)
 
-Antes de avançar para Fase 5, execute a skill `security-review` no modo **Fase 4** para validar o zero-tolerance checklist de `security-standard.md`.
+Antes de avançar para Fase 5, execute a skill `security-review` no modo **Fase 4** para validar o zero-tolerance checklist de OWASP/ASVS/MASVS da própria skill.
 
 1. Carregue skill `security-review`.
 2. Execute o checklist de 14 itens de segurança.
@@ -573,7 +573,7 @@ Sempre use ferramenta `task` para delegar a subagentes:
 | **Planejamento técnico** | **`planner`** | **`dev-planner`** |
 | **Análise visual / decisão de UX** | **`ux-designer`** | **`ui-ux-pro-max`** |
 | **Design System / Templates** | **`design-system-specialist`** | **`template-structure` + `template-best-practices` + `template-deepsearch`** |
-| Auditoria de segurança | `security-engineer` | `.agents/rules/security-standard.md` |
+| Auditoria de segurança | `security-engineer` | Skill `security-review` (OWASP/ASVS/MASVS) |
 | Implementação backend | `developer-engineer` | `java-architecture-specialist` \| `nestjs-architecture-specialist` \| `node-architecture-specialist` \| `rust-architecture-specialist` |
 | Implementação frontend | `developer-engineer` | `frontend-vue-specialist` + `frontend-design` \| `frontend-react-specialist` + `frontend-design` |
 | Revisão de código | `code-reviewer` | — |
@@ -614,7 +614,7 @@ Antes de marcar qualquer tarefa como concluída, verifique:
 - [ ] **Frontend:** Sem imports `axios`?
 - [ ] **Visual/UX:** `ux-designer` foi invocado em demanda frontend/visual e seu parecer consta na SPEC/delegação? (fonte da verdade)
 - [ ] **Design System:** em demanda de componentes reutilizáveis, `design-system-specialist` foi invocado após `ux-designer` e seu template spec consta na SPEC/delegação?
-- [ ] **Segurança:** endpoints validados contra `.agents/rules/security-standard.md`? Auditoria `security-engineer` em auth/autorização/segredos? (fonte da verdade de segurança)
+- [ ] **Segurança:** endpoints validados contra a skill `security-review` (OWASP/ASVS/MASVS)? Auditoria `security-engineer` em auth/autorização/segredos? (fonte da verdade de segurança)
 - [ ] **Testes:** Testes unitários seguem padrão `when{Action}_then{Expected}`?
 - [ ] **Testes:** Todo controller tem `*IT.java` no módulo integration-test?
 - [ ] **Estado:** `workflow-state.json` atualizado após cada fase?
@@ -669,12 +669,8 @@ tool por si só — prosa descreve, runtime nega (SPEC §2; `gate-contract.md` �
 | `workflow-rules.md §5` | **FONTE DA VERDADE** do harness (H1-H7) — suite completa, zero tolerância, E2E greenfield, avaliação contínua, portão de conclusão |
 | `.agents/rules/workflow-rules.md` | Workflow SDD + Bugfix completo |
 | `.agents/rules/sdd-workflow-standard.md` | Estrutura de arquivos & gestão de estado |
-| `.agents/rules/backend-coding-standards.md` | Padrões backend |
 | `.agents/rules/frontend-coding-standards.md` | Padrões frontend |
-| `.agents/rules/backend-unit-tests.md` | Regras de testes unitários |
-| `.agents/rules/backend-integration-tests.md` | Regras de testes de integração |
-| `.agents/rules/db-migration-flyway.md` | Regras de migração Flyway |
-| `.agents/rules/security-standard.md` | **Fonte da verdade** de segurança (OWASP) — web, API, mobile |
+| Skill `security-review` | **Fonte da verdade** de segurança (OWASP/ASVS/MASVS) — web, API, mobile |
 | `.agents/rules/brain-context.md` | Protocolo de contexto do Brain |
 | `.doc/especificacao-sistema.md` | Especificação do sistema |
 | `.doc/arquitetura-backend.md` | Arquitetura backend |

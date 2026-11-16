@@ -4,7 +4,8 @@
 //   { ok: boolean, results: [{ id, status: "PASS"|"FAIL", detail, counters? }] }
 // com os ids `missing-and-unclassified`, `stale-baseline-entry`,
 // `baseline-entry-incomplete`, `nondefect-entry-incomplete`,
-// `stale-nondefect-entry`. `counters` é aditivo e carrega os números que o
+// `stale-nondefect-entry` e `link-ref-citation-form` (RC6/N30). `counters` é
+// aditivo e carrega os números que o
 // `detail` narra — `stale-baseline-entry` publica `{ vendorOnly }` para que o
 // adapter emita a dívida vendorizada também em PASS (ADR-005 §8-N18).
 //
@@ -53,6 +54,11 @@ import { join, sep } from "node:path";
 // O mesmo predicado do RF-03. `g` é obrigatório: uma linha pode citar N paths.
 export const REF_RE = /rules\/[a-z0-9-]+\.md/g;
 
+// RC6 / N30 (ADR-004 §2.4): definição de link-ref markdown. `citesToken` do
+// V19 casa o rótulo entre parênteses e compraria `consumer` falso. O detector
+// reprova a FORMA, não o token em prosa normal (predicado restrito ao link-ref).
+export const LINK_REF_RE = /^\[\/\/\]: # \(([^)]*)\)/;
+
 // Prefixo do corpus vivo — a fronteira é path, não conteúdo (SPEC I3).
 export const LIVE_CITER_RE = /^(\.agents\/|opencode\.json$)/;
 
@@ -74,63 +80,20 @@ export const CLASS_LABELS = Object.freeze({
 // suprimidas por mecanismo (lista com razão / lock) e não ocupam entrada.
 export const BASELINE_CLASSES = new Set(["C1", "C2"]);
 
-const OWNER = "prd-harness-inventory";
-const PRD = "PRD 2";
 const EIXO_NA = "eixo backend declarado N/A em harness.config.json.stack.backend";
 
 // --- Baseline (dívida declarada, nunca permissão — SPEC I2) ---------------
-// 7 entradas = as 2 C1 (A2, A7 da ADR-005 §3) + as 5 C2 (A1, A3–A6).
+// ADR-004 removeu 6 das 7 entradas: SSoT reapontada (RC1), regra local já
+// viaja (RC4) e 4 rules Java fora de suporte (RC2). Resta 1: a única citação
+// viva que o CDL BASELINE mantém pinned em dev-planner/SKILL.md:204 (módulo
+// lib/cdl/** é imutável neste ciclo). Dívida com dono PRD-4 + reativação.
 export const BASELINE = Object.freeze([
-  {
-    path: "rules/security-standard.md",
-    class: "C1",
-    reason:
-      "SSoT de segurança declarada por 3 agentes vivos; alvo é agnóstico ⇒ repoint-or-create no PRD 2",
-    owner: OWNER,
-    prd: PRD,
-  },
-  {
-    path: "rules/unit-testing-standards.md",
-    class: "C1",
-    reason:
-      "citada só pela skill dev-planner; assunto não casa o predicado de eixo N/A ⇒ repoint-or-create no PRD 2",
-    owner: OWNER,
-    prd: PRD,
-  },
   {
     path: "rules/backend-coding-standards.md",
     class: "C2",
-    reason: `${EIXO_NA}; dívida com dono, reativar quando o PRD 3/4 habilitar o eixo`,
-    owner: OWNER,
-    prd: PRD,
-  },
-  {
-    path: "rules/backend-integration-tests.md",
-    class: "C2",
-    reason: `${EIXO_NA}; dívida com dono, reativar quando o PRD 3/4 habilitar o eixo`,
-    owner: OWNER,
-    prd: PRD,
-  },
-  {
-    path: "rules/backend-unit-tests.md",
-    class: "C2",
-    reason: `${EIXO_NA}; dívida com dono, reativar quando o PRD 3/4 habilitar o eixo`,
-    owner: OWNER,
-    prd: PRD,
-  },
-  {
-    path: "rules/db-migration-flyway.md",
-    class: "C2",
-    reason: `${EIXO_NA}; dívida com dono, reativar quando o PRD 3/4 habilitar o eixo`,
-    owner: OWNER,
-    prd: PRD,
-  },
-  {
-    path: "rules/db-migration-liquibase.md",
-    class: "C2",
-    reason: `${EIXO_NA}; dívida com dono, reativar quando o PRD 3/4 habilitar o eixo`,
-    owner: OWNER,
-    prd: PRD,
+    reason: `${EIXO_NA}; ADR-004 §4.1 — dívida com dono PRD-4 (prd-axes-split), reativar quando o eixo backend voltar`,
+    owner: "PRD-4",
+    prd: "prd-axes-split",
   },
 ]);
 
@@ -345,6 +308,58 @@ function citeList(cites, limit = 3) {
   return cites.length > limit ? `${shown} (+${cites.length - limit})` : shown;
 }
 
+// Skills conhecidas = diretórios vivos em `.agents/skills/**` ∪ chaves do lock.
+// Nenhuma toolchain nova: é o mesmo read-only fs já usado pelo walker.
+function readSkillNames(root) {
+  const names = new Set(readLockSkills(root));
+  try {
+    for (const entry of readdirSync(join(root, ".agents", "skills"), { withFileTypes: true })) {
+      if (entry.isDirectory()) names.add(entry.name);
+    }
+  } catch {
+    // sem diretório de skills, vale o lock (fixture mínima)
+  }
+  return names;
+}
+
+// Mesma fronteira de token de `citesToken` (inventário): `-`/`_` no alfabeto,
+// para não confundir `security-review` com `security-review-extra`.
+function hasTokenBoundary(text, token) {
+  const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`(?<![A-Za-z0-9_-])${escaped}(?![A-Za-z0-9_-])`).test(text);
+}
+
+function collectLinkRefCitations(root, skillNames) {
+  const found = [];
+  for (const rel of collectCandidateFiles(root)) {
+    if (!isLiveCiter(rel)) continue;
+    let text;
+    try {
+      text = readFileSync(join(root, rel), "utf8");
+    } catch {
+      continue;
+    }
+    const lines = text.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      const m = LINK_REF_RE.exec(lines[i].trim());
+      if (!m) continue;
+      for (const skill of skillNames) {
+        if (hasTokenBoundary(m[1], skill)) {
+          found.push({ citer: rel, line: i + 1, label: m[1], skill });
+        }
+      }
+    }
+  }
+  return found;
+}
+
+function linkRefDetail(hits) {
+  return hits.length
+    ? `${hits.length} link-ref(s) com nome de skill: `
+      + hits.slice(0, 3).map((h) => `${h.citer}:${h.line} → "${h.skill}"`).join("; ")
+    : "link-ref que compra consumer=0 (skills conhecidas por diretório/lock)";
+}
+
 function vacuous(detail) {
   return {
     ok: true,
@@ -354,6 +369,7 @@ function vacuous(detail) {
       { id: "baseline-entry-incomplete", status: "PASS", detail },
       { id: "nondefect-entry-incomplete", status: "PASS", detail },
       { id: "stale-nondefect-entry", status: "PASS", detail },
+      { id: "link-ref-citation-form", status: "PASS", detail },
     ],
   };
 }
@@ -409,6 +425,8 @@ export function runRefsChecks(root = process.cwd()) {
   // Modo (c): a supressão de C3 apodreceu (ADR-005 §8-N11/N17). Reaproveita as
   // citações já coletadas — a régua é a mesma, sem segunda varredura.
   const nonDefectStale = validateNonDefectStale(NON_DEFECT, root, citations);
+  // RC6 / N30: forma de citação que o V19 ainda casa como `consumer`.
+  const linkRefHits = collectLinkRefCitations(root, readSkillNames(root));
 
   const results = [
     {
@@ -449,6 +467,12 @@ export function runRefsChecks(root = process.cwd()) {
       detail: nonDefectStale.length
         ? `NON_DEFECT com ${nonDefectStale.length} entrada(s) obsoleta(s): ${nonDefectStale.join("; ")}`
         : `NON_DEFECT com ${NON_DEFECT.length} entrada(s), todas com proof vivo (arquivo:linha cita o path)`,
+    },
+    {
+      id: "link-ref-citation-form",
+      status: linkRefHits.length ? "FAIL" : "PASS",
+      detail: linkRefDetail(linkRefHits),
+      counters: { linkRefs: linkRefHits.length },
     },
   ];
 

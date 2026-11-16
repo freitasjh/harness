@@ -588,18 +588,16 @@ Para **TODO** desenvolvimento, as skills apropriadas **OBRIGATORIAMENTE** devem 
 
 ## 9. Documentos de Referência
 
+> **Dívida declarada (ADR-004 §4):** dependências de eixo Java/db (backend, migração) saíram do payload comum — dono **PRD-4** (`prd-axes-split`), reativadas quando `harness.config.json.stack.backend` deixar de ser `N/A`. O ponteiro para o design system de frontend saiu dos agentes — dono **PRD-5** (cria o arquivo). Referências a documentos de arquitetura/stack seguem com dono **ADR-005**. Nada aqui autoriza remover a SSoT de segurança: ela agora é a skill `security-review`.
+
 | Documento | Propósito |
 |-----------|-----------|
 | `.doc/stacks.md` | Stacks e versões |
 | `.doc/arquitetura-backend.md` | Arquitetura detalhada do sistema |
 | `.doc/especificacao-sistema.md` | Especificação completa do sistema |
 | `.spec/backend/sdd-etapa{N}-{dominio}.md` | SDD de cada domínio |
-| `.agents/rules/backend-unit-tests.md` | Regras detalhadas de testes unitários |
-| `.agents/rules/backend-integration-tests.md` | Regras detalhadas de testes de integração |
-| `.agents/rules/backend-coding-standards.md` | Padrões de codificação backend |
 | `.agents/rules/frontend-coding-standards.md` | Padrões de codificação frontend |
-| `.agents/rules/db-migration-flyway.md` | Regras de migração Flyway |
-| `.agents/rules/security-standard.md` | **Fonte da verdade** de segurança (OWASP) — web, API, mobile |
+| Skill `security-review` | **Fonte da verdade** de segurança (OWASP/ASVS/MASVS) — web, API, mobile |
 | `.agents/rules/brain-context.md` | Ponte fina → `BRAIN.MCP.md` (dono brain) |
 | `.agents/rules/sdd-workflow-standard.md` | Padrão do workflow SDD |
 | Skill de planejamento consumida pelo `planner` (metodologia, `SKILL.md`) | **Planejamento técnico detalhado** — 6 fases (Descubra→Analise→Desafie→Projete→Estime→Valide); saída = 4 artefatos + parecer ao `sdd-compiler` |

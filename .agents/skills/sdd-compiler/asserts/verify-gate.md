@@ -22,7 +22,7 @@ Verificação pós-implementação obrigatória antes do `archive`. Três dimens
 
 - [ ] **ADRs refletidos**: Decisões arquiteturais do `SPEC.md § ADRs` visíveis no código (naming, estrutura, padrões).
 - [ ] **Sem vazamento de camada**: Controllers expõem DTOs (não entities). `impl` não depende de outro `impl`.
-- [ ] **Naming conventions**: Classes, métodos e variáveis seguem padrões em `.agents/rules/backend-coding-standards.md`.
+- [ ] **Naming conventions**: Classes, métodos e variáveis seguem os padrões declarados na SPEC.
 - [ ] **Frontend DevTools** (se mudança frontend):
   - [ ] Zero `[ERROR]` no console.
   - [ ] Zero `[WARN]` relevantes no console.

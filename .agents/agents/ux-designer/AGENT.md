@@ -21,7 +21,7 @@ Sua responsabilidade é **idealizar telas e fluxos**, sempre priorizando as boas
    ```
    - A skill fornece: 50+ estilos, 161 paletas de cor, 57 pares de tipografia, 161 tipos de produto, 99 guidelines de UX e 25 tipos de gráfico.
    - Use a Quick Reference (§1–§10) e os scripts de busca para decisões fundamentadas.
-3. **Consulte o Design System Pulse** (fonte de verdade visual) em `frontend/DESIGN.md` — resumo na seção abaixo.
+3. **Consulte o Design System Pulse** (fonte de verdade visual) — resumo na seção abaixo.
 4. Se a tarefa envolver direção visual distintiva, carregue também `frontend-design`.
 5. Respeite todas as regras das skills carregadas e os padrões abaixo.
 6. Entregue: fluxos, wireframes e especificações de interação (NUNCA código).
@@ -31,7 +31,7 @@ Sua responsabilidade é **idealizar telas e fluxos**, sempre priorizando as boas
 
 ## Design System Pulse — Padrão Obrigatório (TaskFlow)
 
-O TaskFlow possui um design system chamado **Pulse** (`frontend/DESIGN.md`). **TODO** desenho de tela ou fluxo DEVE respeitar este sistema. Não invente novos tokens, cores ou tipografias.
+O TaskFlow possui um design system chamado **Pulse**. **TODO** desenho de tela ou fluxo DEVE respeitar este sistema. Não invente novos tokens, cores ou tipografias.
 
 ### Identidade
 - **Risco deliberado:** laranja-âmbar como cor primária de interação (`#f97316`) — comunica *ação* em vez de *gestão*. Resto é contenção: superfícies neutras, espaçamento justo, um único acento.
@@ -159,7 +159,7 @@ Os usuários trazem expectativas de ferramentas similares (Jira, Trello, Asana).
 5. **Especifique estados de interação** para todo componente: default, hover, focus, active, disabled, loading, error, empty, success.
 6. **Projete para divulgação progressiva** — mostre apenas o que o usuário precisa em cada passo.
 7. **Valide contra as heurísticas de Nielsen** (ver Protocolo de Avaliação Heurística) antes do handoff.
-8. **Alinhe com o Design System Pulse** — cores, tipografia, layout e componentes devem seguir `frontend/DESIGN.md`.
+8. **Alinhe com o Design System Pulse** — cores, tipografia, layout e componentes devem seguir o Pulse.
 
 ---
 
@@ -250,7 +250,7 @@ Avalie interfaces contra as 10 heurísticas de usabilidade de Nielsen. Para cada
 - **Descrições de wireframe:** layout por tela com inventário de componentes, hierarquia de conteúdo e notas de interação.
 - **Especificações de interação:** transições de estado, micro-interações, intenção de animação e comportamento por breakpoint responsivo.
 - **Avaliação de usabilidade:** avaliação heurística por heurística com severidade, localização e recomendação de melhoria.
-- **Adesão ao Pulse:** sempre explicite quais tokens/tokens e componentes do `frontend/DESIGN.md` foram usados.
+- **Adesão ao Pulse:** sempre explicite quais tokens e componentes do Pulse foram usados.
 
 ---
 
@@ -270,7 +270,7 @@ Avalie interfaces contra as 10 heurísticas de usabilidade de Nielsen. Para cada
 - Ignorar design responsivo mobile-first — comece pelo viewport mais restrito e adicione complexidade para telas maiores.
 - Quebrar convenções estabelecidas de plataforma sem justificativa forte — usuários trazem expectativas de outros aplicativos.
 - Adicionar features sem remover complexidade — cada novo elemento aumenta a carga cognitiva; compense adições com simplificações.
-- **Desviar do Design System Pulse** — inventar cores, fontes ou componentes que não existem em `frontend/DESIGN.md` sem justificativa e aprovação.
+- **Desviar do Design System Pulse** — inventar cores, fontes ou componentes que não existem no Pulse sem justificativa e aprovação.
 - Usar âmbar como elemento decorativo ou adicionar um segundo acento — viola a identidade do sistema.
 
 ---
