@@ -1,5 +1,5 @@
 {
-  "current_feature": "prd-installer-rust-adr-001",
+  "current_feature": "prd-installer-rust-adr-002",
   "current_phase": "Planning",
   "previous_phase": "Discovery",
   "next_phase": "Discovery",
@@ -31,7 +31,7 @@
     "prd": ".spec/prd/prd-installer-rust/PRD.md",
     "research": null,
     "adr_index": null,
-    "adr": ".spec/prd/prd-installer-rust/ADRs/ADR-001-fronteira-subprocesso/ADR.md",
+    "adr": ".spec/prd/prd-installer-rust/ADRs/ADR-002-oraculo-paridade/ADR.md",
     "prd_lines": ".spec/prd/prd-harness-inventory/PRD.md (162 linhas, 16 secoes, PRD-01 PASS)"
   },
   "scope": {
@@ -193,7 +193,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T13:54:24.187Z",
+  "last_update": "2026-11-16T14:00:35.823Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -217,7 +217,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-agnostic-artifacts-adr-005: APPROVED (0 criticos; 3 debitos de governanca fechados)",
-  "sdd_stage": "PRD-3 ADR-001: fronteira de subprocesso e contrato — ADR em redacao pelo architect. Base prd branch abfc281",
+  "sdd_stage": "PRD-3 ADR-002: oraculo de paridade e golden (SI-1..SI-6) em redacao. Contrato contract-v1 aprovado e commitado em e3d86de",
   "backlog": {
     "total": 10,
     "todo": 0,
@@ -1074,9 +1074,10 @@
   "prd_adr": {
     "prd_id": "prd-installer-rust",
     "prd_status": "approved",
-    "active_adr": "ADR-001",
+    "active_adr": "ADR-002",
     "adr_order": [
-      "ADR-001"
+      "ADR-001",
+      "ADR-002"
     ],
     "snapshots": [],
     "decisions_closed": {
