@@ -59,7 +59,7 @@
   "gates": {
     "P0_P1": "approved_user_2026_11_16 (Refactor; ADR-004 como entrada da SPEC; ux-designer obrigatorio na analise)",
     "G2_PRD": "approved_user_2026_10_22 (PRD prd-garantias-runtime aprovado sem ressalvas; §16 do PRD.md; 3 decisoes do owner)",
-    "P1_P2": "pending_architect_confirmation (3 reprovacoes + asserção final medida em f9f70c8)",
+    "P1_P2": "approved_auto_architect_2026_11_16 (3 rodadas; score 100%; ux-designer anexado; guarda com dente confirmada) — AGUARDANDO CONFIRMACAO DO OWNER",
     "P2_P3": "approved_user_2026_11_16 (PLAN 70 linhas, TASKS 12 microtasks, 17 RF mapeados; SDD verdes)",
     "P3_P4": "approved_auto_evidence_2026_11_16 (3 batches; review APPROVED 0/0 apos 1 iteracao de correcao; mutante 0/23)",
     "P4_P5": "approved_auto_evidence_QA_2026_11_16 (540+644 + cargo 60 + spec 20; 23/23 differential real; SI 1..6 medidos)",
@@ -84,12 +84,11 @@
     "P4_5": "approved_auto_2026_11_16 (security-review 14/14 — 9 N/A declarados, 5 aplicaveis; zero segredos; Cargo.lock versionado)"
   },
   "code_review": {
-    "last_invoked_at": "2026-11-16T21:36:23.230Z",
+    "last_invoked_at": "2026-11-16T21:53:46.859Z",
     "last_status": "passed",
     "critical_issues": 0,
-    "attention_issues": 1,
-    "suggestions": 2,
-    "reviewer_notes": "Quitacao parcial D1: APPROVED 0 critical. 1 importante nao-bloqueante: Symbol.hasInstance em InstallError vaza para ContractError (sem dano vivo; 7 call-sites internos). 2 sugestoes: alinhar campo decisao (feito) e fechar rationale da divida (feito — 10 ops sideCanon:true, so ordem de chaves). Apto ao push."
+    "attention_issues": 0,
+    "reviewer_notes": "SPEC ADR-004 aprovada apos 3 rodadas de architect. Guarda RF-05(tela nunca grava) reancorada como asserção com dente. 17 RF 1:1, byte/transicao fechados, UX vinculante M1..M8."
   },
   "overrides": [
     {
@@ -228,7 +227,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T21:53:25.870Z",
+  "last_update": "2026-11-16T21:53:46.859Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -252,7 +251,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-004 ANALISE — 3 rodadas de architect; guarda RF-05 agora com dente (match/ausente reprovam). Confirmacao final pendente",
+  "sdd_stage": "PRD-3 ADR-004 ANALISE CONCLUIDA — SPEC 100%, architect APPROVED apos 3 rodadas, UX e seguranca pass; aguardando portao P1->P2",
   "backlog": {
     "total": 12,
     "todo": 0,
@@ -1984,6 +1983,7 @@
     ],
     "final_fix": "RF-05(b) = test -f wizard.rs && test \"$(grep -cE ...)\" -eq 0 — medido: limpo exit 0, match injetado exit 1, arquivo ausente exit 1",
     "escalation": "limite de 3 iteracoes atingido; confirmacao final requisitada fora do loop",
-    "at": "2026-11-16T21:53:25.870Z"
+    "at": "2026-11-16T21:53:25.870Z",
+    "final_verdict": "APPROVED (confirmacao pos-3a correcao; guarda 3 caminhos: limpo 0, match 1, ausente 1)"
   }
 }
