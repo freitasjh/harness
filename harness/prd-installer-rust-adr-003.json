@@ -1,0 +1,273 @@
+{
+  "version": 1,
+  "demand": "prd-installer-rust-adr-003",
+  "agent": "developer-engineer",
+  "phase": "Execution",
+  "gitSha": "5f9154066ca69d2e671d3799fe6327dfb3550ebf",
+  "commands": [
+    {
+      "cmd": "node installer-rs/tests/prova-engine.mjs",
+      "exitCode": 0,
+      "durationMs": 0,
+      "stdoutHash": "sha256:a3585266808d499e1f6fed617a14dc8d83f9359695ee8144c777693946ccc780"
+    }
+  ],
+  "counts": {
+    "unit": {
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0
+    },
+    "it": {
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    "frontend": {
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "evaluation": {
+    "telas": "N/A — TUI é ADR-004",
+    "negocio": "vocabulário fechado: 22 códigos+UNKNOWN; 23 ops D-ENGINE; nenhum valor novo",
+    "logica": "7 ops de leitura sem escrita; differential contra c63e333",
+    "perf": "N/A — operações de leitura determinísticas"
+  },
+  "brainStore": [
+    "regras/projetos/projetos/harness-adr-003-batch1/motor-contract-v1",
+    "regras/projetos/projetos/harness-adr-003-batch1/prova-oraculo-externo"
+  ],
+  "cleanup": {
+    "ports": [],
+    "note": "worktree do oráculo liberado no finally; nenhum servidor subido; diff scratch em /tmp/opencode"
+  },
+  "selfReported": true,
+  "batch": 1,
+  "oraculo": "c63e333",
+  "shaFull": "c63e33307710e1c6271f5c68b2dd9fb15283f49c",
+  "worktreeCleanBeforeEach": true,
+  "frozenVerdicts": [
+    {
+      "path": "installer/__tests__/golden.spec.mjs",
+      "sha256": "591a340a7e1aa1bcba13f0f8d09b0e5e1b63128e20ac26e2b29a55b8d4b264cd"
+    },
+    {
+      "path": "installer/__tests__/eixos-stack.spec.mjs",
+      "sha256": "33d7a715815d3df0924f6f6717277f909cc42ae52447570e8edd290a65710b35"
+    },
+    {
+      "path": "installer/__tests__/installer-upgrade-regression.spec.mjs",
+      "sha256": "130e808256664751a672b1963473acd7719b4dd31645757c8a6be1bb0b0afdf3"
+    },
+    {
+      "path": "installer/__tests__/merge-v2-only.spec.mjs",
+      "sha256": "91231b924867ab5c7fda55b80e96ba5d129209e8dbaacd4674041b4d00a6ef1d"
+    },
+    {
+      "path": "installer/__tests__/doctor.spec.mjs",
+      "sha256": "f10ef5803998a6dcb1d4a46b57063a224f96037366b1ce51154d7bb80867cf64"
+    },
+    {
+      "path": "installer/__tests__/preflight.spec.mjs",
+      "sha256": "d8f11b52d4767afa031d47a3183e9a942d27607439cd63337e2d853373af01b5"
+    },
+    {
+      "path": "installer/__tests__/checks.spec.mjs",
+      "sha256": "eaac91f8fa94b665546062cf7bb585f8ff6a67a4d3f522f43d3a5a775b5b33f1"
+    },
+    {
+      "path": ".spec/archive/20261018-harness-eixos-stack/harness/wizard-react-transcript.txt",
+      "sha256": "fe1f918757f30afec7c43518b94fb19e341dca4a219d7f44848076d7ba165109"
+    }
+  ],
+  "fixtures": [
+    "preflight",
+    "inventory",
+    "backup",
+    "resolveBackupDir",
+    "loadAnswersFile",
+    "collectAnswers",
+    "generateConfig",
+    "collectIncoming",
+    "planMerge",
+    "applyMerge",
+    "buildManifest",
+    "writeManifest",
+    "requireVerifiedBackup",
+    "runChecks",
+    "mergeOpencodeJson",
+    "mergeAgentFile",
+    "main",
+    "runDoctor",
+    "runInit",
+    "runUpgrade",
+    "runCli",
+    "parseArgs",
+    "runWizard"
+  ],
+  "prova": [
+    {
+      "op": "preflight",
+      "status": "ok",
+      "diff": "",
+      "oracleExit": 0,
+      "binExit": 0,
+      "v": 1,
+      "opDoEnvelope": "preflight",
+      "ok": true
+    },
+    {
+      "op": "inventory",
+      "status": "ok",
+      "diff": "",
+      "oracleExit": 0,
+      "binExit": 0,
+      "v": 1,
+      "opDoEnvelope": "inventory",
+      "ok": true
+    },
+    {
+      "op": "backup",
+      "status": "pendente_batch2/3",
+      "reason": "op registrada; prova diferencial nas próximas fatias"
+    },
+    {
+      "op": "resolveBackupDir",
+      "status": "ok",
+      "diff": "",
+      "oracleExit": 0,
+      "binExit": 0,
+      "v": 1,
+      "opDoEnvelope": "resolveBackupDir",
+      "ok": true
+    },
+    {
+      "op": "loadAnswersFile",
+      "status": "ok",
+      "diff": "",
+      "oracleExit": 0,
+      "binExit": 0,
+      "v": 1,
+      "opDoEnvelope": "loadAnswersFile",
+      "ok": true
+    },
+    {
+      "op": "collectAnswers",
+      "status": "ok",
+      "diff": "",
+      "oracleExit": 0,
+      "binExit": 0,
+      "v": 1,
+      "opDoEnvelope": "collectAnswers",
+      "ok": true
+    },
+    {
+      "op": "generateConfig",
+      "status": "ok",
+      "diff": "",
+      "oracleExit": 0,
+      "binExit": 0,
+      "v": 1,
+      "opDoEnvelope": "generateConfig",
+      "ok": true
+    },
+    {
+      "op": "collectIncoming",
+      "status": "ok",
+      "diff": "",
+      "oracleExit": 0,
+      "binExit": 0,
+      "v": 1,
+      "opDoEnvelope": "collectIncoming",
+      "ok": true
+    },
+    {
+      "op": "planMerge",
+      "status": "pendente_batch2/3",
+      "reason": "op registrada; prova diferencial nas próximas fatias"
+    },
+    {
+      "op": "applyMerge",
+      "status": "pendente_batch2/3",
+      "reason": "op registrada; prova diferencial nas próximas fatias"
+    },
+    {
+      "op": "buildManifest",
+      "status": "pendente_batch2/3",
+      "reason": "op registrada; prova diferencial nas próximas fatias"
+    },
+    {
+      "op": "writeManifest",
+      "status": "pendente_batch2/3",
+      "reason": "op registrada; prova diferencial nas próximas fatias"
+    },
+    {
+      "op": "requireVerifiedBackup",
+      "status": "pendente_batch2/3",
+      "reason": "op registrada; prova diferencial nas próximas fatias"
+    },
+    {
+      "op": "runChecks",
+      "status": "pendente_batch2/3",
+      "reason": "op registrada; prova diferencial nas próximas fatias"
+    },
+    {
+      "op": "mergeOpencodeJson",
+      "status": "pendente_batch2/3",
+      "reason": "op registrada; prova diferencial nas próximas fatias"
+    },
+    {
+      "op": "mergeAgentFile",
+      "status": "pendente_batch2/3",
+      "reason": "op registrada; prova diferencial nas próximas fatias"
+    },
+    {
+      "op": "main",
+      "status": "pendente_batch2/3",
+      "reason": "op registrada; prova diferencial nas próximas fatias"
+    },
+    {
+      "op": "runDoctor",
+      "status": "pendente_batch2/3",
+      "reason": "op registrada; prova diferencial nas próximas fatias"
+    },
+    {
+      "op": "runInit",
+      "status": "pendente_batch2/3",
+      "reason": "op registrada; prova diferencial nas próximas fatias"
+    },
+    {
+      "op": "runUpgrade",
+      "status": "pendente_batch2/3",
+      "reason": "op registrada; prova diferencial nas próximas fatias"
+    },
+    {
+      "op": "runCli",
+      "status": "pendente_batch2/3",
+      "reason": "op registrada; prova diferencial nas próximas fatias"
+    },
+    {
+      "op": "parseArgs",
+      "status": "pendente_batch2/3",
+      "reason": "op registrada; prova diferencial nas próximas fatias"
+    },
+    {
+      "op": "runWizard",
+      "status": "pendente_batch2/3",
+      "reason": "op registrada; prova diferencial nas próximas fatias"
+    }
+  ],
+  "mutation": {
+    "rejected": true,
+    "path": "installer/__tests__/golden.spec.mjs",
+    "original": "591a340a7e1aa1bcba13f0f8d09b0e5e1b63128e20ac26e2b29a55b8d4b264cd",
+    "mutated": "b289833776daa40cb6c8efe5b6a98611a79dfae415e80e2c28471a544380c780"
+  },
+  "zeroWrites": true,
+  "frozenUnchanged": true,
+  "guards": true,
+  "literalProven": false,
+  "note": "SI-2/SI-3 permanecem not_measured neste batch (VAL-03); 12/12 é meta, não fato medido."
+}

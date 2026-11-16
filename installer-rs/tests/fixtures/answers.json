@@ -1,0 +1,5 @@
+{
+  "project": "demo",
+  "stack": "node",
+  "suiteCommand": "node --test"
+}
