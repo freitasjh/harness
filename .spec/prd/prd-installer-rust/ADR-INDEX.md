@@ -49,7 +49,7 @@
 |---|---|---|---|---|---|---|---|
 | 1 | ADR-001 | Fronteira de subprocesso e contrato: CLI Rust como binário invocado por 22 consumidores Node, com stdin/stdout/stderr, códigos de saída e segredo sem eco, sem FFI e sem dois motores | merged | — | ADRs/ADR-001-fronteira-subprocesso/ | adr/prd-installer-rust/01-fronteira-subprocesso | feat(#17) `331e44f` — merge humano 2026-11-16 |
 | 2 | ADR-002 | Oráculo de paridade com anti-tautologia: literais congelados mais differential contra o Node c63e333, insta só como revisor de diff e literal válido após validação humana | merged | ADR-001 | ADRs/ADR-002-oraculo-paridade/ | adr/prd-installer-rust/02-oraculo-paridade | feat(#18) `fbdca4c` — merge humano 2026-11-16 |
-| 3 | ADR-003 | Motor init/doctor/upgrade: 23 ops de engine mapeadas 1:1, ordem de upgrade congelada e vereditos lidos como literais externos; critério de CLI contra o oráculo, crate/versão fora da decisão | in-progress | ADR-001, ADR-002 | ADRs/ADR-003-motor-init-doctor-upgrade/ | adr/prd-installer-rust/03-motor-init-doctor-upgrade | — |
+| 3 | ADR-003 | Motor init/doctor/upgrade: 23 ops de engine mapeadas 1:1, ordem de upgrade congelada e vereditos lidos como literais externos; critério de CLI contra o oráculo, crate/versão fora da decisão | in-progress | ADR-001, ADR-002 | ADRs/ADR-003-motor-init-doctor-upgrade/ | adr/prd-installer-rust/03-motor-init-doctor-upgrade | feat(#19) `98f5900` — merge humano 2026-11-16 |
 
 ## Insumo das linhas existentes
 

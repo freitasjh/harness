@@ -63,7 +63,7 @@
     "P3_P4": "approved_auto_evidence_2026_11_16 (3 batches; review APPROVED 0/0 apos 1 iteracao de correcao; mutante 0/23)",
     "P4_P5": "approved_auto_evidence_QA_2026_11_16 (540+644 + cargo 60 + spec 20; 23/23 differential real; SI 1..6 medidos)",
     "P5_P6": "approved_auto_2026_11_16 (VERIFY 3/3 com evidencia re-executada no repo real; owner aprovou cada batch; rito ADR-002 literalProven true)",
-    "P6_fim": "pending_human_push_merge (branch 03-motor-init-doctor-upgrade-impl @ dc27c1d)",
+    "P6_fim": "done_commit_98f5900 (PR #19 merge humano 2026-11-16; ADR-003 na main; ponte D1 ainda viva — quitação pendente)",
     "B1_B2": "approved_user_2026_09_29",
     "FU32": "closed_approved_decision_B",
     "_previous_cycle_opencode_v2_only": {
@@ -208,7 +208,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T19:27:22.829Z",
+  "last_update": "2026-11-16T20:11:40.975Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -232,7 +232,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-003 CONCLUIDO (12/12 tasks; 23/23 differential real; VERIFY 3/3; review APPROVED). Aguardando push + merge humano — ponte D1-two-motors expira no merge",
+  "sdd_stage": "PRD-3 ADR-003 MERGEADO (98f5900). Quitacao da ponte D1-two-motors em decisao pelo architect antes de abrir ADR-004",
   "backlog": {
     "total": 12,
     "todo": 0,
@@ -1157,7 +1157,7 @@
   "prd_adr": {
     "prd_id": "prd-installer-rust",
     "prd_status": "approved",
-    "active_adr": "ADR-003",
+    "active_adr": "ADR-004 (preparacao)",
     "adr_order": [
       "ADR-001",
       "ADR-002",
@@ -1177,6 +1177,14 @@
         "escalations_count": 0,
         "at": "2026-11-16T00:00:00-03:00",
         "merge": "fbdca4c"
+      },
+      {
+        "adr": "ADR-003",
+        "follow_ups_count": 2,
+        "escalations_count": 1,
+        "at": "2026-11-16T20:11:40.975Z",
+        "merge": "98f5900",
+        "nota": "loop de correcao 1/3 (tautologia do differential); divergencia real buildManifest.version corrigida"
       }
     ],
     "decisions_closed": {
