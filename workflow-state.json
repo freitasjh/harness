@@ -11,7 +11,7 @@
     "bug_report": "harness/harness-eixos-stack-p2.json",
     "source_tech_debt": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
     "previous_archive": ".spec/archive/20261018-harness-eixos-stack/",
-    "verify": ".spec/backend/prd-installer-rust-adr-002/VERIFY.md",
+    "verify": ".spec/backend/prd-installer-rust-adr-003/VERIFY.md",
     "harness_evidence": ".spec/archive/20261018-harness-eixos-stack/harness/",
     "harness_report": "harness/prd-installer-rust-adr-002.json",
     "tech_debt_p2": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
@@ -24,8 +24,8 @@
     "c1_previous_bug": ".spec/bugs/harness-eixos-stack-p2/TASKS.md",
     "proposal": ".spec/backend/prd-installer-rust-adr-003/PROPOSAL.md",
     "spec": ".spec/backend/prd-installer-rust-adr-003/SPEC.md",
-    "plan": ".spec/backend/prd-installer-rust-adr-002/PLAN.md",
-    "tasks": ".spec/backend/prd-installer-rust-adr-002/TASKS.md",
+    "plan": ".spec/backend/prd-installer-rust-adr-003/PLAN.md",
+    "tasks": ".spec/backend/prd-installer-rust-adr-003/TASKS.md",
     "superseded_cycle": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/ (superseded: SPEC prescrevia `Plugin.define`, ausente no binario v2.0.32)",
     "archive": ".spec/archive/20261028-harness-design-system-agent/",
     "prd": ".spec/prd/prd-installer-rust/PRD.md",
@@ -57,7 +57,7 @@
   "gates": {
     "P0_P1": "approved_user_2026_11_16 (Refactor; isencao de planner aceita; ADR-003 como entrada da SPEC)",
     "G2_PRD": "approved_user_2026_10_22 (PRD prd-garantias-runtime aprovado sem ressalvas; §16 do PRD.md; 3 decisoes do owner)",
-    "P1_P2": "pending_user_approval (SPEC 100%; architect em validacao)",
+    "P1_P2": "approved_auto_architect_2026_11_16 (SPEC 100%, 17/17 itens, 0 criticos; S1/S2 corrigidos, S3 registrado sem reabrir ADR) — AGUARDANDO CONFIRMACAO DO OWNER",
     "P2_P3": "approved_user_2026_11_11 (PLAN 57 linhas, TASKS 12 microtasks RV-01..RV-12)",
     "P3_P4": "approved_auto_evidence_2026_11_16 (commits 0b9a9e2..e6438c25; 2 criticos + 3 importantes fechados)",
     "P4_P5": "approved_auto_evidence_QA_2026_11_16 (REPORT schema-valido; assinatura do owner pendente aferida depois - literalProven true)",
@@ -205,7 +205,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T17:53:09.383Z",
+  "last_update": "2026-11-16T17:54:50.032Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -1501,6 +1501,13 @@
       "impacto": "Positivo: prova que o gate esta VIVO e bloqueando (evidencia de enforcement). Negativo: falso-positivo para edicao legitima de prosa que MENCIONE o padrao (docs/regras), forcando contorno. Direcao do erro e fail-closed.",
       "correcao_proposta": "casar o padrao apenas na posicao de comando (apos separador/`&&`/`;`/pipe) ou exigir limite de palavra antes, para nao disparar em texto citado",
       "nota_prioridade": "P2 (era P3): o canal de escrita declarado do orchestrator e `bash`, e ele nao consegue editar nenhuma regra que MENCIONE o padrao — inclusive `gate-contract.md` I7. Auto-bloqueio do unico canal."
+    },
+    {
+      "id": "S3",
+      "origem": "architect, validacao SPEC ADR-003 2026-11-16",
+      "texto": "ADR-003 afirma 23 codigos em ERROR_CODES; medicao direta de install.mjs:1529-1535 da 22 + UNKNOWN. Autoridade e o oraculo; nao reabrir ADR fechado. Registrado para rubrica futura.",
+      "severidade": "🟡",
+      "reabre_adr": false
     }
   ],
   "decisions": [

@@ -4,7 +4,7 @@
 
 ## 0. Score do spec-gate
 
-Ver relatório em `GATE-SPEC.md`. Alvo: 100% (5 aplicáveis atendidos; 6 `N/A` com motivo).
+Ver relatório em `GATE-SPEC.md`. Resultado: **100% (6 aplicáveis atendidos; 5 `N/A` com motivo)**.
 
 ## 1. Requisitos funcionais
 
@@ -14,7 +14,7 @@ Ver relatório em `GATE-SPEC.md`. Alvo: 100% (5 aplicáveis atendidos; 6 `N/A` c
 - **RF-04 (item 4)** — backup verificado antes de `apply`: `injectFailure` ⇒ `exit 1`, `BACKUP_FAIL`/`BACKUP_UNVERIFIED`, hash do destino idêntico (0 writes). `apply` é o único ponto de escrita de conteúdo.
 - **RF-05 (item 5)** — dry-run ⇒ **0 writes**, sem backup, sem `confirm`, sem `checks`; `applied:false`, `backupDir:null`, `checks:{passed:null,ran:false,skipped:true}`, `exit 0`. Hash de árvore antes=depois (FU-28: `passed:null` nunca publicado como PASS).
 - **RF-06 (item 6)** — `runDoctor` somente leitura, 7 marcadores D0..D6, vereditos `SAUDÁVEL`/`ATENÇÃO`/`QUEBRADO`, `exit 0/1` idênticos ao oráculo.
-- **RF-07 (item 7)** — mensagem de erro 4 linhas (`[ERRO] …` / `  porquê: <code>` / `  como corrigir: …` / `  onde ver: …`) e vocabulário de **23 códigos** + `UNKNOWN` byte-equal ao oráculo. `NOT_INSTALLED`/`MANIFEST_INVALID` medidos na fonte mapeiam para `UNKNOWN` no envelope — nenhum código novo.
+- **RF-07 (item 7)** — mensagem de erro 4 linhas (`[ERRO] …` / `  porquê: <code>` / `  como corrigir: …` / `  onde ver: …`) e vocabulário de códigos + `UNKNOWN` byte-equal ao oráculo. **Achado S3 (architect, sem reabertura do ADR):** o ADR afirma 23 códigos; medição direta de `install.mjs:1529-1535` ⇒ **22 códigos + `UNKNOWN`**. A autoridade é o oráculo e o `Set` dele; o número do ADR é herança registrada para rubrica futura (RFC pendente), nunca um valor a propagar no motor. `NOT_INSTALLED`/`MANIFEST_INVALID` medidos na fonte mapeiam para `UNKNOWN` no envelope — nenhum código novo.
 - **RF-08 (item 8)** — textos de usage/help fixados: 9 linhas de `printUsage` e `--help` ⇒ `0`; sem `--target` ⇒ `1`; `diff` vazio contra o oráculo.
 - **RF-09 (item 9)** — `init` create-only: destino sujo ⇒ `flagged-open`, `exit 1`, 0 writes, dica apontando `doctor`. `upgrade` com `flag` ⇒ `collisions`, **não** aborta. Merge de config por **forma**, nunca por nome de chave; npm do usuário preservado; only-add em `mcp`/`instructions` (Brain `merge-de-config-remocao-por-forma`, `merge-opencode-json-v2-only`).
 - **RF-10 (item 10)** — merge v2-only T1..T8 e idempotência por efeito: 2ª execução de `upgrade` ⇒ `noop`, schema intacto em **conteúdo/mtime/inode** (BF-02b).

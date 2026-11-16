@@ -31,7 +31,7 @@
 - [x] SQL/JPQL parametrizado — **N/A**: sem banco
 - [x] DTOs explícitos — envelope `v:1` com `result`/`error` (ADR-001 §2.2)
 - [x] Segredos — `stdin` sem eco, nenhum segredo em código/RELATÓRIO/log (I5)
-- [x] Erros genéricos — 4 linhas, 23 códigos + `UNKNOWN`, sem stack trace (RF-07)
+- [x] Erros genéricos — 4 linhas, códigos do `Set` do oráculo + `UNKNOWN` (22 medidos em `install.mjs:1529-1535`; ADR diz 23 — achado S3), sem stack trace (RF-07)
 - [x] Rollback seguro — backup verificado, único ponto de escrita `apply` (RF-04)
 - [x] Idempotência — 2ª execução `noop`, schema intacto em conteúdo/mtime/inode (RF-10)
 
