@@ -1,7 +1,11 @@
-// ADR-004 / TUI-06 — 8 `op`s de apresentação (D-TUI) em módulo local byte-fiel
-// a c63e333. Antes viviam como reexport de `install.mjs` na ponte D1; saem da
-// ponte e passam a ser implementação local, como os 29 D-PURE. Nenhuma escrita:
-// `apply` permanece no motor (ADR-003). Assinaturas e literais congelados.
+// ADR-004 / TUI-06 — 8 `op`s de apresentação (D-TUI) em módulo local extraído
+// de c63e333 com paridade MEDIDA (NÃO byte-fiel integral): 3/8 funções
+// byte-iguais ao oráculo (readSecretRaw, readSecretPrompt, detect — warning
+// R9 restaurado); 5 divergências não-funcionais (comentários, 2 linhas de
+// indentation em printUsage, path default de sourceLineOf). Antes viviam como
+// reexport de install.mjs na ponte D1; saem da ponte e passam a ser
+// implementação local, como os 29 D-PURE. Nenhuma escrita: `apply` permanece
+// no motor (ADR-003). Assinaturas e literais congelados.
 import fs from 'node:fs'
 import path from 'node:path'
 import readline from 'node:readline'
@@ -197,6 +201,16 @@ export async function askMenuStep({ read, out, answers = {}, header, items, step
   }
 }
 
+function commandResolves(cmd) {
+  if (!cmd || typeof cmd !== 'string') return false;
+  const bin = cmd.trim().split(/\s+/)[0];
+  if (!bin) return false;
+  if (bin.includes('/') || bin.includes(path.sep)) return fs.existsSync(path.resolve(bin));
+  const pathEnv = (process.env.PATH || '').split(path.delimiter);
+  const exts = process.platform === 'win32' ? (process.env.PATHEXT || '.EXE').split(';') : [''];
+  return pathEnv.some((d) => exts.some((e) => { try { return fs.existsSync(path.join(d, bin + e)); } catch { return false; } }));
+}
+
 export function pubspecDeclaresFlutter(text) {
   for (const raw of String(text).split('\n')) {
     const line = raw.replace(/#.*$/, '');
@@ -250,8 +264,12 @@ export function detect(target) {
       result.declaresFlutter = true;
     }
   });
+  // Discriminador autoritativo reusado do ADR-005.
   result.declaresFlutter = result.declaresFlutter || pubspecDeclaresFlutter(text);
   result.suggestedStack = result.declaresFlutter ? 'flutter' : 'dart';
+  if (result.suggestedStack === 'flutter' && !commandResolves('flutter')) {
+    result.warnings.push("'flutter' nao resolve no PATH (R9): confirme o comando da suite.");
+  }
   return result;
 }
 

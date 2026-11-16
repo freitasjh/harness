@@ -162,7 +162,7 @@
   },
   "evaluation": {
     "telas": "8 ops TUI 1:1 com D-TUI, diff -u vazio; ponte 18->10 com os 10 D-ENGINE intactos; 10 telas x 5 campos intactas; 4 ramos e 16.336 B inalterados",
-    "negocio": "nenhum prompt/default/range/mensagem/transicao novo; 8 D-TUI saem da ponte sem perder consumidor (modulo local byte-fiel + Rust); rito ADR-002 reutilizado, sem rubrica nova",
+    "negocio": "nenhum prompt/default/range/mensagem/transicao novo; 8 D-TUI saem da ponte sem perder consumidor (modulo local com paridade MEDIDA: 3/8 byte-iguais ao oraculo, 5 deltas nao-funcionais, warning R9 de detect() restaurado — + Rust); rito ADR-002 reutilizado, sem rubrica nova",
     "logica": "canais MEDIDOS (r.json 1 envelope, r.err 29 B, 0 envelope em err, 0 progresso em json); segredo 0 em /proc/PID/cmdline, stdout e stderr; guarda RF-05(b) 3/3 (0/1/1); 8 provas + 8 binarios mutantes reprovados; 2 sugestoes verdes corrigidas",
     "perf": "N/A — operacoes puras de leitura/formatacao; nenhum I/O em src/tui/ alem de leitura de pubspec e da ancora",
     "channelCoverage": "medido_no_VAL-02"
@@ -355,7 +355,7 @@
         "main"
       ],
       "grepLiteral": "grep -rn \"from '.*install\\.mjs'\" --include=*.mjs . => 1 (installer/installer-contract.mjs:57)",
-      "nota": "8 D-TUI reexistem como modulo local byte-fiel installer/contract-tui.mjs + 8 ops no dispatcher Rust; nenhum reexport vivo de install.mjs"
+      "nota": "8 D-TUI reexistem como modulo local em installer/contract-tui.mjs (3/8 byte-iguais ao oraculo, 5 deltas nao-funcionais, warning R9 de detect() restaurado) + 8 ops no dispatcher Rust; nenhum reexport vivo de install.mjs"
     },
     "provaTable": [
       {
@@ -432,7 +432,8 @@
         1,
         1
       ],
-      "transcriptBytes": 0,
+      "writePrimitivesCount": 0,
+      "transcriptBytes": 16336,
       "pass": true,
       "stdoutSha": "sha256:304c23c263f05a4e6311d0df4e6cc1bb14e61d5ba5d38dd5592b78fe0393c23c"
     },

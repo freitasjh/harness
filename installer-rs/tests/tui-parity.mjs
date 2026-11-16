@@ -145,7 +145,7 @@ function measureGuard() {
   const exits = (r.stdout.match(/exit=(\d+)/g) || []).map((s) => Number(s.slice(5)))
   return {
     exits,
-    transcriptBytes: Number(r.stdout.match(/grep -cE stdout = \[(\d+)\]/)?.[1]),
+    writePrimitivesCount: Number(r.stdout.match(/grep -cE stdout = \[(\d+)\]/)?.[1]),
     pass: r.status === 0 && JSON.stringify(exits) === '[0,1,1]',
     stdoutSha: `sha256:${sha(r.stdout)}`,
   }

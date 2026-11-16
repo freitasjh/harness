@@ -1,6 +1,6 @@
 // TUI-06 — teste ANTES da implementação (ADR-004 §2.3, RF-11).
 // A ponte em installer-contract.mjs:58 fica com 10 D-ENGINE; os 8 D-TUI saem
-// do reexport vivo de install.mjs e passam a vir do módulo local byte-fiel.
+// do reexport vivo de install.mjs e passam a vir do módulo local com paridade medida.
 // Nenhuma prova por omissão: o grep é literal e as 8 funções continuam
 // exportadas e exercitadas com as assinaturas congeladas dos consumidores.
 import { describe, it } from 'node:test'
@@ -51,7 +51,7 @@ describe('TUI-06 — ponte 18 -> 10 nomes (8 D-TUI quitados)', () => {
   })
 })
 
-describe('TUI-06 — comportamento byte-fiel das 8 ops de tela', () => {
+describe('TUI-06 — comportamento com paridade medida das 8 ops de tela', () => {
   it('printUsage escreve as 9 linhas congeladas', () => {
     const lines = []
     printUsage({ output: { write: (s) => lines.push(s) } })

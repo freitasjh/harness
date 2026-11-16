@@ -24,6 +24,19 @@ fn flag(req: &Request, key: &str) -> bool {
     arg(req, key).and_then(Value::as_bool).unwrap_or(false)
 }
 
+/// Espelho de `commandResolves` do oráculo (install.mjs:570): `flutter` resolve
+/// no PATH? Usado só pelo warning R9 de `detect` (install.mjs:2181-2183).
+fn command_resolves(cmd: &str) -> bool {
+    let bin = cmd.trim().split_whitespace().next().unwrap_or("");
+    if bin.is_empty() { return false; }
+    if bin.contains('/') { return Path::new(bin).exists(); }
+    let path = std::env::var("PATH").unwrap_or_default();
+    for dir in path.split(':') {
+        if Path::new(dir).join(bin).exists() { return true; }
+    }
+    false
+}
+
 fn menu_item_line(item: &Value, width: usize) -> String {
     let key = item.get("key").and_then(Value::as_str).unwrap_or("");
     let label = item.get("label").and_then(Value::as_str).unwrap_or("");
@@ -127,6 +140,11 @@ pub fn detect(req: &Request) -> Result<Value, EngineError> {
     let flutter = result["declaresFlutter"].as_bool().unwrap_or(false);
     result["suggestedStack"] = json!(if flutter { "flutter" } else { "dart" });
     result["sources"] = json!(sources);
+    if result["suggestedStack"].as_str() == Some("flutter") && !command_resolves("flutter") {
+        let mut warnings = result["warnings"].as_array().cloned().unwrap_or_default();
+        warnings.push(json!("'flutter' nao resolve no PATH (R9): confirme o comando da suite."));
+        result["warnings"] = json!(warnings);
+    }
     Ok(result)
 }
 

@@ -3,8 +3,9 @@
 // Quitação PARCIAL da ponte D1-two-motors (2026-11-16): 9 D-DATA vêm da registry,
 // 29 D-PURE do módulo local byte-fiel a c63e333, 13 D-ENGINE rodam no binário
 // Rust por subprocesso síncrono. ADR-004/TUI-06 quita os 8 D-TUI: saem do
-// reexport vivo de install.mjs e viram módulo local byte-fiel (`contract-tui.mjs`)
-// com 8 `op`s 1:1 no dispatcher Rust. Restam 10 D-ENGINE em dívida de
+// reexport vivo de install.mjs e viram módulo local com paridade MEDIDA
+// (`contract-tui.mjs`: 3/8 byte-iguais, 5 deltas não-funcionais, warning R9
+// de detect() restaurado) com 8 `op`s 1:1 no dispatcher Rust. Restam 10 D-ENGINE em dívida de
 // byte-paridade (FU-D1-ENGINE10 — decisão owner pendente).
 // Nenhuma escrita pelo adapter, nenhum FFI, nenhum valor sensível em argv.
 
@@ -60,7 +61,7 @@ export {
   collectAnswers, generateConfig, planMerge, runChecks, main,
 }
 
-// --- 8 D-TUI quitadas (ADR-004): módulo local byte-fiel, NÃO reexport vivo ---
+// --- 8 D-TUI quitadas (ADR-004): módulo local com paridade medida, NÃO reexport vivo ---
 export {
   askMenuStep, detect, printPlan, printUsage, promptAnswers,
   readSecretPrompt, readSecretRaw, sourceLineOf,
