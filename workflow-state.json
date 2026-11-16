@@ -1,8 +1,8 @@
 {
   "current_feature": "prd-installer-rust-adr-003",
-  "current_phase": "Execution",
-  "previous_phase": "Planning",
-  "next_phase": "Testing",
+  "current_phase": "Completed",
+  "previous_phase": "Execution",
+  "next_phase": "Planning",
   "type": "refactor",
   "layer": "agents/skills/rules",
   "repo": "harness",
@@ -60,10 +60,10 @@
     "G2_PRD": "approved_user_2026_10_22 (PRD prd-garantias-runtime aprovado sem ressalvas; §16 do PRD.md; 3 decisoes do owner)",
     "P1_P2": "approved_user_2026_11_16 (SPEC 100%; architect 17/17 sem criticos; seguranca pass)",
     "P2_P3": "approved_user_2026_11_16 (PLAN 70 linhas, TASKS 12 microtasks, 17 RF mapeados; SDD verdes)",
-    "P3_P4": "approved_auto_evidence_2026_11_16 (commits 0b9a9e2..e6438c25; 2 criticos + 3 importantes fechados)",
-    "P4_P5": "approved_auto_evidence_QA_2026_11_16 (REPORT schema-valido; assinatura do owner pendente aferida depois - literalProven true)",
-    "P5_P6": "approved_user_2026_11_16 (VERIFY 3/3; owner aprovou sha 9fa4530b)",
-    "P6_fim": "done_commit_fbdca4c (PR #18 merge humano 2026-11-16; ADR-002 na main)",
+    "P3_P4": "approved_auto_evidence_2026_11_16 (3 batches; review APPROVED 0/0 apos 1 iteracao de correcao; mutante 0/23)",
+    "P4_P5": "approved_auto_evidence_QA_2026_11_16 (540+644 + cargo 60 + spec 20; 23/23 differential real; SI 1..6 medidos)",
+    "P5_P6": "approved_auto_2026_11_16 (VERIFY 3/3 com evidencia re-executada no repo real; owner aprovou cada batch; rito ADR-002 literalProven true)",
+    "P6_fim": "pending_human_push_merge (branch 03-motor-init-doctor-upgrade-impl @ dc27c1d)",
     "B1_B2": "approved_user_2026_09_29",
     "FU32": "closed_approved_decision_B",
     "_previous_cycle_opencode_v2_only": {
@@ -79,14 +79,16 @@
       "FU32": "closed_approved_decision_B"
     },
     "G2_ADR": "approved_user_2026_11_16 (ADR-003 motor init/doctor/upgrade — branch de autoria)",
-    "G1_PRD": "approved_user_2026_11_16 (PRD-3 prd-installer-rust; D1-D8 fechadas)"
+    "G1_PRD": "approved_user_2026_11_16 (PRD-3 prd-installer-rust; D1-D8 fechadas)",
+    "P4_5": "approved_auto_2026_11_16 (security-review 14/14 — 9 N/A declarados, 5 aplicaveis; zero segredos; Cargo.lock versionado)"
   },
   "code_review": {
-    "last_invoked_at": "2026-11-16T19:16:14.135Z",
-    "last_status": "failed",
-    "critical_issues": 2,
-    "attention_issues": 2,
-    "reviewer_notes": "Review final ADR-003: 2 CRITICOS — differential tautologico por double-unwrap em prova-engine.mjs:123,187-189 (mutante 100% corrompido passava 23/23); VERIFY 3/3 afirmado sem evidencia valida. 2 importantes: normalized:[date] enganoso, gitSha prose imprecisa. Apto push/merge: NAO."
+    "last_invoked_at": "2026-11-16T19:27:22.829Z",
+    "last_status": "passed",
+    "critical_issues": 0,
+    "attention_issues": 0,
+    "suggestions": 2,
+    "reviewer_notes": "Re-review apos loop de correcao 1/3: APPROVED 0/0. Mutante exit-preserving reprova 23/23 em copia; divergencia real buildManifest.version 0.1.0->1.0.0 exposta e corrigida (manifest.rs:66, assertion merge_spec.rs:127). 2 sugestoes nao bloqueantes (comentario em prova-engine.mjs:131-137; 3 commits fix+2 state)."
   },
   "overrides": [
     {
@@ -206,7 +208,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T19:23:53.408Z",
+  "last_update": "2026-11-16T19:27:22.829Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -228,9 +230,9 @@
   },
   "harness_status": "passed (REPORT harness/prd-installer-rust-adr-002.json schema-valido; 540+638 testes; literalProven=true apos assinatura do owner; selo c904f1c5 intacto)",
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
-  "code_review_status": "failed_correction_loop",
+  "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-003 LOOP DE CORRECAO 1/3 — fix entregue (mutante 0/23 reprova), re-review em curso; push/merge bloqueados",
+  "sdd_stage": "PRD-3 ADR-003 CONCLUIDO (12/12 tasks; 23/23 differential real; VERIFY 3/3; review APPROVED). Aguardando push + merge humano — ponte D1-two-motors expira no merge",
   "backlog": {
     "total": 12,
     "todo": 0,
@@ -819,7 +821,7 @@
       "id": "FU-ADR003-07",
       "texto": "Corrigir double-unwrap em prova-engine.mjs:123,187-189 — mutante exit-preserving 100% corrompido deve reprovar 23/23",
       "origem": "code-reviewer final",
-      "bloqueia": true,
+      "bloqueia": false,
       "target": "loop-correcao-1",
       "created_at": "2026-11-16T19:16:14.135Z"
     },
@@ -827,7 +829,7 @@
       "id": "FU-ADR003-08",
       "texto": "Reescrever VERIFY 3 dimensoes com evidencia real e reancorar RELATORIO no SHA entregue",
       "origem": "code-reviewer final",
-      "bloqueia": true,
+      "bloqueia": false,
       "target": "loop-correcao-1",
       "created_at": "2026-11-16T19:16:14.135Z"
     }
@@ -1052,14 +1054,15 @@
     "pos_restart3": "orcamento ESGOTADO (2/2: fix + review); proxima delegacao nega; restart #4 necessario"
   },
   "verify": {
-    "at": "2026-11-16T00:00:00-03:00",
-    "verdict": "3/3 PASS (rito assinado pelo owner)",
-    "completude": "11/11 tasks; QA mediu -> owner aprovou -> orquestrador registrou",
-    "corretude": "1178 testes 0 falhas; 15/15 itens; 6 SI (4 medidos, 2 not_measured)",
-    "coerencia": "oraculo externo c63e333; anti-tautologia; driver le assinatura do REPORT; selo intacto",
-    "traceability": "13/13 RF · 15/15 itens",
-    "artefato": ".spec/backend/prd-installer-rust-adr-002/VERIFY.md",
-    "report": "harness/prd-installer-rust-adr-002.json"
+    "at": "2026-11-16T19:27:22.829Z",
+    "verdict": "3/3 PASS (differential real, mutante 0/23 reprova)",
+    "completude": "12/12 tasks; rito completo; VERIFY 3 dimensoes",
+    "corretude": "540+644 testes + cargo 60 + prova-spec 20; 23/23 provas com result+ok+exit-code; 23 mutacoes no caminho real",
+    "coerencia": "oraculo externo c63e333; selo c904f1c5 intacto; ponte D1-two-motors intacta ate o merge; seguranca 14/14",
+    "traceability": "17/17 RF",
+    "artefato": ".spec/backend/prd-installer-rust-adr-003/VERIFY.md",
+    "report": "harness/prd-installer-rust-adr-003.json",
+    "gitSha": "60741daa05e466a232e86c9199fdf64f8e981b52"
   },
   "commit": "a19acab",
   "remote": "git@github.com:freitasjh/harness.git (SSH; push + CI pendentes)",
@@ -1908,27 +1911,18 @@
   },
   "batch": {
     "id": 3,
-    "agent": "developer-engineer",
-    "status": "review_running_iter1",
-    "commit": "14e0a64ebd6abb98746411bed08e56d9efc070d7",
+    "status": "review_approved",
     "iteration": 1,
-    "max_iterations": 3,
-    "blocker": "C1 double-unwrap + C2 VERIFY sem evidencia",
-    "correction": {
-      "commits": [
-        "60741da",
-        "6e16711"
-      ],
-      "mutantGuard": {
-        "proved": 0,
-        "failed": 23
-      },
-      "real_divergence": "buildManifest.version 0.1.0 -> 1.0.0 exposta pela correcao",
-      "tests": {
-        "cargo": 60,
-        "prova_spec": 20
-      }
-    }
+    "commits": [
+      "60741da",
+      "6e16711",
+      "dc27c1d"
+    ],
+    "mutation_guard": {
+      "proved": 0,
+      "failed": 23
+    },
+    "real_divergence_fixed": "buildManifest.version 0.1.0 -> 1.0.0 (oracle c63e333 install.mjs:15)"
   },
   "next_gate": "loop de correcao (developer -> reviewer) ate 3 iteracoes; nao encadear push antes de review APPROVED"
 }
