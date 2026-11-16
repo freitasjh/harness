@@ -36,7 +36,7 @@
 | Nível | Comando | Esperado |
 |---|---|---|
 | Plugins | `node --test ".opencode/plugins/__tests__/*.spec.mjs"` | 540 pass |
-| Instalador | `node --test "installer/__tests__/*.spec.mjs"` | 559 pass |
+| Instalador | `node --test "installer/__tests__/*.spec.mjs"` | 586 pass |
 | Static | `node scripts/static-checks.mjs` | exit 0, `V18=1`, `V20 baseline=0` |
 | SDD | `node scripts/sdd-checks.mjs` | 0 FAIL |
 | Vendor | `node scripts/vendor-skills.mjs --check` | OK |

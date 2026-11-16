@@ -1,0 +1,157 @@
+{
+  "version": 1,
+  "demand": "prd-installer-rust-adr-001",
+  "agent": "qa-engineer",
+  "phase": "Testing",
+  "gitSha": "293919a255d3c20da8546596940f1f29aaed2d70",
+  "commands": [
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 991,
+      "stdoutHash": "0079c95c2241ab889813230284d195d11b7944be82a06e788164477923c46283"
+    },
+    {
+      "cmd": "node --test \"installer/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 5711,
+      "stdoutHash": "a829d2ed4c2d75dbc1abbe189c90612987a75b7517fc5f8dc5215abb87b1a17f"
+    },
+    {
+      "cmd": "node scripts/static-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 206,
+      "stdoutHash": "4a1e734a85037a1e26e20ea8531b7b4e64cf76d4b1fd7890b3b62529b7652ad5"
+    },
+    {
+      "cmd": "node scripts/sdd-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 99,
+      "stdoutHash": "77686241cd77c3df8aeba022c664e7e2cf87a8c1c962200ed4c5c5a11e3675bc"
+    },
+    {
+      "cmd": "node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 45,
+      "stdoutHash": "e5e528c52d79fceaa1be828bd89116aa6e0be73294d2e99d39c4febe99e84516"
+    }
+  ],
+  "counts": {
+    "unit": { "passed": 540, "failed": 0, "skipped": 0 },
+    "it": { "passed": 586, "failed": 0, "skipped": 0 },
+    "frontend": { "passed": 0, "failed": 0, "skipped": 0 }
+  },
+  "evaluation": {
+    "telas": "N/A — sem UI/DB/portas; TUI e do ADR-004 (fora deste ciclo)",
+    "negocio": "13 itens ADR §3 veridos 13/13; excecao D1-two-motors datada e registrada (ADR §16 + workflow-state.overrides) nao e defeito",
+    "logica": "selo c904f1c5 intacto; oraculo c63e333 byte-inalterado; grep from install.mjs = 1 (linha autorizada contract:15); gate.js 0 refs; 0 .so/.dylib",
+    "perf": "5 suites exit 0 em <7s no total; sem regressao de duracao observada"
+  },
+  "brainStore": [
+    "sessoes/sessoes/projetos/harness/2026-11-16-qa-prd-installer-rust-adr-001-p4"
+  ],
+  "cleanup": {
+    "ports": [],
+    "processes": [],
+    "note": "Nada subido: infra null, stack N/A — zero lsof/kill, zero kill por nome, zero push, zero gh. Comandos spawn sincrono; nenhum node --test residual. Copia de ataque em /tmp/opencode/qa-p4/repo (git checkout -- apos cada mutacao, status limpo); logs em /tmp/opencode/qa-p4/final/. Unica escrita no repo: este REPORT.",
+    "repoWrites": ["harness/prd-installer-rust-adr-001.json"]
+  },
+  "selfReported": false,
+  "p4": {
+    "verdict": "PASSA",
+    "branch": "adr/prd-installer-rust/01-fronteira-subprocesso",
+    "context": "Sem UI/DB/portas — H3 N/A (TUI e ADR-004). Sem push.",
+    "adrItems": [
+      { "item": 1, "verdict": "PASS", "evidence": "gate.js 0 refs a install.mjs/installer/; adapter contract-v1 x2; 0 .so/.dylib; excecao D1-two-motors datada (ADR §16 + overrides) - nao falha" },
+      { "item": 2, "verdict": "PASS", "evidence": "contract-adapter.spec: envelope unico v:1/ok/op/result|error; 13/13" },
+      { "item": 3, "verdict": "PASS", "evidence": "contract-adapter.spec: stdout sem [INFO], stderr sem \"v\":1" },
+      { "item": 4, "verdict": "PASS", "evidence": "EXIT {OK:0,FAILURE:1,PROTOCOL:2}; sinal nunca 0; oraculo nunca emite 2" },
+      { "item": 5, "verdict": "PASS", "evidence": "serializeAnswers omite deployToken; sanitizeLog redaciona; ataque 3 (encodeError sem clean) da FAIL literal" },
+      { "item": 6, "verdict": "PASS", "evidence": "canNoEchoPipe=false canNoEchoTTY=true; IsTerminal/--answers-file testados" },
+      { "item": 7, "verdict": "PASS", "evidence": "aborto exit 1 + 0 writes por hash antes/depois (contract-adapter.spec)" },
+      { "item": 8, "verdict": "PASS", "evidence": "6 mapas byte-idos ao oraculo; ataque 1 (corromper 1 digest) da FAIL literal; static-checks:81 aponta para contract-registry.mjs" },
+      { "item": 9, "verdict": "PASS", "evidence": "22 consumidores (3+2+4+13) e 75 exports (6+9+29+23+8); grep from install.mjs = 1 = contract:15 (excecao)" },
+      { "item": 10, "verdict": "PASS", "evidence": "install.mjs+zone.mjs blobs identicos a c63e333 (5f39a72/052ff9c); ancestral OK; ataque 2b da FAIL literal" },
+      { "item": 11, "verdict": "PASS", "evidence": "selo c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2; git diff config+seal vazio" },
+      { "item": 12, "verdict": "PASS", "evidence": "static-checks PRD-01/ADR-01/ADR-02 PASS nao-vacuos; git status limpo; commits so .spec/prd/prd-installer-rust/**" },
+      { "item": 13, "verdict": "PASS", "evidence": "grep TODO/STUB na ADR = 0; nenhum crate/toolchain/preset/decisao de comando novo; git status limpo" }
+    ],
+    "tasks": [
+      { "id": "RC-01", "verdict": "PASS", "evidence": "installer/contract-registry.mjs existe com 6 mapas e digests congelados" },
+      { "id": "RC-02", "verdict": "PASS", "evidence": "prova byte-a-byte real via oracleModule() (contract-registry.spec); ataque 1 sangra" },
+      { "id": "RC-03", "verdict": "PASS", "evidence": "contract-v1 {v:1,ok,result|error}, op = nome do export (contract-inventory)" },
+      { "id": "RC-04", "verdict": "PASS", "evidence": "adapter stdout envelope / stderr progresso [OK]/[INFO]/[AVISO]" },
+      { "id": "RC-05", "verdict": "PASS", "evidence": "EXIT 0/1/2; renderErrorCode NOT_INSTALLED/MANIFEST_INVALID -> UNKNOWN" },
+      { "id": "RC-06", "verdict": "PASS", "evidence": "segredo so em stdin; IsTerminal + --answers-file; aborto 0 writes; ataque 3 sangra" },
+      { "id": "RC-07", "verdict": "PASS", "evidence": "G-INJ (3) + G-DOGFOOD (2) migrados; contract-inventory 22/22" },
+      { "id": "RC-08", "verdict": "PASS", "evidence": "G-ORACLE-DATA (4) + G-CLI-TUI (13); 22/22 consumidores, 75/75 exports" },
+      { "id": "RC-09", "verdict": "PASS", "evidence": "oraculo c63e333 materializado; git show byte-igual (oracle.spec); ataque 2b sangra" },
+      { "id": "RC-10", "verdict": "PASS", "evidence": "5 suites exit 0; selo c904f1c5 identico; trailer Harness-Gate-Change nos commits" }
+    ],
+    "attacks": [
+      {
+        "id": "A1",
+        "description": "corromper 1 dos 6 digests da registry (contract-registry.mjs AXIS_IDS -> 64 zeros)",
+        "expected": "FAIL",
+        "result": "FAIL",
+        "exitCode": 1,
+        "literal": "✖ 6 mapas com sha congelado ... AssertionError [ERR_ASSERTION]: digest divergente: AXIS_IDS  |  ✖ sha congelado confere com a identidade REAL do oraculo c63e333 (fail-closed) ... AssertionError [ERR_ASSERTION]: oraculo divergente: AXIS_IDS  |  ℹ tests 5 / pass 3 / fail 2",
+        "artifact": "/tmp/opencode/qa-p4/attack1.out"
+      },
+      {
+        "id": "A2",
+        "description": "inserir readFileSync('../install.mjs') num canario (generate.spec.mjs, antes oracleSource())",
+        "expected": "FAIL",
+        "result": "NO-FAIL",
+        "exitCode": 0,
+        "literal": " installer 586/586 (fail 0, skip 0), exit 0  |  static-checks exit 0  |  nenhum guarda reprova a presenca do readFileSync vivo isolado",
+        "artifact": "/tmp/opencode/qa-p4/attack2-full.out",
+        "finding": "O mecanismo real anti-tautologia e de IDENTIDADE DO ORACULO (git show c63e333), nao de presenca de import/read. A insercao isolada nao sangra; so sangra se o arquivo vivo divergir do congelado (ver A2b). Registrar: nao usar A2 como prova de guarda."
+      },
+      {
+        "id": "A2b",
+        "description": "oracle.mjs trocado para ler install.mjs vivo + corromper VERSION 1.0.0 -> 9.9.9",
+        "expected": "FAIL",
+        "result": "FAIL",
+        "exitCode": 1,
+        "literal": "✖ oracleSource e byte-igual a git show do commit congelado ... AssertionError [ERR_ASSERTION]: Expected values to be strictly equal  |  ℹ tests 2 / pass 1 / fail 1",
+        "artifact": "/tmp/opencode/qa-p4/attack2b.out"
+      },
+      {
+        "id": "A3",
+        "description": "ecoar SEGREDO_PROVA no envelope de erro (encodeError: what sem clean())",
+        "expected": "FAIL",
+        "result": "FAIL",
+        "exitCode": 1,
+        "literal": "✖ encodeError sanitiza what/why/fix/where antes do envelope e fecha rodada de 5 chaves ... AssertionError [ERR_ASSERTION]: segredo vazou no envelope  |  ℹ tests 13 / pass 12 / fail 1",
+        "artifact": "/tmp/opencode/qa-p4/attack3.out"
+      }
+    ],
+    "divergences": [
+      {
+        "id": "D-1",
+        "severity": "P3",
+        "claim": "SPEC §4 tabela de teste: installer '559 pass'",
+        "measured": "installer 586/586 (586 pass, 0 fail, 0 skip)",
+        "note": "Numero do SPEC desatualizado (o selo e a fonte canonica, nao a tabela). Nao bloqueia P4; o alegado no pedido (586/586) bate com a medicao."
+      },
+      {
+        "id": "D-2",
+        "severity": "P3",
+        "claim": "ataque (2) inserir readFileSync('../install.mjs') num canario => FAIL",
+        "measured": "NO-FAIL (586/586, static 0) — guarda so existe por identidade do oraculo (A2b FAIL)",
+        "note": "Divergencia entre a formulacao literal do ataque e o mecanismo real. Nao e defeito de produto; e precisao de descricao de prova."
+      }
+    ],
+    "claimsVsMeasured": {
+      "plugins": { "claim": "540/540", "measured": "540/540", "match": true },
+      "installer": { "claim": "586/586", "measured": "586/586", "match": true },
+      "static_sdd_vendor": { "claim": "exit 0", "measured": "exit 0/0/0", "match": true },
+      "V18": { "claim": "baseline=1", "measured": "baseline=1", "match": true },
+      "V19": { "claim": "consumer=21", "measured": "consumer=21", "match": true },
+      "V20": { "claim": "baseline=0", "measured": "baseline=0", "match": true },
+      "seal": { "claim": "c904f1c5", "measured": "c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2", "match": true },
+      "grep_install_mjs": { "claim": "1 (contract:15)", "measured": "1 (installer-contract.mjs:15)", "match": true }
+    }
+  }
+}
