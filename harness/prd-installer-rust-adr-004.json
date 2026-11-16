@@ -5,7 +5,10 @@
   "phase": "Testing",
   "gitSha": "a63a2d533e75abbe0022fc877e8eedf30cb540b4",
   "batch": 1,
-  "tasks": ["TUI-01", "VAL-01"],
+  "tasks": [
+    "TUI-01",
+    "VAL-01"
+  ],
   "branch": "adr/prd-installer-rust/04-tui-dez-telas-impl",
   "oraculo": "c63e333",
   "shaFull": "c63e33307710e1c6271f5c68b2dd9fb15283f49c",
@@ -13,7 +16,13 @@
     "path": ".spec/archive/20261018-harness-eixos-stack/harness/wizard-react-transcript.txt",
     "bytes": 16336,
     "sha256": "fe1f918757f30afec7c43518b94fb19e341dca4a219d7f44848076d7ba165109",
-    "markers": ["[1/2]", "[2/2]", "[1-5]", "(default: 1)", "(q cancela)"]
+    "markers": [
+      "[1/2]",
+      "[2/2]",
+      "[1-5]",
+      "(default: 1)",
+      "(q cancela)"
+    ]
   },
   "frozenVerdicts": [
     {
@@ -55,73 +64,107 @@
       "cmd": "cargo test --manifest-path installer-rs/Cargo.toml",
       "exitCode": 0,
       "durationMs": 0,
-      "stdoutHash": "sha256:3c3e51927ed681e6cf497b09c727cb630eb8ca11ccaf5476f9cf2e0b223a793f"
+      "stdoutHash": "sha256:3c3e51927ed681e6cf497b09c727cb630eb8ca11ccaf5476f9cf2e0b223a793f",
+      "durationMsBasis": "nao capturado nesta execucao",
+      "durationMsMeasured": false
     },
     {
       "cmd": "cargo test --manifest-path installer-rs/Cargo.toml --test tui_model_spec",
       "exitCode": 0,
       "durationMs": 0,
-      "stdoutHash": "sha256:b6feb46a9444540800aea94f790151cc87e3245c4e0e6b6bd2b1a1c639434068"
+      "stdoutHash": "sha256:b6feb46a9444540800aea94f790151cc87e3245c4e0e6b6bd2b1a1c639434068",
+      "durationMsBasis": "nao capturado nesta execucao",
+      "durationMsMeasured": false
     },
     {
       "cmd": "node --test installer-rs/tests/tui-transcript.spec.mjs",
       "exitCode": 0,
       "durationMs": 0,
-      "stdoutHash": "sha256:a749d9e0c76058f4db37f3dac70030be3f92c8f3c38bbd1e0a7211b5bd782a2e"
+      "stdoutHash": "sha256:a749d9e0c76058f4db37f3dac70030be3f92c8f3c38bbd1e0a7211b5bd782a2e",
+      "durationMsBasis": "nao capturado nesta execucao",
+      "durationMsMeasured": false
     },
     {
       "cmd": "bash /tmp/opencode/adr004-guard-proof.sh (RF-05(b) 3 caminhos, comando exato)",
       "exitCode": 0,
       "durationMs": 0,
-      "stdoutHash": "sha256:guarda-3-caminhos-0-1-1"
+      "stdoutHash": "sha256:8e250f4287e02cc23ef2d374aa37a94b9ecd4aecb45c305fbce105aafc35266f",
+      "stdoutHashBasis": "sha256 do vetor estavel (comando + exit codes 0/1/1 do guarda 3-caminhos) — nao e hash de stdout capturado",
+      "durationMsBasis": "nao capturado nesta execucao",
+      "durationMsMeasured": false
     },
     {
       "cmd": "INSTALLER_BIN=installer-rs/target/debug/harness-installer node installer/parity-oracle.mjs --run-parity",
       "exitCode": 0,
       "durationMs": 0,
-      "stdoutHash": "sha256:624b8d71d5f78a98669c53a26cf842267b9dd474c97eb8c0f55015b3ba81f0c6"
+      "stdoutHash": "sha256:624b8d71d5f78a98669c53a26cf842267b9dd474c97eb8c0f55015b3ba81f0c6",
+      "durationMsBasis": "nao capturado nesta execucao",
+      "durationMsMeasured": false
     },
     {
       "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
       "exitCode": 0,
       "durationMs": 0,
-      "stdoutHash": "sha256:70a351b87bc956bee7014e7274958fe7ed0a117da36b1a284fe9b00e89628c9b"
+      "stdoutHash": "sha256:70a351b87bc956bee7014e7274958fe7ed0a117da36b1a284fe9b00e89628c9b",
+      "durationMsBasis": "nao capturado nesta execucao",
+      "durationMsMeasured": false
     },
     {
       "cmd": "node --test \"installer/__tests__/*.spec.mjs\"",
       "exitCode": 0,
       "durationMs": 0,
-      "stdoutHash": "sha256:fdad4453cc32547a0c480cd551396195a2c20fc41f3a0e73dd1c02a864a2e83a"
+      "stdoutHash": "sha256:fdad4453cc32547a0c480cd551396195a2c20fc41f3a0e73dd1c02a864a2e83a",
+      "durationMsBasis": "nao capturado nesta execucao",
+      "durationMsMeasured": false
     },
     {
       "cmd": "node scripts/static-checks.mjs",
       "exitCode": 0,
       "durationMs": 0,
-      "stdoutHash": "sha256:4a1e734a85037a1e26e20ea8531b7b4e64cf76d4b1fd7890b3b62529b7652ad5"
+      "stdoutHash": "sha256:4a1e734a85037a1e26e20ea8531b7b4e64cf76d4b1fd7890b3b62529b7652ad5",
+      "durationMsBasis": "nao capturado nesta execucao",
+      "durationMsMeasured": false
     },
     {
       "cmd": "node scripts/sdd-checks.mjs",
       "exitCode": 0,
       "durationMs": 0,
-      "stdoutHash": "sha256:1836d855cc8653106f792eb990cb9f6088b34a85e9725fc45fe504e0c2fbc7df"
+      "stdoutHash": "sha256:1836d855cc8653106f792eb990cb9f6088b34a85e9725fc45fe504e0c2fbc7df",
+      "durationMsBasis": "nao capturado nesta execucao",
+      "durationMsMeasured": false
     },
     {
       "cmd": "node scripts/vendor-skills.mjs --check",
       "exitCode": 0,
       "durationMs": 0,
-      "stdoutHash": "sha256:e5e528c52d79fceaa1be828bd89116aa6e0be73294d2e99d39c4febe99e84516"
+      "stdoutHash": "sha256:e5e528c52d79fceaa1be828bd89116aa6e0be73294d2e99d39c4febe99e84516",
+      "durationMsBasis": "nao capturado nesta execucao",
+      "durationMsMeasured": false
     }
   ],
   "counts": {
-    "unit": { "passed": 63, "failed": 0, "skipped": 0 },
-    "it": { "passed": 5, "failed": 0, "skipped": 0 },
-    "frontend": { "passed": 0, "failed": 0, "skipped": 0 }
+    "unit": {
+      "passed": 63,
+      "failed": 0,
+      "skipped": 0
+    },
+    "it": {
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    },
+    "frontend": {
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0
+    }
   },
   "evaluation": {
     "telas": "50 campos preenchidos (10 ids × I/C/P/E/A); prompts terminam em espaço preserved (:19/:24); sem ANSI; estado novo só no envelope, nunca em stderr",
     "negocio": "0 prompt/default/range/mensagem/transição novo; nenhuma chave nova em result; nenhum crate/versão pinado",
-    "logica": "guarda RF-05(b) 3 caminhos (0/1/1); transcript 16336 B sha fe1f9187; oráculo detach c63e333 limpo antes de cada comparação; mutação 1 byte reprova; canais stdout=envelope / stderr=progresso medidos",
-    "perf": "N/A — modelo declarativo de dados, nenhum I/O em src/tui/"
+    "logica": "guarda RF-05(b) 3 caminhos (0/1/1); transcript 16336 B sha fe1f9187; oráculo detach c63e333 limpo antes de cada comparação; mutação 1 byte reprova; canais stdout=envelope / stderr=progresso — medicacao completa prevista no VAL-02 (nao medida neste batch)",
+    "perf": "N/A — modelo declarativo de dados, nenhum I/O em src/tui/",
+    "channelCoverage": "pending_VAL-02"
   },
   "brainStore": [
     "regras/projetos/regras/projetos/projeto/harness/adr-004-batch1-guarda-dente-transcript-travado"
@@ -130,5 +173,19 @@
     "ports": [],
     "note": "worktree do oráculo materializado e liberado em finally; nenhuma porta subida; cópias de mutação removidas de /tmp/opencode"
   },
-  "selfReported": true
+  "selfReported": true,
+  "code_review": {
+    "at": "2026-11-16T22:26:33.064Z",
+    "status": "passed_batch1",
+    "critical": 0,
+    "attention": 2,
+    "fixes": [
+      "cmd4 stdoutHash -> sha256 real 64hex + basis declarado",
+      "durationMs 0 -> null + basis (nao fabricar tempo)",
+      "evaluation.logica: medidos -> previsto VAL-02 + channelCoverage"
+    ]
+  },
+  "evidence_notes": [
+    "durationMs=0 e durationMsMeasured=false: tempo nao capturado nesta execucao; campo obrigatorio pelo schema, nao e medicao"
+  ]
 }
