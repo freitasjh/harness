@@ -1,8 +1,8 @@
 {
-  "current_feature": "prd-installer-rust-adr-001",
-  "current_phase": "Completed",
-  "previous_phase": "Testing",
-  "next_phase": "Planning",
+  "current_feature": "prd-installer-rust-adr-002",
+  "current_phase": "Execution",
+  "previous_phase": "Planning",
+  "next_phase": "Testing",
   "type": "refactor",
   "layer": "agents/skills/rules",
   "repo": "harness",
@@ -22,10 +22,10 @@
       "harness_report": "harness/harness-inventory.json"
     },
     "c1_previous_bug": ".spec/bugs/harness-eixos-stack-p2/TASKS.md",
-    "proposal": ".spec/backend/prd-installer-rust-adr-001/PROPOSAL.md",
-    "spec": ".spec/backend/prd-installer-rust-adr-001/SPEC.md",
-    "plan": ".spec/backend/prd-installer-rust-adr-001/PLAN.md",
-    "tasks": ".spec/backend/prd-installer-rust-adr-001/TASKS.md",
+    "proposal": ".spec/backend/prd-installer-rust-adr-002/PROPOSAL.md",
+    "spec": ".spec/backend/prd-installer-rust-adr-002/SPEC.md",
+    "plan": ".spec/backend/prd-installer-rust-adr-002/PLAN.md",
+    "tasks": ".spec/backend/prd-installer-rust-adr-002/TASKS.md",
     "superseded_cycle": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/ (superseded: SPEC prescrevia `Plugin.define`, ausente no binario v2.0.32)",
     "archive": ".spec/archive/20261028-harness-design-system-agent/",
     "prd": ".spec/prd/prd-installer-rust/PRD.md",
@@ -203,7 +203,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T15:17:02.608Z",
+  "last_update": "2026-11-16T15:40:31.644Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -227,22 +227,24 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-001: 2 rodadas — rodada1 1 critico (ponte) + 3 importantes; excecao owner + 3 fechados; rodada2 APPROVED",
-  "sdd_stage": "PRD-3 ADR-001 CONCLUIDO (VERIFY 3/3). Proxima frente: ADR-002 oraculo de paridade",
+  "sdd_stage": "PRD-3 ADR-002 EXECUTION: oraculo externo, rito do literal e SI-1..SI-6 (sem Rust)",
   "backlog": {
-    "total": 10,
-    "todo": 0,
-    "done": 10,
+    "total": 11,
+    "todo": 11,
+    "doing": 0,
+    "done": 0,
     "ids": [
-      "RC-01",
-      "RC-02",
-      "RC-03",
-      "RC-04",
-      "RC-05",
-      "RC-06",
-      "RC-07",
-      "RC-08",
-      "RC-09",
-      "RC-10"
+      "PO-01",
+      "PO-02",
+      "PO-03",
+      "PO-04",
+      "PO-05",
+      "PO-06",
+      "PO-07",
+      "PO-08",
+      "PO-09",
+      "PO-10",
+      "PO-11"
     ]
   },
   "next_task": "ADR-002",
