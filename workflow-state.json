@@ -1,5 +1,5 @@
 {
-  "current_feature": "prd-agnostic-artifacts-adr-002",
+  "current_feature": "prd-agnostic-artifacts-adr-003",
   "current_phase": "Completed",
   "previous_phase": "Testing",
   "next_phase": "Planning",
@@ -11,9 +11,9 @@
     "bug_report": "harness/harness-eixos-stack-p2.json",
     "source_tech_debt": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
     "previous_archive": ".spec/archive/20261018-harness-eixos-stack/",
-    "verify": ".spec/backend/prd-agnostic-artifacts-adr-002/VERIFY.md",
+    "verify": ".spec/backend/prd-agnostic-artifacts-adr-003/VERIFY.md",
     "harness_evidence": ".spec/archive/20261018-harness-eixos-stack/harness/",
-    "harness_report": "harness/prd-agnostic-artifacts-adr-002.json",
+    "harness_report": "harness/prd-agnostic-artifacts-adr-003.json",
     "tech_debt_p2": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
     "previous_cycle": {
       "cycle": ".spec/backend/harness-inventory-adr-001/",
@@ -22,16 +22,16 @@
       "harness_report": "harness/harness-inventory.json"
     },
     "c1_previous_bug": ".spec/bugs/harness-eixos-stack-p2/TASKS.md",
-    "proposal": ".spec/backend/prd-agnostic-artifacts-adr-002/PROPOSAL.md",
-    "spec": ".spec/backend/prd-agnostic-artifacts-adr-002/SPEC.md",
-    "plan": ".spec/backend/prd-agnostic-artifacts-adr-002/PLAN.md",
-    "tasks": ".spec/backend/prd-agnostic-artifacts-adr-002/TASKS.md",
+    "proposal": ".spec/backend/prd-agnostic-artifacts-adr-003/PROPOSAL.md",
+    "spec": ".spec/backend/prd-agnostic-artifacts-adr-003/SPEC.md",
+    "plan": ".spec/backend/prd-agnostic-artifacts-adr-003/PLAN.md",
+    "tasks": ".spec/backend/prd-agnostic-artifacts-adr-003/TASKS.md",
     "superseded_cycle": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/ (superseded: SPEC prescrevia `Plugin.define`, ausente no binario v2.0.32)",
     "archive": ".spec/archive/20261028-harness-design-system-agent/",
     "prd": ".spec/prd/prd-agnostic-artifacts/PRD.md",
     "research": ".spec/prd/prd-harness-inventory/RESEARCH.md",
     "adr_index": ".spec/prd/prd-harness-inventory/ADR-INDEX.md",
-    "adr": ".spec/prd/prd-agnostic-artifacts/ADRs/ADR-002-entradas-sempre-instaladas/ADR.md",
+    "adr": ".spec/prd/prd-agnostic-artifacts/ADRs/ADR-003-skills-comuns-e-spec-review/ADR.md",
     "prd_lines": ".spec/prd/prd-harness-inventory/PRD.md (162 linhas, 16 secoes, PRD-01 PASS)"
   },
   "scope": {
@@ -57,10 +57,10 @@
     "G2_PRD": "approved_user_2026_10_22 (PRD prd-garantias-runtime aprovado sem ressalvas; §16 do PRD.md; 3 decisoes do owner)",
     "P1_P2": "approved_user_2026_11_11 (SPEC 49 linhas, 12 RF mapeados aos 16 itens do ADR-001, 6 invariantes)",
     "P2_P3": "approved_user_2026_11_11 (PLAN 57 linhas, TASKS 12 microtasks RV-01..RV-12)",
-    "P3_P4": "approved_auto_evidence_2026_11_12 (commits 9bf383c + a83310a + 6054418; review 1 rodada, 0 criticos)",
-    "P4_P5": "approved_auto_evidence_QA_2026_11_12 (REPORT; 1097 testes; permissao resolvida)",
+    "P3_P4": "approved_auto_evidence_2026_11_12 (commits c061514 + 50fcf41; review 1 rodada, 0 criticos)",
+    "P4_P5": "approved_auto_evidence_QA_2026_11_12 (REPORT; 1097 testes)",
     "P5_P6": "approved_user_2026_11_12 (VERIFY 3/3)",
-    "P6_fim": "pending_human_merge (branch 02-entradas-sempre-instaladas)",
+    "P6_fim": "pending_human_merge (branch 03-skills-comuns-e-spec-review)",
     "B1_B2": "approved_user_2026_09_29",
     "FU32": "closed_approved_decision_B",
     "_previous_cycle_opencode_v2_only": {
@@ -75,7 +75,7 @@
       "B1_B2": "approved_user_2026_09_29",
       "FU32": "closed_approved_decision_B"
     },
-    "G2_ADR": "approved_user_2026_11_12 (ADR-002: 13 itens)",
+    "G2_ADR": "approved_user_2026_11_12 (ADR-003: 12 itens; apagar spec-review + 1 linha no instalador autorizada)",
     "G1_PRD": "approved_user_2026_11_11 (PRD-2 prd-agnostic-artifacts; D1-D8 fechadas)"
   },
   "code_review": {
@@ -83,7 +83,7 @@
     "last_status": "passed_with_residuals",
     "critical_issues": 0,
     "attention_issues": 0,
-    "reviewer_notes": "ADR-002: 1 rodada. 0 criticos, 3 importantes — todos fechados: I-1 (workflow-state dizia edit: deny), I-2 (VERIFY + TASKS + registro do ciclo), I-3/I-3b (classe inteira de commands inexistentes). Residuais com dono: S-1 (falso negativo N8 em 212/213/359), S-2 (:448 vs :449), S-3 (dev-planner:162), S-4 (oraculo-proxy do teste)."
+    "reviewer_notes": "ADR-003: 1 rodada. 0 criticos, 4 importantes (H1 score sem produtor; H2 numeros do ADR; H3 skill de stack nao sumiu; H4 ciclo nao registrado) — todos fechados. Residuais com dono: spec-gate cita Flyway/JWT (ADR-005), TaskFlow em 3 linhas (ADR-005), nestjs/node corpo (ADR-005), V20 nao mede orfao de invocacao."
   },
   "overrides": [
     {
@@ -192,7 +192,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-12T12:38:06.206Z",
+  "last_update": "2026-11-12T13:28:09.698Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -212,28 +212,27 @@
     "U5": "c - dois ancoras",
     "U6": "b - selo de hash"
   },
-  "harness_status": "passed (REPORT harness/prd-agnostic-artifacts-adr-002.json; 538+559 testes 0 falhas; permissao resolvida provada por opencode debug config; V20 baseline 96->80)",
+  "harness_status": "passed (REPORT harness/prd-agnostic-artifacts-adr-003.json; 538+559 testes 0 falhas; V20 baseline 80->38; structural-debt 0)",
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
-  "code_review_status_ciclo": "prd-agnostic-artifacts-adr-002: 0 criticos; 3 importantes fechados (I-1, I-2, I-3/I-3b)",
-  "sdd_stage": "prd-agnostic-artifacts ADR-002 CONCLUIDO (VERIFY 3/3). Restam ADR-003, ADR-004, ADR-005",
+  "code_review_status_ciclo": "prd-agnostic-artifacts-adr-003: 0 criticos; H1-H4 fechados",
+  "sdd_stage": "prd-agnostic-artifacts ADR-003 CONCLUIDO (VERIFY 3/3). Restam ADR-004 e ADR-005",
   "backlog": {
-    "total": 11,
+    "total": 10,
     "todo": 0,
     "doing": 0,
-    "done": 11,
+    "done": 10,
     "ids": [
-      "ED-01",
-      "ED-02",
-      "ED-03",
-      "ED-04",
-      "ED-05",
-      "ED-06",
-      "ED-07",
-      "ED-08",
-      "ED-09",
-      "ED-10",
-      "ED-11"
+      "EC-01",
+      "EC-02",
+      "EC-03",
+      "EC-04",
+      "EC-05",
+      "EC-06",
+      "EC-07",
+      "EC-08",
+      "EC-09",
+      "EC-10"
     ]
   },
   "next_task": "ADR-002",
@@ -975,12 +974,12 @@
   "verify": {
     "at": "2026-11-12T00:00:00-03:00",
     "verdict": "3/3 PASS",
-    "completude": "11/11 microtasks; 4 desvios + 4 residuais declarados",
-    "corretude": "1097 testes 0 falhas; 12/13 itens provados (item 3 🟡 por billing do host)",
-    "coerencia": "protegidos com 0 linhas; selo c904f1c5 identico; permissao e gate concordam em .spec/**",
-    "traceability": "10/10 RF · 13/13 itens",
-    "artefato": ".spec/backend/prd-agnostic-artifacts-adr-002/VERIFY.md",
-    "report": "harness/prd-agnostic-artifacts-adr-002.json"
+    "completude": "10/10 microtasks; 5 desvios declarados",
+    "corretude": "1097 testes 0 falhas; 12/12 itens; baseline 80->38",
+    "coerencia": "selo c904f1c5 intacto; installer com 1 linha autorizada; passo de revisao com portao nomeado e score",
+    "traceability": "8/8 RF · 12/12 itens",
+    "artefato": ".spec/backend/prd-agnostic-artifacts-adr-003/VERIFY.md",
+    "report": "harness/prd-agnostic-artifacts-adr-003.json"
   },
   "commit": "a19acab",
   "remote": "git@github.com:freitasjh/harness.git (SSH; push + CI pendentes)",
@@ -1075,10 +1074,11 @@
   "prd_adr": {
     "prd_id": "prd-agnostic-artifacts",
     "prd_status": "approved",
-    "active_adr": "ADR-002",
+    "active_adr": "ADR-003",
     "adr_order": [
       "ADR-001",
-      "ADR-002"
+      "ADR-002",
+      "ADR-003"
     ],
     "snapshots": [
       {
@@ -1106,6 +1106,13 @@
         "status": "in-progress",
         "merge": "pending_human (branch 02-entradas-sempre-instaladas)",
         "titulo": "Classe (b) nas 2 entradas sempre-instaladas + autoria de SPEC/PLAN/TASKS (D6)"
+      },
+      {
+        "order": 3,
+        "id": "ADR-003",
+        "status": "in-progress",
+        "merge": "pending_human (branch 03-skills-comuns-e-spec-review)",
+        "titulo": "Skills comuns + spec-review fora do payload; R1 mecanico na revisao de SPEC"
       }
     ]
   },

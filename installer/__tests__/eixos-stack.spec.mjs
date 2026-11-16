@@ -403,7 +403,11 @@ describe('EX-BE-05 enumera .agents/rules/** (D5): cobertura total, recursiva e b
 // so cobre evidence.schema/moduleMap). Mitigacao deste batch: CONGELAR a
 // contagem — crescimento (ou queda) deixa a suite vermelha e obriga a decisao
 // do dono (remover os indices e do `A-3`, nao deste ciclo).
-const PENDING_REFS_REACT = 12;
+// ADR-003 (spec-review fora do payload): 5 dos 12 citantes eram os arquivos de
+// `.agents/skills/spec-review/**` (README 2, SKILL 3, checklist 1, output-template
+// 1, usage-guide 1), removidos com o diretorio => o congelamento medido cai para 7
+// (o assert continua exato: qualquer nova queda/crescimento volta a derrubar).
+const PENDING_REFS_REACT = 7;
 
 describe('EX-VAL-06 residual: refs penduradas no destino java+react (SPEC §6)', () => {
   it(`congela em ${PENDING_REFS_REACT} os arquivos entregues que citam ${FRONTEND_RULE}`, () => {

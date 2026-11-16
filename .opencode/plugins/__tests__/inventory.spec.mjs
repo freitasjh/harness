@@ -880,11 +880,12 @@ describe("PI-07 — fechamento aritmético (inventory-attendance-drift)", () => 
 });
 
 describe("PI-10 — adapter V19 no runner selado e o repo real", () => {
-  it("o repo real fecha: 48 = 25+22+0+1; 8 = 7+1+0; 10 = 10+0", () => {
+  it("o repo real fecha: 47 = 25+21+0+1; 8 = 7+1+0; 10 = 10+0", () => {
     const report = runStaticChecks();
     const v19 = byId(report, "V19");
     assert.equal(v19.status, "PASS", v19.detail);
-    assert.match(v19.detail, /skills=48 \(vendor-by-axis=25, consumer=22, axis=0, orphan=1\)/);
+    // ADR-003: `spec-review` sai de SKILLS_COMMON (consumer 22 → 21; 48 → 47).
+    assert.match(v19.detail, /skills=47 \(vendor-by-axis=25, consumer=21, axis=0, orphan=1\)/);
     assert.match(v19.detail, /rules=8 \(consumer=7, axis=1, orphan=0\)/);
     assert.match(v19.detail, /agents=10\/10 \(registered=10, orphan=0\)/);
     assert.match(v19.detail, /vendorCited=0/);

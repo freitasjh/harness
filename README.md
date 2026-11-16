@@ -12,7 +12,7 @@
 | 2 | **Evidência machine-checkable** — conclusão de fase exige `REPORT.json` válido + **re-execução** do comando canônico pelo gate (verificador ≠ executor) | contrato + selo `sha256` + cache |
 | 3 | **Zero path hardcoded** — comandos, paths, portas e módulos vêm do `harness.config.json` do projeto | ADR-003; check estático acusa literal |
 | 4 | **Portão de prompt** — toda demanda de mudança passa por 6 elementos (PICCO); sem eles, o orquestrador pergunta em vez de adivinhar | skill `prompt-optimizer` + gate PICCO |
-| 5 | **SDD governado** — SPEC → PLAN → TASKS → execução → VERIFY → archive, com portões humanos P0..P6 e asserts executáveis | skills `sdd-compiler`, `spec-review` + checks |
+| 5 | **SDD governado** — SPEC → PLAN → TASKS → execução → VERIFY → archive, com portões humanos P0..P6 e asserts executáveis | skills `sdd-compiler` + checks |
 | 6 | **Cobertura de risco** — mudança em `riskPaths` (auth/acl/security/i18n) está declarada para subir o E2E a `enforce` (declarativo: sem consumidor no runtime — ver `docs/FUNCIONAMENTO.md` §10a2) | `escalateOnRisk` |
 | 7 | **Kill-switch fora do worktree** — `HARNESS_GATES=off` no processo host corta a suíte; o config nunca desliga a suíte **nem** rebaixa um gate — o rebaixamento por gate vive no env (`HARNESS_GATE_<GATE>` + `_REASON` obrigatório, `gate.js:98`) e todo `gates.*` com valor ≠ `"enforce"` é auditado (`gate.js:252`) | ADR-009 · 🟢 runtime |
 | 8 | **Memória persistente** — decisões, erros e lições no Brain (busca antes, registra depois) | skill `brain` |

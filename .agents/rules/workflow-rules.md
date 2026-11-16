@@ -202,7 +202,7 @@ O **estado canônico** é o de `sdd-workflow-standard.md` (é o que vive em
    - Validar contra `asserts/proposal-gate.md` antes de avançar
 9. **Gerar SPEC**: `sdd-compiler` modo `generate-spec` → `.spec/[feature]/SPEC.md`
    - SPEC inclui seção **Delta Specs** (impacto em `.doc/`)
-10. **Revisar SPEC**: skill `spec-review` — gerar relatório de gaps e conformidade
+10. **Revisar SPEC**: aplicar `asserts/spec-gate.md` do `sdd-compiler` — relatório de gaps e conformidade; conformidade com as regras do projeto = revisor de SPEC do destino, quando houver
 11. **Corrigir gaps**: endereçar todos 🔴 críticos e 🟠 alta prioridade
 12. Salvar artefatos em `.spec/backend/{dominio}/` ou `.spec/frontend/{dominio}/`
 13. **Aprovação do usuário**: perguntar se deseja prosseguir com a implementação
@@ -563,7 +563,7 @@ Para **TODO** desenvolvimento, as skills apropriadas **OBRIGATORIAMENTE** devem 
 | **Desenvolvimento Frontend** (`frontend=react`) | `frontend-react-specialist` + `frontend-design` | Componentes React, stores, router, API, testes + design visual |
 | **Design System / Templates** | `template-structure` + `template-best-practices` + `template-deepsearch` (subagente `design-system-specialist`) | Templates de componentes reutilizáveis (props/slots/estados/variantes), boas práticas, estado da arte via deepsearch |
 | **SDD Compiler** | `sdd-compiler` | Geração de SPEC, PLAN, TASK com validação |
-| **Revisão de Spec** | `spec-review` | Revisar SPEC.md contra regras do projeto, gerar relatório de gaps e conformidade |
+| **Revisão de Spec** | `sdd-compiler` (`asserts/spec-gate.md`) | Aplicar o portão à SPEC.md e registrar gaps; regras do projeto = revisor do destino |
 | **Revisão de Segurança** | `security-review` | Revisão de segurança integrada ao SDD (Fase 1, 3, 4.5) — OWASP, ASVS, MASVS |
 | **Revisão de Código** | *(invocar agente `code-reviewer`)* | Code review completo |
 | **Microtasks** | `jira-microtask-breaker` | Quebrar tarefas complexas em microtasks |
