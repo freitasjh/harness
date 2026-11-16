@@ -3,7 +3,7 @@
   "demand": "prd-installer-rust-adr-003",
   "agent": "developer-engineer",
   "phase": "Testing",
-  "gitSha": "adea155d46a712f180ac52bea210a4c6a7dfcd83",
+  "gitSha": "60741daa05e466a232e86c9199fdf64f8e981b52",
   "commands": [
     {
       "cmd": "cargo test --manifest-path installer-rs/Cargo.toml",
@@ -15,7 +15,7 @@
       "cmd": "node installer-rs/tests/prova-engine.mjs",
       "exitCode": 0,
       "durationMs": 0,
-      "stdoutHash": "sha256:d92dd1a8d64d0df1a38bc11bf3c916f6b3114c4e786548ad31b91017a1de6b2a"
+      "stdoutHash": "sha256:5b5adc1efcfdec841e7b8da40fbcc575f5f9f3f1a357047458630f1cecceb2ca"
     },
     {
       "cmd": "INSTALLER_BIN=installer-rs/target/debug/harness-installer node installer/parity-oracle.mjs --run-parity",
@@ -237,7 +237,7 @@
       "command": "node --test installer/__tests__/merge-manifest.spec.mjs && prova(buildManifest)",
       "sideShaOracle": "c7f6fd1ae538abf66cbab5e1de760d9078b29b1929b11bc13174328be0a60254",
       "sideShaBin": "c7f6fd1ae538abf66cbab5e1de760d9078b29b1929b11bc13174328be0a60254",
-      "mutation": "1 byte em sha256:4e1531aab01508b4dcbc5a0aa178fa5fc59c70e6b3f130433c8e5911849fffdc ⇒ reprova (4e1531aab015… → 7b3a3b17b55b…)"
+      "mutation": "1 byte em sha256:2f3e12189f73a1c7a8722847ca27b7c065d6c34baf91c5c2f33f2634f001bd8e ⇒ reprova (2f3e12189f73… → 046c6ffad57f…)"
     },
     {
       "op": "writeManifest",
@@ -650,9 +650,9 @@
       "mutation": {
         "op": "buildManifest",
         "rejected": true,
-        "path": "sha256:4e1531aab01508b4dcbc5a0aa178fa5fc59c70e6b3f130433c8e5911849fffdc",
-        "original": "4e1531aab01508b4dcbc5a0aa178fa5fc59c70e6b3f130433c8e5911849fffdc",
-        "mutated": "7b3a3b17b55be2d82b9a6b87d8865868428eaca5feb2ce209aa75be72a4fb1c0"
+        "path": "sha256:2f3e12189f73a1c7a8722847ca27b7c065d6c34baf91c5c2f33f2634f001bd8e",
+        "original": "2f3e12189f73a1c7a8722847ca27b7c065d6c34baf91c5c2f33f2634f001bd8e",
+        "mutated": "046c6ffad57f6ff6f32ee80e97164e8cbbc7b9a02345b7c96393b04d6f680511"
       },
       "normalized": [
         "date"

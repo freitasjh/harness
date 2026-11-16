@@ -14,7 +14,7 @@
 | C1 🔴 | `side()` recebia valor **já extraído** | `prova-engine.mjs:123,187-189`: `side(normalizeSide(op, e.ok ? e.result : e.error.code))` ⇒ `e.ok` undefined nos dois lados ⇒ `canonicalJson(undefined)` ⇒ `diff:''` ⇒ `sideMatch` vacuo. Mutante 100% corrompido passava 23/23 | `side(envelope, op)` extrai **dentro**, depois de `normalizeSide`; chamada `side(oracleEnv, op)` / `side(binEnv, op)`. Cada prova registra `sideSha.oracle` == `sideSha.bin` (sha da saída canonical real). Mutante exit-preserving reprova **23/23** no mesmo `prova()` |
 | C2 🔴 | VERIFY afirmava prova inexistente | `VERIFY.md:15,17,42,85`: "mutação derruba" ancorado no differential vazio | REESCRITO com `mutantGuard` (0 provados / 23 reprovados), 5 casos de mutação no caminho real e tabela 23/23 com sha por lado |
 | 🟡 | `normalized:['date']` enganoso | double-unwrap descartava **todos** os campos | Revalidado: só `buildManifest.date` é removido, simetricamente; corromper `version`/outro campo reprova (teste permanente) |
-| 🟡 | `gitSha` "commit final" impreciso | RELATÓRIO `f18d528` (abertura do batch) | RELATÓRIO reancorado no **commit que entrega o código** (`<COMMIT_SHA>`); VERIFY cita o mesmo SHA |
+| 🟡 | `gitSha` "commit final" impreciso | RELATÓRIO `f18d528` (abertura do batch) | RELATÓRIO reancorado no **commit que entrega o código** (`60741daa05e466a232e86c9199fdf64f8e981b52`); VERIFY cita o mesmo SHA |
 
 **Divergência real exposta pelo C1:** com o differential passando a comparar de fato,
 `buildManifest` reprovou — oracle `install.mjs:15 @ c63e333` usa `VERSION = '1.0.0'`,
@@ -158,7 +158,7 @@ sintético) permanece como prova **separada** — não é usado para fechar C1.
 3/3 dimensões ✅ · 23/23 differential **real** (sha oráculo == sha bin por op, result +
 ok + exit-code) · mutante exit-preserving 100% corrompido reprova **23/23** no mesmo
 `prova()` · 5 casos de mutação no caminho real · SI-1..SI-6 medido/pass ·
-RELATÓRIO reancorado (`batch:3`, `gitSha` = `<COMMIT_SHA>` — commit que entrega o
+RELATÓRIO reancorado (`batch:3`, `gitSha` = `60741daa05e466a232e86c9199fdf64f8e981b52` — commit que entrega o
 código, `unit:60`, `it:23`, `sideSha` por op, `mutantGuard` 0/23,
 `claimed12of12:false`, `measurement` 9+2) · 5 suítes + cargo + spec (20/20) + prova +
 parity verdes · selo `c904f1c5` intacto · trailer `Harness-Gate-Change`.
