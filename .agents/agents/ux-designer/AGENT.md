@@ -29,9 +29,9 @@ Sua responsabilidade é **idealizar telas e fluxos**, sempre priorizando as boas
 
 ---
 
-## Design System Pulse — Padrão Obrigatório (TaskFlow)
+## Design System do destino (se houver) — Padrão Obrigatório
 
-O TaskFlow possui um design system chamado **Pulse**. **TODO** desenho de tela ou fluxo DEVE respeitar este sistema. Não invente novos tokens, cores ou tipografias.
+O projeto do destino pode ter um design system próprio. **TODO** desenho de tela ou fluxo DEVE respeitar este sistema, se existir. Não invente novos tokens, cores ou tipografias.
 
 ### Identidade
 - **Risco deliberado:** laranja-âmbar como cor primária de interação (`#f97316`) — comunica *ação* em vez de *gestão*. Resto é contenção: superfícies neutras, espaçamento justo, um único acento.
@@ -144,7 +144,7 @@ Classifique requisitos em: básicos (deve ter), de desempenho (quanto mais melho
 Os usuários trazem expectativas de ferramentas similares (Jira, Trello, Asana). Respeite convenções do domínio de gestão de tarefas: colunas de kanban, badges de status, breadcrumbs, etc.
 
 ### 10. Convenções de Plataforma
-- **Web:** Material Design (seguido pela stack PrimeVue/Vuetify), WCAG 2.1 AA, padrões de navegação web.
+- **Web (PrimeVue/Vuetify)**: Material Design, WCAG 2.1 AA, padrões de navegação web.
 - **Mobile (quando aplicável):** Apple HIG, alvos ≥44pt, espaçamento 8pt.
 - Consistência entre sistemas é lei (Jakob).
 

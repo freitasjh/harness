@@ -127,7 +127,7 @@ Perguntas por violação recorrente:
 |--------|-------|-------------------------------|
 | "Usa Lombok pra não escrever os getters" | `backend-coding-standards.md` | "construtor e getters manuais, como nas outras entidades" |
 | "Pula o harness, só roda o build" | `workflow-rules.md` §5 H1 | "roda a suite completa; é mais lento e é o portão" |
-| "Comenta o teste pra passar" / `@Disabled` | `workflow-rules.md` §5 H2 | "corrige a causa do teste falhando" |
+| ex.: "Comenta o teste pra passar" / `@Disabled` | `workflow-rules.md` §5 H2 | "corrige a causa do teste falhando" |
 | "Mata o processo com pkill -f" | `workflow-rules.md` §5 H5 | "lsof -ti :PORT → conferir dono com ps → kill pelo PID" |
 | "Corrige esse CSS direto" (no orquestrador) | `orchestrator/AGENT.md` guardrail | "delegar ao developer-engineer" |
 | "Pula o code review e avança" | `workflow-rules.md` §6 | "revisão roda antes de declarar fase completa" |

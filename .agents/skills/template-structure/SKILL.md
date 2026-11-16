@@ -1,12 +1,12 @@
 ---
 name: template-structure
-description: Estrutura de templates de componentes reutilizáveis: anatomia, props/slots, estados, variantes, tamanhos, composição, i18n e a11y. Contrato framework-agnostic com exemplos Vue 3 e React 18.
+description: Estrutura de templates de componentes reutilizáveis: anatomia, props/slots, estados, variantes, tamanhos, composição, i18n e a11y. Contrato framework-agnostic com exemplos (ex.: Vue 3 e React 18).
 license: MIT
 ---
 
 # Template Structure — Estrutura de Templates de Componentes
 
-Skill para definir a **estrutura** de um componente reutilizável do design system. O contrato é framework-agnostic; exemplos em Vue 3 e React 18 são ilustrativos.
+Skill para definir a **estrutura** de um componente reutilizável do design system. O contrato é framework-agnostic; exemplos (ex.: Vue 3 e React 18) são ilustrativos.
 
 ## 1. Anatomia de um Template
 

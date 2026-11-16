@@ -265,7 +265,7 @@ Após `init` com `checks: PASS`, valide os 5 itens. Todos binários.
 
 | # | Item | Comando | Esperado ✅ |
 |---|------|---------|-------------|
-| V1 | `plugin`/`plugins` **sem** path local do harness | `node -e "const o=require('/tmp/meu-destino/opencode.json'); console.log(o.plugin, o.plugins)"` | **nenhuma** entrada sob `.opencode/plugins/` — o plugin local é **auto-carregado** pelo runtime e a chave é a lista de **pacotes npm** (merge v2-only, `mergeOpencodeJson`) |
+| V1 | ex.: `plugin`/`plugins` **sem** path local do harness | `node -e "const o=require('/tmp/meu-destino/opencode.json'); console.log(o.plugin, o.plugins)"` | **nenhuma** entrada sob `.opencode/plugins/` — o plugin local é **auto-carregado** pelo runtime e a chave é a lista de **pacotes npm** (merge v2-only, `mergeOpencodeJson`) |
 | V2 | `harness.config.json` válido | `node -e "const c=require('/tmp/meu-destino/harness.config.json'); console.log(c.version, c.project, JSON.stringify(c.mcp))"` | `version: 1`, `project` = Q&A, `mcp.required` contém `chrome-devtools` (node) ou `marionette_mcp,dart` / `dart` (mobile) — origem: `generateConfig` em `installer/install.mjs:363-403` |
 | V3 | Schema do relatório existe | `ls /tmp/meu-destino/.agents/schemas/harness-report.schema.json` | arquivo presente (path declarado no config: `evidence.schema` — origem: `installer/install.mjs:401`) |
 | V4 | Manifesto válido | `node -e "const m=require('/tmp/meu-destino/.harness-install.json'); console.log(m.manifestSchemaVersion, m.backupDir, 'checks.passed='+m.checks.passed)"` | `manifestSchemaVersion: 1`, `backupDir` fora do target, `checks.passed=true` — origem: `buildManifest` em `installer/install.mjs:593-619`, `MANIFEST_NAME` em `installer/install.mjs:16` |

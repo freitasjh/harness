@@ -1,0 +1,317 @@
+{
+  "version": 1,
+  "demand": "prd-agnostic-artifacts-adr-005",
+  "agent": "qa-engineer",
+  "phase": "Testing",
+  "gitSha": "cf5062b5d3b78ce98205e868c319c5f212695ce3",
+  "branch": "adr/prd-agnostic-artifacts/05-frota-restante",
+  "range": "5644d37 (abre ADR) .. ac20a2a (ADR doc) .. cf5062b (implementacao), + correcoes de governanca ainda NAO commitadas no working tree (A06 FR4 fora da tabela GFM em security-review/SKILL.md 217->216 linhas; cdl.spec.mjs:803,805 re-medido 30374->30373; ADR §13-N10; VERIFY/TASKS). HEAD inalterado; estado entregavel e o working tree.",
+  "verdict": "P4 PASSA — reexecucao completa do estado atual (nao reaproveitamento do REPORT FAIL anterior): plugins 540/540 fail 0, installer 559/559 fail 0, static 13 PASS/0 FAIL (V18 baseline=1, V19 consumer=21, V20 population=223/30373 baseline=0 identity=0/0 refs-undetected=0 prohibition-cited=27), sdd 8 PASS/0 FAIL, vendor OK, commands.suiteFull selado EXIT=0. 12/12 itens do ADR §3 e 10/10 tasks FT-01..FT-10 com contrato mecanico satisfeito (FT-10 agora PASS). 3/3 ataques pedidos voltam a derrubar o instrumento com os ids exatos, agora medidos no estado entregavel (population=223/30373). Divergencias residuais d3/d4/d5/d6 sao documentais/datadas/deriva de estado, nenhuma de mecanismo, contagem de teste ou contrato. Nenhuma escrita fora de harness/; sem push.",
+  "commands": [
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 874,
+      "stdoutHash": "sha256:50127a10bc1e856540d2b06c4e6219cc048ac09621ab3bd51668b93ee82a5d88",
+      "stdoutBytes": 109295,
+      "capture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-005-rerun/plugins.log",
+      "observed": "tests 540 / suites 128 / pass 540 / fail 0 / cancelled 0 / skipped 0 / todo 0 / duration_ms 840.21999",
+      "resolution": "1o termo de commands.suiteFull, resolvido do harness.config.json e reexecutado nesta sessao. VERDE: o teste outrora vermelho (.opencode/plugins/__tests__/cdl.spec.mjs:800 'populacao e 223 arquivos / 30.374 linhas (D7, re-medida no ADR-005)') agora passa com 30373 === 30373. Bate com o alegado 540/540 no estado entregavel."
+    },
+    {
+      "cmd": "node --test \"installer/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 5491,
+      "stdoutHash": "sha256:def6d621fb22c2f52150934dd43a75a4ade376a21335c8c3b467818fc8ab986f",
+      "stdoutBytes": 72051,
+      "capture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-005-rerun/installer.log",
+      "observed": "tests 559 / suites 183 / pass 559 / fail 0 / cancelled 0 / skipped 0 / todo 0 / duration_ms 5458.238749",
+      "resolution": "2o termo de suiteFull, reexecutado; bate com o alegado 559/559"
+    },
+    {
+      "cmd": "node scripts/static-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 205,
+      "stdoutHash": "sha256:4a1e734a85037a1e26e20ea8531b7b4e64cf76d4b1fd7890b3b62529b7652ad5",
+      "stdoutBytes": 1564,
+      "capture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-005-rerun/static.log",
+      "observed": "13 PASS (V6, V6b, V2, V3, V7, V15, V14, V18, V19, V20, PRD-01, ADR-01, ADR-02) + 2 INFO (V12, LEGACY) / 0 FAIL / exit 0. V18: 'PASS V18: refs vivas: missing-and-unclassified=ok, stale-baseline-entry=ok[vendor-only=0], baseline-entry-incomplete=ok, nondefect-entry-incomplete=ok, stale-nondefect-entry=ok, link-ref-citation-form=ok (baseline=1, non-defect=1)'. V19: 'PASS V19: inventario derivado: skills=47 (vendor-by-axis=25, consumer=21, axis=0, orphan=1), rules=8 (consumer=7, axis=1, orphan=0), agents=10/10 (registered=10, orphan=0), vendorCited=0, lockPresent=true, owner-decisions=1, pendingRemoval=0'. V20: 'PASS V20: cdl medido: population=223/30373, prescriptions=137 (condicional=74, exemplo=43, catalogo=20, incondicional=0), prohibition-cited=27, baseline=0 (incondicional=0, identity=0), identity=0/0, axis-decl=2/2, axis-class=0/1 (skills/rules), refs-undetected=0 (owner ADR-004), vocabulary=10, payload=214, structural-debt=0, heuristic=true fp=5/90 fn=4/90 (amostra=90, classificadas=42, metodo declarado no modulo), vendor-upstream=284/94 (E-5)'",
+      "resolution": "3o termo de suiteFull, isolado. TODOS os oraculos ADR-005 PASS. population=223/30373 (corrigido; o REPORT FAIL anterior mediu 30373 com teste pinned em 30374)."
+    },
+    {
+      "cmd": "node scripts/sdd-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 89,
+      "stdoutHash": "sha256:77686241cd77c3df8aeba022c664e7e2cf87a8c1c962200ed4c5c5a11e3675bc",
+      "stdoutBytes": 641,
+      "capture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-005-rerun/sdd.log",
+      "observed": "8 PASS / 0 FAIL / exit 0 (V4, R-V12, V17, SDD-01, SDD-02, SDD-03, R-NODENY, RENAME-01). SDD-02: 'cycle=.spec/archive/20261018-harness-eixos-stack (via state.artifacts.previous_archive) artifacts 4/4, tasks sections=14 declared=14' — o estado atual de workflow-state.json tem artifacts.proposal=null e current_phase=Planning; ver divergencia d6 (deriva de estado, fora do escopo QA).",
+      "resolution": "checagem de SDD (nao termo de suiteFull), reexecutada; 0 FAIL."
+    },
+    {
+      "cmd": "node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 42,
+      "stdoutHash": "sha256:e5e528c52d79fceaa1be828bd89116aa6e0be73294d2e99d39c4febe99e84516",
+      "stdoutBytes": 51,
+      "capture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-005-rerun/vendor.log",
+      "observed": "vendor-check OK (.agents/skills/.vendor-lock.json)",
+      "resolution": "4o termo de suiteFull, reexecutado"
+    },
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node --test \"installer/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs && node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 6568,
+      "stdoutHash": "sha256:de61f87bc0219061f03fd943ad840b49cd5f0b8a1fe7f3cbf871c2223d799235",
+      "stdoutBytes": 182948,
+      "capture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-005-rerun/suitefull.log",
+      "observed": "commands.suiteFull LITERAL (lido do harness.config.json), executado como grupo: exit 0. 2 blocos 'tests' com pass 540 e pass 559, ambos fail 0; static e vendor concluidos. Selo sealCommands(cfg.commands).suiteFull = c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2 (unit = daba8c5465bffe061738235b274c497a4e8e761e41c5e79d4c671a72231cffc7) — inalterado.",
+      "resolution": "comando selado reexecutado; contraprova verde. O stdout agregado contem linhas PASS/FAIL de fixture das arvores temporarias dos testes — assinatura declarada; veredito vem dos logs isolados (1 PASS V18 + 1 PASS V19 + 1 PASS V20, 0 FAIL)."
+    }
+  ],
+  "counts": {
+    "unit": { "passed": 540, "failed": 0, "skipped": 0 },
+    "it": { "passed": 559, "failed": 0, "skipped": 0 },
+    "frontend": { "passed": 0, "failed": 0, "skipped": 0 }
+  },
+  "countsNote": "MEDIDOS por mim nesta sessao a partir das linhas 'pass'/'fail' do node --test (logs em /tmp/opencode/qa-prd-agnostic-artifacts-adr-005-rerun/). unit = plugins 540/0/0 (o 'fail 1' do REPORT anterior virou 'fail 0' apos o re-pin 30373); it = installer 559/0/0; frontend 0/0/0 (stack.frontend N/A). skipped=0 nos tres. A contagem da contraprova do gate nao observa counts (executor devolve counts:null) — estes numeros sao auto-declarados; a prova e a reexecucao exit 0 do comando selado, que RODEI.",
+  "e2e": {
+    "applicable": false,
+    "reason": "infra.composeFile=null, infra.ports={backend:null,frontend:null}; stack.backend/frontend N/A no harness.config.json. H3 (wipe + 12 passos) sem alvo. escalateOnRisk nao dispara: o ciclo toca security-review/SKILL.md (skill, nao riskPath '**/security/**') e agents; nenhum path de auth/acl/i18n/Permission modificado."
+  },
+  "h3": {
+    "applicable": false,
+    "detail": "Sem servidores, portas, DB ou browser. Zero lsof/kill."
+  },
+  "evaluation": {
+    "telas": "n/a sem UI. Equivalente observavel: static-checks 13 PASS / 0 FAIL / exit 0 com exatamente 1 PASS V18 (baseline=1, non-defect=1) e 1 PASS V20 (population=223/30373) no log isolado; sdd-checks 8 PASS / 0 FAIL.",
+    "negocio": "12/12 itens do ADR §3 com contrato mecanico SATISFEITO por reexecucao dos comandos proprios (itens 8/11/12 com literais documentais datados — d4/d3/d5; item 8 re-medido: A06 em :131 com dono ADR-005). 10/10 tasks SATISFEITAS; FT-10 ('5 comandos exit 0') agora PASS: plugins/installer/static/sdd/vendor EXIT=0 e suiteFull selado EXIT=0.",
+    "logica": "BLOCKER do REPORT anterior RESOLVIDO: cdl.spec.mjs:803,805 re-pinado para 30373 e population re-medida 223/30373; cdl.spec.mjs:800 passa. Causa raiz documentada em ADR §13-N10 (comentario FR4 saiu da tabela GFM, SKILL.md 217->216). Contraprova nao-vacuosa: 3/3 ataques pedidos voltam a derrubar o instrumento com ids exatos no estado entregavel.",
+    "perf": "suiteFull 6,57 s wall (plugins 0,87 s; installer 5,49 s; static 0,21 s; sdd 0,09 s; vendor 0,04 s). Sem regressao atribuivel ao ciclo."
+  },
+  "verification": {
+    "method": "Reexecucao independente de TODOS os comandos citados (nunca leitura do REPORT FAIL anterior), contagem propria, leitura dos 12 predicados do ADR §3 com os comandos la congelados, medicao do selo pelo seal.mjs real, byte-identidade de gate.js/harness.config.json/seal.mjs/opencode.json/installer por git diff --stat, e 3 mutacoes em copias git archive HEAD com overlay do estado pos-fix descartaveis fora do repo (/tmp/opencode/qa-prd-agnostic-artifacts-adr-005-rerun/atk1..atk3). Numeros nao medidos nesta sessao nao entram. Validacao de schema via validateAgainstSchema + reportSchemaViolations exportados de gate.js => [].",
+    "fixConfirmado": {
+      "cdl_spec": ".opencode/plugins/__tests__/cdl.spec.mjs:803,805 => assert.equal(population.lines, 30373) e assert.equal(report.counters.population.lines, 30373); teste :800 reexecutado PASS",
+      "skill_linhas": ".agents/skills/security-review/SKILL.md = 216 linhas (antes 217); A06 em :131 com 'dono ADR-005'",
+      "adr_n10": "ADR §13-N10 registra population re-medida 223/30373 e o re-pin; VERIFY/TASKS atualizados",
+      "diff": "git diff --stat: SKILL.md 3 +1-2, cdl.spec.mjs 4 +2-2, ADR.md 30 +17-13 — todos pos-fix, nenhum touched por mim"
+    },
+    "adrItems": [
+      {
+        "item": 1,
+        "alegado": "6 classes FR0..FR5, 6 acoes, expiracao >=1",
+        "medido": "grep -c '^| \\*\\*FR[0-5]\\*\\*' ADR.md = 6; grep -oE 'manter-excecao|reescrever-escopo|condicionar-corpo|condicionar|internalizar|reapontar-ou-remover-com-dono' | sort -u | wc -l = 6; grep -c 'expires_when|Condicao de expiracao' = 5",
+        "verdict": "PASS",
+        "nivel": "verde"
+      },
+      {
+        "item": 2,
+        "alegado": "6 excecoes com predicado+reason+proof",
+        "medido": "node import EXCEPTIONS prova E-1..E-6 true (6 linhas true); Ataque A3 prova que mutar E-6 gera cdl-exception-stale (predicado vivo).",
+        "verdict": "PASS",
+        "nivel": "verde"
+      },
+      {
+        "item": 3,
+        "alegado": "prohibition-cited=27; >=3 proibicoes vivas no dev-agent",
+        "medido": "V20 prohibition-cited=27; grep sobre 'Proibido Lombok|Proibido Axios|NUNCA use Lombok' em developer-engineer/AGENT.md = 3",
+        "verdict": "PASS",
+        "nivel": "verde"
+      },
+      {
+        "item": 4,
+        "alegado": "catalogo 14 csv; 5 skills common stack; V19 skills=47 consumer=21",
+        "medido": "ls .agents/skills/ui-ux-pro-max/data/*.csv | wc -l = 14; SKILLS_COMMON.filter(java|nestjs|node|rust|react|vue).length = 5; V19 skills=47 consumer=21",
+        "verdict": "PASS",
+        "nivel": "verde"
+      },
+      {
+        "item": 5,
+        "alegado": "identity=0/0; PROJECT_TERMS owner ADR-005 sem prova morta; 0 TaskFlow em dev/ux",
+        "medido": "V20 identity=0/0; PROJECT_TERMS.filter(owner ADR-005) = vazio; grep TaskFlow em dev/ux AGENT.md = 0",
+        "verdict": "PASS",
+        "nivel": "verde"
+      },
+      {
+        "item": 6,
+        "alegado": "2 entradas baseline nestjs/node owner ADR-005 para 0; labels no corpo; incondicional cai 2",
+        "medido": "BASELINE.filter(nestjs-architecture|node-architecture e owner ADR-005).length = 0; grep labels NestJS/Node = 2 (nestjs:81 '- **NestJS**: Unitarios com Jest', node:86 '- **Node**: ... Jest/Vitest'); V20 incondicional=0. Ataque A2 prova que descondicionar nestjs:81 devolve incondicional=1 e cdl-unconditional-unbaselined.",
+        "verdict": "PASS",
+        "nivel": "verde"
+      },
+      {
+        "item": 7,
+        "alegado": "spec-gate Flyway/Liquibase alternativa; checklist Migrations preservado; JWT neutralizado",
+        "medido": "spec-gate.md:13 '- [ ] **Migrations**: se Java — Arquivos Flyway ou Liquibase planejados...'; grep checklist Migrations = 1; grep JWT = 0 (vocabulario neutro)",
+        "verdict": "PASS",
+        "nivel": "verde"
+      },
+      {
+        "item": 8,
+        "alegado": "security-review:131 com dono; grep -c ADR-005 >=1; baseline inalterado",
+        "medido": "sed -n '131p' SKILL.md = '| A06 Vulnerable Components | OK | dependency scanning (npm audit / OWASP Dependency-Check / equivalente do eixo) — dono ADR-005 |'; sed -n '132p' = '| A07 Auth Failures | OK | |'; grep -c ADR-005 = 2; V20 baseline=0 inalterado. O comando congelado no item ainda diz sed -n '132p' em 4 locais (linhas 31/123/181/286) apesar de N9 afirmar 8 refs atualizadas — d4 residual, documental.",
+        "verdict": "PASS (contrato verificado em :131; literal do comando datado — d4 residual)",
+        "nivel": "verde no contrato; amarelo documental no literal 132p"
+      },
+      {
+        "item": 9,
+        "alegado": "9 linhas .doc/** para 0; dono por linha em §4.1; refs-undetected=0 com 9 donos",
+        "medido": "grep -rPn sobre '.doc/...' em .agents e opencode.json = 0; grep -c 'PRD-4|PRD-5' ADR.md = 24; V20 refs-undetected=0",
+        "verdict": "PASS",
+        "nivel": "verde"
+      },
+      {
+        "item": 10,
+        "alegado": "0 entradas owner ADR-005 na baseline; divida convertida com classe",
+        "medido": "BASELINE.filter(owner ADR-005).length = 0; prescricoes 138 -> 137 com 38 sucessores rastreaveis (VERIFY §2 / ADR §13-N7)",
+        "verdict": "PASS",
+        "nivel": "verde"
+      },
+      {
+        "item": 11,
+        "alegado": "V18 baseline=1, V19 consumer=21/skills=47/rules=8; nenhum rules/*.md tocado",
+        "medido": "V18 'baseline=1, non-defect=1'; V19 'skills=47 ... consumer=21 ... rules=8'. git diff --name-only ac20a2a filtrado por '.agents/rules/' = 1 (.agents/rules/workflow-rules.md: refs .doc/** reescritas com dono PRD-4, parte de FR5/FT-08) — d3 permanece.",
+        "verdict": "PASS (oraculos); literal 'nenhum rules/*.md tocado' falso — d3",
+        "nivel": "verde no mecanismo; amarelo documental"
+      },
+      {
+        "item": 12,
+        "alegado": "selo intacto; suiteFull byte-identico; git show HEAD mostra ADR-INDEX e ADR; ADR-01/02 PASS; 5 linhas ledger",
+        "medido": "git diff --stat sobre harness.config.json seal.mjs gate.js opencode.json installer/ = vazio; suiteFull literal inalterado; selo sealCommands = c904f1c5... (unit daba8c54...); PASS PRD-01/ADR-01/ADR-02; ADR-INDEX 5 linhas (4 merged + ADR-005 in-progress). git show HEAD = commit de implementacao cf5062b (~20 arquivos), nao o par de 2 — literal datado, d5.",
+        "verdict": "PASS (escopo real verificado; literal HEAD datado — d5)",
+        "nivel": "verde no mecanismo; amarelo documental no literal"
+      }
+    ],
+    "tasksItems": [
+      { "task": "FT-01", "evidencia": "4 identidades reescritas (dev:1, dev:25, ux:32, design-system:42); TaskFlow/Pulse saem de PROJECT_TERMS com reason; 0 TaskFlow em dev/ux.", "verdict": "PASS" },
+      { "task": "FT-02", "evidencia": "V20 identity=0/0; cdl.spec.mjs:800 passa (30373 === 30373), nao falha mais por identidade.", "verdict": "PASS" },
+      { "task": "FT-03", "evidencia": "nestjs:81 '- **NestJS**: Unitarios com Jest'; node:86 '- **Node**: ...'; V20 incondicional=0, baseline=0; ataque A2 prova cdl-unconditional-unbaselined.", "verdict": "PASS" },
+      { "task": "FT-04", "evidencia": "spec-gate.md:13 'Flyway ou Liquibase'; checklist Migrations=1; JWT=0.", "verdict": "PASS" },
+      { "task": "FT-05", "evidencia": "security-review/SKILL.md:131 (N9) A06 com 'dono ADR-005'; grep -c ADR-005 = 2; linha fora da baseline, 0 efeito em contador.", "verdict": "PASS" },
+      { "task": "FT-06", "evidencia": "V20 prohibition-cited=27; 3 proibicoes vivas no dev-agent; E-6 com expires_when; ataque A3 prova cdl-exception-stale.", "verdict": "PASS" },
+      { "task": "FT-07", "evidencia": "catalogo 14 csv; SKILLS_COMMON stack=5; V19 skills=47 consumer=21; V20 axis-decl=2/2.", "verdict": "PASS" },
+      { "task": "FT-08", "evidencia": "grep .doc/** = 0; 24 refs PRD-4/PRD-5 no ADR; refs-undetected=0 (etiqueta '(owner ADR-004)' vem do motor intocavel, dono real em §4.1 — declarado, nao falha).", "verdict": "PASS" },
+      { "task": "FT-09", "evidencia": "V20 baseline=0 (antes 38); V18 baseline=1; divida convertida com sucessor por linha (VERIFY §2 / ADR §13-N7).", "verdict": "PASS" },
+      { "task": "FT-10", "evidencia": "5 comandos exit 0: plugins 540/540, installer 559/559, static 0 FAIL, sdd 0 FAIL, vendor OK; suiteFull selado EXIT=0. Selo c904f1c5 intacto; trailer Harness-Gate-Change presente; ledger 5 linhas. (REPORT anterior: plugins EXIT=1 — resolvido pelo re-pin 30373.)", "verdict": "PASS" }
+    ],
+    "defeatAttempts": [
+      {
+        "id": "A1",
+        "attack": "reintroduzir TaskFlow como termo identitario ativo em PROJECT_TERMS (.opencode/plugins/lib/cdl/vocabulary.txt), com prova apontando para developer-engineer/AGENT.md:1 (linha reescrita, sem TaskFlow)",
+        "fixture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-005-rerun/atk1",
+        "literal": "linha adicionada: '| TaskFlow | cliente | .agents/agents/developer-engineer/AGENT.md:1 | ADR-005 |' | node scripts/static-checks.mjs => EXIT=1 | 'FAIL V20: cdl reprovado: cdl-identity-term-stale: A-1: TaskFlow: proof nao cita o termo (.agents/agents/developer-engineer/AGENT.md:1); TaskFlow: nenhuma posicao identitaria na populacao | population=223/30373, prescriptions=137 (condicional=74, exemplo=43, catalogo=20, incondicional=0), prohibition-cited=27, baseline=0 (incondicional=0, identity=0), identity=0/0, ...' | alarme unico: cdl-identity-term-stale",
+        "result": "DERROTADA — exatamente o id pedido; identidade defunta nao pode voltar ao registro sem prova viva. Medida no estado entregavel (population 30373)."
+      },
+      {
+        "id": "A2",
+        "attack": "descondicionar nestjs:81 em copia: '- **NestJS**: Unitarios com Jest' trocado por '- Unitarios com Jest' (remove o gate do rotulo)",
+        "fixture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-005-rerun/atk2",
+        "literal": "linha 81 agora: '- Unitarios com Jest' | node scripts/static-checks.mjs => EXIT=1 | 'FAIL V20: cdl reprovado: cdl-unconditional-unbaselined: 1 linha(s) incondicional fora da BASELINE: .agents/skills/nestjs-architecture-specialist/SKILL.md:81 (- Unitarios com Jest) | population=223/30373, prescriptions=137 (condicional=73, exemplo=43, catalogo=20, incondicional=1), ... baseline=0 ...' | alarme unico: cdl-unconditional-unbaselined",
+        "result": "DERROTADA — incondicional volta 0->1 (condicional 74->73) e baseline sangra via cdl-unconditional-unbaselined (BASELINE=[])."
+      },
+      {
+        "id": "A3",
+        "attack": "mudar predicado E-6 em .opencode/plugins/lib/cdl/checks.mjs:331: contains 'para bani-los' trocado por 'PREDICADO_E6_MUTADO'",
+        "fixture": "/tmp/opencode/qa-prd-agnostic-artifacts-adr-005-rerun/atk3",
+        "literal": "E-6 predicate contains alterado | node scripts/static-checks.mjs => EXIT=1 | 'FAIL V20: cdl reprovado: cdl-exception-stale: EXCEPTIONS com 1 problema(s): E-6: .agents/skills/harness-installer/SKILL.md:161 sem \"PREDICADO_E6_MUTADO\" | population=223/30373, ... prohibition-cited=27 ...' | alarme unico: cdl-exception-stale",
+        "result": "DERROTADA — exatamente o id pedido; excecao sem predicado vivo e divida, nao permissao."
+      }
+    ],
+    "attackMethodNote": "Ataques rodados em copias git archive HEAD com overlay dos 3 arquivos pos-fix (SKILL.md, cdl.spec.mjs, ADR.md) sob /tmp/opencode/qa-prd-agnostic-artifacts-adr-005-rerun/atk1..atk3, logo population=223/30373 nas copias — o mesmo estado entregavel medido na raiz. Por serem archives sem .git, V14 cai NO_GIT; a leitura que importa e a linha V20 e os ids de alarme, que sao as superficies dos 3 ataques. Nenhuma verificacao de contrato do ADR se apoia no exit code da arvore temporaria."
+  },
+  "divergences": [
+    {
+      "id": "d3",
+      "severidade": "P3-documental",
+      "titulo": "item 11 diz 'nenhum path de rules/*.md tocado por ADR-005'; workflow-rules.md foi reescrito",
+      "alegado": "ADR §3 item 11: 'Nenhum path de rules/*.md e tocado por ADR-005 (ADR-004 fechou os 8)'",
+      "medido": "git diff --name-only ac20a2a filtrado por '.agents/rules/' aponta .agents/rules/workflow-rules.md (3 refs .doc/** para 'Documentacao de stacks do destino (dono PRD-4)' etc., parte de FR5/FT-08). V18=1 e V19 rules=8 inalterados.",
+      "efeito": "Nenhum no mecanismo/oraculos; o literal proseado e falso. Mesma classe de divergencia documental de d1 do REPORT ADR-004."
+    },
+    {
+      "id": "d4",
+      "severidade": "P3-documental (residual parcial)",
+      "titulo": "N9 afirma '8 referencias :132 atualizadas', mas 4 comandos congelados ainda dizem sed -n '132p'",
+      "alegado": "ADR §13-N9: 'As 8 referencias :132 foram atualizadas'; item 8 e G3 usam sed -n '132p' SKILL.md",
+      "medido": "sed -n '131p' mostra A06 com 'dono ADR-005' (contrato SATISFEITO); sed -n '132p' mostra A07 vazia. ADR.md ainda tem '132p' em linhas 31, 123 (item 8), 181 (G3), 286 — 4 comandos nao reproduzem. Prosa corrigida para :131 em outras 8 posicoes.",
+      "efeito": "Nenhum no contrato (A06 tem dono em 131; grep -c ADR-005=2; V20 baseline=0). O comando congelado do item 8 nao reproduz; correcao declarada em N9/N10 e verificada por mim em :131."
+    },
+    {
+      "id": "d5",
+      "severidade": "P3-documental (datado)",
+      "titulo": "item 12 diz 'git show HEAD mostra ADR-INDEX.md e ADR.md'; HEAD e o commit de implementacao",
+      "alegado": "ADR §3 item 12: git show --stat --name-only HEAD mostra 2 arquivos",
+      "medido": "HEAD = cf5062b (commit de implementacao, ~20 arquivos); o par ADR-INDEX.md e ADR.md sai em ac20a2a. ADR §13 / VERIFY / TASKS / SKILL.md / cdl.spec.mjs seguem pendentes de commit no working tree.",
+      "efeito": "Nenhum: escopo de escrita real verificado por git diff --stat dos 5 arquivos protegidos (vazio). Literal datado, nao reabrir ciclo por isso."
+    },
+    {
+      "id": "d6",
+      "severidade": "P3-deriva de estado (fora do escopo QA)",
+      "titulo": "workflow-state.json agora tem current_phase=Planning / artifacts.proposal=null; SDD-02 resolve ciclo de archive, nao o de adr-005",
+      "alegado": "REPORT FAIL anterior: sdd-checks resolvia '.spec/backend/prd-agnostic-artifacts-adr-005 (via state.artifacts.proposal), 5 artefatos, 10 secoes FT-01..FT-10'",
+      "medido": "sdd-checks agora: 'cycle=.spec/archive/20261018-harness-eixos-stack (via state.artifacts.previous_archive) artifacts 4/4, tasks sections=14 declared=14' — 8 PASS / 0 FAIL. workflow-state.json nao foi tocado por mim (constraint explicita).",
+      "efeito": "Nenhum nas 5 suites (todas exit 0). Estado do orquestrador, nao do mecanismo do ADR; registrado para transparencia, sem reabrir portao."
+    }
+  ],
+  "findings": [
+    {
+      "id": "F-1",
+      "severidade": "P3",
+      "titulo": "Resolucao do blocker: numero re-medido no mesmo commit do fix (anti-pattern evitado)",
+      "evidencia": "REPORT FAIL anterior apontou literal 30374 em cdl.spec.mjs:803/805 contra population 30373 pos-A06. Orquestrador re-pinou 30373 e registrou em ADR §13-N10. Reexecucao: plugins 540/540, population 223/30373, suiteFull EXIT=0.",
+      "recomendacao": "Manter a regra: todo item que publica numero de populacao/diff usa medidor ou declara 'datado em <sha>'; apos fix pos-aprovacao, re-medir antes do P4.",
+      "nao_corrigido": "Nao aplicavel — corrigido pelo orquestrador antes desta reexecucao."
+    },
+    {
+      "id": "F-2",
+      "severidade": "P3",
+      "titulo": "d4 so parcialmente corrigido: 4 comandos sed -n '132p' permanecem no ADR",
+      "evidencia": "N9 diz '8 referencias atualizadas', mas grep -n '132p' ADR.md = linhas 31, 123, 181, 286. Contrato em :131 verificado; comando congelado do item 8 nao reproduz.",
+      "recomendacao": "Atualizar os 4 literais para 131p quando o orquestrador fizer o commit de governanca (fora do escopo QA).",
+      "nao_corrigido": "Prosa de ADR fora do escopo deste papel."
+    },
+    {
+      "id": "F-3",
+      "severidade": "P3",
+      "titulo": "Trabalho pendente de commit no momento da medicao",
+      "evidencia": "git status: M security-review/SKILL.md, M cdl.spec.mjs, M ADR.md, novo .spec/backend/prd-agnostic-artifacts-adr-005/; HEAD segue cf5062b. VERIFY/TASKS estao no diretorio novo.",
+      "recomendacao": "Re-key do gitSha do REPORT se o orquestrador alterar HEAD; comandos e selo nao mudam, logo a contraprova segue valida.",
+      "nao_corrigido": "Nao editei workflow-state.json, ADR, SKILL.md, cdl.spec.mjs nem fiz commits."
+    }
+  ],
+  "limitsDeclared": [
+    "Exit codes, hashes e contagens observados por mim nesta sessao (logs em /tmp/opencode/qa-prd-agnostic-artifacts-adr-005-rerun/), nao copiados do REPORT FAIL anterior. auto-declarados por natureza (SPEC ADR-002): a prova e a contraprova do gate reexecutando o comando selado — que RODEI e deu EXIT=0.",
+    "selfReported=false porque observei os exit codes diretamente; a contagem da contraprova do gate nao observa counts (executor devolve counts:null).",
+    "O stdout agregado de suiteFull contem linhas PASS/FAIL de FIXTURE das arvores temporarias dos testes — assinatura declarada nos REPORTs anteriores. O veredito vem dos comandos isolados (exatamente 1 PASS V18 + 1 PASS V19 + 1 PASS V20, 0 FAIL).",
+    "Os 3 ataques rodaram em git archive HEAD com overlay pos-fix (sem .git) sob /tmp/.../atk1..atk3; V14 NO_GIT cai por artefato de fixture — leio a linha V20 e os ids de alarme, que sao as superficies atacadas.",
+    "H3/E2E nao aplicavel e declarado (sem UI/DB/portas). Nada foi subido. Nenhum push, nenhum gh, nenhum kill por nome, nenhuma escrita fora de harness/."
+  ],
+  "brainStore": [
+    "sessoes/sessoes/projetos/harness/2026-11-16-qa-prd-agnostic-artifacts-adr-005-p4-rerun"
+  ],
+  "cleanup": {
+    "ports": [],
+    "processes": [],
+    "note": "Nada subido: infra null, stack N/A — zero lsof/kill, zero kill por nome, zero push, zero gh. Comandos spawn sincrono; nenhum node --test residual. Copias descartaveis e logs em /tmp/opencode/qa-prd-agnostic-artifacts-adr-005-rerun/ (basetree via git archive + overlay, atk1..atk3, *.log).",
+    "repoWrites": [
+      "harness/prd-agnostic-artifacts-adr-005.json"
+    ]
+  },
+  "gitState": {
+    "branch": "adr/prd-agnostic-artifacts/05-frota-restante",
+    "head": "cf5062b5d3b78ce98205e868c319c5f212695ce3",
+    "workingTreeAtMeasurement": "M .agents/skills/security-review/SKILL.md (A06 FR4 fora da tabela GFM, -1 linha), M .opencode/plugins/__tests__/cdl.spec.mjs (re-pin 30373), M ADR.md (§13-N10), novo diretorio .spec/backend/prd-agnostic-artifacts-adr-005/ — pendentes de commit pelo orquestrador; NAO tocados por mim",
+    "pushed": false,
+    "protectedPathsTouched": "nenhum nesta sessao (unica escrita: harness/prd-agnostic-artifacts-adr-005.json, fora dos protectedPaths)"
+  },
+  "residual_risks": [
+    "d4 (4 comandos sed -n '132p'), d3 (workflow-rules.md reescrito) e d5 (literal git show HEAD) permanecem como divergencias documentais; nao exigem correcao para o mecanismo, mas os literais congelados continuam datados para quem le so o §3.",
+    "d6: workflow-state.json com current_phase=Planning e artifacts.proposal=null desvia o SDD-02 para ciclo de archive — estado do orquestrador, sem efeito nas 5 suites.",
+    "A etiqueta refs-undetected=0 (owner ADR-004) vem do motor intocavel; dono real das 9 linhas em §4.1 — NAO e falha, declarada no VERIFY §3.",
+    "Se o orquestrador commitar o working tree sem re-medir novamente apos outra mudanca de linha em SKILL.md, o literal 30373 pode ficar stale — mesma classe de risco do F-1, agora fechado nesta medicao."
+  ],
+  "selfReported": false,
+  "selfReportedNote": "Exit codes, contagens e hashes observados por mim nesta sessao (logs em /tmp/opencode/qa-prd-agnostic-artifacts-adr-005-rerun/). Ver limitsDeclared[0] sobre o estatuto auto-declarado da evidencia.",
+  "notes": "H3 nao aplicavel e declarado. Nenhuma correcao de codigo, config, rules, agentes ou documentos foi feita — papel e verificar. REEXECUCAO do P4 (nao reaproveitamento do REPORT FAIL): veredito PASSA; 12/12 itens e 10/10 tasks (FT-10 agora PASS com 5 comandos exit 0 + suiteFull selado exit 0); 3/3 ataques pedidos derrubam com ids exatos no estado entregavel (population=223/30373); divergencias d3/d4/d5/d6 documentais/deriva de estado, nenhuma de mecanismo, contagem ou contrato. Unico blocker do REPORT anterior (literal 30374 vs 30373) resolvido e verificado por medicao propria. Sem push."
+}

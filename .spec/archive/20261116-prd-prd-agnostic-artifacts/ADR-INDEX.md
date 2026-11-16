@@ -19,35 +19,39 @@
 > arquivo é o ledger **do que existe**, não o plano do que existirá. `ADR-01`/`ADR-02` **não** impõem
 > continuidade de `order` (buraco não reprova), mas a ordem é a de merge do fatiamento — 1 → 5.
 >
-> **Estado:** `ADR-001` **`merged`** (`10f60f7`, merge do PR #10 em 2026-11-12), `ADR-002` **`merged`**
-> (`4838e0e`, merge do PR #11 em 2026-11-12) e `ADR-003` **`merged`** (`b5c23dd`, merge do PR #12 em
-> 2026-11-12) — a baseline e o `V20` estão no repo da `main`, e é a linha do `V20` que este ledger usa como
-> oráculo (§10-N7 do ADR-001). `ADR-004` está **`in-progress`** — branch
-> `adr/prd-agnostic-artifacts/04-referencias-e-design-md` (de `main` @ `b5c23dd`, HEAD `fe42912`), `ADR.md`
-> escrito (decisão única = rubrica de 7 classes `RC0..RC6` com predicado por comando, dono e 4 ações do
-> vocabulário; 12 itens de interface congelada; instâncias re-medidas pós-ADR-003); implementação = SDD,
-> nenhum merge. `merge` fica `—` em toda linha com `status ≠ merged`. No máximo **1** linha `in-progress`
-> por vez (`checks.mjs:378-379`) — é por isso que a promoção do `ADR-003` a `merged` entra no **mesmo commit**
-> em que o `ADR-004` nasce: 3 `merged` + 1 `in-progress` mantém `ADR-02` verde (1 slot só, sem pulo de
-> `order`). O número de `refs-undetected` cai com o SDD do ADR-004, mas o oráculo segue sendo a linha do
-> `V18`/`V20` (ADR-003 §11-H6: a linha muda quando o payload muda).
+> **Estado:** `ADR-001` **`merged`** (`10f60f7`, PR #10), `ADR-002` **`merged`** (`4838e0e`, PR #11),
+> `ADR-003` **`merged`** (`b5c23dd`, PR #12) e `ADR-004` **`merged`** (`94a0047`, PR #13 em 2026-11-16) —
+> a baseline, o `V18`/`V19`/`V20` e o `refs-undetected=9` estão na `main @ e297d82`, e é a **linha do
+> `V20`** que este ledger usa como oráculo (§10-N7 do ADR-001; §11-H6 do ADR-003). `ADR-005` está
+> **`in-progress`** — branch `adr/prd-agnostic-artifacts/05-frota-restante` (de `main @ e297d82`, HEAD
+> `5644d37`), `ADR.md` escrito (decisão única = rubrica `FR0..FR5` de expiração de exceção com predicado
+> vivo, dono por instância e conversão de dívida — nunca apagão para zerar contador; 12 itens de interface
+> congelada; instâncias re-medidas na `main`); implementação = SDD, nenhum merge. `merge` fica `—` em toda
+> linha com `status ≠ merged`. No máximo **1** linha `in-progress` por vez (`checks.mjs:378-379`) — é por
+> isso que a promoção do `ADR-004` a `merged` entra no **mesmo commit** em que o `ADR-005` nasce:
+> 4 `merged` + 1 `in-progress` mantém `ADR-02` verde (1 slot só, sem pulo de `order`). O número de
+> `identity`/`baseline`/`refs-undetected` muda com o SDD do ADR-005, mas o oráculo segue sendo a linha
+> publicada.
 >
 > **Dependências do fatiamento:** `ADR-004` declara `depends_on = ADR-001, ADR-003` — do primeiro herda o
 > predicado de A-3, a segunda gramática publicada como `refs-undetected`, o oráculo de §10-N7 e a restrição
-> de selo (§2.6); do segundo herda a regra de **re-medir quando o payload muda** (§11-H6), que é a razão de
-> as contagens do `PRD.md` §3.5 não serem reaprovadas. `ADR-005` declara `depends_on = ADR-001` e não depende
-> de outro ADR. O `ADR-003` dependia de **`ADR-001` e `ADR-002`**: herdava a rubrica e a baseline do primeiro
-> e, do segundo, o mecanismo **M1** ("nomear o eixo no escopo") e a **obrigação nominal** de §2.4. A
-> fronteira entre 004/005 continua sendo por arquivo e por classe: o `ADR-004` não fecha a frota identitária
-> de agentes, as proibições, o catálogo nem as 9 linhas de `.doc/**` (todas ADR-005), e o `ADR-005` não
-> decide os 8 paths, o `DESIGN.md` nem o N30 (004).
+> de selo (§2.6); do segundo herda a regra de **re-medir quando o payload muda** (§11-H6). `ADR-005`
+> declara `depends_on = ADR-001, ADR-003, ADR-004` (ampliação registrada em §8-N1 do ADR-005): do primeiro
+> herda a rubrica de 4 vereditos, a `declaredAxis` por nome (E-3) e os ids de falha; do segundo, a regra de
+> re-medir e o resultado de D8; do terceiro, a rubrica `RC0..RC6` e as **9 linhas de `.doc/**`** que ele
+> classificou RC3 com dono ADR-005. O `ADR-003` dependia de **`ADR-001` e `ADR-002`**: herdava a rubrica e a
+> baseline do primeiro e, do segundo, o mecanismo **M1** ("nomear o eixo no escopo") e a **obrigação
+> nominal** de §2.4. A fronteira entre 004/005 continua sendo por arquivo e por classe: o `ADR-004` não
+> fecha a frota identitária de agentes, as proibições, o catálogo nem as 9 linhas de `.doc/**` (todas
+> ADR-005), e o `ADR-005` não decide os 8 paths, o `DESIGN.md` nem o N30 (004).
 
 | order | id | title | status | depends_on | dir | branch | merge |
 |---|---|---|---|---|---|---|---|
 | 1 | ADR-001 | Critério do Destino Limpo (CDL): rubrica de 4 vereditos por linha com população e lista de termos derivadas dos presets, medida por módulo puro no runner selado | merged | — | ADRs/ADR-001-criterio-cdl-e-instrumento/ | adr/prd-agnostic-artifacts/01-criterio-cdl-e-instrumento | `10f60f7` (PR #10) |
 | 2 | ADR-002 | Entradas sempre instaladas: prescrição de stack por eixo nomeado nas 2 entradas de RULES_COMMON e autoria de SPEC/PLAN/TASKS por permissão resolvida — `deny *` antes de `allow .spec/**` | merged | ADR-001 | ADRs/ADR-002-entradas-sempre-instaladas/ | adr/prd-agnostic-artifacts/02-entradas-sempre-instaladas | `4838e0e` (PR #11) |
 | 3 | ADR-003 | Skills comuns: `spec-review` sai do payload por veredito `removido` (33 entradas → 0) e a revisão de SPEC passa a ser portão de metodologia; D1 formalizado por eixo no escopo das 2 rules de frontend e D8/E-1/E-3 como exceção permanente com predicado | merged | ADR-001, ADR-002 | ADRs/ADR-003-skills-comuns-e-spec-review/ | adr/prd-agnostic-artifacts/03-skills-comuns-e-spec-review | `b5c23dd` (PR #12) |
-| 4 | ADR-004 | Referências quebradas: rubrica de ação por classe (`RC0..RC6`) com predicado por comando, dono e 4 ações — reapontar a SSoT declarada (`security-standard` → skill `security-review`), remover baseline Java com dívida PRD-4 + reativação, remover ponteiro `DESIGN.md` com dono PRD-5 e medir N30 no detector selado | in-progress | ADR-001, ADR-003 | ADRs/ADR-004-referencias-e-design-md/ | adr/prd-agnostic-artifacts/04-referencias-e-design-md | — |
+| 4 | ADR-004 | Referências quebradas: rubrica de ação por classe (`RC0..RC6`) com predicado por comando, dono e 4 ações — reapontar a SSoT declarada (`security-standard` → skill `security-review`), remover baseline Java com dívida PRD-4 + reativação, remover ponteiro `DESIGN.md` com dono PRD-5 e medir N30 no detector selado | merged | ADR-001, ADR-003 | ADRs/ADR-004-referencias-e-design-md/ | adr/prd-agnostic-artifacts/04-referencias-e-design-md | `94a0047` (PR #13) |
+| 5 | ADR-005 | Frota restante: exceção só vive sob predicado com expiração e dívida se converte com dono — rubrica `FR0..FR5`, D2/D8/E-3 com predicado vivo, 4 identidades reatribuídas, 2 skills de eixo condicionadas no corpo, `spec-gate` e `security-review:132` internalizados, 9 linhas `.doc/**` com dono | in-progress | ADR-001, ADR-003, ADR-004 | ADRs/ADR-005-frota-restante/ | adr/prd-agnostic-artifacts/05-frota-restante | — |
 
 ## Insumos das linhas existentes
 
@@ -78,11 +82,15 @@
   `DESIGN.md` + 9 `.doc/**`), `population=223/30385`, `payload=214`; 8 paths = **33** citações
   (12/7/4/3/3/1/2/1), não as 47/52 do PRD — `spec-review` levou 14 delas. Oráculo = linha do `V18`/`V20`,
   nunca este parágrafo (ADR-001 §10-N7, ADR-003 §11-H6).
-- **ADR-005** (depois) — RF-02, RF-04, **D2/D8**: frota restante (identidade, proibições, catálogo, skills por
-  eixo). Herda de `PROJECT_TERMS["Atlas ECM"]` a prova re-apontada pelo ADR-002 para
-  `frontend-coding-standards.md:154`: o termo só sai do registro quando o ADR-003 fechar as 2 headings de
-  frontend (N5 do ADR-002).
+- **ADR-005** *(este ciclo)* — RF-02, RF-04, **D2/D8**: frota restante. Decisão única = rubrica `FR0..FR5`
+  de expiração de exceção com predicado vivo, dono por instância e conversão de dívida (nunca apagão para
+  zerar contador). Re-medido na `main @ e297d82`: `V20` `baseline=38 (34 incond / 4 identity)`,
+  `identity=4/3` (3 `TaskFlow` + 1 `Pulse`), `prescriptions=138 (…/34)`,
+  `prohibition-cited=27`, `refs-undetected=9` (dono ADR-004 → ADR-005); `V18` `baseline=1, non-defect=1`
+  e `V19` `consumer=21` inalterados. 9 linhas `.doc/**` herdas do ADR-004 com dono PRD-4/PRD-5; 2 skills
+  de eixo (`nestjs:81`, `node:86`) condicionadas no corpo sem sair de `SKILLS_COMMON`. `depende-de =
+  ADR-001, ADR-003, ADR-004` (ampliação em §8-N1). Oráculo = linha do `V20`, não este parágrafo.
 
-*Nota de forma: as 3 linhas "depois" são **lista**, não tabela — `parseIndex` (`checks.mjs:149-163`) lê toda
-linha que começa com `|` como linha do ledger, logo uma segunda tabela seria interpretada como ADR extra e
-reprovaria `ADR-01`.*
+*Nota de forma: não há linhas "depois" — os 5 ADRs do fatiamento estão materializados na tabela acima, um
+por `ADR.md` no disco. `parseIndex` (`checks.mjs:149-163`) lê toda linha que começa com `|` como linha do
+ledger: uma segunda tabela seria interpretada como ADR extra e reprovaria `ADR-01`.*

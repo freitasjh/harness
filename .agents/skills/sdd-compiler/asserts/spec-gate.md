@@ -5,12 +5,12 @@ Toda especificação (SPEC) deve ser validada contra os seguintes critérios ant
 ## 1. Integridade Arquitetural
 - [ ] **ADRs**: Contém registros de decisão (ADRs) explicando o "Porquê" das escolhas críticas.
 - [ ] **DDD Modular**: Separação clara entre camadas api/impl/public respeitada.
-- [ ] **Segurança/IAM**: Modelo de autenticação (JWT) e `@HasPermission` definidos.
+- [ ] **Segurança/IAM**: Modelo de autenticação do destino e `@HasPermission` definidos.
 
 ## 2. Modelo de Dados e Eventos
 - [ ] **ERD**: Diagrama de Entidade-Relacionamento incluído (se aplicável).
 - [ ] **Event Registry**: Lista de eventos com Produtor, Consumidor, Payload (se aplicável).
-- [ ] **Migrations**: Arquivos Flyway planejados com `V{YYYYMMDD}{NNN}`.
+- [ ] **Migrations**: se Java — Arquivos Flyway ou Liquibase planejados com `V{YYYYMMDD}{NNN}`.
 
 ## 3. Qualidade e Testabilidade
 - [ ] **Invariantes de Entidade**: Propriedades que devem ser sempre verdadeiras para cada entidade principal.

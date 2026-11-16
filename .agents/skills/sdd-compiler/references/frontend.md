@@ -12,7 +12,7 @@ The frontend framework MUST be explicitly defined in the PLAN. Once selected, th
   - State Management: Use **Pinia**.
 - **If Angular (15+)**:
   - Standalone Components are RECOMMENDED over NgModules for new architectures.
-  - State Management: Use **RxJS Services** (default) or **NgRx** (for Redux-pattern).
+  - State Management: use **RxJS Services** (default) or **NgRx** (for Redux-pattern) — ex.: Angular.
   - Strict TypeScript mode MUST be enabled.
 - **If Vanilla JS / HTMX**:
   - For SSR-heavy backends (e.g., Go/Templ, Python/Django, Java/Thymeleaf).

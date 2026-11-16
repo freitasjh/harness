@@ -797,33 +797,25 @@ describe("repo real — os 7 ids PASS e os contadores publicados (RF-08, RF-09, 
     assert.equal(report.ok, true);
   });
 
-  it("população é 223 arquivos / 30.372 linhas (D7, re-medida no ADR-004)", () => {
+  it("população é 223 arquivos / 30.374 linhas (D7, re-medida no ADR-005)", () => {
     const population = derivePopulation(REPO_ROOT);
     assert.equal(population.files.length, 223);
-    assert.equal(population.lines, 30372);
+    assert.equal(population.lines, 30374);
     assert.equal(report.counters.population.files, 223);
-    assert.equal(report.counters.population.lines, 30372);
+    assert.equal(report.counters.population.lines, 30374);
   });
 
-  it("a BASELINE re-derivada é o oráculo dos ADRs 002–005 (número publicado)", () => {
-    assert.equal(BASELINE.length, 38);
-    assert.equal(report.counters.baseline.total, BASELINE.length);
-    assert.equal(report.counters.baseline.identity, 4);
-    assert.equal(report.counters.baseline.unconditional, 34);
-    assert.equal(
-      report.counters.prescriptions.unconditional,
-      report.counters.baseline.unconditional,
-      "todo `incondicional` medido está na baseline",
-    );
-    // Baseline só encolhe: nenhuma entrada vendorizada (E-5) e nenhuma identity
-    // excusando alarme estrutural.
-    assert.equal(BASELINE.some((e) => /react-components|react-best-practices/.test(e.file)), false);
+  it("a BASELINE foi convertida pela rubrica FR0..FR5 (ADR-005)", () => {
+    assert.equal(BASELINE.length, 0);
+    assert.equal(report.counters.baseline.total, 0);
+    assert.equal(report.counters.baseline.identity, 0);
+    assert.equal(report.counters.baseline.unconditional, 0);
+    assert.equal(report.counters.prescriptions.unconditional, 0);
   });
 
-  it("baseline contém as 4 linhas identitárias em 3 arquivos", () => {
-    assert.equal(report.counters.identity.lines, 4);
-    assert.equal(report.counters.identity.files, 3);
-    assert.equal(BASELINE.filter((e) => e.verdict === "identity").length, 4);
+  it("identidade reatribuída: 0 linhas, 0 arquivos", () => {
+    assert.equal(report.counters.identity.lines, 0);
+    assert.equal(report.counters.identity.files, 0);
   });
 
   it("D2 é contada, não presumida: contador em PASS", () => {
@@ -838,14 +830,26 @@ describe("repo real — os 7 ids PASS e os contadores publicados (RF-08, RF-09, 
     assert.equal(report.counters.structuralDebt, 0);
   });
 
-  it("A-3 publica `refs-undetected` com dono ADR-004", () => {
-    assert.equal(typeof report.counters.refsUndetected, "number");
-    assert.ok(report.counters.refsUndetected > 0, "a 2ª gramática é publicada, nunca silêncio");
+  it("A-3 publica `refs-undetected=0` com 9 donos registrados (ADR-005 FR5)", () => {
+    assert.equal(report.counters.refsUndetected, 0);
+    const adr = readFileSync(
+      new URL(
+        "../../../.spec/prd/prd-agnostic-artifacts/ADRs/ADR-005-frota-restante/ADR.md",
+        import.meta.url,
+      ),
+      "utf8",
+    );
+    const owners = adr.split("\n").filter((line) => /^\| C[1-9] \|/.test(line));
+    assert.equal(owners.length, 9);
+    for (const line of owners) assert.match(line, /PRD-4|PRD-5/);
   });
 
-  it("EXCEPTIONS e PROJECT_TERMS são o registro vivo (E-1..E-5)", () => {
-    assert.deepEqual(EXCEPTIONS.map((e) => e.id), ["E-1", "E-2", "E-3", "E-4", "E-5"]);
-    assert.deepEqual(PROJECT_TERMS.map((t) => t.term), ["TaskFlow", "Pulse"]);
+  it("EXCEPTIONS com predicado vivo (D2 = E-6) e PROJECT_TERMS sem nomes de projeto", () => {
+    assert.deepEqual(EXCEPTIONS.map((e) => e.id), ["E-1", "E-2", "E-3", "E-4", "E-5", "E-6"]);
+    for (const e of EXCEPTIONS) {
+      assert.ok(e.predicate && e.reason && e.proof, `${e.id} sem predicado/razão/prova`);
+    }
+    assert.deepEqual(PROJECT_TERMS.map((t) => t.term), []);
   });
 
   it("o adapter publica um único V20 com os contadores no PASS", () => {

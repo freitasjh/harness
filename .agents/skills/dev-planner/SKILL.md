@@ -201,13 +201,13 @@ Exemplos rápidos:
 
 | Documento | Propósito |
 |-----------|-----------|
-| `.agents/rules/backend-coding-standards.md` | Padrões backend (Java EE 7 / EJB) |
-| `.agents/rules/frontend-coding-standards.md` | Padrões frontend (JSF + Vue) |
+| `.agents/rules/backend-coding-standards.md` | Padrões backend (ex.: Java EE 7 / EJB) |
+| `.agents/rules/frontend-coding-standards.md` | Padrões frontend (ex.: JSF + Vue) |
 | _Regras de testes unitários backend — dívida PRD-4_ | — |
 | _Regras de migração — dívida PRD-4_ | — |
 | `.agents/rules/workflow-rules.md` | Workflow SDD completo |
-| `.doc/ARCHITECTURE.md` | Arquitetura detalhada do projeto |
-| `.doc/STACK.md` | Stack tecnológica e versões |
+| Documentação de arquitetura do destino (dono PRD-4) | Arquitetura detalhada do projeto |
+| Documentação de stack do destino (dono PRD-4) | Stack tecnológica e versões |
 | `AGENTS.md` | Visão geral do projeto |
 
 ---
