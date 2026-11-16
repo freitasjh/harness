@@ -86,7 +86,7 @@ const reg    = await import("./installer/contract-registry.mjs");
 for (const k of KEYS) {
   const a = JSON.stringify(oracle[k]), b = JSON.stringify(reg[k]);
   if (a !== b) throw new Error("REGISTRY_DRIFT " + k + " " + a.length + "/" + b.length);
-  console.log(k + " byte-equal " + require("node:crypto").createHash("sha256").update(b).digest("hex").slice(0,12));
+  console.log(k + " byte-equal " + (await import("node:crypto")).createHash("sha256").update(b).digest("hex").slice(0,12));
 }
 '
 grep -c 'contract-v1\|INSTALLER_BIN' installer/contract-registry.mjs   # ⇒ 0 (módulo de dados puro)

@@ -13,7 +13,7 @@
     "previous_archive": ".spec/archive/20261018-harness-eixos-stack/",
     "verify": ".spec/backend/prd-installer-rust-adr-001/VERIFY.md",
     "harness_evidence": ".spec/archive/20261018-harness-eixos-stack/harness/",
-    "harness_report": "harness/prd-installer-rust-adr-001.json",
+    "harness_report": "harness/prd-installer-rust-adr-002.json",
     "tech_debt_p2": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
     "previous_cycle": {
       "cycle": ".spec/backend/harness-inventory-adr-001/",
@@ -31,7 +31,7 @@
     "prd": ".spec/prd/prd-installer-rust/PRD.md",
     "research": null,
     "adr_index": null,
-    "adr": ".spec/prd/prd-installer-rust/ADRs/ADR-001-fronteira-subprocesso/ADR.md",
+    "adr": ".spec/prd/prd-installer-rust/ADRs/ADR-002-oraculo-paridade/ADR.md",
     "prd_lines": ".spec/prd/prd-harness-inventory/PRD.md (162 linhas, 16 secoes, PRD-01 PASS)"
   },
   "scope": {
@@ -203,7 +203,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T15:40:31.644Z",
+  "last_update": "2026-11-16T15:56:06.682Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -1086,9 +1086,10 @@
   "prd_adr": {
     "prd_id": "prd-installer-rust",
     "prd_status": "approved",
-    "active_adr": "ADR-001",
+    "active_adr": "ADR-002",
     "adr_order": [
-      "ADR-001"
+      "ADR-001",
+      "ADR-002"
     ],
     "snapshots": [],
     "decisions_closed": {
