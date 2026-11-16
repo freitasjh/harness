@@ -359,7 +359,15 @@ export function runParity({
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   if (process.argv.includes('--run-parity')) {
     const verdictArg = process.argv.find((a) => a.startsWith('--verdict='))
-    const validationVerdict = verdictArg ? verdictArg.slice('--verdict='.length) : undefined
+    // O rito vive no REPORT; o driver precisa lê-lo por default, senao a
+    // assinatura do owner existe no disco mas o oraculo executavel a ignora.
+    let validationVerdict = verdictArg ? verdictArg.slice('--verdict='.length) : undefined
+    if (!validationVerdict) {
+      try {
+        const reportPath = path.join(repoRoot, 'harness', 'prd-installer-rust-adr-002.json')
+        validationVerdict = JSON.parse(fs.readFileSync(reportPath, 'utf8')).validationVerdict
+      } catch { /* sem RELATORIO => literalProven false, fail-closed */ }
+    }
     console.log(JSON.stringify(runParity({ validationVerdict }), null, 2))
   } else if (process.argv.includes('--rederive-12')) {
     console.log(JSON.stringify({ measurement, command: rederiveCommand(), note: '12/12 é meta; execute o comando para re-derivar' }, null, 2))

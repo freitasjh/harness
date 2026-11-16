@@ -1,8 +1,8 @@
 {
   "current_feature": "prd-installer-rust-adr-002",
-  "current_phase": "Execution",
-  "previous_phase": "Planning",
-  "next_phase": "Testing",
+  "current_phase": "Completed",
+  "previous_phase": "Testing",
+  "next_phase": "Planning",
   "type": "refactor",
   "layer": "agents/skills/rules",
   "repo": "harness",
@@ -11,7 +11,7 @@
     "bug_report": "harness/harness-eixos-stack-p2.json",
     "source_tech_debt": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
     "previous_archive": ".spec/archive/20261018-harness-eixos-stack/",
-    "verify": ".spec/backend/prd-installer-rust-adr-001/VERIFY.md",
+    "verify": ".spec/backend/prd-installer-rust-adr-002/VERIFY.md",
     "harness_evidence": ".spec/archive/20261018-harness-eixos-stack/harness/",
     "harness_report": "harness/prd-installer-rust-adr-002.json",
     "tech_debt_p2": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
@@ -57,10 +57,10 @@
     "G2_PRD": "approved_user_2026_10_22 (PRD prd-garantias-runtime aprovado sem ressalvas; §16 do PRD.md; 3 decisoes do owner)",
     "P1_P2": "approved_user_2026_11_11 (SPEC 49 linhas, 12 RF mapeados aos 16 itens do ADR-001, 6 invariantes)",
     "P2_P3": "approved_user_2026_11_11 (PLAN 57 linhas, TASKS 12 microtasks RV-01..RV-12)",
-    "P3_P4": "approved_auto_evidence_2026_11_16 (commits b236909..293919a; 2 rodadas; excecao owner)",
-    "P4_P5": "approved_auto_evidence_QA_2026_11_16 (REPORT; 1126 testes; 3 ataques, 2 sangram)",
-    "P5_P6": "approved_user_2026_11_16 (VERIFY 3/3)",
-    "P6_fim": "pending_human_merge (branch 01-fronteira-subprocesso)",
+    "P3_P4": "approved_auto_evidence_2026_11_16 (commits 0b9a9e2..e6438c25; 2 criticos + 3 importantes fechados)",
+    "P4_P5": "approved_auto_evidence_QA_2026_11_16 (REPORT schema-valido; assinatura do owner pendente aferida depois - literalProven true)",
+    "P5_P6": "approved_user_2026_11_16 (VERIFY 3/3; owner aprovou sha 9fa4530b)",
+    "P6_fim": "pending_human_merge (branch 02-oraculo-paridade-impl)",
     "B1_B2": "approved_user_2026_09_29",
     "FU32": "closed_approved_decision_B",
     "_previous_cycle_opencode_v2_only": {
@@ -75,7 +75,7 @@
       "B1_B2": "approved_user_2026_09_29",
       "FU32": "closed_approved_decision_B"
     },
-    "G2_ADR": "approved_user_2026_11_16 (ADR-001 fronteira subprocesso)",
+    "G2_ADR": "approved_user_2026_11_16 (ADR-002 oraculo de paridade)",
     "G1_PRD": "approved_user_2026_11_16 (PRD-3 prd-installer-rust; D1-D8 fechadas)"
   },
   "code_review": {
@@ -203,7 +203,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T15:56:06.682Z",
+  "last_update": "2026-11-16T17:03:39.963Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -223,16 +223,15 @@
     "U5": "c - dois ancoras",
     "U6": "b - selo de hash"
   },
-  "harness_status": "passed (REPORT harness/prd-installer-rust-adr-001.json schema-valido; 540+586 testes; V18/V19/V20 estaveis; selo c904f1c5 intacto)",
+  "harness_status": "passed (REPORT harness/prd-installer-rust-adr-002.json schema-valido; 540+638 testes; literalProven=true apos assinatura do owner; selo c904f1c5 intacto)",
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
-  "code_review_status_ciclo": "prd-installer-rust-adr-001: 2 rodadas — rodada1 1 critico (ponte) + 3 importantes; excecao owner + 3 fechados; rodada2 APPROVED",
-  "sdd_stage": "PRD-3 ADR-002 EXECUTION: oraculo externo, rito do literal e SI-1..SI-6 (sem Rust)",
+  "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
+  "sdd_stage": "PRD-3 ADR-002 CONCLUIDO (VERIFY 3/3 com rito assinado). Proxima frente: ADR-003 motor Rust (init/doctor/upgrade), que desliga a ponte .mjs",
   "backlog": {
     "total": 11,
-    "todo": 11,
-    "doing": 0,
-    "done": 0,
+    "todo": 0,
+    "done": 11,
     "ids": [
       "PO-01",
       "PO-02",
@@ -985,13 +984,13 @@
   },
   "verify": {
     "at": "2026-11-16T00:00:00-03:00",
-    "verdict": "3/3 PASS",
-    "completude": "10/10 tasks; excecao D1-two-motors datada com expiracao",
-    "corretude": "1126 testes 0 falhas; 13/13 itens; 6 mapas byte-equal; 22/22 e 75/75",
-    "coerencia": "selo c904f1c5 identico; oraculo por identidade; ponte declarada",
-    "traceability": "11/11 RF · 13/13 itens",
-    "artefato": ".spec/backend/prd-installer-rust-adr-001/VERIFY.md",
-    "report": "harness/prd-installer-rust-adr-001.json"
+    "verdict": "3/3 PASS (rito assinado pelo owner)",
+    "completude": "11/11 tasks; QA mediu -> owner aprovou -> orquestrador registrou",
+    "corretude": "1178 testes 0 falhas; 15/15 itens; 6 SI (4 medidos, 2 not_measured)",
+    "coerencia": "oraculo externo c63e333; anti-tautologia; driver le assinatura do REPORT; selo intacto",
+    "traceability": "13/13 RF · 15/15 itens",
+    "artefato": ".spec/backend/prd-installer-rust-adr-002/VERIFY.md",
+    "report": "harness/prd-installer-rust-adr-002.json"
   },
   "commit": "a19acab",
   "remote": "git@github.com:freitasjh/harness.git (SSH; push + CI pendentes)",
