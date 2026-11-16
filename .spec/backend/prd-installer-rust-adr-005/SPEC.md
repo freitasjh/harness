@@ -42,8 +42,8 @@ Ver `GATE-SPEC.md`. Alvo 100%.
 | Pacote | `find node_modules/harness-installer -name install.mjs` | vazio |
 | D7 | PATH sem cargo/rustc + `contract-v1` | envelope v:1 |
 | Selo | `sealCommands(commands)` | `c904f1c5…` / `daba8c5…` |
-| Rust | `cargo test` paralelo | 0 falhas, fora do selo |
-| Suítes | 5 suítes | 0 falhas |
+| Rust | `cargo test` paralelo + **`prova(op)` differential contra `c63e333`** (garantia de não-regressão, ADR-002 §2.1) | 0 falhas; differential vazio; fora do selo |
+| Contraprova | **4 etapas seladas** (plugins → installer → static → vendor) + Rust/harnesses em paralelo | 4 etapas 0 falhas; Rust fora do selo (D6) |
 
 ## 5. N/A declarado (spec-gate)
 - **DDD api/impl/public** — `N/A — distribuição/pacote npm, não camada Java`.

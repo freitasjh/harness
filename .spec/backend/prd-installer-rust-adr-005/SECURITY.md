@@ -10,6 +10,7 @@
 | Elevation | shim | 🟠 | shim só localiza/lança; nunca reimplementa motor nem grava; `install.mjs` fora do pacote (RF-06) |
 | DoS | install sem rede | 🟢 | rede-zero (RF-12), nenhum download no postinstall |
 | Spoofing | `bin` | 🟢 | envelope `v:1` + `op` conferidos pelo contrato (RF-11) |
+| Repudiation | publicação/fallback | 🟡 N/A | sem log central em CLI; rastro = versão do pacote + tripla em stderr + RELATÓRIO do SDD (ADR-005 §2.2) |
 
 ## Gaps
 🔴 0 · 🟠 0 (mitigações prescritivas). ℹ custo D6: cobertura Rust fora do selo — não é gap de segurança (o oráculo externo ADR-002 é a garantia).

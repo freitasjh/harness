@@ -26,4 +26,4 @@ Reabrir D1/D5/D6/D7 · presets/contrato/tela/selo · publicação real (sem `npm
 R1 tripla não casa ⇒ fallback claro; R2 script de build ⇒ proibido; R3 `install.mjs` vazando no pacote ⇒ 2º motor; R4 selo republicado ⇒ drift; R5 rede no install ⇒ V15.
 
 ## 6. Verificação
-16 itens com comando; `find node_modules -name install.mjs` vazio; `sealCommands` = `c904f1c5`; `grep -cE 'cargo|rust' harness.config.json` = 0; 5 suítes + cargo paralelo.
+16 itens com comando; `find node_modules -name install.mjs` vazio; `sealCommands` = `c904f1c5`; `grep -cE 'cargo|rust' harness.config.json` = 0; 4 etapas seladas (plugins/installer/static/vendor) + cargo e differential em paralelo (D6).
