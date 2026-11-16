@@ -2,8 +2,8 @@
 
 | Key | Summary | RF | Prioridade | Risco | Depende de | Status |
 |---|---|---|---|---|---|---|
-| PUB-01 | Wrapper package.json (bin, optionalDependencies, engines) | 01,02,14 | P0 | Médio | — | TODO |
-| PUB-02 | Shim JS localizador (não motor) | 01,05,11 | P0 | Alto | PUB-01 | TODO |
+| PUB-01 | Wrapper package.json (bin, optionalDependencies, engines) | 01,02,14 | P0 | Médio | — | DONE |
+| PUB-02 | Shim JS localizador (não motor) | 01,05,11 | P0 | Alto | PUB-01 | DONE |
 | PUB-03 | Pacotes de plataforma (matriz os/cpu/libc) | 02,06,12,16 | P0 | Médio | PUB-01 | TODO |
 | PUB-04 | Fallback tripla não casa + prova D7 | 03,04,12 | P0 | Alto | PUB-03 | TODO |
 | VAL-01 | Prova runtime limpo (D7) e rede-zero | 03,05,11,12 | P0 | Alto | PUB-02,PUB-04 | TODO |
