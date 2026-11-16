@@ -11,7 +11,7 @@
     "bug_report": "harness/harness-eixos-stack-p2.json",
     "source_tech_debt": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
     "previous_archive": ".spec/archive/20261018-harness-eixos-stack/",
-    "verify": ".spec/backend/prd-installer-rust-adr-003/VERIFY.md",
+    "verify": ".spec/frontend/prd-installer-rust-adr-004/VERIFY.md",
     "harness_evidence": ".spec/archive/20261018-harness-eixos-stack/harness/",
     "harness_report": "harness/prd-installer-rust-adr-003.json",
     "tech_debt_p2": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
@@ -24,8 +24,8 @@
     "c1_previous_bug": ".spec/bugs/harness-eixos-stack-p2/TASKS.md",
     "proposal": ".spec/frontend/prd-installer-rust-adr-004/PROPOSAL.md",
     "spec": ".spec/frontend/prd-installer-rust-adr-004/SPEC.md",
-    "plan": ".spec/backend/prd-installer-rust-adr-003/PLAN.md",
-    "tasks": ".spec/backend/prd-installer-rust-adr-003/TASKS.md",
+    "plan": ".spec/frontend/prd-installer-rust-adr-004/PLAN.md",
+    "tasks": ".spec/frontend/prd-installer-rust-adr-004/TASKS.md",
     "superseded_cycle": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/ (superseded: SPEC prescrevia `Plugin.define`, ausente no binario v2.0.32)",
     "archive": ".spec/archive/20261028-harness-design-system-agent/",
     "prd": ".spec/prd/prd-installer-rust/PRD.md",
@@ -35,7 +35,7 @@
     "prd_lines": ".spec/prd/prd-harness-inventory/PRD.md (162 linhas, 16 secoes, PRD-01 PASS)",
     "security": ".spec/frontend/prd-installer-rust-adr-004/SECURITY.md",
     "spec_gate": ".spec/frontend/prd-installer-rust-adr-004/GATE-SPEC.md",
-    "jira_board": ".spec/backend/prd-installer-rust-adr-003/JIRA_BOARD.md",
+    "jira_board": ".spec/frontend/prd-installer-rust-adr-004/JIRA_BOARD.md",
     "ux": ".spec/frontend/prd-installer-rust-adr-004/UX.md"
   },
   "scope": {
@@ -59,8 +59,8 @@
   "gates": {
     "P0_P1": "approved_user_2026_11_16 (Refactor; ADR-004 como entrada da SPEC; ux-designer obrigatorio na analise)",
     "G2_PRD": "approved_user_2026_10_22 (PRD prd-garantias-runtime aprovado sem ressalvas; §16 do PRD.md; 3 decisoes do owner)",
-    "P1_P2": "approved_auto_architect_2026_11_16 (3 rodadas; score 100%; ux-designer anexado; guarda com dente confirmada) — AGUARDANDO CONFIRMACAO DO OWNER",
-    "P2_P3": "approved_user_2026_11_16 (PLAN 70 linhas, TASKS 12 microtasks, 17 RF mapeados; SDD verdes)",
+    "P1_P2": "approved_user_2026_11_16 (SPEC 100%; architect APPROVED apos 3 rodadas; UX vinculante; guarda com dente)",
+    "P2_P3": "pending_user_approval (PLAN 62 linhas, TASKS 9 microtasks TUI-01..06 + VAL-01..03; 18 RF mapeados)",
     "P3_P4": "approved_auto_evidence_2026_11_16 (3 batches; review APPROVED 0/0 apos 1 iteracao de correcao; mutante 0/23)",
     "P4_P5": "approved_auto_evidence_QA_2026_11_16 (540+644 + cargo 60 + spec 20; 23/23 differential real; SI 1..6 medidos)",
     "P5_P6": "approved_auto_2026_11_16 (VERIFY 3/3 com evidencia re-executada no repo real; owner aprovou cada batch; rito ADR-002 literalProven true)",
@@ -227,7 +227,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T21:53:46.859Z",
+  "last_update": "2026-11-16T22:03:23.398Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -251,25 +251,22 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-004 ANALISE CONCLUIDA — SPEC 100%, architect APPROVED apos 3 rodadas, UX e seguranca pass; aguardando portao P1->P2",
+  "sdd_stage": "PRD-3 ADR-004 PLANEJAMENTO CONCLUIDO — aguardando P2->P3 para delegar 9 microtasks (8 TUI + 3 VAL)",
   "backlog": {
-    "total": 12,
-    "todo": 0,
+    "total": 9,
+    "todo": 9,
     "doing": 0,
-    "done": 12,
+    "done": 0,
     "ids": [
-      "HARN-BE-01",
-      "HARN-VAL-01",
-      "HARN-BE-02",
-      "HARN-BE-03",
-      "HARN-BE-04",
-      "HARN-BE-05",
-      "HARN-BE-06",
-      "HARN-BE-07",
-      "HARN-BE-08",
-      "HARN-VAL-02",
-      "HARN-VAL-03",
-      "HARN-VAL-04"
+      "TUI-01",
+      "VAL-01",
+      "TUI-02",
+      "TUI-03",
+      "TUI-04",
+      "TUI-05",
+      "TUI-06",
+      "VAL-02",
+      "VAL-03"
     ]
   },
   "next_task": "ADR-002",
@@ -1943,15 +1940,14 @@
     "at": "2026-11-16T21:47:42.582Z"
   },
   "plan": {
-    "lines": 70,
-    "tasks": 12,
+    "lines": 62,
+    "tasks": 9,
     "layers": {
-      "be": 8,
-      "val": 4,
-      "fe": 0
+      "tui": 8,
+      "val": 3
     },
-    "mapped_rf": 17,
-    "at": "2026-11-16T17:57:16.131Z"
+    "mapped_rf": 18,
+    "at": "2026-11-16T22:03:23.398Z"
   },
   "batch": {
     "id": 3,
