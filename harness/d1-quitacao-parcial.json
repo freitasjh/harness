@@ -1,0 +1,133 @@
+{
+  "version": 1,
+  "demand": "d1-quitacao-parcial",
+  "agent": "developer-engineer",
+  "phase": "Execution",
+  "gitSha": "64b70b17231167dae969cd285a2f736e8c49c3a1",
+  "commands": [
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 1192,
+      "stdoutHash": "sha256:8e42d7a1f69c02df0bf77626e6fece203f4a6b4f042d604e8cda3e638f619d52"
+    },
+    {
+      "cmd": "node --test \"installer/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 6093,
+      "stdoutHash": "sha256:0002a2ad153bfd6194d0e57e8da41300e41855af6ba9b1aeb6c66a69567bf9d8"
+    },
+    {
+      "cmd": "node scripts/static-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 186,
+      "stdoutHash": "sha256:4a1e734a85037a1e26e20ea8531b7b4e64cf76d4b1fd7890b3b62529b7652ad5"
+    },
+    {
+      "cmd": "node scripts/sdd-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 102,
+      "stdoutHash": "sha256:419f2035e4defd5e614c685a90ce95af05849b7701bd6a854551b4b39706a3c2"
+    },
+    {
+      "cmd": "node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 51,
+      "stdoutHash": "sha256:e5e528c52d79fceaa1be828bd89116aa6e0be73294d2e99d39c4febe99e84516"
+    },
+    {
+      "cmd": "cargo test --manifest-path installer-rs/Cargo.toml",
+      "exitCode": 0,
+      "durationMs": 162,
+      "stdoutHash": "sha256:e6ba0425c50b59ac01687722f41e291413e0b19a72011c179fa39a8ecb5fe16e"
+    },
+    {
+      "cmd": "node installer-rs/tests/prova-engine.mjs",
+      "exitCode": 0,
+      "durationMs": 3606,
+      "stdoutHash": "sha256:00e5ffc6876a0cb7189b4ce3be79274a721b2416d8090094cb051b8f84c5c81e"
+    },
+    {
+      "cmd": "node installer-rs/tests/prova-mutant.mjs",
+      "exitCode": 0,
+      "durationMs": 1872,
+      "stdoutHash": "sha256:297ecd32638b0f961c0745ea41de999b0d9f9a73102db5b9d5927db4e84a7f0b"
+    },
+    {
+      "cmd": "INSTALLER_BIN=installer-rs/target/debug/harness-installer node installer/parity-oracle.mjs --run-parity",
+      "exitCode": 0,
+      "durationMs": 1186,
+      "stdoutHash": "sha256:624b8d71d5f78a98669c53a26cf842267b9dd474c97eb8c0f55015b3ba81f0c6"
+    }
+  ],
+  "counts": {
+    "unit": {
+      "passed": 1243,
+      "failed": 0,
+      "skipped": 0
+    },
+    "it": {
+      "passed": 60,
+      "failed": 0,
+      "skipped": 0
+    },
+    "frontend": {
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "measurement": {
+    "bridge": "ponte D1-two-motors em installer/installer-contract.mjs:15 (69 nomes) — ADR-001 §16 autorizou 31",
+    "classes": {
+      "D-INJ": 6,
+      "D-DATA": 9,
+      "D-PURE": 29,
+      "D-ENGINE": 23,
+      "D-TUI": 8
+    },
+    "migrated": {
+      "D-DATA": "9 -> ./contract-registry.mjs (installer-contract.mjs:25-30)",
+      "D-PURE": "29 -> installer/contract-pure.mjs (byte-fiel a c63e333; golden 31/31)",
+      "D-ENGINE": "13 -> invokeSync/spawnSync(bin,[contract-v1]) (wrapper differential 28/28)"
+    },
+    "debt": {
+      "D-TUI": "8 (ADR-004): askMenuStep, detect, printPlan, printUsage, promptAnswers, readSecretPrompt, readSecretRaw, sourceLineOf",
+      "D-ENGINE": "10: runCli, runDoctor, runInit, runUpgrade, runWizard (streams/apply/marcadores de tela); collectAnswers, generateConfig, planMerge, runChecks, main (ordem de chaves JSON.stringify / bloco 4-linhas)"
+    },
+    "grepBefore": "1 (installer/installer-contract.mjs:15, 69 nomes)",
+    "grepAfter": "1 (installer/installer-contract.mjs:58, 18 nomes em divida)",
+    "grepCommand": "grep -rn \"from '.*install\\.mjs'\" scripts/ installer/ .opencode/ | wc -l",
+    "oracle": {
+      "commit": "c63e333",
+      "full": "c63e33307710e1c6271f5c68b2dd9fb15283f49c",
+      "blobSha256": "17a704c37a018e1efd4fd7f4658d024c79e20cf874f73c5203a3a04ec3201a8d",
+      "porcelain": ""
+    },
+    "prova": {
+      "proved": 23,
+      "failed": 0,
+      "mutantProved": 0,
+      "mutantFailed": 23,
+      "literalProven": true
+    },
+    "seal": {
+      "suiteFull": "c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2",
+      "diff": "vazio"
+    }
+  },
+  "evaluation": {
+    "telas": "n/a — mudanca de fronteira sem UI",
+    "negocio": "n/a — nenhuma regra de negocio alterada",
+    "logica": "ok — motor unico para 13 ops; divida declarada e medida por spec",
+    "perf": "n/a — spawnSync pontual; sem caminho critico alterado"
+  },
+  "brainStore": [
+    "sessoes/sessoes/projeto/harness/2026-11-16-d1-quitacao-parcial"
+  ],
+  "cleanup": {
+    "ports": [],
+    "note": "Nenhum servidor subido; worktrees de oraculo liberados nos hooks after (git worktree list = 1). Encerramento por PID quando aplicavel; sem matanca por linha de comando."
+  },
+  "selfReported": true
+}

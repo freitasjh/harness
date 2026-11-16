@@ -1,26 +1,76 @@
 // Fronteira ADR-001/PRD-3 — adapter de subprocesso (contract-v1).
-// Node é o chamador: monta o request, despacha por spawn, valida o envelope.
-// Ponte de transição (ADR-003): os nomes de função/dado abaixo são re-exportados
-// do oráculo congelado install.mjs até o binário Rust existir. Isto NÃO é um
-// segundo motor — é a mesma implementação, atrás de um especificador estável.
-// Nenhuma escrita, nenhum FFI, nenhum valor sensível em argv.
+// Node é o chamador: monta o request, despacha por spawn/spawnSync, valida envelope.
+// Quitação PARCIAL da ponte D1-two-motors (2026-11-16): 9 D-DATA vêm da registry,
+// 29 D-PURE do módulo local byte-fiel a c63e333, 13 D-ENGINE rodam no binário
+// Rust por subprocesso síncrono. 8 D-TUI + 10 D-ENGINE permanecem como dívida
+// declarada (streams/callbacks/marcadores de tela e ordem de chaves congelada).
+// Nenhuma escrita pelo adapter, nenhum FFI, nenhum valor sensível em argv.
 
-import { spawn } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { CONTRACT_VERSION, SUBCOMMAND, EXIT, OP_NAMES } from './contract-inventory.mjs'
+import { sanitizeLog, InstallError as PureInstallError } from './contract-pure.mjs'
 
-// --- ponte de transição: registry de dados puro -------------------------------
-export { AXIS_IDS, REGISTRY_ALL_DIGEST, REGISTRY_DATA, REGISTRY_MAPS, REGISTRY_MAP_DIGESTS, RULES_BY_AXIS, RULES_COMMON, SKILLS_BY_AXIS, SKILLS_COMMON, STACKS_FOR_EXCEPTIONS } from './contract-registry.mjs'
+// Superfície única de InstallError: erros do módulo puro local e erros do módulo
+// vivo (dívida declarada abaixo) precisam satisfazer o MESMO `instanceof` nos
+// specs congelados. Nenhuma função é reexportada sob outro nome por aqui.
+export class InstallError extends PureInstallError {
+  static [Symbol.hasInstance](value) {
+    return Boolean(value) && (value.name === 'InstallError' || value instanceof PureInstallError)
+  }
+}
 
-// --- ponte de transição: funções do oráculo (mesmo nome, mesmo tipo) ----------
-export { DENYLIST, MANIFEST_NAME, MIN_NODE_VERSION, QUESTIONS, STACK_PROFILES, STACK_VALUES, VERSION, W2M_MARKER, WIZARD_MENU, InstallError, assertCreateOnly, assertDogfoodTarget, assertInside, axisIdsFromAxes, canNoEcho, configReferenceTargets, defaultSuiteFor, dryRunNotice, formatError, hasHarnessSection, isAbortToken, isScannablePath, normalizeSection, presetOfAxes, presetsOfAxes, profileOf, resolveAnswerSource, ruleAllowedForAxes, sanitizeLog, scanLiterals, serializeAnswers, skillAllowedForLocalAxes, stacksFor, stripAnsiControls, validateAnswer, validateRulesByAxis, validateSkillsByAxis, writtenPathsOf, applyMerge, backup, buildManifest, collectAnswers, collectIncoming, generateConfig, inventory, loadAnswersFile, main, mergeAgentFile, mergeOpencodeJson, parseArgs, planMerge, preflight, requireVerifiedBackup, resolveBackupDir, runChecks, runCli, runDoctor, runInit, runUpgrade, runWizard, writeManifest, askMenuStep, detect, printPlan, printUsage, promptAnswers, readSecretPrompt, readSecretRaw, sourceLineOf } from './install.mjs'
+// --- D-INJ + 9 D-DATA: registry congelado ------------------------------------
+export {
+  AXIS_IDS, REGISTRY_ALL_DIGEST, REGISTRY_DATA, REGISTRY_MAPS, REGISTRY_MAP_DIGESTS,
+  RULES_BY_AXIS, RULES_COMMON, SKILLS_BY_AXIS, SKILLS_COMMON, STACKS_FOR_EXCEPTIONS,
+  DENYLIST, MANIFEST_NAME, MIN_NODE_VERSION, QUESTIONS, STACK_PROFILES, STACK_VALUES,
+  VERSION, W2M_MARKER, WIZARD_MENU,
+} from './contract-registry.mjs'
+
+// --- 29 D-PURE: módulo local byte-fiel a c63e333 ------------------------------
+export {
+  assertCreateOnly, assertDogfoodTarget, assertInside, axisIdsFromAxes, canNoEcho,
+  configReferenceTargets, defaultSuiteFor, dryRunNotice, formatError, hasHarnessSection,
+  isAbortToken, isScannablePath, normalizeSection, presetOfAxes, presetsOfAxes,
+  profileOf, resolveAnswerSource, ruleAllowedForAxes, scanLiterals, serializeAnswers,
+  skillAllowedForLocalAxes, stacksFor, stripAnsiControls, validateAnswer,
+  validateRulesByAxis, validateSkillsByAxis, writtenPathsOf,
+} from './contract-pure.mjs'
+export { sanitizeLog } from './contract-pure.mjs'
+
+// --- DÍVIDA DECLARADA (D1-two-motors): 8 D-TUI + 10 D-ENGINE -----------------
+// 8 D-TUI (ADR-004): askMenuStep, detect, printPlan, printUsage, promptAnswers,
+// readSecretPrompt, readSecretRaw, sourceLineOf.
+// 10 D-ENGINE: runCli, runDoctor, runInit, runUpgrade, runWizard (streams +
+// callbacks de `apply` + marcadores de tela que o Rust não emite) e
+// collectAnswers, generateConfig, planMerge, runChecks, main divergem em ordem
+// de chaves de JSON.stringify ou no bloco 4-linhas — specs comparam byte a byte.
+// Os outros 13 D-ENGINE rodam no binário Rust.
+// Ponte datada 2026-11-16 — não é conformidade, é dívida explícita.
+import {
+  runCli, runDoctor, runInit, runUpgrade, runWizard,
+  askMenuStep, detect, printPlan, printUsage, promptAnswers,
+  readSecretPrompt, readSecretRaw, sourceLineOf,
+  collectAnswers, generateConfig, planMerge, runChecks, main,
+} from './install.mjs'
+export {
+  runCli, runDoctor, runInit, runUpgrade, runWizard,
+  askMenuStep, detect, printPlan, printUsage, promptAnswers,
+  readSecretPrompt, readSecretRaw, sourceLineOf,
+  collectAnswers, generateConfig, planMerge, runChecks, main,
+}
 
 export { CONTRACT_VERSION, SUBCOMMAND, EXIT, OP_NAMES }
 
-// A ponte acima reexporta sanitizeLog sem criar binding local. Para sanitizar
-// dentro do envelope sem introduzir um segundo import estático do oráculo
-// (fronteira única), carregamos o MESMO módulo via import dinâmico no topo —
-// o ESM cacheia a URL, logo é a mesma instância da reexportação.
-const { sanitizeLog } = await import('./install.mjs')
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const DEFAULT_BIN = path.join(REPO_ROOT, 'installer-rs', 'target', 'debug', 'harness-installer')
+
+export function installerBin() {
+  return process.env.INSTALLER_BIN || DEFAULT_BIN
+}
 
 // ---------------------------------------------------------------------------
 // envelope contract-v1
@@ -58,7 +108,7 @@ export class ProtocolError extends Error {
   }
 }
 
-export class ContractError extends Error {
+export class ContractError extends InstallError {
   constructor(error, meta = {}) {
     super(error && error.what ? error.what : 'contract error')
     this.name = 'ContractError'
@@ -181,3 +231,78 @@ export function invoke({
     child.stdin.end(request + '\n')
   })
 }
+
+// ---------------------------------------------------------------------------
+// motor Rust — chamada SÍNCRONA (contract-v1) para os D-ENGINE serializáveis.
+// Mesma semântica de `invoke()` (linhas 165-179), com spawnSync em vez de spawn.
+// Nenhum valor sensível em argv: request vai por stdin; stdout = envelope.
+// ---------------------------------------------------------------------------
+export function invokeSync({ bin, op, args = {}, answers = {}, target = null, env } = {}) {
+  const resolvedBin = bin || installerBin()
+  if (!resolvedBin) throw new ProtocolError('bin ausente')
+  if (!fs.existsSync(resolvedBin)) throw new ProtocolError('bin ausente: ' + resolvedBin)
+  const request = buildRequest({ op, args, answers, target })
+  const result = spawnSync(resolvedBin, [SUBCOMMAND], {
+    input: request + '\n',
+    stdio: ['pipe', 'pipe', 'pipe'],
+    encoding: 'utf8',
+    maxBuffer: 32 * 1024 * 1024,
+    env,
+  })
+  const meta = {
+    stdout: result.stdout || '', stderr: result.stderr || '',
+    argv: [resolvedBin, SUBCOMMAND], exitCode: result.status, signal: result.signal,
+  }
+  if (result.error) throw new ProtocolError('spawn falhou: ' + result.error.message, meta)
+  if (result.signal) throw new SignalError(result.signal, meta)
+  if (result.status === EXIT.PROTOCOL) throw new ProtocolError('erro de protocolo do contrato', meta)
+  let envParsed
+  try { envParsed = parseEnvelope(meta.stdout) } catch (e) { throw new ProtocolError(e.message, meta) }
+  if (envParsed.op !== op) throw new ProtocolError('op do envelope divergente', meta)
+  if (!envParsed.ok) {
+    if (result.status !== EXIT.FAILURE) throw new ProtocolError('exit/envelope divergentes', meta)
+    throw new ContractError(envParsed.error, meta)
+  }
+  if (result.status !== EXIT.OK) throw new ProtocolError('exit/envelope divergentes', meta)
+  return { ok: true, op: envParsed.op, envelope: envParsed, result: envParsed.result, ...meta }
+}
+
+// Adapta a assinatura pública (congelada nos specs) ao formato do request
+// contract-v1. Espelha 1:1 o oracle-bridge de prova (installer-rs/tests).
+const ENGINE_ADAPTERS = Object.freeze({
+  preflight: (a) => ({ args: a[0] ?? {} }),
+  inventory: (a) => ({ args: { target: a[0] } }),
+  backup: (a) => ({ target: a[0], args: { ...(a[1] ?? {}), target: a[0] } }),
+  resolveBackupDir: (a) => ({ args: { target: a[0], backupRoot: a[1] } }),
+  loadAnswersFile: (a) => ({ args: { path: a[0] } }),
+  collectIncoming: (a) => ({ args: { sourceDir: a[0], stacks: a[1]?.stacks ?? [], stack: a[1]?.stack ?? null } }),
+  applyMerge: (a) => ({ args: { target: a[0], plan: a[1] ?? [], incomingFiles: a[2]?.incomingFiles ?? {}, dryRun: a[2]?.dryRun } }),
+  buildManifest: (a) => ({ args: a[0] ?? {} }),
+  writeManifest: (a) => ({ args: { target: a[0], manifest: a[1] ?? {}, dryRun: a[2]?.dryRun } }),
+  requireVerifiedBackup: (a) => ({ args: { backup: a[0] } }),
+  mergeOpencodeJson: (a) => ({ args: { existing: a[0] ?? {}, incoming: a[1] ?? {} } }),
+  mergeAgentFile: (a) => ({ args: { existing: a[0] ?? '', incomingSection: a[1] ?? '' } }),
+  parseArgs: (a) => ({ args: { argv: a[0] ?? [] } }),
+})
+
+export const MIGRATED_ENGINE_OPS = Object.freeze(Object.keys(ENGINE_ADAPTERS))
+
+function engineCall(op, positional) {
+  const adapter = ENGINE_ADAPTERS[op]
+  if (!adapter) throw new ProtocolError('op sem adapter de motor: ' + op)
+  return invokeSync({ op, ...adapter(positional) }).result
+}
+
+export function preflight(...a) { return engineCall('preflight', a) }
+export function inventory(...a) { return engineCall('inventory', a) }
+export function backup(...a) { return engineCall('backup', a) }
+export function resolveBackupDir(...a) { return engineCall('resolveBackupDir', a) }
+export function loadAnswersFile(...a) { return engineCall('loadAnswersFile', a) }
+export function collectIncoming(...a) { return engineCall('collectIncoming', a) }
+export function applyMerge(...a) { return engineCall('applyMerge', a) }
+export function buildManifest(...a) { return engineCall('buildManifest', a) }
+export function writeManifest(...a) { return engineCall('writeManifest', a) }
+export function requireVerifiedBackup(...a) { return engineCall('requireVerifiedBackup', a) }
+export function mergeOpencodeJson(...a) { return engineCall('mergeOpencodeJson', a) }
+export function mergeAgentFile(...a) { return engineCall('mergeAgentFile', a) }
+export function parseArgs(...a) { return engineCall('parseArgs', a) }
