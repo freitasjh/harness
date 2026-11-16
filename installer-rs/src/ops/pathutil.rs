@@ -50,18 +50,25 @@ fn civil_from_days(days: i64) -> (i64, i64, i64) {
 }
 
 /// Equivalente a `new Date().toISOString().replace(/[:.]/g, '-')` do oráculo.
-pub fn iso_stamp_compact() -> String {
+fn now_parts() -> (i64, i64, i64, i64, i64, i64, i64) {
     let now = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap_or_default()
         .as_millis() as i64;
     let secs = now / 1000;
-    let millis = now % 1000;
     let days = secs / 86400;
     let sod = secs % 86400;
     let (y, m, d) = civil_from_days(days);
-    format!(
-        "{:04}-{:02}-{:02}T{:02}-{:02}-{:02}-{:03}Z",
-        y, m, d, sod / 3600, (sod % 3600) / 60, sod % 60, millis
-    )
+    (y, m, d, sod / 3600, (sod % 3600) / 60, sod % 60, now % 1000)
+}
+
+pub fn iso_stamp_compact() -> String {
+    let (y, m, d, h, mi, s, ms) = now_parts();
+    format!("{:04}-{:02}-{:02}T{:02}-{:02}-{:02}-{:03}Z", y, m, d, h, mi, s, ms)
+}
+
+/// `new Date().toISOString()` — usado em manifest.date.
+pub fn iso_z() -> String {
+    let (y, m, d, h, mi, s, ms) = now_parts();
+    format!("{:04}-{:02}-{:02}T{:02}:{:02}:{:02}.{:03}Z", y, m, d, h, mi, s, ms)
 }

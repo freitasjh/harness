@@ -1,5 +1,5 @@
 {
-  "_comment": "23 REQ_op fixtures — uma por D-ENGINE (contract-inventory.mjs:18-23 @ c63e333). Placeholders {{REPO_ROOT}} e {{PROVA_TMP}} são resolvidos pelo harness, nunca pelo sujeito.",
+  "_comment": "23 REQ_op fixtures — uma por D-ENGINE (TABELA ADR-003 §2.1 linhas 59-83 = ADR-001 §5; installer/contract-inventory.mjs NÃO existe no oráculo c63e333). Placeholders {{REPO_ROOT}} e {{PROVA_TMP}} são resolvidos pelo harness, nunca pelo sujeito.",
   "preflight": {"v":1,"op":"preflight","args":{"target":"/tmp/harness-prova-target","uid":1000,"nodeVersion":"20.0.0","skipManifestGuard":true},"answers":{},"target":"/tmp/harness-prova-target"},
   "inventory": {"v":1,"op":"inventory","args":{"target":"/tmp/harness-prova-inventory-absent"},"answers":{},"target":"/tmp/harness-prova-inventory-absent"},
   "backup": {"v":1,"op":"backup","args":{},"answers":{},"target":null},

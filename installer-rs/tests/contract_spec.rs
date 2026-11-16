@@ -1,7 +1,8 @@
 // HARN-BE-01 — teste ANTES da implementação (TDD).
 // Fronteira contract-v1 (ADR-001 §2.1): envelope v:1, exit 0/1/2, segredo em stdin.
-// Inventário de 23 nomes: D-ENGINE em installer/contract-inventory.mjs:18-23 @ c63e333
-// (mesmo conjunto de ADR-001 §5 e ADR-003 §2.1). Nenhum nome é inventado aqui.
+// Inventário de 23 nomes: TABELA ADR-003 §2.1 (linhas 59-83) = ADR-001 §5
+// D-ENGINE. installer/contract-inventory.mjs NÃO existe no oráculo c63e333
+// (followup de review #2) — esta constante é a fonte real, não um arquivo ausente.
 use harness_installer::contract::{
     envelope_json, error_envelope, exit_code, parse_request, success_envelope, ErrorBody,
 };

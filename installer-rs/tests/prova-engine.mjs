@@ -43,6 +43,16 @@ const IMPLEMENTED = Object.freeze([
   'collectAnswers', 'generateConfig', 'collectIncoming',
 ])
 
+// Batch 2 (BE-04..BE-08): implementadas no motor, mas a prova diferencial
+// certificada (fixtures preenchidas + mutação) pertence ao batch 3 (VAL-02).
+// Status honesto: `implementado_aguarda_certificacao_VAL-02`.
+const IMPLEMENTED_BATCH2 = Object.freeze([
+  'applyMerge', 'backup', 'buildManifest', 'main', 'mergeAgentFile',
+  'mergeOpencodeJson', 'parseArgs', 'planMerge', 'requireVerifiedBackup',
+  'runChecks', 'runCli', 'runDoctor', 'runInit', 'runUpgrade', 'runWizard',
+  'writeManifest',
+])
+
 const sha256 = (text) => createHash('sha256').update(text).digest('hex')
 const read = (p) => fs.readFileSync(p, 'utf8')
 const run = (bin, args, opts = {}) => spawnSync(bin, args, {
@@ -81,6 +91,24 @@ function diffUnified(oracleText, binText) {
   return { empty: d.status === 0, text: d.stdout || '' }
 }
 
+// Followup de review #4 — o runner compara também `ok` e `exit-code`, não só
+// `result|error`. A ativação como GATE de reprovação cabe em VAL-02; aqui os
+// campos são calculados e reportados (preparação, sem mudar o veredito atual).
+const expectedExit = (ok) => (ok ? 0 : 1)
+
+function fullComparison(oracleEnv, binEnv, oracleExit, binExit, sideDiffEmpty) {
+  const okMatch = oracleEnv.ok === binEnv.ok
+  const exitCodeMatch = expectedExit(binEnv.ok) === binExit
+  const oracleExitMatch = expectedExit(oracleEnv.ok) === oracleExit
+  return {
+    sideMatch: sideDiffEmpty,
+    okMatch,
+    exitCodeMatch,
+    oracleExitMatch,
+    allMatch: sideDiffEmpty && okMatch && exitCodeMatch && oracleExitMatch,
+  }
+}
+
 function prova({ bin, op, request }) {
   checkOracle()
   const req = JSON.stringify(request) + '\n'
@@ -106,6 +134,7 @@ function prova({ bin, op, request }) {
     v: binEnv.v,
     opDoEnvelope: binEnv.op,
     ok: binEnv.ok,
+    comparison: fullComparison(oracleEnv, binEnv, oracle.status, subject.status, d.empty),
   }
 }
 
@@ -149,7 +178,13 @@ function main() {
   try {
     for (const op of names) {
       if (!IMPLEMENTED.includes(op)) {
-        results.push({ op, status: 'pendente_batch2/3', reason: 'op registrada; prova diferencial nas próximas fatias' })
+        results.push({
+          op,
+          status: IMPLEMENTED_BATCH2.includes(op) ? 'implementado_aguarda_certificacao_VAL-02' : 'pendente',
+          reason: IMPLEMENTED_BATCH2.includes(op)
+            ? 'motor implementado no batch 2; prova diferencial com fixture/mutação certificada no batch 3 (VAL-02)'
+            : 'op registrada; prova diferencial nas próximas fatias',
+        })
         continue
       }
       results.push(prova({ bin, op, request: resolveFixture(fixturesRaw[op]) }))
@@ -204,7 +239,8 @@ function main() {
       frozenUnchanged: frozenStill,
       guards,
       literalProven: false,
-      note: 'SI-2/SI-3 permanecem not_measured neste batch (VAL-03); 12/12 é meta, não fato medido.',
+      comparisonRunnerReady: true,
+      note: 'Followup #4: prova() calcula okMatch/exitCodeMatch/allMatch (gate completo em VAL-02). SI-2/SI-3 permanecem not_measured neste batch (VAL-03); 12/12 é meta, não fato medido.',
     }
     fs.writeFileSync(REPORT, JSON.stringify(report, null, 2) + '\n')
     const failed = results.filter((r) => r.status === 'reprovado')
@@ -215,7 +251,7 @@ function main() {
     process.stdout.write(JSON.stringify({
       fixtures: names.length,
       implemented: results.filter((r) => r.status === 'ok').length,
-      pending: results.filter((r) => r.status === 'pendente_batch2/3').length,
+      pending: results.filter((r) => r.status !== 'ok').length,
       failed: failed.length,
       frozenShas: frozen.length,
       zeroWrites: report.zeroWrites,

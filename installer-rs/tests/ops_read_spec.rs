@@ -112,6 +112,46 @@ fn resolve_backup_dir_equal_and_nested_are_backup_fail() {
 }
 
 #[test]
+#[cfg(unix)]
+fn resolve_backup_dir_rejects_symlink_equal_and_nested() {
+    use std::os::unix::fs::symlink;
+    let base = std::env::temp_dir().join("harness-be02-symlink");
+    let _ = std::fs::remove_dir_all(&base);
+    std::fs::create_dir_all(base.join("t")).unwrap();
+    std::fs::create_dir_all(base.join("t").join("child")).unwrap();
+    std::fs::create_dir_all(base.join("b")).unwrap();
+
+    // symlink → target: canonicalize iguais ⇒ BACKUP_FAIL.
+    let link_equal = base.join("link_equal");
+    symlink(base.join("t"), &link_equal).unwrap();
+    let r = req(
+        "resolveBackupDir",
+        json!({"target": base.join("t").to_str().unwrap(), "backupRoot": link_equal.to_str().unwrap()}),
+    );
+    assert_eq!(code(harness_installer::ops::backup_dir::run(&r).unwrap_err()), "BACKUP_FAIL", "symlink igual ao target");
+
+    // symlink → filho do target: canonicalize aninhado ⇒ BACKUP_FAIL.
+    let link_nested = base.join("link_nested");
+    symlink(base.join("t").join("child"), &link_nested).unwrap();
+    let r = req(
+        "resolveBackupDir",
+        json!({"target": base.join("t").to_str().unwrap(), "backupRoot": link_nested.to_str().unwrap()}),
+    );
+    assert_eq!(code(harness_installer::ops::backup_dir::run(&r).unwrap_err()), "BACKUP_FAIL", "symlink dentro do target");
+
+    // symlink → diretório externo distinto: permitido (canonicalize externo).
+    let link_ok = base.join("link_ok");
+    symlink(base.join("b"), &link_ok).unwrap();
+    let r = req(
+        "resolveBackupDir",
+        json!({"target": base.join("t").to_str().unwrap(), "backupRoot": link_ok.to_str().unwrap()}),
+    );
+    assert!(harness_installer::ops::backup_dir::run(&r).is_ok(), "symlink externo é válido");
+
+    let _ = std::fs::remove_dir_all(&base);
+}
+
+#[test]
 fn load_answers_file_ok_parses_object() {
     let p = std::env::temp_dir().join("harness-be02-answers.json");
     std::fs::write(&p, r#"{"project":"demo","stack":"node"}"#).unwrap();

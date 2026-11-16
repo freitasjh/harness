@@ -1,19 +1,12 @@
 // Dispatcher de 23 `op`s de engine (ADR-003 §2.1, ADR-001 §5 / D-ENGINE).
-// Nomes idênticos aos exports D-ENGINE em installer/contract-inventory.mjs:18-23 @ c63e333.
+// Fonte real dos nomes: TABELA ADR-003 §2.1 (linhas 59-83) espelhada em
+// tests/contract_spec.rs:10-16 — installer/contract-inventory.mjs NÃO existe
+// no oráculo c63e333 (followup de review #2).
 // A macro abaixo é a ÚNICA fonte do vetor de nomes e dos braços de despacho:
 // cada entrada nomeada abaixo é um braço executável do despacho, não comentário.
 use crate::contract::{error_envelope, success_envelope, Envelope, ErrorBody, ProtocolError, Request};
 use crate::error::EngineError;
 use serde_json::Value;
-
-fn pending(req: &Request) -> Result<Value, EngineError> {
-    Err(EngineError::new(
-        "UNKNOWN",
-        format!("op {} registrada, implementação pendente de batch posterior", req.op),
-        "vocabulário fechado: nenhum código novo é inventado",
-        "consulte o cronograma do ADR-003",
-    ))
-}
 
 fn body(e: EngineError) -> ErrorBody {
     ErrorBody {
@@ -46,27 +39,27 @@ macro_rules! engine_ops {
 }
 
 engine_ops! {
-    case "applyMerge" => pending,
-    case "backup" => pending,
-    case "buildManifest" => pending,
+    case "applyMerge" => crate::ops::merge::run_apply,
+    case "backup" => crate::ops::backup::run,
+    case "buildManifest" => crate::ops::manifest::run,
     case "collectAnswers" => crate::ops::answers::collect,
     case "collectIncoming" => crate::ops::incoming::collect,
     case "generateConfig" => crate::ops::config::generate,
     case "inventory" => crate::ops::inventory::run,
     case "loadAnswersFile" => crate::ops::answers::load,
-    case "main" => pending,
-    case "mergeAgentFile" => pending,
-    case "mergeOpencodeJson" => pending,
-    case "parseArgs" => pending,
-    case "planMerge" => pending,
+    case "main" => crate::entry::main::run,
+    case "mergeAgentFile" => crate::ops::agent_file::run,
+    case "mergeOpencodeJson" => crate::ops::opencode::run,
+    case "parseArgs" => crate::ops::args::run,
+    case "planMerge" => crate::ops::merge::run_plan,
     case "preflight" => crate::ops::preflight::run,
-    case "requireVerifiedBackup" => pending,
+    case "requireVerifiedBackup" => crate::ops::backup::run_require,
     case "resolveBackupDir" => crate::ops::backup_dir::run,
-    case "runChecks" => pending,
-    case "runCli" => pending,
-    case "runDoctor" => pending,
-    case "runInit" => pending,
-    case "runUpgrade" => pending,
-    case "runWizard" => pending,
-    case "writeManifest" => pending,
+    case "runChecks" => crate::ops::checks::run,
+    case "runCli" => crate::entry::cli::run,
+    case "runDoctor" => crate::ops::doctor::run,
+    case "runInit" => crate::entry::init::run,
+    case "runUpgrade" => crate::entry::upgrade::run,
+    case "runWizard" => crate::entry::wizard::run,
+    case "writeManifest" => crate::ops::write::run,
 }

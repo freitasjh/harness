@@ -3,13 +3,13 @@
   "demand": "prd-installer-rust-adr-003",
   "agent": "developer-engineer",
   "phase": "Execution",
-  "gitSha": "5f9154066ca69d2e671d3799fe6327dfb3550ebf",
+  "gitSha": "2d7ccbc2b8ca73580b220bf813d42ace6497e01d",
   "commands": [
     {
       "cmd": "node installer-rs/tests/prova-engine.mjs",
       "exitCode": 0,
       "durationMs": 0,
-      "stdoutHash": "sha256:a3585266808d499e1f6fed617a14dc8d83f9359695ee8144c777693946ccc780"
+      "stdoutHash": "sha256:37cad7e26d6e56ffeb2f22df1a67b528b18df349d6018f8f657ab77bcc98a35d"
     }
   ],
   "counts": {
@@ -116,7 +116,14 @@
       "binExit": 0,
       "v": 1,
       "opDoEnvelope": "preflight",
-      "ok": true
+      "ok": true,
+      "comparison": {
+        "sideMatch": true,
+        "okMatch": true,
+        "exitCodeMatch": true,
+        "oracleExitMatch": true,
+        "allMatch": true
+      }
     },
     {
       "op": "inventory",
@@ -126,12 +133,19 @@
       "binExit": 0,
       "v": 1,
       "opDoEnvelope": "inventory",
-      "ok": true
+      "ok": true,
+      "comparison": {
+        "sideMatch": true,
+        "okMatch": true,
+        "exitCodeMatch": true,
+        "oracleExitMatch": true,
+        "allMatch": true
+      }
     },
     {
       "op": "backup",
-      "status": "pendente_batch2/3",
-      "reason": "op registrada; prova diferencial nas próximas fatias"
+      "status": "implementado_aguarda_certificacao_VAL-02",
+      "reason": "motor implementado no batch 2; prova diferencial com fixture/mutação certificada no batch 3 (VAL-02)"
     },
     {
       "op": "resolveBackupDir",
@@ -141,7 +155,14 @@
       "binExit": 0,
       "v": 1,
       "opDoEnvelope": "resolveBackupDir",
-      "ok": true
+      "ok": true,
+      "comparison": {
+        "sideMatch": true,
+        "okMatch": true,
+        "exitCodeMatch": true,
+        "oracleExitMatch": true,
+        "allMatch": true
+      }
     },
     {
       "op": "loadAnswersFile",
@@ -151,7 +172,14 @@
       "binExit": 0,
       "v": 1,
       "opDoEnvelope": "loadAnswersFile",
-      "ok": true
+      "ok": true,
+      "comparison": {
+        "sideMatch": true,
+        "okMatch": true,
+        "exitCodeMatch": true,
+        "oracleExitMatch": true,
+        "allMatch": true
+      }
     },
     {
       "op": "collectAnswers",
@@ -161,7 +189,14 @@
       "binExit": 0,
       "v": 1,
       "opDoEnvelope": "collectAnswers",
-      "ok": true
+      "ok": true,
+      "comparison": {
+        "sideMatch": true,
+        "okMatch": true,
+        "exitCodeMatch": true,
+        "oracleExitMatch": true,
+        "allMatch": true
+      }
     },
     {
       "op": "generateConfig",
@@ -171,7 +206,14 @@
       "binExit": 0,
       "v": 1,
       "opDoEnvelope": "generateConfig",
-      "ok": true
+      "ok": true,
+      "comparison": {
+        "sideMatch": true,
+        "okMatch": true,
+        "exitCodeMatch": true,
+        "oracleExitMatch": true,
+        "allMatch": true
+      }
     },
     {
       "op": "collectIncoming",
@@ -181,82 +223,89 @@
       "binExit": 0,
       "v": 1,
       "opDoEnvelope": "collectIncoming",
-      "ok": true
+      "ok": true,
+      "comparison": {
+        "sideMatch": true,
+        "okMatch": true,
+        "exitCodeMatch": true,
+        "oracleExitMatch": true,
+        "allMatch": true
+      }
     },
     {
       "op": "planMerge",
-      "status": "pendente_batch2/3",
-      "reason": "op registrada; prova diferencial nas próximas fatias"
+      "status": "implementado_aguarda_certificacao_VAL-02",
+      "reason": "motor implementado no batch 2; prova diferencial com fixture/mutação certificada no batch 3 (VAL-02)"
     },
     {
       "op": "applyMerge",
-      "status": "pendente_batch2/3",
-      "reason": "op registrada; prova diferencial nas próximas fatias"
+      "status": "implementado_aguarda_certificacao_VAL-02",
+      "reason": "motor implementado no batch 2; prova diferencial com fixture/mutação certificada no batch 3 (VAL-02)"
     },
     {
       "op": "buildManifest",
-      "status": "pendente_batch2/3",
-      "reason": "op registrada; prova diferencial nas próximas fatias"
+      "status": "implementado_aguarda_certificacao_VAL-02",
+      "reason": "motor implementado no batch 2; prova diferencial com fixture/mutação certificada no batch 3 (VAL-02)"
     },
     {
       "op": "writeManifest",
-      "status": "pendente_batch2/3",
-      "reason": "op registrada; prova diferencial nas próximas fatias"
+      "status": "implementado_aguarda_certificacao_VAL-02",
+      "reason": "motor implementado no batch 2; prova diferencial com fixture/mutação certificada no batch 3 (VAL-02)"
     },
     {
       "op": "requireVerifiedBackup",
-      "status": "pendente_batch2/3",
-      "reason": "op registrada; prova diferencial nas próximas fatias"
+      "status": "implementado_aguarda_certificacao_VAL-02",
+      "reason": "motor implementado no batch 2; prova diferencial com fixture/mutação certificada no batch 3 (VAL-02)"
     },
     {
       "op": "runChecks",
-      "status": "pendente_batch2/3",
-      "reason": "op registrada; prova diferencial nas próximas fatias"
+      "status": "implementado_aguarda_certificacao_VAL-02",
+      "reason": "motor implementado no batch 2; prova diferencial com fixture/mutação certificada no batch 3 (VAL-02)"
     },
     {
       "op": "mergeOpencodeJson",
-      "status": "pendente_batch2/3",
-      "reason": "op registrada; prova diferencial nas próximas fatias"
+      "status": "implementado_aguarda_certificacao_VAL-02",
+      "reason": "motor implementado no batch 2; prova diferencial com fixture/mutação certificada no batch 3 (VAL-02)"
     },
     {
       "op": "mergeAgentFile",
-      "status": "pendente_batch2/3",
-      "reason": "op registrada; prova diferencial nas próximas fatias"
+      "status": "implementado_aguarda_certificacao_VAL-02",
+      "reason": "motor implementado no batch 2; prova diferencial com fixture/mutação certificada no batch 3 (VAL-02)"
     },
     {
       "op": "main",
-      "status": "pendente_batch2/3",
-      "reason": "op registrada; prova diferencial nas próximas fatias"
+      "status": "implementado_aguarda_certificacao_VAL-02",
+      "reason": "motor implementado no batch 2; prova diferencial com fixture/mutação certificada no batch 3 (VAL-02)"
     },
     {
       "op": "runDoctor",
-      "status": "pendente_batch2/3",
-      "reason": "op registrada; prova diferencial nas próximas fatias"
+      "status": "implementado_aguarda_certificacao_VAL-02",
+      "reason": "motor implementado no batch 2; prova diferencial com fixture/mutação certificada no batch 3 (VAL-02)"
     },
     {
       "op": "runInit",
-      "status": "pendente_batch2/3",
-      "reason": "op registrada; prova diferencial nas próximas fatias"
+      "status": "implementado_aguarda_certificacao_VAL-02",
+      "reason": "motor implementado no batch 2; prova diferencial com fixture/mutação certificada no batch 3 (VAL-02)"
     },
     {
       "op": "runUpgrade",
-      "status": "pendente_batch2/3",
-      "reason": "op registrada; prova diferencial nas próximas fatias"
+      "status": "implementado_aguarda_certificacao_VAL-02",
+      "reason": "motor implementado no batch 2; prova diferencial com fixture/mutação certificada no batch 3 (VAL-02)"
     },
     {
       "op": "runCli",
-      "status": "pendente_batch2/3",
-      "reason": "op registrada; prova diferencial nas próximas fatias"
+      "status": "implementado_aguarda_certificacao_VAL-02",
+      "reason": "motor implementado no batch 2; prova diferencial com fixture/mutação certificada no batch 3 (VAL-02)"
     },
     {
       "op": "parseArgs",
-      "status": "pendente_batch2/3",
-      "reason": "op registrada; prova diferencial nas próximas fatias"
+      "status": "implementado_aguarda_certificacao_VAL-02",
+      "reason": "motor implementado no batch 2; prova diferencial com fixture/mutação certificada no batch 3 (VAL-02)"
     },
     {
       "op": "runWizard",
-      "status": "pendente_batch2/3",
-      "reason": "op registrada; prova diferencial nas próximas fatias"
+      "status": "implementado_aguarda_certificacao_VAL-02",
+      "reason": "motor implementado no batch 2; prova diferencial com fixture/mutação certificada no batch 3 (VAL-02)"
     }
   ],
   "mutation": {
@@ -269,5 +318,6 @@
   "frozenUnchanged": true,
   "guards": true,
   "literalProven": false,
-  "note": "SI-2/SI-3 permanecem not_measured neste batch (VAL-03); 12/12 é meta, não fato medido."
+  "comparisonRunnerReady": true,
+  "note": "Followup #4: prova() calcula okMatch/exitCodeMatch/allMatch (gate completo em VAL-02). SI-2/SI-3 permanecem not_measured neste batch (VAL-03); 12/12 é meta, não fato medido."
 }
