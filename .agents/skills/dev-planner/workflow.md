@@ -30,7 +30,7 @@ Entender profundamente O QUE o usuário precisa resolver, diferenciando sintoma 
 
 ### Entradas
 - Descrição inicial do usuário (pode ser vaga)
-- Contexto do projeto (ler `AGENTS.md`, `.doc/ARCHITECTURE.md`)
+- Contexto do projeto (ler `AGENTS.md`; documentação de arquitetura do destino — dono PRD-4)
 
 ### Processo
 
@@ -98,7 +98,7 @@ Mapear todas as limitações técnicas, dependências e requisitos não-funciona
 
 ### Entradas
 - EXPLORATION.md aprovado
-- Contexto do projeto (`.doc/ARCHITECTURE.md`, `.doc/STACK.md`)
+- Contexto do projeto (documentação de arquitetura e stack do destino — dono PRD-4)
 
 ### Processo
 

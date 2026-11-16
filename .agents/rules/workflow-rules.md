@@ -592,9 +592,9 @@ Para **TODO** desenvolvimento, as skills apropriadas **OBRIGATORIAMENTE** devem 
 
 | Documento | Propósito |
 |-----------|-----------|
-| `.doc/stacks.md` | Stacks e versões |
-| `.doc/arquitetura-backend.md` | Arquitetura detalhada do sistema |
-| `.doc/especificacao-sistema.md` | Especificação completa do sistema |
+| Documentação de stacks do destino (dono PRD-4) | Stacks e versões |
+| Documentação de arquitetura backend (dono PRD-4) | Arquitetura detalhada do sistema |
+| Documentação de especificação do sistema (dono PRD-4) | Especificação completa do sistema |
 | `.spec/backend/sdd-etapa{N}-{dominio}.md` | SDD de cada domínio |
 | `.agents/rules/frontend-coding-standards.md` | Padrões de codificação frontend |
 | Skill `security-review` | **Fonte da verdade** de segurança (OWASP/ASVS/MASVS) — web, API, mobile |

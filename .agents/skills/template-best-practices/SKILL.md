@@ -21,7 +21,7 @@ Skill com boas práticas para templates de componentes reutilizáveis. Aplicáve
 
 ## 2. Performance
 
-- Evitar re-renders desnecessários (Vue: `computed`/`shallowRef`; React: `memo`/`useMemo`).
+- Evitar re-renders desnecessários em Vue (`computed`/`shallowRef`). Se React: usar `memo`/`useMemo`.
 - Lazy load de componentes pesados (modais, tabelas grandes).
 - Virtualização para listas > 100 itens.
 - Debounce em inputs de busca (≥300ms).

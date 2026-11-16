@@ -122,12 +122,14 @@ After the `code-reviewer` completes the general review, run the security-specifi
 ### OWASP Top 10 Status
 | Category | Status | Finding |
 |----------|--------|---------|
+<!-- Dono FR4/ADR-005 registrado na linha A06; ADR §4.4 cita :132. -->
+
 | A01 Broken Access Control | ✅ | @HasPermission on all endpoints |
 | A02 Cryptographic Failures | ✅ | RS256 JWT, Argon2id passwords |
 | A03 Injection | ✅ | Parameterized queries, @Valid |
 | A04 Insecure Design | 🟡 | Rate limiting missing on /v1/auth/register |
 | A05 Misconfiguration | ✅ | |
-| A06 Vulnerable Components | ✅ | npm audit + Dependency-Check clean |
+| A06 Vulnerable Components | ✅ | dependency scanning (`npm audit` / OWASP Dependency-Check / equivalente do eixo) — dono ADR-005 |
 | A07 Auth Failures | ✅ | |
 | A08 Integrity | ✅ | |
 | A09 Logging | 🟡 | Login failure not logged |

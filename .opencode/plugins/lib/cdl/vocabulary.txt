@@ -42,5 +42,9 @@ sumiu da posição identitária ou prova morta ⇒ `cdl-identity-term-stale`.
 
 | term | class | proof | owner |
 |---|---|---|---|
-| TaskFlow | projeto | .agents/agents/developer-engineer/AGENT.md:1 | ADR-005 |
-| Pulse | projeto | .agents/agents/design-system-specialist/AGENT.md:42 | ADR-005 |
+
+ADR-005 FR1: `TaskFlow` e `Pulse` saem do registro com `reason` — nomes de
+projeto substituídos por escopo de papel/domínio nas 4 linhas identitárias
+(`developer-engineer/AGENT.md:1,25`, `ux-designer/AGENT.md:32`,
+`design-system-specialist/AGENT.md:42`). Nenhum termo de cliente resta no
+corpus; `cdl-identity-term-stale` não tem projeto defunto para monitorar.

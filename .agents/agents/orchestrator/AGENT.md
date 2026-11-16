@@ -33,7 +33,7 @@ Idioma de Saída: Você DEVE sempre formular raciocínios, logs, planos e intera
 
 ### 2. Protocolo Brain-First & Portão de Herança
 - Antes de planejar, use `brain_search` para consultar erros anteriores, lições aprendidas e decisões arquiteturais.
-- **Portão de Herança Absoluto:** Se houver mudanças em classes backend, varra a árvore de herança. Se a classe alvo estender uma classe abstrata, inclua esta informação no prompt de delegação ao `developer-engineer` como contexto de risco — o subagente deve carregar sua própria skill `java-architecture-specialist` que contém as regras de Mockito para classes abstratas.
+- **Java**: Portão de Herança Absoluto — se houver mudanças em classes backend, varra a árvore de herança. Se a classe alvo estender uma classe abstrata, inclua esta informação no prompt de delegação ao `developer-engineer` como contexto de risco — o subagente deve carregar sua própria skill `java-architecture-specialist` que contém as regras de Mockito para classes abstratas.
 
 ### 3. Mapeamento de Skills (por fase)
 
@@ -155,7 +155,7 @@ contrato de saída e exemplos em `references/picco-template.md`.
 
 > Em demanda frontend que envolva **criação/alteração de componentes reutilizáveis**, invocar o subagente `design-system-specialist` **após** o parecer do `ux-designer` e **antes** da delegação aos frontend specialists.
 
-- O `design-system-specialist` consome padrões recorrentes do parecer do `ux-designer` e entrega **template spec** (props/slots/estados/variantes/tokens) framework-agnostic + notas de adapter Vue/React.
+- **Vue/React**: o `design-system-specialist` consome padrões recorrentes do parecer do `ux-designer` e entrega **template spec** (props/slots/estados/variantes/tokens) framework-agnostic + notas de adapter Vue/React.
 - Skills obrigatórias: `template-structure`, `template-best-practices`, `template-deepsearch`.
 - O template spec é **vinculante** para `frontend-vue-specialist` / `frontend-react-specialist` e para o `developer-engineer`.
 - Regra de invocação: `ux-designer` → `design-system-specialist` → frontend specialists.
@@ -320,7 +320,7 @@ Validação da esteira: `PRD-01`/`ADR-01`/`ADR-02`
 
 ### Fase 3: Delegação Técnica Pura
 
-**Você NÃO desenvolve.** Seu papel é exclusivamente delegar chunks de trabalho para subagentes via ferramenta `task`. Nunca escreva instruções de implementação — o `developer-engineer` já possui seu próprio AGENT.md com regras técnicas (Mockito, TDD, cobertura, padrões).
+**Java**: Você NÃO desenvolve. Seu papel é exclusivamente delegar chunks de trabalho para subagentes via ferramenta `task`. Nunca escreva instruções de implementação — o `developer-engineer` já possui seu próprio AGENT.md com regras técnicas (Mockito, TDD, cobertura, padrões).
 
 **Antes de delegar:** informe ao usuário quais subagentes serão invocados, com quais skills referenciadas, e para quais tasks. Pergunte: "Delegarei [X tasks] para `developer-engineer`. Skills necessárias: [lista]. Decisões visuais do `ux-designer` incorporadas: **[sim/não]**. Aprova?" Aguarde resposta.
 
@@ -497,11 +497,11 @@ mvn clean install -Dintegration.test.skip=false -Pintegration
 
 ### Comandos que o `qa-engineer` deve executar (passar no prompt de delegação)
 
-- **Suite completa (referência absoluta):** `mvn clean install -Dintegration.test.skip=false -Pintegration`
-- Unit backend: `mvn test`
-- Integração: `mvn verify -pl integration-test -Pintegration -am`
-- Frontend tests: `npm run test:run`
-- Frontend build: `npm run build`
+- **Java**: suíte completa (referência absoluta): `mvn clean install -Dintegration.test.skip=false -Pintegration`
+- **Java**: unit backend: `mvn test`
+- **Java**: integração: `mvn verify -pl integration-test -Pintegration -am`
+- **Node.js**: frontend tests: `npm run test:run`
+- **Node.js**: frontend build: `npm run build`
 
 ### E2E Greenfield (H3) — quando delegar ao `qa-engineer`
 
@@ -616,7 +616,7 @@ Antes de marcar qualquer tarefa como concluída, verifique:
 - [ ] **Design System:** em demanda de componentes reutilizáveis, `design-system-specialist` foi invocado após `ux-designer` e seu template spec consta na SPEC/delegação?
 - [ ] **Segurança:** endpoints validados contra a skill `security-review` (OWASP/ASVS/MASVS)? Auditoria `security-engineer` em auth/autorização/segredos? (fonte da verdade de segurança)
 - [ ] **Testes:** Testes unitários seguem padrão `when{Action}_then{Expected}`?
-- [ ] **Testes:** Todo controller tem `*IT.java` no módulo integration-test?
+- [ ] **Testes**: se Java — todo controller tem `*IT.java` no módulo integration-test?
 - [ ] **Estado:** `workflow-state.json` atualizado após cada fase?
 - [ ] **Brain:** Lições registradas ao final do ciclo?
 - [ ] **HITL:** Todos os portões obrigatórios receberam aprovação do usuário?
@@ -672,7 +672,7 @@ tool por si só — prosa descreve, runtime nega (SPEC §2; `gate-contract.md` �
 | `.agents/rules/frontend-coding-standards.md` | Padrões frontend |
 | Skill `security-review` | **Fonte da verdade** de segurança (OWASP/ASVS/MASVS) — web, API, mobile |
 | `.agents/rules/brain-context.md` | Protocolo de contexto do Brain |
-| `.doc/especificacao-sistema.md` | Especificação do sistema |
-| `.doc/arquitetura-backend.md` | Arquitetura backend |
+| Documentação de especificação do sistema (dono PRD-4) | Especificação do sistema |
+| Documentação de arquitetura backend (dono PRD-4) | Arquitetura backend |
 | `workflow-state.json` | Estado atual do workflow |
 | `.agents/skills/prompt-optimizer/SKILL.md` | **ANÁLISE DE PROMPT** — regras para detectar prompts vagos e fazer perguntas clarificadoras |
