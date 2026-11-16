@@ -60,7 +60,7 @@
     "P0_P1": "approved_user_2026_11_16 (Refactor de distribuicao; ux-designer N/A — publicacao sem tela)",
     "G2_PRD": "approved_user_2026_10_22 (PRD prd-garantias-runtime aprovado sem ressalvas; §16 do PRD.md; 3 decisoes do owner)",
     "P1_P2": "approved_auto_architect_2026_11_16 (16/16 RF, score 100%, selo c904f1c5 intacto; F1/F2/F3 🟡 corrigidos) — AGUARDANDO CONFIRMACAO DO OWNER",
-    "P2_P3": "pending_user_approval (PLAN 53 linhas, TASKS 7 microtasks PUB-01..04 + VAL-01..03; 16 RF mapeados)",
+    "P2_P3": "approved_user_2026_11_16 (PLAN 53 linhas, TASKS 7 microtasks, 16 RF mapeados; SDD verdes)",
     "P3_P4": "approved_auto_evidence_2026_11_16 (3 batches; review APPROVED apos 1 iteracao; R9 restaurado)",
     "P4_P5": "approved_auto_evidence_QA_2026_11_16 (540+716 + cargo 85 + 8/8 provas + mutante 8/8; canais medidos; PTY cleanup com sinal)",
     "P5_P6": "approved_auto_2026_11_16 (VERIFY 3/3 com evidencia re-executada; rito reutilizado sem auto-assinatura)",
@@ -230,7 +230,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T23:49:30.321Z",
+  "last_update": "2026-11-16T23:51:00.223Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -254,11 +254,11 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-005 PLANEJAMENTO CONCLUIDO — aguardando P2->P3 para delegar 7 microtasks (4 publicacao + 3 validacao)",
+  "sdd_stage": "PRD-3 ADR-005 EXECUTION batch 1/3 — wrapper npm + shim localizador (sem segundo motor, sem build no pacote)",
   "backlog": {
     "total": 7,
-    "todo": 7,
-    "doing": 0,
+    "todo": 5,
+    "doing": 2,
     "done": 0,
     "ids": [
       "PUB-01",
@@ -268,6 +268,10 @@
       "VAL-01",
       "VAL-02",
       "VAL-03"
+    ],
+    "doing_ids": [
+      "PUB-01",
+      "PUB-02"
     ]
   },
   "next_task": "ADR-002",
@@ -1974,16 +1978,15 @@
     "at": "2026-11-16T23:49:30.321Z"
   },
   "batch": {
-    "id": 3,
-    "status": "review_approved",
-    "iteration": 1,
-    "commits": [
-      "e49037c",
-      "c71ea32"
+    "id": 1,
+    "agent": "developer-engineer",
+    "skills": [
+      "node-architecture-specialist"
     ],
-    "ops_tui": 8,
-    "ponte": "10 D-ENGINE (8 D-TUI removidos)",
-    "byte_equal": "3/8 + 5 deltas nao-funcionais + 0 funcionais"
+    "status": "running",
+    "tasks": 2,
+    "base": "ff60b4f",
+    "selo": "c904f1c5 invariante"
   },
   "next_gate": "loop de correcao (developer -> reviewer) ate 3 iteracoes; nao fazer push antes de APPROVED",
   "governance_note": {
