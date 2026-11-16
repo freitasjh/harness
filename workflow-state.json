@@ -106,22 +106,25 @@
       "regra": "`.mjs vivo` fora do caminho de instalação; proibido segundo motor (D1)",
       "motivo": "o binário Rust que executa os 31 ops só nasce no ADR-003; fronteira e registry foram implementadas primeiro",
       "escopo": "única ponte `export … from './install.mjs'` em installer/installer-contract.mjs:15 (23 D-ENGINE + 8 D-TUI)",
-      "expires_when": "merge do ADR-004 (TUI de 10 telas leva os 8 ops ao dispatcher Rust)",
+      "expires_when": "ADR-004 (8 TUI) + SDD de byte-paridade ou decisao owner (10 engine)",
       "aprovado_por": "owner 2026-11-16 (quitacao parcial apos parecer architect)",
       "data": "2026-11-16",
-      "status": "parcial_quitada_pendente_TUI",
-      "escopo_restante": "8 D-TUI em installer/installer-contract.mjs — promptAnswers, askMenuStep, readSecretPrompt, readSecretRaw, sourceLineOf, printPlan, detect, printUsage",
+      "status": "parcial_quitada_13_engine",
+      "escopo_restante": "18 nomes em installer/installer-contract.mjs:58 — 8 D-TUI + 10 D-ENGINE (runCli, runDoctor, runInit, runUpgrade, runWizard, collectAnswers, generateConfig, planMerge, runChecks, main)",
       "decisao": "69 nomes medidos: 9 D-DATA -> registry; 29 D-PURE -> contract-pure.mjs; 23 D-ENGINE -> spawnSync Rust; 8 D-TUI -> debito datado ADR-004",
-      "aprovacao_data": "2026-11-16T20:50:40.660Z"
+      "aprovacao_data": "2026-11-16T21:26:46.319Z",
+      "aprovado_originalmente": "owner aprovou 9+29+23 (8 TUI debito) em 2026-11-16",
+      "entregue": "owner aceitou desvio medido em 2026-11-16: 9 D-DATA + 29 D-PURE + 13 D-ENGINE migrados; 10 D-ENGINE + 8 D-TUI em divida",
+      "razao_do_desvio": "prova-engine compara com canonicalJson; specs congeladas comparam byte a byte; 8 dos 10 ops divergem so na ordem de chaves JSON.stringify e 2 (collectAnswers, runChecks) precisam de revalidacao com placeholders interpolados"
     },
     {
-      "portao": "D1-two-motors-tui",
+      "portao": "D1-two-motors-restante",
       "ciclo": "prd-installer-rust / ADR-004",
       "regra": "reexport de 8 D-TUI em installer/installer-contract.mjs",
       "motivo": "dispatcher Rust tem apenas 23 OP_NAMES; os 8 D-TUI pertencem ao ADR-004 por decisao fechada",
-      "escopo": "8 funcoes TUI listadas no override D1-two-motors",
-      "expires_when": "merge do ADR-004",
-      "aprovado_por": "owner",
+      "escopo": "18 nomes: 8 D-TUI + 10 D-ENGINE",
+      "expires_when": "ADR-004 (TUI) + decisao owner sobre byte-paridade dos 10 engine",
+      "aprovado_por": "owner (aceite do desvio 2026-11-16)",
       "data": "2026-11-16T20:50:40.660Z"
     }
   ],
@@ -222,7 +225,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T20:50:40.660Z",
+  "last_update": "2026-11-16T21:26:46.319Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -246,7 +249,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 — quitacao PARCIAL da ponte D1 em execucao (9+29+23 migrados; 8 D-TUI em debito ADR-004)",
+  "sdd_stage": "PRD-3 — ponte D1 parcialmente quitada (13 engine + 9 dados + 29 puros); 18 nomes em divida declarada; 703 testes verdes",
   "backlog": {
     "total": 12,
     "todo": 0,
@@ -854,6 +857,14 @@
       "origem": "architect + owner (quitacao parcial 2026-11-16)",
       "bloqueia": false,
       "target": "ADR-004"
+    },
+    {
+      "id": "FU-D1-ENGINE10",
+      "created_at": "2026-11-16T21:26:46.319Z",
+      "texto": "Resolver 10 D-ENGINE em divida: 8 divergem so na ordem de chaves (byte-paridade no Rust) e 2 (collectAnswers, runChecks) revalidar com placeholders interpolados. Nao reescrever specs congeladas sem decisao §16.",
+      "origem": "developer + owner (aceite do desvio 2026-11-16)",
+      "bloqueia": false,
+      "target": "SDD byte-paridade / owner"
     }
   ],
   "batches": [
@@ -1954,5 +1965,10 @@
     },
     "real_divergence_fixed": "buildManifest.version 0.1.0 -> 1.0.0 (oracle c63e333 install.mjs:15)"
   },
-  "next_gate": "loop de correcao (developer -> reviewer) ate 3 iteracoes; nao encadear push antes de review APPROVED"
+  "next_gate": "loop de correcao (developer -> reviewer) ate 3 iteracoes; nao encadear push antes de review APPROVED",
+  "governance_note": {
+    "at": "2026-11-16T21:26:46.319Z",
+    "texto": "Developer escreveu no retorno que owner havia aprovado migrar só JSON-safe — falso. Owner aprovou 23 e depois ACEITOU o desvio para 13 com razao medida. Corrigido aqui para nao deixar decisao reescrita.",
+    "commit": "b7c8c58"
+  }
 }
