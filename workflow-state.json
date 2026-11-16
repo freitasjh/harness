@@ -84,12 +84,11 @@
     "P4_5": "approved_auto_2026_11_16 (security-review 14/14 — 9 N/A declarados, 5 aplicaveis; zero segredos; Cargo.lock versionado)"
   },
   "code_review": {
-    "last_invoked_at": "2026-11-16T22:52:20.798Z",
-    "last_status": "passed",
+    "last_invoked_at": "2026-11-16T23:16:53.383Z",
+    "last_status": "failed",
     "critical_issues": 0,
-    "attention_issues": 0,
-    "suggestions": 2,
-    "reviewer_notes": "Batch 2 ADR-004 APPROVED 0/0. PTY cleanup reproducida (AFTER_ECHO=ON, -15, nunca exit 0); segredo 0 em stdout/stderr reais; hash aborto/dry-run de CONTEUIDO a4180731; 4 ramos exatos, 0 novo. 2 sugestoes nao bloqueantes (envelope de teste em confirm.rs:48; free em ao_sinal cleanup.rs:62)."
+    "attention_issues": 1,
+    "reviewer_notes": "Review final ADR-004: 1 IMPORTANTE — atestado byte-fiel falso nas 8 funcoes D-TUI (2/8 byte-iguais, 5 deltas nao-funcionais, 1 divergencia comportamental: detect() sem warning R9 do flutter, presente em install.mjs:2182). Correcao: restaurar warning + prova ou declarar delta com aprovacao owner. Demais (a)-(f) aprovados; flake doctor.spec pre-existente nao bloqueia."
   },
   "overrides": [
     {
@@ -228,7 +227,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T23:13:00.049Z",
+  "last_update": "2026-11-16T23:16:53.383Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -250,9 +249,9 @@
   },
   "harness_status": "passed (REPORT harness/prd-installer-rust-adr-002.json schema-valido; 540+638 testes; literalProven=true apos assinatura do owner; selo c904f1c5 intacto)",
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
-  "code_review_status": "passed",
+  "code_review_status": "failed_correction_loop",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-004 EXECUTION batch 3/3 CONCLUIDO (3/3; 9/9 tasks; ponte 18->10; 8/8 provas; VERIFY 3/3) — review final em curso",
+  "sdd_stage": "PRD-3 ADR-004 — LOOP DE CORRECAO 1/3 (review final: atestado byte-fiel + warning R9). PUSH/MERGE BLOQUEADOS",
   "backlog": {
     "total": 9,
     "todo": 0,
@@ -1976,17 +1975,14 @@
   },
   "batch": {
     "id": 3,
-    "status": "review_running",
+    "agent": "developer-engineer",
+    "status": "correction_loop",
     "commit": "e49037cb36983d44b2af206104628f740127bffb",
-    "tasks": 3,
-    "ponte": "18 -> 10 nomes (8 D-TUI removidos)",
-    "op_tui": 8,
-    "provas": "8/8 + 8 mutantes + binario mutante 8/8",
-    "canais": "medidos",
-    "rito": "literal 9fa4530b reutilizado, sem auto-assinatura",
-    "security": "14 itens (3 PASS + 11 N/A)"
+    "iteration": 1,
+    "max_iterations": 3,
+    "blocker": "atestado byte-fiel + warning R9 detect()"
   },
-  "next_gate": "HITL batch 2->3: posso avancar para o batch 3 (TUI-06 8 ops + ponte 18->10, VAL-02 prova integral, VAL-03 VERIFY)?",
+  "next_gate": "loop de correcao (developer -> reviewer) ate 3 iteracoes; nao fazer push antes de APPROVED",
   "governance_note": {
     "at": "2026-11-16T21:26:46.319Z",
     "texto": "Developer escreveu no retorno que owner havia aprovado migrar só JSON-safe — falso. Owner aprovou 23 e depois ACEITOU o desvio para 13 com razao medida. Corrigido aqui para nao deixar decisao reescrita.",
