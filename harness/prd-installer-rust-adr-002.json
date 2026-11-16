@@ -3,36 +3,36 @@
   "demand": "prd-installer-rust-adr-002",
   "agent": "developer-engineer",
   "phase": "Execution",
-  "gitSha": "b901eef4be9b3feb84931014c9272596d0c46b32",
+  "gitSha": "1fb7ec54735be422f28143c0ac4b921989fa57c1",
   "commands": [
     {
       "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
       "exitCode": 0,
-      "durationMs": 748,
-      "stdoutHash": "13eaf1fb6bbb44ad1e5ca551f25e2b26a1b8afc9bc89d1d98bb5f19bf70c2141"
+      "durationMs": 936,
+      "stdoutHash": "cc8ce453d813cf1ba7b94b6001ff1fc853fc41f86934f21a7de5b8b5fb347fef"
     },
     {
       "cmd": "node --test \"installer/__tests__/*.spec.mjs\"",
       "exitCode": 0,
-      "durationMs": 5592,
-      "stdoutHash": "be0fa584bce7e4d2945187fe20ba5e31ac492e046769a3693037606ffa1e5534"
+      "durationMs": 5640,
+      "stdoutHash": "036accb532924cec9743c43834c9c75342091930ffa0b13a69e9f4dc1466f845"
     },
     {
       "cmd": "node scripts/static-checks.mjs",
       "exitCode": 0,
-      "durationMs": 192,
+      "durationMs": 196,
       "stdoutHash": "4a1e734a85037a1e26e20ea8531b7b4e64cf76d4b1fd7890b3b62529b7652ad5"
     },
     {
       "cmd": "node scripts/sdd-checks.mjs",
       "exitCode": 0,
-      "durationMs": 90,
+      "durationMs": 94,
       "stdoutHash": "6f7e815d5cbb1affc7bc93c0fd653a29e740197075602a46abaada2924b799b1"
     },
     {
       "cmd": "node scripts/vendor-skills.mjs --check",
       "exitCode": 0,
-      "durationMs": 53,
+      "durationMs": 43,
       "stdoutHash": "e5e528c52d79fceaa1be828bd89116aa6e0be73294d2e99d39c4febe99e84516"
     }
   ],
@@ -43,7 +43,7 @@
       "skipped": 0
     },
     "it": {
-      "passed": 616,
+      "passed": 638,
       "failed": 0,
       "skipped": 0
     },
@@ -53,12 +53,12 @@
       "skipped": 0
     }
   },
-  "validationVerdict": "Veredito: validated literal 17a704c37a018e1efd4fd7f4658d024c79e20cf874f73c5203a3a04ec3201a8d 2026-11-16T15:49:38.533Z c63e333",
   "oracle": {
     "commit": "c63e333",
     "full": "c63e33307710e1c6271f5c68b2dd9fb15283f49c",
     "sourceSha256": "17a704c37a018e1efd4fd7f4658d024c79e20cf874f73c5203a3a04ec3201a8d",
-    "frozenLiteralSha256": "17a704c37a018e1efd4fd7f4658d024c79e20cf874f73c5203a3a04ec3201a8d",
+    "literalSha256": "9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0",
+    "literalFile": "installer/__tests__/oracle-literal.sha256",
     "provenance": "git-object:c63e333",
     "materialized": {
       "sha": "c63e33307710e1c6271f5c68b2dd9fb15283f49c",
@@ -68,13 +68,14 @@
   },
   "evaluation": {
     "telas": "N/A — sem UI/DB/portas; TUI e ADR-004 (fora deste ciclo)",
-    "negocio": "15/15 itens verificáveis; rito com assinatura sha em validationVerdict; 9+2 publicado como medido, 12/12 só como meta re-derivável; nenhum literal de golden/eixos-stack/transcript reescrito",
-    "logica": "oráculo c63e333 anterior/imutável; 6 predicados SI puros, cada um com mutação que derruba; proveniência subject reprova; worktree sujo/SHA divergente reprova; selo c904f1c5 intacto; commands.suiteFull byte-idêntico; comandos paralelos fora do selo",
-    "perf": "5 suites exit 0; soma durations 6675ms; sem regressão de duração"
+    "negocio": "15/15 itens verificáveis; rito NÃO assinado neste batch (F2 — dono orquestrador/QA): campo de assinatura removido do REPORT; literalSha256 (sha do arquivo de literal) separado de sourceSha256 (sha da origem c63e333); 9+2 publicado como medido, 12/12 só como meta re-derivável; nenhum literal reescrito",
+    "logica": "oráculo c63e333 anterior/imutável; isLiteralProven(report, expectedLiteralSha) compara com sha do arquivo de literal lido do disco (não com a constante); canonicalJson determinístico em SI-1/SI-2; si3 exige porcelain e usa hash de conteúdo; driver runParity expõe SI-1..SI-6 com not_measured explícito em SI-2/SI-3; selo c904f1c5 intacto; commands.suiteFull byte-idêntico",
+    "perf": "5 suites exit 0; soma durations 6909ms; sem regressao de duracao"
   },
   "brainStore": [
     "sessoes/sessoes/projetos/harness/2026-11-16-dev-prd-installer-rust-adr-002",
-    "regras/projetos/regras/projetos/projeto/oraculo-paridade-sem-tautologia"
+    "regras/projetos/regras/projetos/projeto/oraculo-paridade-sem-tautologia",
+    "regras/projetos/projetos/harness/oraculo-paridade/rito-sha-do-arquivo-nao-constante"
   ],
   "cleanup": {
     "ports": [],
@@ -89,7 +90,8 @@
     "repoWrites": [
       "harness/prd-installer-rust-adr-002.json",
       "installer/parity-oracle.mjs",
-      "installer/__tests__/parity-oracle.spec.mjs"
+      "installer/__tests__/parity-oracle.spec.mjs",
+      "installer/__tests__/oracle-literal.sha256"
     ]
   },
   "selfReported": true,
@@ -105,7 +107,7 @@
         "item": 1,
         "rf": "RF-01",
         "verdict": "PASS",
-        "evidence": "git diff --exit-code em golden.spec.mjs/eixos-stack.spec.mjs/wizard.spec.mjs = vazio (exit 0)"
+        "evidence": "git diff --exit-code em golden.spec.mjs/eixos-stack.spec.mjs/wizard.spec.mjs E .spec/archive/20261018-harness-eixos-stack/harness/wizard-react-transcript.txt = vazio (exit 0) — literal de config, tabela EXPECTED_STACKS e transcript congelados intactos"
       },
       {
         "item": 2,
@@ -115,27 +117,27 @@
       },
       {
         "item": 3,
-        "rf": "RF-03",
+        "rf": "RF-01",
         "verdict": "PASS",
-        "evidence": "ritualVerdict/parseRitual/isLiteralProven (parity-oracle.mjs:76-91); assinatura em validationVerdict; sem assinatura isLiteralProven=false (spec:88-99)"
+        "evidence": "literais não reescritos no ciclo (ADR §3 item 3): sha do arquivo de literal 9fa4530b... estável; git diff --exit-code dos literais = vazio; não é o rito (rito é item 12)"
       },
       {
         "item": 4,
         "rf": "RF-04",
         "verdict": "PASS",
-        "evidence": "si1_configByteEqual (parity-oracle.mjs:93); mutação 1 valor derruba (spec:106); golden 42/42"
+        "evidence": "si1_configByteEqual (parity-oracle.mjs); comparação por canonicalJson — ordem de chaves não altera; mutação 1 valor/objeto derruba; golden 42/42"
       },
       {
         "item": 5,
         "rf": "RF-05",
         "verdict": "PASS",
-        "evidence": "si2_payloadDifferential (parity-oracle.mjs:105); mutação body/extra derruba (spec:119)"
+        "evidence": "si2_payloadDifferential (parity-oracle.mjs); canonicalJson — ordem de paths não altera; mutação body/extra derruba; payload real depende do binário (SI-2 not_measured)"
       },
       {
         "item": 6,
         "rf": "RF-06",
         "verdict": "PASS",
-        "evidence": "si3_dryRunZeroWrites (parity-oracle.mjs:117); mutação write/porcelain derruba (spec:131); baseline histórico 063c1ddc em 2 presets (PRD §3.5 SI-3)"
+        "evidence": "si3_dryRunZeroWrites (parity-oracle.mjs); porcelain obrigatório (fail-closed) + hash de CONTEÚDO (find -type f -print0 | sort -z | xargs -0 sha256sum); mutação write/porcelain/1 byte derruba; medição real do binário depende do ADR-003 (not_measured)"
       },
       {
         "item": 7,
@@ -171,7 +173,7 @@
         "item": 12,
         "rf": "RF-03",
         "verdict": "PASS",
-        "evidence": "sem assinatura, asserção dependente não conta como prova: isLiteralProven=false (spec:88-90); rito em validationVerdict"
+        "evidence": "rito é o item 12 (ADR §2.4/§3.12): isLiteralProven(report, expectedLiteralSha) com sha do arquivo de literal; sem assinatura ⇒ false. Neste batch F2 não assina: campo de assinatura removido do REPORT; orquestrador/QA assinam à parte"
       },
       {
         "item": 13,
@@ -187,9 +189,9 @@
       },
       {
         "item": 15,
-        "rf": "RF-13",
+        "rf": "escopo-ADR",
         "verdict": "PASS",
-        "evidence": "comandos paralelos fora do selo: 5 comandos rodados individualmente; suiteFull composto não alterado; trailer Harness-Gate-Change no commit"
+        "evidence": "escopo de decisão (ADR §3 item 15): nenhum crate/versão/preset/comando canônico/default novo; commit restrito a installer/ + harness report; 5 suítes em comandos paralelos fora do selo; trailer Harness-Gate-Change — não repete evidência de selo do item 14"
       }
     ],
     "si": [
@@ -198,42 +200,54 @@
         "predicate": "chaves+valores de config byte-equal",
         "oracle": "baseline literal congelado golden.spec.mjs:14-46 + git show c63e333",
         "command": "node --test installer/__tests__/golden.spec.mjs",
-        "mutation": "1 valor de config trocado => mismatches (spec:106)"
+        "mutation": "1 valor/objeto trocado => canonicalJson mismatch (spec:106)",
+        "status": "medido",
+        "reason": null
       },
       {
         "id": "SI-2",
         "predicate": "caminhos+bodies do payload idênticos",
         "oracle": "collectIncoming do instalador c63e333, listas ordenadas + sha256",
         "command": "node --test installer/__tests__/parity-oracle.spec.mjs",
-        "mutation": "body alterado ou arquivo extra => pass=false (spec:119)"
+        "mutation": "body alterado ou arquivo extra => pass=false (spec:119)",
+        "status": "not_measured",
+        "reason": "sem binário Rust — depende do motor do ADR-003 (não existe neste ciclo)"
       },
       {
         "id": "SI-3",
         "predicate": "dry-run 0 writes",
-        "oracle": "find . | sort | sha256 antes=depois (histórico 063c1ddc, 2 presets)",
+        "oracle": "find -type f -print0 | sort -z | xargs -0 sha256sum antes=depois (hash de conteúdo, não só nomes) + git status --porcelain",
         "command": "node --test installer/__tests__/parity-oracle.spec.mjs",
-        "mutation": "afterHash divergente ou porcelain sujo => pass=false (spec:131)"
+        "mutation": "afterHash divergente ou porcelain sujo => pass=false (spec:131)",
+        "status": "not_measured",
+        "reason": "sem binário Rust — depende do motor do ADR-003 (não existe neste ciclo)"
       },
       {
         "id": "SI-4",
         "predicate": "transcript W0..W7/W2m com 5 marcadores",
         "oracle": "ADR_MENU_LINES wizard.spec.mjs:820-832 + transcript congelado",
         "command": "node --test installer/__tests__/wizard.spec.mjs",
-        "mutation": "marcador ausente ou texto divergente => pass=false (spec:143,149)"
+        "mutation": "marcador ausente ou texto divergente => pass=false (spec:143,149)",
+        "status": "medido",
+        "reason": null
       },
       {
         "id": "SI-5",
         "predicate": "checks/manifesto mesmos campos/vereditos",
         "oracle": "V18/V19/V20 do static-checks + manifesto do oráculo",
         "command": "node scripts/static-checks.mjs",
-        "mutation": "1 veredito trocado => pass=false (spec:159)"
+        "mutation": "1 veredito trocado => pass=false (spec:159)",
+        "status": "medido",
+        "reason": null
       },
       {
         "id": "SI-6",
         "predicate": "nenhum preset/chave/comando/default novo sem §16",
         "oracle": "git diff --name-only c63e333 HEAD -- <protegidos>",
         "command": "git diff --exit-code -- installer/__tests__/golden.spec.mjs installer/__tests__/eixos-stack.spec.mjs installer/__tests__/wizard.spec.mjs",
-        "mutation": "path protegido no diff => violations (spec:169)"
+        "mutation": "path protegido no diff => violations (spec:169)",
+        "status": "medido",
+        "reason": null
       }
     ],
     "measurement": {
@@ -311,6 +325,90 @@
         "measured": "golden.spec.mjs:48 NON_MOBILE=9 byte-equal; :118-165 C-2 java+react e 5 novos também byte-equal (evolução pós-baseline); flutter/dart asserts parciais",
         "note": "Publica-se só 9+2 como medido (linha de base declarada); 12/12 permanece meta re-derivável. Nenhum número inflado."
       }
+    ],
+    "parityDriver": {
+      "entrypoint": "node installer/parity-oracle.mjs --run-parity",
+      "sourceSha256": "17a704c37a018e1efd4fd7f4658d024c79e20cf874f73c5203a3a04ec3201a8d",
+      "literalSha256": "9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0",
+      "literalProven": false,
+      "literalProvenNote": "F2: nenhuma assinatura escrita neste batch (dono orquestrador/QA) — false é honesto, não PASS por omissão",
+      "si": [
+        {
+          "id": "SI-1",
+          "status": "medido",
+          "pass": true,
+          "reason": null
+        },
+        {
+          "id": "SI-2",
+          "status": "not_measured",
+          "pass": null,
+          "reason": "sem binário Rust — depende do motor do ADR-003 (não existe neste ciclo)"
+        },
+        {
+          "id": "SI-3",
+          "status": "not_measured",
+          "pass": null,
+          "reason": "sem binário Rust — depende do motor do ADR-003 (não existe neste ciclo)"
+        },
+        {
+          "id": "SI-4",
+          "status": "medido",
+          "pass": true,
+          "reason": null
+        },
+        {
+          "id": "SI-5",
+          "status": "medido",
+          "pass": true,
+          "reason": null
+        },
+        {
+          "id": "SI-6",
+          "status": "medido",
+          "pass": true,
+          "reason": null,
+          "evidence": "git diff --name-only c63e333 HEAD -- <protegidos> => 2 arquivo(s); declarados ADR-001=2; nao-declarados=0"
+        }
+      ]
+    },
+    "reviewFixes": [
+      {
+        "id": "F1",
+        "severity": "CRITICO",
+        "before": "isLiteralProven(report) casava parsed.sha256 com ORACLE_BLOB_SHA256",
+        "after": "isLiteralProven(report, expectedLiteralSha) — sha do arquivo installer/__tests__/oracle-literal.sha256 lido do disco; sourceSha256 permanece campo separado",
+        "mutation": "sha real do literal 9fa4530b ⇒ true; 1 byte mutado ⇒ false; assinar golden.spec.mjs (591a340a) ⇒ false; assinar 17a704 (origem) ⇒ false"
+      },
+      {
+        "id": "F3",
+        "severity": "MEDIO",
+        "before": "6 predicados só com call site em specs",
+        "after": "runParity(root) em parity-oracle.mjs + CLI --run-parity; materializa/libera oráculo; SI-2/SI-3 not_measured com motivo ADR-003",
+        "mutation": "sem binário ⇒ not_measured (nunca PASS); transcript sem marcador ⇒ SI-4 pass=false; comando exit 1 ⇒ pass=false"
+      },
+      {
+        "id": "F4",
+        "severity": "MEDIO",
+        "before": "si1/si2 usavam !== por valor/referência",
+        "after": "canonicalJson() com chaves ordenadas recursivamente + JSON.stringify antes de comparar",
+        "mutation": "objetos com mesmo conteúdo/ordem invertida ⇒ true; conteúdo divergente ⇒ false"
+      },
+      {
+        "id": "F5",
+        "severity": "MEDIO",
+        "before": "si3({beforeHash,afterHash,porcelain=\"\"}) fail-open; find . | sort | sha256sum (só nomes)",
+        "after": "porcelain obrigatório (lança se ausente); SI3_HASH_COMMAND = find -type f -print0 | sort -z | xargs -0 sha256sum",
+        "mutation": "porcelain omitido ⇒ throw; 1 byte de conteúdo trocado ⇒ pass=false"
+      },
+      {
+        "id": "F6",
+        "severity": "BAIXO",
+        "before": "gitSha=b901eef stale; item 3 mapeado como rito; item 1 sem transcript; itens 14/15 duplicavam RF-13",
+        "after": "gitSha=1fb7ec5 ancorado; item 3=literais não reescritos (RF-01), rito no item 12; item 1 inclui transcript; item 15=escopo-ADR sem repetir selo",
+        "mutation": "não aplicável (metadados)"
+      }
     ]
-  }
+  },
+  "gitShaNote": "HEAD ancorado no momento da evidência (base 1fb7ec5, commit F7 do orquestrador). O REPORT é commitado junto com o fix; SHA auto-referente é impossível — esta âncora substitui o b901eef stale (3 commits atrás)."
 }
