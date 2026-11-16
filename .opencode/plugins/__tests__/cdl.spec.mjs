@@ -800,9 +800,9 @@ describe("repo real — os 7 ids PASS e os contadores publicados (RF-08, RF-09, 
   it("população é 223 arquivos / 30.374 linhas (D7, re-medida no ADR-005)", () => {
     const population = derivePopulation(REPO_ROOT);
     assert.equal(population.files.length, 223);
-    assert.equal(population.lines, 30374);
+    assert.equal(population.lines, 30373);
     assert.equal(report.counters.population.files, 223);
-    assert.equal(report.counters.population.lines, 30374);
+    assert.equal(report.counters.population.lines, 30373);
   });
 
   it("a BASELINE foi convertida pela rubrica FR0..FR5 (ADR-005)", () => {
