@@ -6,7 +6,7 @@
 > (`—` quando não há) · `dir` no padrão `ADRs/ADR-00N-{slug}/` · `branch` no padrão
 > `adr/{prd-id}/{nn}-{slug}` · `merge` preenchido **somente** quando `status=merged`.
 >
-> **Por que o índice tem 3 linhas e não 5.** As 5 linhas do fatiamento D8 estão aprovadas
+> **Por que o índice tem 4 linhas e não 5.** As 5 linhas do fatiamento D8 estão aprovadas
 > (`PRD.md` §16) e recomendadas em `RESEARCH.md` §7, mas `ADR-01` exige 1:1 entre índice e disco:
 > linha de índice sem `ADRs/<dir>/` correspondente é FAIL e diretório sem linha é órfão
 > (`checks.mjs:294-301`). Materializar as 5 linhas antes dos 5 diretórios deixaria
@@ -18,8 +18,9 @@
 > esse inventário foi ratificado em `e3d86de` (`docs(adr): ADR-001 do PRD-3 — fronteira de subprocesso
 > e contrato contract-v1`) como decisão completa — `depende-de`, interface congelada numerada,
 > alternativas e trade-off. Nenhuma rubrica foi reaberta. A linha 2 entrou com o `ADR.md` do
-> oráculo de paridade em `6a3b4ed`; a linha 3 entra neste commit com o `ADR.md` do motor
-> `init`/`doctor`/`upgrade`. Cada linha nova nasce com seu diretório e seu `ADR.md`.
+> oráculo de paridade em `6a3b4ed`; a linha 3 entrou com o `ADR.md` do motor
+> `init`/`doctor`/`upgrade`; a linha 4 entra neste commit com o `ADR.md` da TUI de 10 telas.
+> Cada linha nova nasce com seu diretório e seu `ADR.md`.
 >
 > **Slot único de `in-progress` — resolvido.** `checks.mjs:378-379` permite no máximo 1 linha
 > `in-progress`, e `checks.mjs:387-399` proíbe `in-progress` com `order` 2 enquanto existir linha de
@@ -33,13 +34,18 @@
 > ato do merge; até lá, `merged` aqui significa "decisão ratificada e incorporada à linhagem", não
 > "PR mesclado". Aplicou-se o mesmo critério a ADR-002 ao abrir a branch 03: `6a3b4ed` é o commit que
 > materializou a decisão do oráculo e o tip da branch `adr/prd-installer-rust/02-oraculo-paridade`,
-> ancestral direto da branch 03. Com isso ADR-003 é a única linha `in-progress` e não há pulo de
-> sequência (`ADR-02` reprova 2 linhas `in-progress` e `in-progress` com order menor não-`merged`).
+> ancestral direto da branch 03. Ao abrir a branch 04, o mesmo critério promoveu ADR-003 a `merged`
+> com **`4d5b70e` como SHA de landing**: é o commit `docs(adr): ADR-003 do PRD-3` (tip da branch
+> `adr/prd-installer-rust/03-motor-init-doctor-upgrade`) e ancestral direto da branch 04. Com isso
+> ADR-004 é a única linha `in-progress` e não há pulo de sequência (`ADR-02` reprova 2 linhas
+> `in-progress` e `in-progress` com order menor não-`merged`). Nenhum push/PR foi feito por estes
+> batches; `merged` registra o landing linear na linhagem, não um merge do GitHub.
 >
-> **Estado:** 3 linhas, `ADR-001` `merged` (landing `e3d86de`), `ADR-002` `merged` (landing
-> `6a3b4ed`), `ADR-003` `in-progress`, branch `adr/prd-installer-rust/03-motor-init-doctor-upgrade`.
-> As linhas 4–5 do fatiamento entram quando seus `ADR.md` existirem: 4 TUI 10 telas (depende de 1) e
-> 5 publicação/runtime/selo (depende de 3). A ordem é a de merge do fatiamento — 1 a 5, sem pulo.
+> **Estado:** 4 linhas, `ADR-001` `merged` (landing `e3d86de`), `ADR-002` `merged` (landing
+> `6a3b4ed`), `ADR-003` `merged` (landing `4d5b70e`), `ADR-004` `in-progress`, branch
+> `adr/prd-installer-rust/04-tui-dez-telas`. A linha 5 do fatiamento entra quando seu `ADR.md`
+> existir: publicação/runtime/selo (depende de 3). A ordem é a de merge do fatiamento — 1 a 5,
+> sem pulo.
 >
 > *Nota de forma: não há segunda tabela. `parseIndex` (`checks.mjs:149-163`) lê toda linha que começa
 > com `|` como linha do ledger; uma tabela adicional seria interpretada como ADR extra e reprovaria
@@ -49,7 +55,8 @@
 |---|---|---|---|---|---|---|---|
 | 1 | ADR-001 | Fronteira de subprocesso e contrato: CLI Rust como binário invocado por 22 consumidores Node, com stdin/stdout/stderr, códigos de saída e segredo sem eco, sem FFI e sem dois motores | merged | — | ADRs/ADR-001-fronteira-subprocesso/ | adr/prd-installer-rust/01-fronteira-subprocesso | `e3d86de` (landing linear; merge humano pendente) |
 | 2 | ADR-002 | Oráculo de paridade com anti-tautologia: literais congelados mais differential contra o Node c63e333, insta só como revisor de diff e literal válido após validação humana | merged | ADR-001 | ADRs/ADR-002-oraculo-paridade/ | adr/prd-installer-rust/02-oraculo-paridade | `6a3b4ed` (landing linear; merge humano pendente) |
-| 3 | ADR-003 | Motor init/doctor/upgrade: 23 ops de engine mapeadas 1:1, ordem de upgrade congelada e vereditos lidos como literais externos; critério de CLI contra o oráculo, crate/versão fora da decisão | in-progress | ADR-001, ADR-002 | ADRs/ADR-003-motor-init-doctor-upgrade/ | adr/prd-installer-rust/03-motor-init-doctor-upgrade | — |
+| 3 | ADR-003 | Motor init/doctor/upgrade: 23 ops de engine mapeadas 1:1, ordem de upgrade congelada e vereditos lidos como literais externos; critério de CLI contra o oráculo, crate/versão fora da decisão | merged | ADR-001, ADR-002 | ADRs/ADR-003-motor-init-doctor-upgrade/ | adr/prd-installer-rust/03-motor-init-doctor-upgrade | `4d5b70e` (landing linear; merge humano pendente) |
+| 4 | ADR-004 | TUI de 10 telas: modelo declarativo de 5 campos por tela, navegação igual à ordem do oráculo (0 transição nova), tela não grava (apply no motor), segredo sem eco com cleanup após SIGTERM, stdout envelope / stderr progresso; transcript como autoridade, crate/framework fora da decisão | in-progress | ADR-001, ADR-002, ADR-003 | ADRs/ADR-004-tui-dez-telas/ | adr/prd-installer-rust/04-tui-dez-telas | — |
 
 ## Insumo das linhas existentes
 
@@ -74,3 +81,12 @@
   `installer-upgrade-regression`, `merge-v2-only`, `doctor`, `preflight`, `checks` e `suite`.
   Pesquisa: `RESEARCH.md` §2 (A1/A2, fontes S1/S2/S3) e §7 — crate/versão ficam como recomendação
   com fonte; este ADR decide só o critério de paridade observável. `depende-de: ADR-001, ADR-002`.
+- **ADR-004** — decisão G1 **D3** (fatia 4 = TUI, item 1 da demanda), herda D1/D4/D6/D7 de
+  ADR-001/002/003. Requisitos: RF-03/RF-10, M-4/M-5, SI-4. Evidência: 10 telas `W0..W7` com
+  `W2m-1/-2` em `runWizard:2264-2436` × 5 campos de `PRD.md` §3.7 (50 campos); 8 `op`s de TUI sem
+  escrita em ADR-001 §5; transcript arquivado de 16.336 bytes com `[1/2]`/`[2/2]`/`[1-5]`/
+  `(default: 1)`/`(q cancela)`; segredo `serializeSkips=true`, `sanitizeLog=token=[REDACTED]`,
+  `canNoEchoTTY=true`/`canNoEchoPipe=false`; risco de `SIGTERM` sem eco em `RESEARCH.md` S5.
+  Pesquisa: `RESEARCH.md` §3 (B1/B2/B3, fontes S4/S5/S6/S10/S11) e §7 — recomendação B3 com fonte;
+  este ADR decide só o critério de apresentação (0 transição nova, transcript como autoridade,
+  cleanup obrigatório). `depende-de: ADR-001, ADR-002, ADR-003`.
