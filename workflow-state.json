@@ -258,7 +258,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T14:23:03.007Z",
+  "last_update": "2026-11-17T14:28:32.495Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -282,12 +282,12 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "ADR-001 EIXOS batch 3 — gerador textos derivados (rust+vue de ponta a ponta)",
+  "sdd_stage": "ADR-001 EIXOS batch 3 CONCLUIDO (EIX-03: rust+vue ponta a ponta, 109 testes) — review em curso",
   "backlog": {
     "total": 6,
-    "todo": 3,
-    "doing": 1,
-    "done": 2,
+    "todo": 2,
+    "doing": 0,
+    "done": 3,
     "ids": [
       "EIX-01",
       "EIX-02",
@@ -296,7 +296,9 @@
       "VAL-01",
       "VAL-02"
     ],
-    "doing_ids": [
+    "done_ids": [
+      "EIX-01",
+      "EIX-02",
       "EIX-03"
     ]
   },
@@ -2022,13 +2024,12 @@
   },
   "batch": {
     "id": 3,
-    "agent": "developer-engineer",
-    "skills": [
-      "node-architecture-specialist"
-    ],
-    "status": "running",
-    "tasks": 1,
-    "base": "a34d352"
+    "status": "review_running",
+    "commit": "bd171f94cc4d14793bcc55f0322f2190e9cbba2c",
+    "novos_testes": 109,
+    "installer": 958,
+    "rust_vue_config": "rust backend / vue frontend, commands {}, mcp chrome-devtools, 48 configs validas",
+    "fronteira": "ADR cita installer-contract.mjs.generateConfig; gerador novo em generate-eixos.mjs; rewiring=EIX-04"
   },
   "next_gate": "HITL batch 2->3: posso avancar para EIX-03 (gerador com textos derivados, rust+vue de ponta a ponta)?",
   "governance_note": {
