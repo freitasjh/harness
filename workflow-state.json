@@ -259,7 +259,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T22:41:56.034Z",
+  "last_update": "2026-11-17T22:42:33.883Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -283,11 +283,11 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "ADR-002 CLI VISUAL batch 4 REVIEW APPROVED (0/0; segredo/aborto/eco provados). PARADA HITL antes do VAL-01",
+  "sdd_stage": "ADR-002 CLI VISUAL VAL-01 — transcript novo ratificado + rust+vue",
   "backlog": {
     "total": 6,
-    "todo": 2,
-    "doing": 0,
+    "todo": 1,
+    "doing": 1,
     "done": 4,
     "ids": [
       "CLI-01",
@@ -297,11 +297,8 @@
       "VAL-01",
       "VAL-02"
     ],
-    "done_ids": [
-      "CLI-01",
-      "CLI-02",
-      "CLI-03",
-      "CLI-04"
+    "doing_ids": [
+      "VAL-01"
     ]
   },
   "next_task": "ADR-002",
@@ -2137,14 +2134,16 @@
     "at": "2026-11-17T17:22:22.352Z"
   },
   "batch": {
-    "id": 4,
-    "status": "review_approved",
-    "commit": "9acadf97fbaa289a5f95d306e686b83aff037a93",
-    "segredo": "0 em cmdline/stdout/stderr/transcript",
-    "abort": "hash identico, 0 writes, USER_ABORT",
-    "sigterm": "exit 143, echo restaurado — sinal null sob revisao",
-    "npm_ci": "26 packages, erro legivel PROMPTS_UNAVAILABLE",
-    "installer": 1090
+    "id": 5,
+    "agent": "developer-engineer",
+    "skills": [
+      "node-architecture-specialist",
+      "security-review"
+    ],
+    "status": "running",
+    "tasks": 1,
+    "base": "504ac33",
+    "ratificacao_owner": "transcript novo (4 telas PT-BR), sem paridade com 16336B"
   },
   "next_gate": "HITL batch 4->5: posso avancar para VAL-01 (transcript novo ratificado, sem paridade com 16336B, rust+vue)? Decisao owner necessaria.",
   "governance_note": {
