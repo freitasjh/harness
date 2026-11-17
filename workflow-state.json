@@ -84,12 +84,12 @@
     "P4_5": "approved_auto_2026_11_16 (security-review 14 itens: 3 PASS + 11 N/A motivados; zero segredos; Cargo.lock)"
   },
   "code_review": {
-    "last_invoked_at": "2026-11-16T23:26:57.484Z",
+    "last_invoked_at": "2026-11-17T00:05:17.782Z",
     "last_status": "passed",
     "critical_issues": 0,
     "attention_issues": 0,
-    "suggestions": 2,
-    "reviewer_notes": "ADR-004 re-review APPROVED apos loop 1/3: R9 byte-idêntico nos 2 motores, mutação reprova, 3/8 byte-iguais medido independentemente, 0 vereditos congelados tocados. Apto push/merge."
+    "watch_items": 2,
+    "reviewer_notes": "Batch 1 ADR-005 APPROVED 0 criticos. Shim somente localizador (spawn, zero fs/escrita/rede/segundo motor); prova(op) sha identico ao direto e mutacao reprova; glibc->gnu mapeado; 2 atencoes de lotes futuros: PUB-04 matriz no stderr do fallback, PUB-03 exports ./package.json no pacote de plataforma."
   },
   "overrides": [
     {
@@ -230,7 +230,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T23:56:41.818Z",
+  "last_update": "2026-11-17T00:05:17.782Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -254,7 +254,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-005 EXECUTION batch 1/3 CONCLUIDO (2/2; wrapper + shim localizador; selo intacto) — code-reviewer em curso",
+  "sdd_stage": "PRD-3 ADR-005 EXECUTION batch 1 REVIEW APPROVED (0/0; 2 watch items para PUB-03/04). PARADA HITL antes do batch 2",
   "backlog": {
     "total": 7,
     "todo": 5,
@@ -894,6 +894,22 @@
       "bloqueia": false,
       "target": "tech-debt",
       "registrado_em": ".spec/tech-debts/doctor-spec-mkdtemp-flake/TASKS.md (P3)"
+    },
+    {
+      "id": "FU-ADR005-01",
+      "created_at": "2026-11-17T00:05:17.782Z",
+      "texto": "PUB-04: fallback deve incluir (b) matriz de alvos publicados no stderr, alem da tripla e da acao (ADR §2.2 item 3 / RF-04)",
+      "origem": "code-reviewer batch 1 ADR-005",
+      "bloqueia": false,
+      "target": "PUB-04"
+    },
+    {
+      "id": "FU-ADR005-02",
+      "created_at": "2026-11-17T00:05:17.782Z",
+      "texto": "PUB-03: pacote de plataforma deve expor ./package.json no exports (ou omitir exports) para require.resolve do shim nao cair em fallback falso",
+      "origem": "code-reviewer batch 1 ADR-005",
+      "bloqueia": false,
+      "target": "PUB-03"
     }
   ],
   "batches": [
@@ -1980,14 +1996,14 @@
   "batch": {
     "id": 1,
     "agent": "developer-engineer",
-    "status": "review_running",
+    "status": "review_approved",
     "commit": "bb6353fc536410654c6dc06bc1ce6f8f8f445362",
     "tasks": 2,
     "build_scripts": 0,
     "shim_prova": "sha idêntico ao binário direto",
     "bug_achado": "glibc (sinal runtime) != gnu (sufixo npm) — mapeado no shim"
   },
-  "next_gate": "loop de correcao (developer -> reviewer) ate 3 iteracoes; nao fazer push antes de APPROVED",
+  "next_gate": "HITL batch 1->2: posso avancar para o batch 2 (PUB-03 pacotes de plataforma, PUB-04 fallback tripla, VAL-01 prova D7)?",
   "governance_note": {
     "at": "2026-11-16T21:26:46.319Z",
     "texto": "Developer escreveu no retorno que owner havia aprovado migrar só JSON-safe — falso. Owner aprovou 23 e depois ACEITOU o desvio para 13 com razao medida. Corrigido aqui para nao deixar decisao reescrita.",
