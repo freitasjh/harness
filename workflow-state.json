@@ -88,12 +88,12 @@
     "G2_RESEARCH": "approved_user_2026_11_17 (A1 eixos + B1 setas+enter + C1 baseline validado; 7 alternativas, 11 fontes; protótipo aprovado antes do ADR)"
   },
   "code_review": {
-    "last_invoked_at": "2026-11-17T22:26:41.814Z",
+    "last_invoked_at": "2026-11-17T22:41:56.034Z",
     "last_status": "passed",
     "critical_issues": 0,
     "attention_issues": 0,
-    "suggestions": 2,
-    "reviewer_notes": "CLI-03 APPROVED 0/0. Tela rust+vue byte-idêntica ao literal ADR-001; isolamento commands/mcp por mutação; N=4/M inalterados; oráculo 17 intacto; incidente grep transitório sem resíduo. Sugestões: wiring configFromSelection em produção (CLI-04/VAL-01); unificar AXIS_IDS via re-export (VAL-02)."
+    "suggestions": 3,
+    "reviewer_notes": "CLI-04 APPROVED 0/0. Segredo 0 em cmdline/stdout/stderr/transcript; aborto 0 writes (hash identico) com erro comum preservado; SIGTERM restaura eco (stty echo ON) e node morre por sinal (code=null signal=SIGTERM) — exit 143 e do wrapper script -e, legitimo; npm ci + PROMPTS_UNAVAILABLE; wiring config byte-idêntico ADR-001. 3 sugestoes: registrar medicao direta sinal no VERIFY; .gitignore node_modules; q-cancel sem handler real (fidelidade prototipo, levar ao VAL-01)."
   },
   "overrides": [
     {
@@ -259,7 +259,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T22:37:33.719Z",
+  "last_update": "2026-11-17T22:41:56.034Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -283,7 +283,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "ADR-002 CLI VISUAL batch 4 CONCLUIDO (CLI-04: segredo/aborto/eco) — review em curso",
+  "sdd_stage": "ADR-002 CLI VISUAL batch 4 REVIEW APPROVED (0/0; segredo/aborto/eco provados). PARADA HITL antes do VAL-01",
   "backlog": {
     "total": 6,
     "todo": 2,
@@ -1029,7 +1029,9 @@
       "texto": "Cobrir isAbortError e onAbort com teste direto no CLI-04 (comportamento correto confirmado por sonda do reviewer)",
       "origem": "code-reviewer CLI-01",
       "bloqueia": false,
-      "target": "CLI-04"
+      "target": "CLI-04",
+      "status": "closed",
+      "fechado_em": "2026-11-17T22:41:56.034Z"
     },
     {
       "id": "FU-INQUIRER-NODEMODULES",
@@ -1037,7 +1039,9 @@
       "texto": "@inquirer/prompts 8.8.0 + i18n 1.4.0 pinados em installer/cli/package.json mas SEM node_modules — instalar via npm ci e dar erro legivel em defaultPrompts() quando a lib faltar (hoje ERR_MODULE_NOT_FOUND obscuro). Obrigatorio ate VAL-02; nao mascara defeito de logica (testes injetam prompts e medem N/M/i18n).",
       "origem": "code-reviewer CLI-02",
       "bloqueia": false,
-      "target": "CLI-04/VAL-02"
+      "target": "CLI-04/VAL-02",
+      "status": "closed",
+      "fechado_em": "2026-11-17T22:41:56.034Z"
     },
     {
       "id": "FU-WIRING-CONFIG",
@@ -1045,7 +1049,9 @@
       "texto": "Garantir wiring de configFromSelection em producao (runVisualWizard caller) no CLI-04/VAL-01 — hoje so consumidor e o teste",
       "origem": "code-reviewer CLI-03",
       "bloqueia": false,
-      "target": "CLI-04"
+      "target": "CLI-04",
+      "status": "closed",
+      "fechado_em": "2026-11-17T22:41:56.034Z"
     },
     {
       "id": "FU-AXIS-IDS-UNICO",
@@ -1054,6 +1060,30 @@
       "origem": "code-reviewer CLI-03",
       "bloqueia": false,
       "target": "VAL-02"
+    },
+    {
+      "id": "FU-SINAL-DIRETO",
+      "created_at": "2026-11-17T22:41:56.034Z",
+      "texto": "Registrar no VERIFY/harness do ADR-002 a medicao direta code=null/signal=SIGTERM ao lado do 143=128+15 (wrapper script -e) — prova ExitStatus com sinal, nunca exit 0",
+      "origem": "code-reviewer CLI-04",
+      "bloqueia": false,
+      "target": "VAL-02"
+    },
+    {
+      "id": "FU-GITIGNORE-CLI",
+      "created_at": "2026-11-17T22:41:56.034Z",
+      "texto": "Adicionar .gitignore versionado em installer/cli/ para node_modules (hoje só .git/info/exclude local, nao versionado)",
+      "origem": "code-reviewer CLI-04",
+      "bloqueia": false,
+      "target": "VAL-02"
+    },
+    {
+      "id": "FU-Q-CANCEL",
+      "created_at": "2026-11-17T22:41:56.034Z",
+      "texto": "locale.js:46 promete q para cancelar mas nao ha handler de tecla q real — @inquirer/select nao aborta em q nativamente; qa.spec simulou como ExitPromptError. Fidelidade do prototipo, pre-existente CLI-02 — decidir no VAL-01: implementar handler ou ajustar locale (sem reabrir prototipo sem §16)",
+      "origem": "code-reviewer CLI-04",
+      "bloqueia": false,
+      "target": "VAL-01"
     }
   ],
   "batches": [
@@ -2108,7 +2138,7 @@
   },
   "batch": {
     "id": 4,
-    "status": "review_running",
+    "status": "review_approved",
     "commit": "9acadf97fbaa289a5f95d306e686b83aff037a93",
     "segredo": "0 em cmdline/stdout/stderr/transcript",
     "abort": "hash identico, 0 writes, USER_ABORT",
@@ -2116,7 +2146,7 @@
     "npm_ci": "26 packages, erro legivel PROMPTS_UNAVAILABLE",
     "installer": 1090
   },
-  "next_gate": "HITL batch 3->4: posso avancar para CLI-04 (segredo mask, aborto 0 writes, restore eco + npm ci)?",
+  "next_gate": "HITL batch 4->5: posso avancar para VAL-01 (transcript novo ratificado, sem paridade com 16336B, rust+vue)? Decisao owner necessaria.",
   "governance_note": {
     "at": "2026-11-16T21:26:46.319Z",
     "texto": "Developer escreveu no retorno que owner havia aprovado migrar só JSON-safe — falso. Owner aprovou 23 e depois ACEITOU o desvio para 13 com razao medida. Corrigido aqui para nao deixar decisao reescrita.",
