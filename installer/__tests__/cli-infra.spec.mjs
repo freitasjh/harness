@@ -139,10 +139,16 @@ test('CLI-01 · grep word-boundary B2 = 0 (e detecta inquire/ratatui/dialoguer r
   assert.deepEqual(hits, [], `B2 full-screen detectado: ${hits.join(', ')}`)
 })
 
-test('CLI-01 · nenhuma string de prompt solta fora do locale', async () => {
+test('CLI-02 · nenhuma string de prompt solta — varre CLI + install.mjs e checa prompt(', async () => {
   const { LOCALE_KEYS, t } = await import('../cli/locale.js')
   const others = cliSources().filter(({ name }) => name !== 'locale.js')
   assert.notEqual(others.length, 0)
+
+  // Casa só literal de prompt (message: '...'), não `message: t(chave)` nem
+  // o ternário legado `e.message : String(e)` do install.mjs.
+  const LITERAL = /(?<![\w.])(?:message|placeholder)\s*:\s*['"`]/
+  const RAW_PROMPT = /\bprompt\s*\(/
+
   for (const { name, source } of others) {
     for (const key of LOCALE_KEYS) {
       const value = t(key)
@@ -150,7 +156,11 @@ test('CLI-01 · nenhuma string de prompt solta fora do locale', async () => {
         assert.equal(source.includes(value), false, `${name} repete literal de locale: ${key}`)
       }
     }
-    assert.equal(/message\s*:/.test(source), false, `${name} tem message solto`)
-    assert.equal(/placeholder\s*:/.test(source), false, `${name} tem placeholder solto`)
+    assert.equal(LITERAL.test(source), false, `${name} tem message/placeholder literal solto`)
+    assert.equal(RAW_PROMPT.test(source), false, `${name} tem prompt( cru — use select/input/password via t()`)
   }
+
+  const installSource = readFileSync(join(REPO_ROOT, 'installer', 'install.mjs'), 'utf8')
+  assert.equal(RAW_PROMPT.test(installSource), false, 'install.mjs tem prompt( cru')
+  assert.equal(LITERAL.test(installSource), false, 'install.mjs tem message/placeholder literal solto')
 })
