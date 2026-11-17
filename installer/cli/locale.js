@@ -43,7 +43,7 @@ const messages = {
     eof: 'Entrada encerrada.',
   },
   hint: {
-    navigation: 'Use as setas para navegar, Enter para confirmar e q para cancelar.',
+    navigation: 'Use as setas para navegar, Enter para confirmar e Ctrl+C para cancelar.',
   },
   errors: {
     invalidAnswer: 'Resposta inválida. Tente novamente.',

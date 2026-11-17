@@ -1,0 +1,57 @@
+? Selecione o backend
+❯ java
+  node
+  rust
+  nestjs
+  dart
+  flutter
+  other
+
+↑↓ navigate • ⏎ select? Selecione o backend
+  java
+❯ node
+  rust
+  nestjs
+  dart
+  flutter
+  other
+
+↑↓ navigate • ⏎ select? Selecione o backend
+  java
+  node
+❯ rust
+  nestjs
+  dart
+  flutter
+  other
+
+↑↓ navigate • ⏎ select✔ Selecione o backend rust
+? Selecione o frontend
+  vue
+❯ react
+  dart
+  flutter
+  other
+  none
+
+↑↓ navigate • ⏎ select? Selecione o frontend
+❯ vue
+  react
+  dart
+  flutter
+  other
+  none
+
+↑↓ navigate • ⏎ select✔ Selecione o frontend vue
+? Nome do projeto? Nome do projeto d? Nome do projeto de? Nome do projeto dem? Nome do projeto demo? Nome do projeto demo✔ Nome do projeto demo
+? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]✔ Token de acesso (opcional) 
+
+Resumo da configuração
+Backend: rust
+Frontend: vue
+Nome do projeto: demo
+Token de acesso: [REDACTED]
+Confirmar e instalar?
+
+TELAS=backend,frontend,name,token
+CONFIG_JSON={"version":1,"project":"demo","stack":{"backend":"rust backend","frontend":"vue frontend"},"moduleMap":{"plugins":".opencode/plugins","rules":".agents/rules","schemas":".agents/schemas"},"commands":{},"infra":{"composeFile":null,"ports":{"backend":null,"frontend":null}},"mcp":{"required":["chrome-devtools"]},"protectedPaths":[".opencode/plugins/**",".agents/rules/**",".agents/schemas/**",".agents/agents/**","opencode.json","harness.config.json"],"gates":{"picco":"enforce","evidence":"enforce","hitlBatch":"enforce","e2eGreenfield":"warn"},"riskPaths":["**/security/**","**/auth/**"],"escalateOnRisk":{"e2eGreenfield":"enforce","evidenceScenario":"required"},"contraproveTimeoutMs":900000,"evidence":{"path":"harness/","schema":".agents/schemas/harness-report.schema.json"}}

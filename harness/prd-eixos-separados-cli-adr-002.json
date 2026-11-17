@@ -1,0 +1,247 @@
+{
+  "version": 1,
+  "demand": "prd-eixos-separados-cli-adr-002",
+  "agent": "developer-engineer",
+  "phase": "Execution",
+  "gitSha": "4b90ad541787674a5fbd6a054560e4ff9e28ab1f",
+  "gitShaBasis": {
+    "command": "git rev-parse HEAD",
+    "branch": "adr/prd-eixos-separados-cli/02-cli-visual-impl",
+    "measured": "4b90ad541787674a5fbd6a054560e4ff9e28ab1f",
+    "note": "HEAD no inicio de VAL-01; arvore limpa (git status --short vazio). Escritas deste batch: installer/cli/locale.js (valor de hint), installer/__tests__/cli-infra.spec.mjs (teste TDD), transcript novo + este RELATORIO. Nenhum path protegido tocado. SHA do commit final registrado no retorno (Anexo B)."
+  },
+  "timingBasis": "Medido com Date.now() em node /tmp/opencode/val01-run.cjs neste batch (spawnSync + Date.now imediatos antes/depois de cada comando); nao estimativa.",
+  "commands": [
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 1282,
+      "durationMsMeasured": 1282,
+      "stdoutHash": "sha256:2b33feb4791e8db2a7ebe016c3e583f02c7f61fd2128f9db531ea3913ddcaf62",
+      "stdoutBytes": 109423,
+      "counts": "plugins 540/540"
+    },
+    {
+      "cmd": "node --test \"installer/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 6323,
+      "durationMsMeasured": 6323,
+      "stdoutHash": "sha256:69f10677016a35ba16ee01a8e5d14445452863852d1c94273fa9c520b2bbab68",
+      "stdoutBytes": 123866,
+      "counts": "installer 1091/1091"
+    },
+    {
+      "cmd": "node scripts/static-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 277,
+      "durationMsMeasured": 277,
+      "stdoutHash": "sha256:4a1e734a85037a1e26e20ea8531b7b4e64cf76d4b1fd7890b3b62529b7652ad5",
+      "stdoutBytes": 1564,
+      "counts": "PASS PRD-01 / ADR-01 / ADR-02 / V19 / V20"
+    },
+    {
+      "cmd": "node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 60,
+      "durationMsMeasured": 60,
+      "stdoutHash": "sha256:e5e528c52d79fceaa1be828bd89116aa6e0be73294d2e99d39c4febe99e84516",
+      "stdoutBytes": 51,
+      "counts": "vendor-check OK"
+    },
+    {
+      "cmd": "cargo test --manifest-path installer-rs/Cargo.toml",
+      "exitCode": 0,
+      "durationMs": 238,
+      "durationMsMeasured": 238,
+      "stdoutHash": "sha256:3a8002928cf7dc9caff82c86a43a27f83fb2a36ad6f2f16ece67f0158b3fd9bb",
+      "stdoutBytes": 6917,
+      "counts": "cargo 85/85 (17 blocos test result: ok)"
+    }
+  ],
+  "counts": {
+    "unit": {
+      "passed": 540,
+      "failed": 0,
+      "skipped": 0
+    },
+    "it": {
+      "passed": 1091,
+      "failed": 0,
+      "skipped": 0
+    },
+    "frontend": {
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0
+    },
+    "cargo": {
+      "passed": 85,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "evaluation": {
+    "telas": "CLI PTY real (nao web): 4 telas + resumo renderizadas por @inquirer/prompts; marcadores PT-BR (backend/frontend/nome/token, setas, [input is masked], [REDACTED]) presentes no transcript literal. H3 N/A — nenhuma porta de infra.ports subida, nenhum browser; porta 5173 externa nao tocada.",
+    "negocio": "RF-09/RF-06/RF-04 fechados: transcript semanticamente novo, 4 telas + resumo, rust+vue separados com config byte-identica a ADR-001. NENHUMA afirmação de paridade com o transcript antigo de 16336 B (item 9 veta). FU-Q-CANCEL resolvido por (b) ajuste de texto do locale: hint nao promete mais tecla q inexistente no @inquirer/select; cancelo real = Ctrl+C => ExitPromptError => USER_ABORT. ownerApproval.pending=true: owner aprova, orquestrador registra; nenhum veredito assinado por este agente.",
+    "logica": "Proveniencia do transcript = fluxo real da CLI via node-pty (TERM=xterm-256color), nao expectativa escrita a mao; transformacao declarada = strip ANSI/CSI + normaliza CR. sha do arquivo registrado ANTES de virar baseline. Nao-paridade provada por bytes (2412 vs 16336), sha (9fd70bb6... vs fe1f9187...) e marcadores (setas/✔ vs [1/5]/[2/2]). N/M inalterados: TELAS continua [backend,frontend,name,token] e unica mudanca de comportamento observavel e o valor da string hint.navigation (PT-BR preservado). Rito 9fa4530b reutilizado como forma, sem re-assinar. Selo c904f1c5 intacto; gate/config/seal/opencode/state/ADRs/specs/rules intactos.",
+    "perf": "5 comandos exit 0; soma durationMsMedidos = 8180ms; sem regressao de duracao observada.",
+    "bugs_identified": [
+      {
+        "id": "FU-Q-CANCEL",
+        "severity": "P3",
+        "achado": "locale.js:46 prometia \"q para cancelar\", mas @inquirer/select nao aborta em q (qa.spec simulou ExitPromptError).",
+        "decisao": "(b) ajustar texto do locale",
+        "bloqueia": false
+      },
+      {
+        "id": "VAL01-OBS-CONTAGEM",
+        "severity": "P3",
+        "achado": "installer 1090 -> 1091: +1 teste TDD (FU-Q-CANCEL) adicionado em cli-infra.spec.mjs. Nao e queda de cobertura nem mudanca de N/M.",
+        "bloqueia": false
+      }
+    ]
+  },
+  "brainStore": [
+    "sessoes/projeto/2026-11-17/val01-cli-transcript-novo",
+    "regras/projetos/projetos/harness/val01-transcript-novo-sem-paridade-e-hint-fiel"
+  ],
+  "cleanup": {
+    "ports": [],
+    "processes": "nenhum deixado: child node-pty finalizado via term.kill() no driver; 5 comandos spawnSync encerrados com exit 0",
+    "note": "Nenhuma porta de infra.ports subida. Porta 5173 (processo externo alheio) NAO foi tocada. Proibido pkill -f: nao executado."
+  },
+  "selfReported": false,
+  "val01": {
+    "transcript": {
+      "path": "harness/prd-eixos-separados-cli-adr-002.transcript.txt",
+      "bytes": 2412,
+      "sha256": "9fd70bb612f5ca795bfcb036b492eed7e1e100d801b0023a8a39107f115e18db",
+      "generatedBy": "fluxo real da CLI via node-pty (PTY real) dirigindo installer/cli/wizard.js::runVisualWizard com @inquirer/prompts 8.8.0 real",
+      "driver": "node /tmp/opencode/val01-pty.cjs /tmp/opencode/val01-transcript.raw.txt /tmp/opencode/val01-cli-entry.mjs ; node /tmp/opencode/val01-clean.cjs <raw> <destino>",
+      "transform": "remocao de sequencias ANSI/CSI + normalizacao CR->LF + trim final; nenhuma linha escrita manualmente",
+      "rawProvenance": {
+        "bytes": 4416,
+        "sha256": "6079661a2396692ee53d3fe16f1577a13ddd0900ab5b91783a72eb83694f6de9",
+        "leakedSecret": false
+      },
+      "markers": {
+        "telas": true,
+        "resumo": true,
+        "setas": true,
+        "mascarado": true,
+        "redacted": true,
+        "telasConst": true,
+        "segredoAusente": true
+      },
+      "literal": "? Selecione o backend\n❯ java\n  node\n  rust\n  nestjs\n  dart\n  flutter\n  other\n\n↑↓ navigate • ⏎ select? Selecione o backend\n  java\n❯ node\n  rust\n  nestjs\n  dart\n  flutter\n  other\n\n↑↓ navigate • ⏎ select? Selecione o backend\n  java\n  node\n❯ rust\n  nestjs\n  dart\n  flutter\n  other\n\n↑↓ navigate • ⏎ select✔ Selecione o backend rust\n? Selecione o frontend\n  vue\n❯ react\n  dart\n  flutter\n  other\n  none\n\n↑↓ navigate • ⏎ select? Selecione o frontend\n❯ vue\n  react\n  dart\n  flutter\n  other\n  none\n\n↑↓ navigate • ⏎ select✔ Selecione o frontend vue\n? Nome do projeto? Nome do projeto d? Nome do projeto de? Nome do projeto dem? Nome do projeto demo? Nome do projeto demo✔ Nome do projeto demo\n? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]? Token de acesso (opcional) [input is masked]✔ Token de acesso (opcional) \n\nResumo da configuração\nBackend: rust\nFrontend: vue\nNome do projeto: demo\nToken de acesso: [REDACTED]\nConfirmar e instalar?\n\nTELAS=backend,frontend,name,token\nCONFIG_JSON={\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"rust backend\",\"frontend\":\"vue frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"chrome-devtools\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}\n"
+    },
+    "shaBeforeBaseline": {
+      "value": "sha256:9fd70bb612f5ca795bfcb036b492eed7e1e100d801b0023a8a39107f115e18db",
+      "basis": "sha256sum do arquivo de transcript imediatamente apos geracao pelo PTY e ANTES de registrar como baseline neste RELATORIO",
+      "command": "sha256sum harness/prd-eixos-separados-cli-adr-002.transcript.txt",
+      "ratificacao": "PENDENTE — owner aprova, orquestrador registra; nenhum veredito de validacao escrito por este agente"
+    },
+    "nonParity": {
+      "declaracao": "NAO EXISTE PARIDADE com o transcript antigo de 16.336 B. O novo transcript e semanticamente novo; item 9 da ADR-002 veta qualquer afirmação de paridade/byte-identidade com o antigo.",
+      "antigo": {
+        "path": ".spec/archive/20261018-harness-eixos-stack/harness/wizard-react-transcript.txt",
+        "bytes": 16336,
+        "sha256": "fe1f918757f30afec7c43518b94fb19e341dca4a219d7f44848076d7ba165109",
+        "marcadores": [
+          "[1/5]",
+          "[1/2]",
+          "[2/2]",
+          "(q cancela)"
+        ]
+      },
+      "novo": {
+        "path": "harness/prd-eixos-separados-cli-adr-002.transcript.txt",
+        "bytes": 2412,
+        "sha256": "9fd70bb612f5ca795bfcb036b492eed7e1e100d801b0023a8a39107f115e18db",
+        "marcadores": [
+          "↑↓ navigate",
+          "✔ Selecione",
+          "[input is masked]",
+          "[REDACTED]"
+        ]
+      },
+      "bytesIguais": false,
+      "shaIgual": false
+    },
+    "rustVue": {
+      "selecao": "backend=rust (2 setas+Enter desde java) / frontend=vue (1 seta+Enter desde react), escolhidos separadamente nos eixos da ADR-001",
+      "configLiteral": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"rust backend\",\"frontend\":\"vue frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"chrome-devtools\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
+      "configSha256": "sha256:7a2f5cfa08c337932759247e5b7dbc9de4efd6d0d80d69e18f79ab96a54e6876",
+      "adr001Referencia": {
+        "par": "rust+vue",
+        "sha256": "sha256:7a2f5cfa08c337932759247e5b7dbc9de4efd6d0d80d69e18f79ab96a54e6876",
+        "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"rust backend\",\"frontend\":\"vue frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"chrome-devtools\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}"
+      },
+      "byteIdentico": true,
+      "raiz": "configFromSelection -> generateConfig (installer-contract.mjs), mesmo gerador ratificado na ADR-001; nenhum preset casado"
+    },
+    "fuQCancel": {
+      "id": "FU-Q-CANCEL",
+      "decisao": "(b) ajustar o texto do locale",
+      "motivo": "@inquirer/select nao aborta em q nativamente; qa.spec simulou q como ExitPromptError, entao a promessa do hint era falsa. Implementar handler de tecla q mudaria superficie de interacao do prototipo aprovado; ajustar o texto nao muda comportamento.",
+      "arquivos": [
+        "installer/cli/locale.js:46",
+        "installer/__tests__/cli-infra.spec.mjs (teste TDD RED->GREEN)"
+      ],
+      "antes": "Use as setas para navegar, Enter para confirmar e q para cancelar.",
+      "depois": "Use as setas para navegar, Enter para confirmar e Ctrl+C para cancelar.",
+      "provaTextoDoLocaleEPtBr": "t('hint.navigation') resolve via locale.js; teste cli-infra.spec.mjs valida chave 'hint.navigation' e assercoes /setas/i, /Enter/i, /Ctrl\\+C/; strings PT-BR; nenhum literal solto (varredura CLI-02 0 hits)",
+      "provaNMInalterados": {
+        "TELAS": "wizard.js:7 continua Object.freeze([backend,frontend,name,token])",
+        "M": "Nenhuma linha de wizard.js/eixos.js/secret.js/abort.js alterada; unico diff funcional e o valor da string hint.navigation",
+        "diffArquivos": [
+          "installer/cli/locale.js (1 linha: valor)",
+          "installer/__tests__/cli-infra.spec.mjs (1 teste)"
+        ],
+        "medicaoTranscript": "transcript real confirma 2 setas+Enter (backend), 1 seta+Enter (frontend), Enter (nome), token+Enter",
+        "prototipoReaberto": false,
+        "mudancaSemParagrafo16": false
+      }
+    },
+    "frozen": {
+      "sealSuiteFull": "c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2",
+      "suiteSteps": 4,
+      "presets": 12,
+      "novoPreset": false,
+      "novaChave": false,
+      "valorNovoSem16": false,
+      "prototipoN": 4,
+      "prototipoM": "2 setas+Enter (backend) / 1 seta+Enter (frontend) / Enter (nome) / token+Enter",
+      "pathsProtegidosIntactos": [
+        "gate.js",
+        "harness.config.json",
+        "seal.mjs",
+        "opencode.json",
+        "workflow-state.json",
+        "ADRs/**",
+        "SPEC/PLAN/TASKS/**",
+        ".agents/rules/**"
+      ],
+      "oraculoC63e333": "fora do caminho — nenhuma rubrica c63e333 reaberta neste batch"
+    }
+  },
+  "literalRito": {
+    "sha": "9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0",
+    "reused": true,
+    "writtenByThisAgent": false,
+    "source": "harness/prd-installer-rust-adr-002.json (rito ADR-002)",
+    "verdictWrittenHere": null,
+    "forma": "C1 autoridade / C2 so revisor de diff / C3 proibida; sha do artefato registrado antes de virar baseline; owner aprova, orquestrador registra"
+  },
+  "ownerApproval": {
+    "pending": true,
+    "reviewer": "owner do harness",
+    "signer": "orquestrador",
+    "targets": [
+      "val01.transcript.sha256",
+      "val01.rustVue.configSha256",
+      "val01.fuQCancel.decisao"
+    ],
+    "autoAssinatura": "NENHUMA — developer-engineer nao escreveu nenhum veredito de validacao"
+  }
+}

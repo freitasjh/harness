@@ -164,3 +164,13 @@ test('CLI-02 · nenhuma string de prompt solta — varre CLI + install.mjs e che
   assert.equal(RAW_PROMPT.test(installSource), false, 'install.mjs tem prompt( cru')
   assert.equal(LITERAL.test(installSource), false, 'install.mjs tem message/placeholder literal solto')
 })
+
+test('VAL-01 · FU-Q-CANCEL: hint de navegacao nao promete tecla q que o select nao trata', async () => {
+  const { LOCALE_KEYS, t } = await import('../cli/locale.js')
+  assert.equal(LOCALE_KEYS.includes('hint.navigation'), true)
+  const hint = t('hint.navigation')
+  assert.doesNotMatch(hint, /q\s+para\s+cancelar/i, 'select B1 nao aborta em q (ExitPromptError simulado)')
+  assert.match(hint, /Ctrl\+C/, 'cancelo real e Ctrl+C, classificado como USER_ABORT')
+  assert.match(hint, /setas/i)
+  assert.match(hint, /Enter/i)
+})
