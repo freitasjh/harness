@@ -53,12 +53,46 @@ const INVARIANTES = Object.freeze({
   }),
 });
 
+const HARNESS_OWNED_MODULEMAP_KEYS = ['plugins', 'rules', 'schemas'];
+
+function refWillExist(rel, writtenPaths) {
+  const norm = String(rel).replace(/\\/g, '/');
+  if (writtenPaths.has(norm)) return true;
+  const prefix = norm.endsWith('/') ? norm : `${norm}/`;
+  for (const p of writtenPaths) if (p.startsWith(prefix)) return true;
+  return false;
+}
+
+// BF-04 + suiteCommand: semântica portada do gerador legado. Nenhum valor novo
+// é inventado — suiteCommand só substitui o que o backend declarou quando o
+// chamador fornece um comando explícito; writtenPaths só remove refs que a
+// própria execução não escreveu.
+function aplicarCompatibilidade(cfg, entrada, opcoes = {}) {
+  const opts = opcoes || {};
+  const suiteCommand = entrada.suiteCommand || opts.suiteCommand;
+  if (typeof suiteCommand === 'string' && suiteCommand.trim() !== '') {
+    cfg.commands.suiteFull = suiteCommand;
+    cfg.commands.unit = suiteCommand;
+  }
+
+  const writtenPaths = opts.writtenPaths || entrada.writtenPaths;
+  if (writtenPaths) {
+    const escritos = new Set([...writtenPaths].map((p) => String(p).replace(/\\/g, '/')));
+    for (const k of HARNESS_OWNED_MODULEMAP_KEYS) {
+      const rel = cfg.moduleMap[k];
+      if (typeof rel === 'string' && !refWillExist(rel, escritos)) delete cfg.moduleMap[k];
+    }
+    if (!refWillExist(cfg.evidence.schema, escritos)) delete cfg.evidence.schema;
+  }
+  return cfg;
+}
+
 function textoDoEixo(eixo, id) {
   if (id === 'none') return `N/A — no ${eixo} axis`;
   return `${id} ${eixo}`;
 }
 
-export function generateConfig(entrada = {}) {
+export function generateConfig(entrada = {}, opcoes = {}) {
   const project = entrada && entrada.project;
   if (typeof project !== 'string' || project.trim() === '') {
     throw new GeradorConfigError('project required', 'BAD_PROJECT');
@@ -68,7 +102,7 @@ export function generateConfig(entrada = {}) {
 
   const { backend, frontend, commands, moduleMap, mcp } = composeAxes(axes);
 
-  return {
+  return aplicarCompatibilidade({
     version: 1,
     project,
     stack: {
@@ -85,5 +119,5 @@ export function generateConfig(entrada = {}) {
     escalateOnRisk: { ...INVARIANTES.escalateOnRisk },
     contraproveTimeoutMs: INVARIANTES.contraproveTimeoutMs,
     evidence: { ...INVARIANTES.evidence },
-  };
+  }, entrada, opcoes);
 }

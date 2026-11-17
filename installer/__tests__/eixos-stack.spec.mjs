@@ -1,24 +1,19 @@
-// eixos-stack.spec.mjs — RF-01/D1/D4: registry com eixos + ORACULO INDEPENDENTE
-// de `stacks`. Batch 1 (EX-BE-01 / EX-VAL-02), endurecido na iteracao 2 do
-// code review (CR-1/AT-3).
+// eixos-stack.spec.mjs — ADR-001 §3 item 1: ORÁCULO INDEPENDENTE de 48 pares.
+// EIX-04 migrou este arquivo do oráculo legado de 12 presets casados (73/73)
+// para o oráculo de 8 backends × 6 frontends. Nenhum nome de preset é fonte de
+// config aqui: rótulos legados aparecem SÓ como fixture de gating congelada.
 //
-// CR-1: comparar `profile.stacks` com `stacksFor(profile.axes)` e TAUTOLOGICO
-// (o valor e atribuido a partir dessa mesma funcao no load de install.mjs).
-// A prova aqui e a tabela LITERAL `EXPECTED_STACKS` (oraculo independente).
-// O gating por eixo (RF-03/RF-04) entra neste arquivo nas fases seguintes
-// (EX-VAL-06), sem tocar nestes asserts.
+// CR-1: comparar `stacksFor` com as tabelas literais abaixo (escritas à mão a
+// partir da regra de composição), nunca com o próprio valor derivado.
 import { describe, it, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {
-  STACK_PROFILES,
   STACKS_FOR_EXCEPTIONS,
-  STACK_VALUES,
   AXIS_IDS,
   stacksFor,
-  profileOf,
   collectIncoming,
   axisIdsFromAxes,
   ruleAllowedForAxes,
@@ -33,41 +28,51 @@ import {
 } from '../installer-contract.mjs';
 import { buildVendor, REPO_ROOT } from '../../scripts/vendor-skills.mjs';
 
-// ORAculo INDEPENDENTE (CR-1): tabela literal, escrita a mao a partir da tabela
-// de excecoes do SPEC RF-01. Nao deriva de `stacksFor`/`axes` — por isso falha
-// quando a derivacao muda de comportamento.
-const EXPECTED_STACKS = {
-  node: [],
-  'node-esm': [],
-  'java+vue': [],
-  'java+react': ['react'],
-  rust: ['rust'],
-  nestjs: ['nestjs'],
-  'node+react': ['react'],
-  'nestjs+react': ['nestjs', 'react'],
-  'rust+react': ['rust', 'react'],
-  outra: [],
-  flutter: ['flutter', 'dart'],
-  dart: ['dart'],
-};
+const ORACULO_PARES_48 = [
+  'java+vue', 'java+react', 'java+dart', 'java+flutter', 'java+other', 'java+none',
+  'node+vue', 'node+react', 'node+dart', 'node+flutter', 'node+other', 'node+none',
+  'rust+vue', 'rust+react', 'rust+dart', 'rust+flutter', 'rust+other', 'rust+none',
+  'nestjs+vue', 'nestjs+react', 'nestjs+dart', 'nestjs+flutter', 'nestjs+other', 'nestjs+none',
+  'dart+vue', 'dart+react', 'dart+dart', 'dart+flutter', 'dart+other', 'dart+none',
+  'flutter+vue', 'flutter+react', 'flutter+dart', 'flutter+flutter', 'flutter+other', 'flutter+none',
+  'other+vue', 'other+react', 'other+dart', 'other+flutter', 'other+other', 'other+none',
+  'none+vue', 'none+react', 'none+dart', 'none+flutter', 'none+other', 'none+none',
+];
+const ORACULO_STACK_BACKEND = Object.freeze({
+  java: [], node: [], rust: ['rust'], nestjs: ['nestjs'],
+  dart: ['dart'], flutter: [], other: [], none: [],
+});
+const ORACULO_STACK_FRONTEND = Object.freeze({
+  vue: [], react: ['react'], dart: [], flutter: [], other: [], none: [],
+});
+const ORACULO_EXCECAO_STACKS = Object.freeze({ 'flutter+flutter': ['flutter', 'dart'] });
 
-describe('EX-BE-01 oraculo independente: stacks esperado por preset (RF-01/D4)', () => {
-  it('a tabela cobre EXATAMENTE os presets do registry (nem a mais, nem a menos)', () => {
-    assert.deepEqual(Object.keys(EXPECTED_STACKS).sort(), Object.keys(STACK_PROFILES).sort());
+function stacksEsperados(backend, frontend) {
+  const chave = `${backend}+${frontend}`;
+  if (Object.prototype.hasOwnProperty.call(ORACULO_EXCECAO_STACKS, chave)) {
+    return [...ORACULO_EXCECAO_STACKS[chave]];
+  }
+  return [...ORACULO_STACK_BACKEND[backend], ...ORACULO_STACK_FRONTEND[frontend]];
+}
+
+describe('EIX-04 oráculo 48/48: um teste por par (ADR §3 item 1)', () => {
+  it('o oráculo cobre exatamente 48 pares sem duplicata', () => {
+    assert.equal(ORACULO_PARES_48.length, 48);
+    assert.equal(new Set(ORACULO_PARES_48).size, 48);
   });
 
-  for (const [name, expected] of Object.entries(EXPECTED_STACKS)) {
-    it(`${name}: stacks === ${JSON.stringify(expected)} (tabela literal)`, () => {
-      assert.deepEqual(STACK_PROFILES[name].stacks, expected, `${name}: stacks esperado`);
+  for (const chave of ORACULO_PARES_48) {
+    const [backend, frontend] = chave.split('+');
+    it(`${chave}: stacks === ${JSON.stringify(stacksEsperados(backend, frontend))} (oráculo literal)`, () => {
+      assert.deepEqual(stacksFor({ backend, frontend }), stacksEsperados(backend, frontend), chave);
     });
   }
 });
 
-describe('EX-BE-01 stacksFor: regra do eixo (RF-01)', () => {
+describe('EIX-04 stacksFor: regra do eixo (RF-01)', () => {
   it('excecao mobile DECLARADA (SPEC RF-01): par flutter+flutter => [flutter, dart]', () => {
     assert.deepEqual(STACKS_FOR_EXCEPTIONS, { 'flutter+flutter': ['flutter', 'dart'] });
     assert.deepEqual(stacksFor({ backend: 'flutter', frontend: 'flutter' }), ['flutter', 'dart']);
-    assert.deepEqual(STACK_PROFILES.flutter.stacks, ['flutter', 'dart'], 'preset mobile intacto');
   });
 
   it('dart deriva [dart]; java+vue deriva [] (sem tags); react deriva [react]', () => {
@@ -81,20 +86,28 @@ describe('EX-BE-01 stacksFor: regra do eixo (RF-01)', () => {
   });
 });
 
-// AT-3: `STACK_VALUES` (prompt do W3 / BAD_ANSWER / howToFix) e lista PARALELA
-// ao registry — sem guarda, um preset novo pode existir num lado e faltar no
-// outro (RF-14).
-describe('EX-BE-01 AT-3: STACK_VALUES espelha o registry', () => {
-  it('STACK_VALUES == Object.keys(STACK_PROFILES) (sem lista duplicada divergente)', () => {
-    assert.deepEqual([...STACK_VALUES].sort(), Object.keys(STACK_PROFILES).sort());
-  });
+// Rótulos legados SÓ como fixture de gating congelada — nunca fonte de
+// commands/mcp/textos. A conversão é explícita para o par de eixos.
+const AXES_FIXTURE = Object.freeze({
+  node: { backend: 'node', frontend: 'none' },
+  'node-esm': { backend: 'node', frontend: 'none' },
+  dart: { backend: 'dart', frontend: 'none' },
+  rust: { backend: 'rust', frontend: 'none' },
+  nestjs: { backend: 'nestjs', frontend: 'none' },
+  flutter: { backend: 'flutter', frontend: 'flutter' },
+  outra: { backend: 'other', frontend: 'other' },
+  'java+vue': { backend: 'java', frontend: 'vue' },
+  'java+react': { backend: 'java', frontend: 'react' },
+  'node+react': { backend: 'node', frontend: 'react' },
+  'nestjs+react': { backend: 'nestjs', frontend: 'react' },
+  'rust+react': { backend: 'rust', frontend: 'react' },
 });
 
 // ---------------------------------------------------------------------------
 // Batch 2 (EX-BE-04 / EX-BE-05 / EX-VAL-06): gating por EIXO DECLARADO.
 // A1/A2 fechados aqui — o eixo que decide a entrada de um artefato vem de DADO
 // (stacks da origem no vendor-lock / RULES_BY_AXIS validado na carga), nunca do
-// nome do arquivo. Os asserts acima (oraculo EXPECTED_STACKS etc.) ficam
+// nome do arquivo. Os asserts acima (oráculo 48 pares) ficam
 // intactos (I9).
 // Iteracao 2 (CR-1 + achados de atencao): chave de RULES_BY_AXIS validada
 // contra AXIS_IDS (fail-closed), ids do destino derivados de `axes` (nao das
@@ -123,8 +136,8 @@ const SKILLS_PREFIX = '.agents/skills/';
 const RULES_PREFIX = '.agents/rules/';
 const FRONTEND_RULE = 'frontend-coding-standards.md';
 
-// Ids de eixo do destino pelo PRESET (fonte primaria, CR-1).
-const ES_IDS = (stack) => axisIdsFromAxes(profileOf(stack).axes);
+// Ids de eixo do destino pelo rotulo legado → par de eixos (CR-1).
+const ES_IDS = (rotulo) => axisIdsFromAxes(AXES_FIXTURE[rotulo]);
 
 // ORAculo LITERAL (nao deriva do lock): as 2 skills react declaram o eixo react.
 const REACT_SKILLS = { 'react-components': ['react'], 'react-best-practices': ['react'] };
@@ -179,7 +192,7 @@ describe('EX-BE-04/EX-VAL-06 gating de skill pelo eixo declarado na origem (RF-0
 
   it('entra em java+react: as 2 skills react + a comum', () => {
     const { src } = mkReactSkillsSource();
-    const inc = collectIncoming(src, { stacks: STACK_PROFILES['java+react'].stacks, stack: 'java+react' });
+    const inc = collectIncoming(src, { stacks: stacksFor(AXES_FIXTURE['java+react']), stack: 'java+react' });
     assert.equal(skillPaths(inc).filter((k) => REACT_SKILL_RE.test(k)).length, 2, 'as 2 skills react entram');
     assert.ok(skillPaths(inc).some((k) => k.includes('common-skill')), 'skill comum entra');
   });
@@ -187,7 +200,7 @@ describe('EX-BE-04/EX-VAL-06 gating de skill pelo eixo declarado na origem (RF-0
   for (const dest of ['java+vue', 'node', 'outra']) {
     it(`nao entra em ${dest}: nenhuma skill react (Scenario 2)`, () => {
       const { src } = mkReactSkillsSource();
-      const inc = collectIncoming(src, { stacks: STACK_PROFILES[dest].stacks, stack: dest });
+      const inc = collectIncoming(src, { stacks: stacksFor(AXES_FIXTURE[dest]), stack: dest });
       assert.deepEqual(skillPaths(inc).filter((k) => REACT_SKILL_RE.test(k)), [], `${dest} sem skill react`);
       assert.ok(skillPaths(inc).some((k) => k.includes('common-skill')), 'skill comum continua entrando');
     });
@@ -241,13 +254,13 @@ function rulesIn(inc) {
 
 describe('EX-BE-05/EX-VAL-06 gating de .agents/rules/** pelo eixo declarado (RF-04/A2)', () => {
   it('java+react NAO recebe a prosa Vue; as demais rules entram (Scenario 1)', () => {
-    const rules = rulesIn(collectIncoming(mkRulesSource(), { stacks: STACK_PROFILES['java+react'].stacks, stack: 'java+react' }));
+    const rules = rulesIn(collectIncoming(mkRulesSource(), { stacks: stacksFor(AXES_FIXTURE['java+react']), stack: 'java+react' }));
     assert.ok(!rules.includes(FRONTEND_RULE), 'frontend-coding-standards.md fora do destino react');
     assert.deepEqual(rules, realRuleNames().filter((n) => n !== FRONTEND_RULE), 'todas as outras entram');
   });
 
   it('java+vue continua recebendo a prosa Vue (direcao positiva)', () => {
-    const inc = collectIncoming(mkRulesSource(), { stacks: STACK_PROFILES['java+vue'].stacks, stack: 'java+vue' });
+    const inc = collectIncoming(mkRulesSource(), { stacks: stacksFor(AXES_FIXTURE['java+vue']), stack: 'java+vue' });
     assert.ok(rulesIn(inc).includes(FRONTEND_RULE));
   });
 
@@ -278,7 +291,7 @@ describe('EX-BE-05/EX-VAL-06 gating de .agents/rules/** pelo eixo declarado (RF-
 
   for (const dest of ['node', 'node-esm', 'outra', 'flutter', 'dart']) {
     it(`nao-regressao ${dest}: incoming de rules identico ao de hoje (Scenario 5/D-4b)`, () => {
-      const inc = collectIncoming(mkRulesSource(), { stacks: STACK_PROFILES[dest].stacks, stack: dest });
+      const inc = collectIncoming(mkRulesSource(), { stacks: stacksFor(AXES_FIXTURE[dest]), stack: dest });
       assert.deepEqual(rulesIn(inc), realRuleNames());
     });
   }
@@ -411,7 +424,7 @@ const PENDING_REFS_REACT = 7;
 
 describe('EX-VAL-06 residual: refs penduradas no destino java+react (SPEC §6)', () => {
   it(`congela em ${PENDING_REFS_REACT} os arquivos entregues que citam ${FRONTEND_RULE}`, () => {
-    const inc = collectIncoming(REPO_ROOT, { stacks: STACK_PROFILES['java+react'].stacks, stack: 'java+react' });
+    const inc = collectIncoming(REPO_ROOT, { stacks: stacksFor(AXES_FIXTURE['java+react']), stack: 'java+react' });
     const rulePath = `${RULES_PREFIX}${FRONTEND_RULE}`;
     assert.ok(!(rulePath in inc) || !inc[rulePath], 'a rule excluida nao e entregue ao destino react');
     const refs = Object.entries(inc)
