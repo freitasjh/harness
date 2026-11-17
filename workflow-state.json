@@ -230,7 +230,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T00:06:30.115Z",
+  "last_update": "2026-11-17T00:16:20.126Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -254,12 +254,12 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-005 EXECUTION batch 2/3 — pacotes plataforma + fallback com matriz + prova D7 sem toolchain",
+  "sdd_stage": "PRD-3 ADR-005 EXECUTION batch 2/3 CONCLUIDO (3/3; D7 provada sem toolchain; 3 pacotes; V20 restaurado) — code-reviewer em curso",
   "backlog": {
     "total": 7,
-    "todo": 2,
-    "doing": 3,
-    "done": 2,
+    "todo": 1,
+    "doing": 0,
+    "done": 6,
     "ids": [
       "PUB-01",
       "PUB-02",
@@ -269,10 +269,16 @@
       "VAL-02",
       "VAL-03"
     ],
-    "doing_ids": [
+    "done_ids": [
+      "PUB-01",
+      "PUB-02",
       "PUB-03",
       "PUB-04",
       "VAL-01"
+    ],
+    "todo_ids": [
+      "VAL-02",
+      "VAL-03"
     ]
   },
   "next_task": "ADR-002",
@@ -1997,17 +2003,24 @@
   "batch": {
     "id": 2,
     "agent": "developer-engineer",
-    "skills": [
-      "node-architecture-specialist",
-      "security-review"
-    ],
-    "status": "running",
+    "status": "review_running",
+    "commit": "411e440b3b6e6de4d498e434acf63a765218721f",
     "tasks": 3,
-    "base": "68e6208",
-    "watch_items": [
-      "FU-ADR005-01 matriz no fallback",
-      "FU-ADR005-02 exports ./package.json"
-    ]
+    "platforms": 3,
+    "watch_closed": [
+      "FU-ADR005-01",
+      "FU-ADR005-02"
+    ],
+    "defeitos_extra": [
+      "colisao de bin (.bin linkava bin cru, burlando shim) — corrigido com bin por tripla",
+      "docs .md elevaram CDL population, convertidos para .txt — V20 223/30373 restaurado"
+    ],
+    "d7": {
+      "no_cargo": true,
+      "no_rustc": true,
+      "envelope_v1": true
+    },
+    "relatorio_commands": 15
   },
   "next_gate": "HITL batch 1->2: posso avancar para o batch 2 (PUB-03 pacotes de plataforma, PUB-04 fallback tripla, VAL-01 prova D7)?",
   "governance_note": {
