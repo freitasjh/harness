@@ -1,0 +1,20 @@
+{
+  "name": "@harness/installer-linux-x64-gnu",
+  "version": "1.0.0",
+  "description": "Binario harness-installer autocontido para linux/x64/glibc",
+  "os": ["linux"],
+  "cpu": ["x64"],
+  "libc": ["glibc"],
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "harness-installer-linux-x64-gnu": "bin/harness-installer"
+  },
+  "files": [
+    "bin/harness-installer"
+  ],
+  "exports": {
+    "./package.json": "./package.json"
+  }
+}

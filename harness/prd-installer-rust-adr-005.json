@@ -1,0 +1,884 @@
+{
+  "version": 1,
+  "demand": "prd-installer-rust-adr-005",
+  "agent": "developer-engineer",
+  "phase": "Testing",
+  "batch": 3,
+  "tasks": [
+    "PUB-01",
+    "PUB-02",
+    "PUB-03",
+    "PUB-04",
+    "VAL-01",
+    "VAL-02",
+    "VAL-03"
+  ],
+  "branch": "adr/prd-installer-rust/05-publicacao-runtime-selo-impl",
+  "gitSha": "6dd87e796dfde9c58e026a80a19cd64cfcb3f030",
+  "gitShaBasis": "HEAD lido no inicio da medicao do batch 3 (commit de estado 6dd87e7 \"iniciar batch 3\"); o commit desta entrega e feito DEPOIS da medicao e registrado no retorno ao orquestrador. Chave de cache da contraprova, nao autorreferencia.",
+  "timingBasis": "durationMs e durationMsMeasured medidos por process.hrtime.bigint() em torno de cada spawnSync (ms inteiros, arredondados); nao estimativa, nao copiado de relatorio anterior. stdoutHash = sha256 dos bytes brutos de stdout capturados em /tmp/opencode/val-adr005/captures/.",
+  "commands": [
+    {
+      "cmd": "command -v cargo || echo 'no cargo'",
+      "exitCode": 0,
+      "durationMs": 3,
+      "stdoutHash": "sha256:f81a3224dd0d70bc0a1da79474fdb4d3a9e9e4c56de4abdc822281f993b205bd",
+      "stdoutBytes": 9,
+      "capture": "/tmp/opencode/pub-d7/captures/01-d7-cargo.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "no cargo (PATH=/tmp/opencode/pub-d7/cleanbin:/usr/bin:/bin — node/npm presentes, toolchain Rust ausente)",
+      "resolution": "item 3 da interface / ADR §2.4: PATH sem cargo; comando executado via bash -c com env limpo. 'no cargo' = ausencia confirmada."
+    },
+    {
+      "cmd": "command -v rustc || echo 'no rustc'",
+      "exitCode": 0,
+      "durationMs": 1,
+      "stdoutHash": "sha256:042881364a3c5b028ab439a91bc2e553ac8ef793fcddf7911694a39a9de8a6c6",
+      "stdoutBytes": 9,
+      "capture": "/tmp/opencode/pub-d7/captures/02-d7-rustc.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "no rustc (mesmo PATH limpo)",
+      "resolution": "item 3 da interface / ADR §2.4: mesmo PATH limpo."
+    },
+    {
+      "cmd": "node -v",
+      "exitCode": 0,
+      "durationMs": 4,
+      "stdoutHash": "sha256:fe9da612097c5b1f2808feef32b5685e7a19a607fd96c7d6abe1454f0edc7e1c",
+      "stdoutBytes": 8,
+      "capture": "/tmp/opencode/pub-d7/captures/03-d7-node.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "v26.7.0 (major >= 20)",
+      "resolution": "D7: Node >= 20 no destino (docs/INSTALACAO.md:17); medido v26.7.0."
+    },
+    {
+      "cmd": "npm install --offline --install-links --no-audit --no-fund --ignore-scripts",
+      "exitCode": 0,
+      "durationMs": 185,
+      "stdoutHash": "sha256:acf48085515f7637686a22ee4054d54ac7720b5681cd76ea34cf1c4b4b628077",
+      "stdoutBytes": 21,
+      "capture": "/tmp/opencode/pub-d7/captures/04-d7-install.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "added 2 packages (segunda execucao: \"up to date in 139ms\"); npm install --offline --install-links --no-audit --no-fund --ignore-scripts — zero script de build, zero rede, zero cargo",
+      "resolution": "instalacao do wrapper + pacote da plataforma por file: locais, --offline, --ignore-scripts: nenhuma compilacao, nenhum download, nenhuma toolchain. Os 2 alvos incompativeis foram tratados como optionalDependencies ausentes pelo npm."
+    },
+    {
+      "cmd": "printf '%s\\n' '{\"v\":1,\"op\":\"inventory\",\"args\":{},\"answers\":{},\"target\":null}' | ./node_modules/.bin/harness-installer contract-v1 | tee /tmp/opencode/pub-d7/out.json",
+      "exitCode": 0,
+      "durationMs": 28,
+      "stdoutHash": "sha256:928ae962bfb8fab66ac391cc640bf5d8dbd973be08a3367ed715bb9ae36b2a1e",
+      "stdoutBytes": 401,
+      "capture": "/tmp/opencode/pub-d7/captures/05-d7-contract.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "{\"v\":1,\"ok\":true,\"op\":\"inventory\",...} via ./node_modules/.bin/harness-installer (link para o shim do wrapper), nao para o binario cru",
+      "resolution": "Apos corrigir colisao de nomes de bin (pacotes de plataforma usam harness-installer-<alvo>), node_modules/.bin/harness-installer aponta para o shim do wrapper — o fallback da ADR §2.2 nao e bypassado. stdout e o envelope do binario, byte-a-byte."
+    },
+    {
+      "cmd": "node -e 'const e=JSON.parse(require(\"fs\").readFileSync(\"/tmp/opencode/pub-d7/out.json\",\"utf8\")); if(e.v!==1||typeof e.ok!==\"boolean\") process.exit(2); console.log(e.op,e.ok)'",
+      "exitCode": 0,
+      "durationMs": 22,
+      "stdoutHash": "sha256:2ec63e3d3634d95a33735a0f7d517c10d4f044108725c2b70ae1cb22e9053341",
+      "stdoutBytes": 15,
+      "capture": "/tmp/opencode/pub-d7/captures/06-d7-envelope.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "inventory true — e.v===1 e typeof e.ok===\"boolean\"",
+      "resolution": "criterio literal de ADR §2.4 item 6 / SPEC RF-11."
+    },
+    {
+      "cmd": "grep -cE 'cargo build|rustc ' node_modules/harness-installer/package.json || true",
+      "exitCode": 0,
+      "durationMs": 2,
+      "stdoutHash": "sha256:9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "stdoutBytes": 2,
+      "capture": "/tmp/opencode/pub-d7/captures/07-d7-grep-build.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "0 — grep -cE \"cargo build|rustc \" node_modules/harness-installer/package.json",
+      "resolution": "SPEC RF-03/ADR §2.4: 0 ocorrencias de cargo build/rustc no manifesto instalado."
+    },
+    {
+      "cmd": "find packaging -name install.mjs",
+      "exitCode": 0,
+      "durationMs": 1,
+      "stdoutHash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutBytes": 0,
+      "capture": "/tmp/opencode/pub-d7/captures/08-find-install-mjs.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "vazio (0 bytes) — find packaging -name install.mjs",
+      "resolution": "ADR §2.3 / SPEC RF-06: install.mjs nao entra no pacote."
+    },
+    {
+      "cmd": "node --input-type=module -e \"import {sealCommands} from './.opencode/plugins/lib/seal.mjs';import fs from 'node:fs';console.log(sealCommands(JSON.parse(fs.readFileSync('harness.config.json','utf8')).commands))\"",
+      "exitCode": 0,
+      "durationMs": 31,
+      "stdoutHash": "sha256:4cadeebe9f4cfdfe6e03adeb6be8db528748d607a8cae58d886da7f1543c7917",
+      "stdoutBytes": 160,
+      "capture": "/tmp/opencode/pub-d7/captures/09-seal.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "suiteFull=c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2; unit=daba8c5465bffe061738235b274c497a4e8e761e41c5e79d4c671a72231cffc7",
+      "resolution": "ADR §2.5: selo re-derivado de harness.config.json via seal.mjs; c904f1c5 e daba8c5 byte-identicos; nenhum HARNESS_SEAL_JSON novo."
+    },
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 1014,
+      "stdoutHash": "sha256:130ce778153f7c985c621193eb234052c19a3ab0696546b4112f98c64dc88311",
+      "stdoutBytes": 109341,
+      "capture": "/tmp/opencode/pub-d7/captures/10-stage1-plugins.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "tests 540 / pass 540 / fail 0 / skipped 0",
+      "resolution": "1o termo de commands.suiteFull, reexecutado (harness.config.json)."
+    },
+    {
+      "cmd": "node --test \"installer/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 5904,
+      "stdoutHash": "sha256:1c4747aa1969e71a825ea5525e7da7bedd0fb1fec126e63cafeb5d0eb2f39aa1",
+      "stdoutBytes": 87978,
+      "capture": "/tmp/opencode/pub-d7/captures/11-stage2-installer.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "tests 716 / pass 716 / fail 0 / skipped 0",
+      "resolution": "2o termo de commands.suiteFull, reexecutado."
+    },
+    {
+      "cmd": "node scripts/static-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 184,
+      "stdoutHash": "sha256:4a1e734a85037a1e26e20ea8531b7b4e64cf76d4b1fd7890b3b62529b7652ad5",
+      "stdoutBytes": 1564,
+      "capture": "/tmp/opencode/pub-d7/captures/12-stage3-static.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "13 PASS / 0 FAIL; V15 rede em installer/=0; V20 population=223/30373, prescriptions=137, incondicional=0; PASS PRD-01/ADR-01/ADR-02",
+      "resolution": "3o termo de commands.suiteFull; V15=0 (rede-zero); V20 inalterado apos documentacao entregue como .txt (population 223/30373 preservada, instrumento protegido nao tocado)."
+    },
+    {
+      "cmd": "node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 40,
+      "stdoutHash": "sha256:e5e528c52d79fceaa1be828bd89116aa6e0be73294d2e99d39c4febe99e84516",
+      "stdoutBytes": 51,
+      "capture": "/tmp/opencode/pub-d7/captures/13-stage4-vendor.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "vendor-check OK (.agents/skills/.vendor-lock.json)",
+      "resolution": "4o termo de commands.suiteFull."
+    },
+    {
+      "cmd": "cargo test --manifest-path installer-rs/Cargo.toml --offline",
+      "exitCode": 0,
+      "durationMs": 132,
+      "stdoutHash": "sha256:547d33308225fbb58823113fc16b59d37f66a7505e9f25959d78749f9f7e87e5",
+      "stdoutBytes": 6917,
+      "capture": "/tmp/opencode/pub-d7/captures/14-cargo-parallel.out",
+      "envKind": "full (cargo paralelo, fora do selo)",
+      "observed": "85 passed / 0 failed (soma dos 7 blocos test result: ok) — cargo test --manifest-path installer-rs/Cargo.toml --offline; PATH COMPLETO, paralelo, FORA do selo (D6)",
+      "resolution": "D6/custo aceito: suite Rust em comando paralelo, PATH COMPLETO, ausente de commands.suiteFull e de HARNESS_SEAL_JSON. Nao e contraprova."
+    },
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node --test \"installer/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs && node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 7014,
+      "stdoutHash": "sha256:325d6cad2025c1734a8150d0d19f8b411d0e831b07e2a53545f3807262aeae05",
+      "stdoutBytes": 198959,
+      "capture": "/tmp/opencode/pub-d7/captures/15-suitefull-sealed.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "commands.suiteFull literal: 2 blocos (tests 540/pass 540/fail 0; tests 716/pass 716/fail 0), static e vendor concluidos; exit 0",
+      "resolution": "comando selado reexecutado na integra; exit 0; contraprova verde."
+    },
+    {
+      "id": "seal_commands",
+      "cmd": "node --input-type=module -e \"import {sealCommands} from './.opencode/plugins/lib/seal.mjs';import fs from 'node:fs';console.log(sealCommands(JSON.parse(fs.readFileSync('harness.config.json','utf8')).commands))\"",
+      "exitCode": 0,
+      "durationMs": 36,
+      "durationMsMeasured": 36,
+      "stdoutHash": "sha256:4cadeebe9f4cfdfe6e03adeb6be8db528748d607a8cae58d886da7f1543c7917",
+      "stdoutBytes": 160,
+      "capture": "/tmp/opencode/val-adr005/captures/val02-seal_commands.out",
+      "basis": "process.hrtime.bigint() em torno do spawnSync; stdoutHash = sha256 dos bytes brutos capturados em /tmp/opencode/val-adr005/captures/."
+    },
+    {
+      "id": "suite_steps",
+      "cmd": "node -e 'const c=JSON.parse(require(\"fs\").readFileSync(\"harness.config.json\",\"utf8\")).commands.suiteFull; console.log(c.split(\"&&\").length)'",
+      "exitCode": 0,
+      "durationMs": 28,
+      "durationMsMeasured": 28,
+      "stdoutHash": "sha256:7de1555df0c2700329e815b93b32c571c3ea54dc967b89e81ab73b9972b72d1d",
+      "stdoutBytes": 2,
+      "capture": "/tmp/opencode/val-adr005/captures/val02-suite_steps.out",
+      "basis": "process.hrtime.bigint() em torno do spawnSync; stdoutHash = sha256 dos bytes brutos capturados em /tmp/opencode/val-adr005/captures/."
+    },
+    {
+      "id": "git_diff_config_seal",
+      "cmd": "git diff --exit-code -- harness.config.json .opencode/plugins/lib/seal.mjs",
+      "exitCode": 0,
+      "durationMs": 3,
+      "durationMsMeasured": 3,
+      "stdoutHash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutBytes": 0,
+      "capture": "/tmp/opencode/val-adr005/captures/val02-git_diff_config_seal.out",
+      "basis": "process.hrtime.bigint() em torno do spawnSync; stdoutHash = sha256 dos bytes brutos capturados em /tmp/opencode/val-adr005/captures/."
+    },
+    {
+      "id": "grep_cargo_rust_config",
+      "cmd": "grep -cE 'cargo|rust' harness.config.json",
+      "exitCode": 1,
+      "durationMs": 2,
+      "durationMsMeasured": 2,
+      "stdoutHash": "sha256:9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "stdoutBytes": 2,
+      "capture": "/tmp/opencode/val-adr005/captures/val02-grep_cargo_rust_config.out",
+      "basis": "process.hrtime.bigint() em torno do spawnSync; stdoutHash = sha256 dos bytes brutos capturados em /tmp/opencode/val-adr005/captures/."
+    },
+    {
+      "id": "merge_base_ancestor",
+      "cmd": "git merge-base --is-ancestor c63e333 HEAD",
+      "exitCode": 0,
+      "durationMs": 5,
+      "durationMsMeasured": 5,
+      "stdoutHash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutBytes": 0,
+      "capture": "/tmp/opencode/val-adr005/captures/val02-merge_base_ancestor.out",
+      "basis": "process.hrtime.bigint() em torno do spawnSync; stdoutHash = sha256 dos bytes brutos capturados em /tmp/opencode/val-adr005/captures/."
+    },
+    {
+      "id": "presets_oracle_vs_head",
+      "cmd": "node /tmp/opencode/val-adr005/presets.mjs",
+      "exitCode": 0,
+      "durationMs": 250,
+      "durationMsMeasured": 250,
+      "stdoutHash": "sha256:011a326dd480e2691b3db3a82bbd3fb297b0f6820dc3afefd649cc207ca67718",
+      "stdoutBytes": 1415,
+      "capture": "/tmp/opencode/val-adr005/captures/val02-presets_oracle_vs_head.out",
+      "basis": "process.hrtime.bigint() em torno do spawnSync; stdoutHash = sha256 dos bytes brutos capturados em /tmp/opencode/val-adr005/captures/."
+    },
+    {
+      "id": "differential_prova_engine",
+      "cmd": "node installer-rs/tests/prova-engine.mjs",
+      "exitCode": 0,
+      "durationMs": 3953,
+      "durationMsMeasured": 3953,
+      "stdoutHash": "sha256:00e5ffc6876a0cb7189b4ce3be79274a721b2416d8090094cb051b8f84c5c81e",
+      "stdoutBytes": 307,
+      "capture": "/tmp/opencode/val-adr005/captures/val02-differential_prova_engine.out",
+      "basis": "process.hrtime.bigint() em torno do spawnSync; stdoutHash = sha256 dos bytes brutos capturados em /tmp/opencode/val-adr005/captures/."
+    },
+    {
+      "id": "run_parity",
+      "cmd": "INSTALLER_BIN=installer-rs/target/debug/harness-installer node installer/parity-oracle.mjs --run-parity",
+      "exitCode": 0,
+      "durationMs": 1283,
+      "durationMsMeasured": 1283,
+      "stdoutHash": "sha256:624b8d71d5f78a98669c53a26cf842267b9dd474c97eb8c0f55015b3ba81f0c6",
+      "stdoutBytes": 1508,
+      "capture": "/tmp/opencode/val-adr005/captures/val02-run_parity.out",
+      "basis": "process.hrtime.bigint() em torno do spawnSync; stdoutHash = sha256 dos bytes brutos capturados em /tmp/opencode/val-adr005/captures/."
+    },
+    {
+      "id": "stage1_plugins",
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 670,
+      "durationMsMeasured": 670,
+      "stdoutHash": "sha256:e6a1361c8fce95ec507ad77fab30999644c63b1dbfaa2114286ab1fcfd972158",
+      "stdoutBytes": 109299,
+      "capture": "/tmp/opencode/val-adr005/captures/val03-stage1_plugins.out",
+      "basis": "process.hrtime.bigint() em torno do spawnSync; stdoutHash = sha256 dos bytes brutos capturados em /tmp/opencode/val-adr005/captures/."
+    },
+    {
+      "id": "stage2_installer",
+      "cmd": "node --test \"installer/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 5540,
+      "durationMsMeasured": 5540,
+      "stdoutHash": "sha256:814ee500030e792d183ca328e41eb737a05746caea9bd91c0e0243fda3c4517b",
+      "stdoutBytes": 87914,
+      "capture": "/tmp/opencode/val-adr005/captures/val03-stage2_installer.out",
+      "basis": "process.hrtime.bigint() em torno do spawnSync; stdoutHash = sha256 dos bytes brutos capturados em /tmp/opencode/val-adr005/captures/."
+    },
+    {
+      "id": "stage3_static",
+      "cmd": "node scripts/static-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 191,
+      "durationMsMeasured": 191,
+      "stdoutHash": "sha256:4a1e734a85037a1e26e20ea8531b7b4e64cf76d4b1fd7890b3b62529b7652ad5",
+      "stdoutBytes": 1564,
+      "capture": "/tmp/opencode/val-adr005/captures/val03-stage3_static.out",
+      "basis": "process.hrtime.bigint() em torno do spawnSync; stdoutHash = sha256 dos bytes brutos capturados em /tmp/opencode/val-adr005/captures/."
+    },
+    {
+      "id": "stage4_vendor",
+      "cmd": "node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 37,
+      "durationMsMeasured": 37,
+      "stdoutHash": "sha256:e5e528c52d79fceaa1be828bd89116aa6e0be73294d2e99d39c4febe99e84516",
+      "stdoutBytes": 51,
+      "capture": "/tmp/opencode/val-adr005/captures/val03-stage4_vendor.out",
+      "basis": "process.hrtime.bigint() em torno do spawnSync; stdoutHash = sha256 dos bytes brutos capturados em /tmp/opencode/val-adr005/captures/."
+    },
+    {
+      "id": "suitefull_concat",
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node --test \"installer/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs && node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 6417,
+      "durationMsMeasured": 6417,
+      "stdoutHash": "sha256:0932d758c439035b1640ad907232c6fe19ebe871943ba8cbd1d7137d90fc0e75",
+      "stdoutBytes": 198829,
+      "capture": "/tmp/opencode/val-adr005/captures/val03-suitefull_concat.out",
+      "basis": "process.hrtime.bigint() em torno do spawnSync; stdoutHash = sha256 dos bytes brutos capturados em /tmp/opencode/val-adr005/captures/."
+    },
+    {
+      "id": "cargo_parallel",
+      "cmd": "cargo test --manifest-path installer-rs/Cargo.toml --offline",
+      "exitCode": 0,
+      "durationMs": 126,
+      "durationMsMeasured": 126,
+      "stdoutHash": "sha256:54b7108dc28b6301f8c227bc5a0b928dbe4f71867c42e8c40a3ad238cf165948",
+      "stdoutBytes": 6917,
+      "capture": "/tmp/opencode/val-adr005/captures/val03-cargo_parallel.out",
+      "basis": "process.hrtime.bigint() em torno do spawnSync; stdoutHash = sha256 dos bytes brutos capturados em /tmp/opencode/val-adr005/captures/."
+    },
+    {
+      "id": "ledger_adrcycle",
+      "cmd": "node /tmp/opencode/val-adr005/ledger.mjs",
+      "exitCode": 0,
+      "durationMs": 24,
+      "durationMsMeasured": 24,
+      "stdoutHash": "sha256:9dee7b49fbc752bf74974ac0d9e8047d2c114539f9a4a60147e8de137f267221",
+      "stdoutBytes": 1433,
+      "capture": "/tmp/opencode/val-adr005/captures/val03-ledger_adrcycle.out",
+      "basis": "process.hrtime.bigint() em torno do spawnSync; stdoutHash = sha256 dos bytes brutos capturados em /tmp/opencode/val-adr005/captures/."
+    },
+    {
+      "id": "bridge_d1_10names",
+      "cmd": "node /tmp/opencode/val-adr005/bridge.mjs",
+      "exitCode": 0,
+      "durationMs": 26,
+      "durationMsMeasured": 26,
+      "stdoutHash": "sha256:c5b343f99f184b6935354598a297a4a96d1c44ec263d6c58f365cbcc5f7abd30",
+      "stdoutBytes": 503,
+      "capture": "/tmp/opencode/val-adr005/captures/val03-bridge_d1_10names.out",
+      "basis": "process.hrtime.bigint() em torno do spawnSync; stdoutHash = sha256 dos bytes brutos capturados em /tmp/opencode/val-adr005/captures/."
+    },
+    {
+      "id": "literal_rito",
+      "cmd": "node /tmp/opencode/val-adr005/literal.mjs",
+      "exitCode": 0,
+      "durationMs": 29,
+      "durationMsMeasured": 29,
+      "stdoutHash": "sha256:bc16f56b3a9b50dccc2e41ac12408ee5d475710f8ad5253f5686bff99af8cdd7",
+      "stdoutBytes": 656,
+      "capture": "/tmp/opencode/val-adr005/captures/val03-literal_rito.out",
+      "basis": "process.hrtime.bigint() em torno do spawnSync; stdoutHash = sha256 dos bytes brutos capturados em /tmp/opencode/val-adr005/captures/."
+    }
+  ],
+  "counts": {
+    "unit": {
+      "passed": 540,
+      "failed": 0,
+      "skipped": 0
+    },
+    "it": {
+      "passed": 716,
+      "failed": 0,
+      "skipped": 0
+    },
+    "frontend": {
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "countsNote": "Reexecucao final batch 3: plugins 540/540, installer 716/716 (baseline preservado), frontend 0 (stack N/A). cargo 85/85 em comando paralelo FORA do selo. Comandos packaging/ e differential nao entram em counts.",
+  "d7": {
+    "cleanPath": "/tmp/opencode/pub-d7/cleanbin:/usr/bin:/bin (symlinks node+npm; cargo/rustc ausentes)",
+    "commandVCargo": "no cargo",
+    "commandVRustc": "no rustc",
+    "nodeVersion": "v26.7.0",
+    "installCommand": "npm install --offline --install-links --no-audit --no-fund --ignore-scripts",
+    "installExitCode": 0,
+    "contractRequest": "{\"v\":1,\"op\":\"inventory\",\"args\":{},\"answers\":{},\"target\":null}",
+    "contractExitCode": 0,
+    "envelope": "{\"v\":1,\"ok\":true,\"op\":\"inventory\",\"result\":{\"layers\":[{\"layer\":\"opencode.json\",\"present\":false},{\"layer\":\".agents/agents\",\"present\":false},{\"layer\":\".agents/rules\",\"present\":false},{\"layer\":\".agents/schemas\",\"present\":false},{\"layer\":\".agents/skills\",\"present\":false},{\"layer\":\".opencode/plugins\",\"present\":false},{\"layer\":\"harness.config.json\",\"present\":false}],\"target\":\"/tmp/opencode/pub-d7/app\"}}",
+    "envelopeV": 1,
+    "okType": "boolean",
+    "grepBuildHits": 0,
+    "v15Network": 0,
+    "determinacaoBin": "node_modules/.bin/harness-installer -> ../harness-installer/shim.mjs (verificado por readlink -f); platform bin renomeado para harness-installer-<alvo> para evitar colisao no .bin"
+  },
+  "followUpsClosed": [
+    {
+      "id": "FU-ADR005-01",
+      "status": "closed",
+      "proof": "stderr literal do fallback contem a tripla detectada (linux/x64/glibc), o cabecalho MATRIZ DE ALVOS PUBLICADOS com linux-x64-gnu, linux-x64-musl e darwin-arm64, e ACAO CORRETIVA; exit 1, stdout 0 bytes; teste packaging/wrapper/__tests__/fallback.spec.mjs (5/5) confronta a matriz impressa com as optionalDependencies do wrapper."
+    },
+    {
+      "id": "FU-ADR005-02",
+      "status": "closed",
+      "proof": "exports[\"./package.json\"]=\"./package.json\" nos 3 package.json de plataforma; require.resolve(<pacote>/package.json) resolve nos 3 (teste FU-ADR005-02) e o ataque com exports sem ./package.json derruba com ERR_PACKAGE_PATH_NOT_EXPORTED (6/6 no arquivo de plataformas)."
+    },
+    {
+      "id": "FU-ADR005-03",
+      "status": "observacao_registrada",
+      "resolution": "parcialmente_coberto_registry_fora_de_escopo",
+      "proof": "Selecao real os/cpu/libc via optionalDependencies E exercitada no D7: npm instalou somente 1 de 3 pacotes de plataforma (/tmp/opencode/pub-d7/app/node_modules/@harness contem apenas installer-linux-x64-gnu; .bin tem so harness-installer + harness-installer-linux-x64-gnu; lock registra cpu=x64, libc=glibc, os=linux). Fixture de registry local (verdaccio) exigiria ferramenta e comando novos, nao declarados em harness.config.json, alem de endpoint HTTP local — conflita com a disciplina rede-zero do caminho de instalacao. Registrado como observacao; nao inventado comando.",
+      "scope": "registry-local fora de escopo; selecao os/cpu/libc coberta por file: + --offline no D7"
+    }
+  ],
+  "frozen": {
+    "sealSuiteFull": "c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2",
+    "sealUnit": "daba8c5465bffe061738235b274c497a4e8e761e41c5e79d4c671a72231cffc7",
+    "suiteSteps": 4,
+    "presets": 12,
+    "newPreset": false,
+    "newOp": false,
+    "newKey": false,
+    "rustInContraprova": false,
+    "differential": "fora do selo; EXECUTADO no batch 3 via VAL-02 (prova(op) 23/23 contra c63e333) — ver secao differential",
+    "note": "cargo test e differential rodam em comandos paralelos (D6), ausentes de commands.suiteFull e HARNESS_SEAL_JSON. Selo c904f1c5 nao republicado."
+  },
+  "literalRito": {
+    "sha": "9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0",
+    "source": "harness/prd-installer-rust-adr-002.json:425 (e confirmado em prd-installer-rust-adr-004.json:706)",
+    "reused": true,
+    "writtenByThisAgent": false,
+    "verdictWrittenHere": null,
+    "note": "Literal 9fa4530b reutilizado e verificado por sha256 do ARQUIVO installer/__tests__/oracle-literal.sha256 e pelo verdict do REPORT ADR-002. NENHUM \"Veredito: validated literal\" escrito por este agente. Rito permanece sob autoridade do owner.",
+    "verdictFromAdr002Report": "Veredito: validated literal 9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0 2026-11-16T17:00:53.563Z c63e333",
+    "verdictSha": "9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0",
+    "reusedInBatch3": true
+  },
+  "e2e": {
+    "applicable": false,
+    "reason": "infra.composeFile=null, infra.ports backend/frontend=null, stack backend/frontend N/A; sem servidor, DB, porta ou browser. D7 e prova de runtime de instalacao, nao H3 (wipe+12 passos)."
+  },
+  "evaluation": {
+    "telas": "N/A — distribuicao/pacote npm, sem UI; equivalente observavel: 4 etapas 0 falhas + V20 population=223/30373 preservada.",
+    "negocio": "7/7 tasks DONE; 3 follow-ups (FU-01/02 fechados, FU-03 observacao); 12 presets/23+8 ops/contrato/selo inalterados; nenhuma chave/preset/op/codigo novo.",
+    "logica": "Selo re-derivado nao republicado; Rust/differential fora da contraprova; differential 23/23 real com mutante 0/23; oraculo c63e333 worktree detach com SHA+porcelain antes de cada prova; ponte D1 10 nomes intacta.",
+    "perf": "suiteFull 6417 ms (plugins 670, installer 5540, static 191, vendor 37); cargo 126 ms paralelo; differential 3953 ms; parity 1283 ms. Sem regressao atribuivel ao batch."
+  },
+  "brainStore": [
+    "sessoes/projetos/harness/2026-11-16-dev-prd-installer-rust-adr-005-batch2",
+    "sessoes/projetos/harness/2026-11-17-dev-prd-installer-rust-adr-005-batch3",
+    "regras/projetos/harness/adr-005-selo-invariante-e-differential"
+  ],
+  "cleanup": {
+    "ports": [],
+    "processes": [],
+    "note": "Nada subido: infra null, stack N/A; zero lsof/kill, zero pkill -f, zero push, zero gh, zero npm publish. Worktrees do oraculo materializados e liberados (git worktree list limpo). RELATORIO-003 gerado pelo driver differential foi restaurado via git checkout -- (fora do escopo). Scratch em /tmp/opencode/val-adr005 e /tmp/opencode/pub-d7. Nenhum servidor residual. Porta 5173 ocupada por processo EXTERNO (PID 2346507, vite de atlas-financeiro) — NAO iniciado por este batch, NAO encerrado (H5.1/H5.1.1: nunca mata stack alheia).",
+    "repoWrites": [
+      "harness/prd-installer-rust-adr-005.json",
+      ".spec/backend/prd-installer-rust-adr-005/VERIFY.md",
+      ".spec/backend/prd-installer-rust-adr-005/JIRA_BOARD.md"
+    ],
+    "untouched": [
+      "gate.js",
+      "harness.config.json",
+      ".opencode/plugins/lib/seal.mjs",
+      "opencode.json",
+      "workflow-state.json",
+      "ADRs/**",
+      "SPEC.md",
+      "PLAN.md",
+      "TASKS.md",
+      ".agents/rules/**"
+    ]
+  },
+  "selfReported": false,
+  "selfReportedNote": "Exit codes, hashes, bytes e duracoes observados diretamente nesta medicao (capturas em /tmp/opencode/val-adr005/captures/). A contraprova do gate reexecuta commands.suiteFull; counts/README declarados aqui auto-declarados por natureza (SPEC ADR-002).",
+  "limitsDeclared": [
+    "REPORT e evidencia auto-declarada, nao prova; prova = contraprova do gate reexecutando o comando selado lido de harness.config.json (SPEC ADR-002).",
+    "Cargo/cobertura Rust rodou em comando paralelo com PATH COMPLETO, EXPLICITAMENTE fora de commands.suiteFull e HARNESS_SEAL_JSON (D6). Nao e contraprova e nao entra no selo.",
+    "VAL-02/VAL-03 NAO executados neste batch; oraculo/differential c63e333 nao revalidado aqui. Rito 9fa4530b reutilizado, nao re-assinado.",
+    "Instalacao D7 usou file: locais + --offline + --ignore-scripts para simular registry sem rede; o binario copiado veio de build pre-existente (installer-rs/target/debug), sem compilacao no PATH limpo.",
+    "Documentacao entregue como .txt (nao .md) para nao alterar population CDL 223/30373: instrumento em .opencode/plugins/** e protegido, nao foi tocado. Nenhum teste foi re-pinado para acomodar este batch.",
+    "Nenhuma escrita em gate.js, harness.config.json, seal.mjs, opencode.json, workflow-state.json, ADR/specs/rules; nenhum push, gh, npm publish ou pkill -f.",
+    "RELATORIO e evidencia auto-declarada, nao prova; prova = contraprova do gate reexecutando o comando selado lido de harness.config.json (SPEC ADR-002).",
+    "Differential prova(op) contra c63e333 rodou FORA do selo (D6); 23/23 e medicao real, 12/12 nunca fato (claimed12of12=false).",
+    "Rito ADR-002 9fa4530b reutilizado do REPORT ADR-002; nenhuma auto-assinatura neste batch.",
+    "RELATORIO-003 escrito pelo driver differential foi restaurado; evidencia copiada para /tmp/opencode/val-adr005/differential-generated-report.json.",
+    "FU-ADR005-03: registry local fora de escopo; selecao os/cpu/libc exercitada via file: + --offline no D7.",
+    "Nenhum push, gh, npm publish ou pkill -f; nenhuma escrita em gate/config/selo/opencode/state/ADR/specs/rules."
+  ],
+  "notes": "Batch 3 (VAL-02 + VAL-03) fecha ADR-005/PRD-3: selo c904f1c5 byte-idêntico (4 etapas), 12 presets inalterados contra c63e333, differential prova(op) 23/23 real + mutante 0/23, --run-parity SI-1..6 medido, VERIFY 3/3 + segurança Fase 4 (3 PASS + 11 N/A), rito reutilizado sem auto-assinatura, ponte D1 10 nomes intacta. 4 etapas 540/716/13PASS/vendor + cargo 85/85. Sem push.",
+  "sealProof": {
+    "suiteFull": "c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2",
+    "unit": "daba8c5465bffe061738235b274c497a4e8e761e41c5e79d4c671a72231cffc7",
+    "suiteSteps": 4,
+    "gitDiffConfigSeal": {
+      "exitCode": 0,
+      "stdoutBytes": 0
+    },
+    "grepCargoRustConfig": 0,
+    "republished": false,
+    "rustInSuiteFull": false,
+    "note": "ADR §2.5: selo re-derivado, nao republicado; HARNESS_SEAL_JSON inalterado; nenhuma etapa Rust em commands.suiteFull."
+  },
+  "differential": {
+    "oracle": "c63e33307710e1c6271f5c68b2dd9fb15283f49c",
+    "driver": "node installer-rs/tests/prova-engine.mjs",
+    "mergeBaseAncestorExit": 0,
+    "worktree": "detach, SHA cheio + status --porcelain antes de CADA prova (checkOracle)",
+    "proved": 23,
+    "failed": 0,
+    "mutations": 23,
+    "mutantGuard": {
+      "proved": 0,
+      "failed": 23,
+      "mode": "all"
+    },
+    "zeroWrites": true,
+    "guards": true,
+    "literalProven": true,
+    "differentialTable": [
+      {
+        "op": "preflight",
+        "sideShaOracle": "5d8e7460c0f58d4d733a0b41804bb074dd254d62916ddc87d182a680542150a8",
+        "sideShaBin": "5d8e7460c0f58d4d733a0b41804bb074dd254d62916ddc87d182a680542150a8",
+        "equal": true
+      },
+      {
+        "op": "inventory",
+        "sideShaOracle": "54178b21e2b86e49313fa91080033980544565c55af33ab60490493666bcfb95",
+        "sideShaBin": "54178b21e2b86e49313fa91080033980544565c55af33ab60490493666bcfb95",
+        "equal": true
+      },
+      {
+        "op": "backup",
+        "sideShaOracle": "90b9a12bab85257c8e9b73661c30357caf1039083234da533627fd1abea0ca92",
+        "sideShaBin": "90b9a12bab85257c8e9b73661c30357caf1039083234da533627fd1abea0ca92",
+        "equal": true
+      },
+      {
+        "op": "resolveBackupDir",
+        "sideShaOracle": "6bf730528a69d6f3e463667bed5f018f1ec445d17f762f526ca6e8935dc49939",
+        "sideShaBin": "6bf730528a69d6f3e463667bed5f018f1ec445d17f762f526ca6e8935dc49939",
+        "equal": true
+      },
+      {
+        "op": "loadAnswersFile",
+        "sideShaOracle": "17958d7c104945b72bf0b9792223f24b41aff15313ba55dfe4e544b9d4e9951e",
+        "sideShaBin": "17958d7c104945b72bf0b9792223f24b41aff15313ba55dfe4e544b9d4e9951e",
+        "equal": true
+      },
+      {
+        "op": "collectAnswers",
+        "sideShaOracle": "18eb376ee7f675e58f5861504feba7a39ee7e83a924fbd070315a1b0ea81965d",
+        "sideShaBin": "18eb376ee7f675e58f5861504feba7a39ee7e83a924fbd070315a1b0ea81965d",
+        "equal": true
+      },
+      {
+        "op": "generateConfig",
+        "sideShaOracle": "540033f43ffa82e35f5f3abb4fdb45575d3b56f76ab9599649be7c62b373c69c",
+        "sideShaBin": "540033f43ffa82e35f5f3abb4fdb45575d3b56f76ab9599649be7c62b373c69c",
+        "equal": true
+      },
+      {
+        "op": "collectIncoming",
+        "sideShaOracle": "68faa5af88405f5949665c739ad9c4e675eb0cbb072f8bedad829aa08426ab2e",
+        "sideShaBin": "68faa5af88405f5949665c739ad9c4e675eb0cbb072f8bedad829aa08426ab2e",
+        "equal": true
+      },
+      {
+        "op": "planMerge",
+        "sideShaOracle": "8ff96f2c7c22485195cc112757cfe9b2722dc0980e2fd178c64686a67fbeb1d0",
+        "sideShaBin": "8ff96f2c7c22485195cc112757cfe9b2722dc0980e2fd178c64686a67fbeb1d0",
+        "equal": true
+      },
+      {
+        "op": "applyMerge",
+        "sideShaOracle": "1cf0a97eef3821328f11088cc884818cd539310c3f156f4ee249ebfcac1285c8",
+        "sideShaBin": "1cf0a97eef3821328f11088cc884818cd539310c3f156f4ee249ebfcac1285c8",
+        "equal": true
+      },
+      {
+        "op": "buildManifest",
+        "sideShaOracle": "c7f6fd1ae538abf66cbab5e1de760d9078b29b1929b11bc13174328be0a60254",
+        "sideShaBin": "c7f6fd1ae538abf66cbab5e1de760d9078b29b1929b11bc13174328be0a60254",
+        "equal": true
+      },
+      {
+        "op": "writeManifest",
+        "sideShaOracle": "1ff9c3c88ffce83e922918f176ca72cf2fc783ffa8fd4b60b710eb713f0659ec",
+        "sideShaBin": "1ff9c3c88ffce83e922918f176ca72cf2fc783ffa8fd4b60b710eb713f0659ec",
+        "equal": true
+      },
+      {
+        "op": "requireVerifiedBackup",
+        "sideShaOracle": "3ca2b6fcab30784e864ec018bc28b1c022e29dd5ff5f948497235896844378dd",
+        "sideShaBin": "3ca2b6fcab30784e864ec018bc28b1c022e29dd5ff5f948497235896844378dd",
+        "equal": true
+      },
+      {
+        "op": "runChecks",
+        "sideShaOracle": "56095e3ddc182d19a23877ed0620246a0f6e653d0b311ec636dba83f777f025c",
+        "sideShaBin": "56095e3ddc182d19a23877ed0620246a0f6e653d0b311ec636dba83f777f025c",
+        "equal": true
+      },
+      {
+        "op": "mergeOpencodeJson",
+        "sideShaOracle": "c7f8c0a8a998150d9dc276abc43ec3d021df969d6866cae736e9fa132626cd80",
+        "sideShaBin": "c7f8c0a8a998150d9dc276abc43ec3d021df969d6866cae736e9fa132626cd80",
+        "equal": true
+      },
+      {
+        "op": "mergeAgentFile",
+        "sideShaOracle": "684201ff638ba09b22a69582a8273542e8d163c40a4e88a082baf6b9defad15d",
+        "sideShaBin": "684201ff638ba09b22a69582a8273542e8d163c40a4e88a082baf6b9defad15d",
+        "equal": true
+      },
+      {
+        "op": "main",
+        "sideShaOracle": "367bc8be77938f88affe8666311f44bc7358c314479c90ebca769b18174707b1",
+        "sideShaBin": "367bc8be77938f88affe8666311f44bc7358c314479c90ebca769b18174707b1",
+        "equal": true
+      },
+      {
+        "op": "runDoctor",
+        "sideShaOracle": "e69fdf72dca7b8ecd76b34148a4f39fac3f47c3cba46d25803b42c0f4834e6a5",
+        "sideShaBin": "e69fdf72dca7b8ecd76b34148a4f39fac3f47c3cba46d25803b42c0f4834e6a5",
+        "equal": true
+      },
+      {
+        "op": "runInit",
+        "sideShaOracle": "367bc8be77938f88affe8666311f44bc7358c314479c90ebca769b18174707b1",
+        "sideShaBin": "367bc8be77938f88affe8666311f44bc7358c314479c90ebca769b18174707b1",
+        "equal": true
+      },
+      {
+        "op": "runUpgrade",
+        "sideShaOracle": "0f15dc23249e5ae41849d7f070b24f8aea5d052fe3d20972b004e8b9e07349ba",
+        "sideShaBin": "0f15dc23249e5ae41849d7f070b24f8aea5d052fe3d20972b004e8b9e07349ba",
+        "equal": true
+      },
+      {
+        "op": "runCli",
+        "sideShaOracle": "842a147667a236b842dc3ca75cdc9cc622a62faa8782e751399899bb325e12d6",
+        "sideShaBin": "842a147667a236b842dc3ca75cdc9cc622a62faa8782e751399899bb325e12d6",
+        "equal": true
+      },
+      {
+        "op": "parseArgs",
+        "sideShaOracle": "bffeb60cb68b3513bb5d7abd8b9e12c94d0beaa15466e20b533aa02da1c8ca50",
+        "sideShaBin": "bffeb60cb68b3513bb5d7abd8b9e12c94d0beaa15466e20b533aa02da1c8ca50",
+        "equal": true
+      },
+      {
+        "op": "runWizard",
+        "sideShaOracle": "973d5d076a7371ac8f35f99056e360edffe28003f20d887628ffb596a42668d2",
+        "sideShaBin": "973d5d076a7371ac8f35f99056e360edffe28003f20d887628ffb596a42668d2",
+        "equal": true
+      }
+    ],
+    "measurement": {
+      "byteEqual": 9,
+      "partial": 2,
+      "claimed12of12": false,
+      "source": "PRD §3.5 / golden.spec.mjs:48"
+    },
+    "note": "Garantia de nao-regressao do binario = differential prova(op) real contra c63e333 (result/ok/exit-code + mutacao 1 byte por op + mutante exit-preserving 0/23 provado). NAO e o selo. 9 byte-equal + 2 partial e medicao; 12/12 e meta, nunca fato medido (claimed12of12=false). RELATORIO-003 gerado pelo driver foi COPIADO para /tmp/opencode/val-adr005/differential-generated-report.json e RESTAURADO via git checkout -- (fora do escopo deste batch)."
+  },
+  "presets": {
+    "oracle": {
+      "stackValuesCount": 12,
+      "stackValues": [
+        "node",
+        "java+vue",
+        "java+react",
+        "outra",
+        "node-esm",
+        "flutter",
+        "dart",
+        "rust",
+        "nestjs",
+        "node+react",
+        "nestjs+react",
+        "rust+react"
+      ],
+      "profileKeysCount": 12,
+      "profileKeys": [
+        "dart",
+        "flutter",
+        "java+react",
+        "java+vue",
+        "nestjs",
+        "nestjs+react",
+        "node",
+        "node+react",
+        "node-esm",
+        "outra",
+        "rust",
+        "rust+react"
+      ],
+      "namesHash": "sha256:e1a24dee10c3cf0fc4b81532311ccbd8e7cb96aa8f7c66c93a16c6dfb50b0cdd"
+    },
+    "head": {
+      "stackValuesCount": 12,
+      "stackValues": [
+        "node",
+        "java+vue",
+        "java+react",
+        "outra",
+        "node-esm",
+        "flutter",
+        "dart",
+        "rust",
+        "nestjs",
+        "node+react",
+        "nestjs+react",
+        "rust+react"
+      ],
+      "profileKeysCount": 12,
+      "profileKeys": [
+        "dart",
+        "flutter",
+        "java+react",
+        "java+vue",
+        "nestjs",
+        "nestjs+react",
+        "node",
+        "node+react",
+        "node-esm",
+        "outra",
+        "rust",
+        "rust+react"
+      ],
+      "namesHash": "sha256:e1a24dee10c3cf0fc4b81532311ccbd8e7cb96aa8f7c66c93a16c6dfb50b0cdd"
+    },
+    "oracleHead": "c63e33307710e1c6271f5c68b2dd9fb15283f49c",
+    "oraclePorcelainBefore": "",
+    "equal": true,
+    "count": 12,
+    "namesHash": "sha256:e1a24dee10c3cf0fc4b81532311ccbd8e7cb96aa8f7c66c93a16c6dfb50b0cdd",
+    "pass": true,
+    "note": "STACK_VALUES + STACK_PROFILES lidos do oraculo c63e333 em worktree detach e do HEAD; 12/12 identicos, namesHash igual. Nenhum preset novo."
+  },
+  "parity": {
+    "literalProven": true,
+    "si": [
+      {
+        "id": "SI-1",
+        "status": "medido",
+        "pass": true,
+        "reason": null,
+        "evidence": null
+      },
+      {
+        "id": "SI-2",
+        "status": "medido",
+        "pass": true,
+        "reason": null,
+        "evidence": "sha256 payload paths+bodies: oráculo=5af661875656924dce3c6d980b139e8b16d51baad6906a41f70d043c94269779 bin=5af661875656924dce3c6d980b139e8b16d51baad6906a41f70d043c94269779 (collectIncoming, 2 arquivos)"
+      },
+      {
+        "id": "SI-3",
+        "status": "medido",
+        "pass": true,
+        "reason": null,
+        "evidence": "hash de conteúdo SI3_HASH_COMMAND antes=e0a5c396160910b0e43e8c7cfd400ebdce64c15b06cbadef00b65d8db6079922 depois=e0a5c396160910b0e43e8c7cfd400ebdce64c15b06cbadef00b65d8db6079922; worktree porcelain=\"\""
+      },
+      {
+        "id": "SI-4",
+        "status": "medido",
+        "pass": true,
+        "reason": null,
+        "evidence": null,
+        "missing": []
+      },
+      {
+        "id": "SI-5",
+        "status": "medido",
+        "pass": true,
+        "reason": null,
+        "evidence": null
+      },
+      {
+        "id": "SI-6",
+        "status": "medido",
+        "pass": true,
+        "reason": null,
+        "evidence": "git diff --name-only c63e333 HEAD -- <protegidos> ⇒ 2 arquivo(s); declarados ADR-001=2; não-declarados=0"
+      }
+    ],
+    "note": "INSTALLER_BIN=... node installer/parity-oracle.mjs --run-parity; SI-1..SI-6 medido/pass; literal 9fa4530b reutilizado do REPORT ADR-002."
+  },
+  "verify": {
+    "completeness": {
+      "pass": true,
+      "tasks": "VAL-02, VAL-03 entregues; 7/7 tasks do ADR-005 DONE; JIRA_BOARD atualizado",
+      "todoStub": 0
+    },
+    "correctness": {
+      "pass": true,
+      "stages": "540/540 · 716/716 · 13 PASS/0 FAIL · vendor OK · suiteFull exit 0",
+      "cargo": "85/85 paralelo fora do selo",
+      "seal": "c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2",
+      "differential": "23/23 + mutante 0/23"
+    },
+    "coherence": {
+      "pass": true,
+      "invariants": "I1..I5 preservados; ponte D1 = 10 nomes intactos (FU-D1-ENGINE10); nenhum preset/op/chave/contrato/tela novo"
+    },
+    "securityFase4": {
+      "pass": true,
+      "applicablePass": [
+        "A03 injection: contrato contract-v1 valida stdin; nenhuma concatenacao em query (sem SQL)",
+        "A08 integrity: lockfiles Cargo.lock + .vendor-lock.json congelados; differential 23/23 contra oraculo",
+        "A05/A06 misconfig/deps: V15 rede em installer/=0; nenhuma dependencia nova; nenhum script build/postinstall"
+      ],
+      "na": [
+        "A01 broken access control — N/A: CLI local, sem endpoint HTTP/auth",
+        "A02 cryptographic failures — N/A: sem JWT/senha/TLS no caminho de instalacao",
+        "A04 insecure design / rate limiting — N/A: sem servidor, sem entrada remota",
+        "A07 auth failures — N/A: sem sessao/token",
+        "A09 logging — N/A: segredo sem eco (ADR-001), nenhum log central em CLI",
+        "A10 SSRF — N/A: nenhuma URL buscada; rede-zero (V15=0)",
+        "security headers CSP/X-Content-Type — N/A: sem resposta HTTP",
+        "v-html nao sanitizado — N/A: sem frontend/tela HTML",
+        "HTTPS/TLS 1.2+ — N/A: sem transporte de rede",
+        "Actuator/Swagger — N/A: sem framework web",
+        "mobile Keychain/Keystore — N/A: sem mobile"
+      ],
+      "naCount": 11,
+      "applicableCount": 3,
+      "critical": 0,
+      "attention": 0,
+      "verdict": "pass",
+      "note": "14 itens = 3 aplicaveis PASS + 11 N/A motivados (stack backend/frontend N/A, CLI local, rede-zero). Zero segredos; Cargo.lock congelado."
+    }
+  },
+  "ledger": {
+    "seq": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "statuses": {
+      "merged": 4,
+      "in-progress": 1
+    },
+    "pass": true,
+    "note": "PASS PRD-01/ADR-01/ADR-02 em stage3; sequencia 1-2-3-4-5; 1 in-progress (ADR-005); 5 ADR.md no disco."
+  },
+  "bridgeD1": {
+    "names": [
+      "collectAnswers",
+      "generateConfig",
+      "main",
+      "planMerge",
+      "runChecks",
+      "runCli",
+      "runDoctor",
+      "runInit",
+      "runUpgrade",
+      "runWizard"
+    ],
+    "count": 10,
+    "fu": "FU-D1-ENGINE10",
+    "ownerDecisionPending": true,
+    "pass": true,
+    "note": "Ponte de 10 nomes D-ENGINE intacta; decisao owner sobre byte-paridade pendente (FU-D1-ENGINE10). Nao alterada neste batch."
+  }
+}

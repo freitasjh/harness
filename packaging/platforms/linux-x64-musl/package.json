@@ -1,0 +1,20 @@
+{
+  "name": "@harness/installer-linux-x64-musl",
+  "version": "1.0.0",
+  "description": "Binario harness-installer autocontido para linux/x64/musl",
+  "os": ["linux"],
+  "cpu": ["x64"],
+  "libc": ["musl"],
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "harness-installer-linux-x64-musl": "bin/harness-installer"
+  },
+  "files": [
+    "bin/harness-installer"
+  ],
+  "exports": {
+    "./package.json": "./package.json"
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "current_feature": "prd-installer-rust-adr-004",
+  "current_feature": "prd-installer-rust-adr-005",
   "current_phase": "Completed",
   "previous_phase": "Execution",
   "next_phase": "Planning",
@@ -11,7 +11,7 @@
     "bug_report": "harness/harness-eixos-stack-p2.json",
     "source_tech_debt": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
     "previous_archive": ".spec/archive/20261018-harness-eixos-stack/",
-    "verify": ".spec/frontend/prd-installer-rust-adr-004/VERIFY.md",
+    "verify": ".spec/backend/prd-installer-rust-adr-005/VERIFY.md",
     "harness_evidence": ".spec/archive/20261018-harness-eixos-stack/harness/",
     "harness_report": "harness/prd-installer-rust-adr-003.json",
     "tech_debt_p2": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
@@ -22,20 +22,20 @@
       "harness_report": "harness/harness-inventory.json"
     },
     "c1_previous_bug": ".spec/bugs/harness-eixos-stack-p2/TASKS.md",
-    "proposal": ".spec/frontend/prd-installer-rust-adr-004/PROPOSAL.md",
-    "spec": ".spec/frontend/prd-installer-rust-adr-004/SPEC.md",
-    "plan": ".spec/frontend/prd-installer-rust-adr-004/PLAN.md",
-    "tasks": ".spec/frontend/prd-installer-rust-adr-004/TASKS.md",
+    "proposal": ".spec/backend/prd-installer-rust-adr-005/PROPOSAL.md",
+    "spec": ".spec/backend/prd-installer-rust-adr-005/SPEC.md",
+    "plan": ".spec/backend/prd-installer-rust-adr-005/PLAN.md",
+    "tasks": ".spec/backend/prd-installer-rust-adr-005/TASKS.md",
     "superseded_cycle": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/ (superseded: SPEC prescrevia `Plugin.define`, ausente no binario v2.0.32)",
     "archive": ".spec/archive/20261028-harness-design-system-agent/",
     "prd": ".spec/prd/prd-installer-rust/PRD.md",
     "research": null,
     "adr_index": ".spec/prd/prd-installer-rust/ADR-INDEX.md",
-    "adr": ".spec/prd/prd-installer-rust/ADRs/ADR-004-tui-dez-telas/ADR.md",
+    "adr": ".spec/prd/prd-installer-rust/ADRs/ADR-005-publicacao-runtime-selo/ADR.md",
     "prd_lines": ".spec/prd/prd-harness-inventory/PRD.md (162 linhas, 16 secoes, PRD-01 PASS)",
-    "security": ".spec/frontend/prd-installer-rust-adr-004/SECURITY.md",
-    "spec_gate": ".spec/frontend/prd-installer-rust-adr-004/GATE-SPEC.md",
-    "jira_board": ".spec/frontend/prd-installer-rust-adr-004/JIRA_BOARD.md",
+    "security": ".spec/backend/prd-installer-rust-adr-005/SECURITY.md",
+    "spec_gate": ".spec/backend/prd-installer-rust-adr-005/SPEC_GATE.md",
+    "jira_board": ".spec/backend/prd-installer-rust-adr-005/JIRA_BOARD.md",
     "ux": ".spec/frontend/prd-installer-rust-adr-004/UX.md"
   },
   "scope": {
@@ -57,14 +57,14 @@
     "rigor": "E1/E2 bloqueiam"
   },
   "gates": {
-    "P0_P1": "approved_user_2026_11_16 (Refactor; ADR-004 como entrada da SPEC; ux-designer obrigatorio na analise)",
+    "P0_P1": "approved_user_2026_11_16 (Refactor de distribuicao; ux-designer N/A — publicacao sem tela)",
     "G2_PRD": "approved_user_2026_10_22 (PRD prd-garantias-runtime aprovado sem ressalvas; §16 do PRD.md; 3 decisoes do owner)",
-    "P1_P2": "approved_user_2026_11_16 (SPEC 100%; architect APPROVED apos 3 rodadas; UX vinculante; guarda com dente)",
-    "P2_P3": "approved_user_2026_11_16 (PLAN 62 linhas, TASKS 9 microtasks, 18 RF mapeados; SDD verdes)",
-    "P3_P4": "approved_auto_evidence_2026_11_16 (3 batches; review APPROVED apos 1 iteracao; R9 restaurado)",
-    "P4_P5": "approved_auto_evidence_QA_2026_11_16 (540+716 + cargo 85 + 8/8 provas + mutante 8/8; canais medidos; PTY cleanup com sinal)",
-    "P5_P6": "approved_auto_2026_11_16 (VERIFY 3/3 com evidencia re-executada; rito reutilizado sem auto-assinatura)",
-    "P6_fim": "pending_human_push_merge (branch 04-tui-dez-telas-impl @ c71ea32)",
+    "P1_P2": "approved_auto_architect_2026_11_16 (16/16 RF, score 100%, selo c904f1c5 intacto; F1/F2/F3 🟡 corrigidos) — AGUARDANDO CONFIRMACAO DO OWNER",
+    "P2_P3": "approved_user_2026_11_16 (PLAN 53 linhas, TASKS 7 microtasks, 16 RF mapeados; SDD verdes)",
+    "P3_P4": "approved_auto_evidence_2026_11_17 (3 batches; review APPROVED 0/0)",
+    "P4_P5": "approved_auto_evidence_QA_2026_11_17 (540+716+cargo85+differential23+mutante23)",
+    "P5_P6": "approved_auto_2026_11_17 (VERIFY 3/3; rito reutilizado sem auto-assinatura)",
+    "P6_fim": "pending_human_push_merge (branch 05-publicacao-runtime-selo-impl @ 2356aea)",
     "B1_B2": "approved_user_2026_09_29",
     "FU32": "closed_approved_decision_B",
     "_previous_cycle_opencode_v2_only": {
@@ -79,17 +79,17 @@
       "B1_B2": "approved_user_2026_09_29",
       "FU32": "closed_approved_decision_B"
     },
-    "G2_ADR": "approved_user_2026_11_16 (ADR-004 TUI 10 telas — branch de autoria)",
+    "G2_ADR": "approved_user_2026_11_16 (ADR-005 — branch de autoria)",
     "G1_PRD": "approved_user_2026_11_16 (PRD-3 prd-installer-rust; D1-D8 fechadas)",
-    "P4_5": "approved_auto_2026_11_16 (security-review 14 itens: 3 PASS + 11 N/A motivados; zero segredos; Cargo.lock)"
+    "P4_5": "approved_auto_2026_11_17 (security 14 itens: 3 PASS + 11 N/A motivados)"
   },
   "code_review": {
-    "last_invoked_at": "2026-11-16T23:26:57.484Z",
+    "last_invoked_at": "2026-11-17T00:31:19.154Z",
     "last_status": "passed",
     "critical_issues": 0,
     "attention_issues": 0,
-    "suggestions": 2,
-    "reviewer_notes": "ADR-004 re-review APPROVED apos loop 1/3: R9 byte-idêntico nos 2 motores, mutação reprova, 3/8 byte-iguais medido independentemente, 0 vereditos congelados tocados. Apto push/merge."
+    "note": "ADR-005 batch 3 review final APPROVED 0/0; selo c904f1c5 re-derivado, differential 23/23 com mutante 23 reprovado, presets idênticos, rito sem auto-assinatura. PRD-3 5/5 fechado.",
+    "ciclo": "prd-installer-rust-adr-005"
   },
   "overrides": [
     {
@@ -125,10 +125,12 @@
       "ciclo": "prd-installer-rust / ADR-004",
       "regra": "reexport de 8 D-TUI em installer/installer-contract.mjs",
       "motivo": "dispatcher Rust tem apenas 23 OP_NAMES; os 8 D-TUI pertencem ao ADR-004 por decisao fechada",
-      "escopo": "18 nomes: 8 D-TUI + 10 D-ENGINE",
+      "escopo": "10 nomes D-ENGINE em installer/installer-contract.mjs:57-58 (8 D-TUI quitados no ADR-004 / PR #20)",
       "expires_when": "ADR-004 (TUI) + decisao owner sobre byte-paridade dos 10 engine",
       "aprovado_por": "owner (aceite do desvio 2026-11-16)",
-      "data": "2026-11-16T20:50:40.660Z"
+      "data": "2026-11-16T20:50:40.660Z",
+      "status": "pendente_byte_paridade",
+      "atualizado": "2026-11-16T23:31:53.888Z"
     }
   ],
   "overrides_history": [
@@ -228,7 +230,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-16T23:26:57.484Z",
+  "last_update": "2026-11-17T00:31:19.154Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -252,20 +254,18 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-004 CONCLUIDO (9/9 tasks; 8 ops TUI; ponte 18->10; VERIFY 3/3; review APPROVED). Aguardando push + merge humano",
+  "sdd_stage": "PRD-3 CONCLUIDO — 5/5 ADRs implementados e aprovados. Aguardando push + merge do ADR-005",
   "backlog": {
-    "total": 9,
+    "total": 7,
     "todo": 0,
     "doing": 0,
-    "done": 9,
+    "done": 7,
     "ids": [
-      "TUI-01",
+      "PUB-01",
+      "PUB-02",
+      "PUB-03",
+      "PUB-04",
       "VAL-01",
-      "TUI-02",
-      "TUI-03",
-      "TUI-04",
-      "TUI-05",
-      "TUI-06",
       "VAL-02",
       "VAL-03"
     ]
@@ -890,6 +890,30 @@
       "bloqueia": false,
       "target": "tech-debt",
       "registrado_em": ".spec/tech-debts/doctor-spec-mkdtemp-flake/TASKS.md (P3)"
+    },
+    {
+      "id": "FU-ADR005-01",
+      "created_at": "2026-11-17T00:05:17.782Z",
+      "texto": "PUB-04: fallback deve incluir (b) matriz de alvos publicados no stderr, alem da tripla e da acao (ADR §2.2 item 3 / RF-04)",
+      "origem": "code-reviewer batch 1 ADR-005",
+      "bloqueia": false,
+      "target": "PUB-04"
+    },
+    {
+      "id": "FU-ADR005-02",
+      "created_at": "2026-11-17T00:05:17.782Z",
+      "texto": "PUB-03: pacote de plataforma deve expor ./package.json no exports (ou omitir exports) para require.resolve do shim nao cair em fallback falso",
+      "origem": "code-reviewer batch 1 ADR-005",
+      "bloqueia": false,
+      "target": "PUB-03"
+    },
+    {
+      "id": "FU-ADR005-03",
+      "created_at": "2026-11-17T00:19:34.906Z",
+      "texto": "VAL-02/03: considerar fixture de registry local que exercite selecao real os/cpu/libc via optionalDependencies (D7 atual usou file: deps explicita)",
+      "origem": "code-reviewer batch 2 ADR-005",
+      "bloqueia": false,
+      "target": "VAL-02"
     }
   ],
   "batches": [
@@ -1112,14 +1136,14 @@
     "pos_restart3": "orcamento ESGOTADO (2/2: fix + review); proxima delegacao nega; restart #4 necessario"
   },
   "verify": {
-    "at": "2026-11-16T23:26:57.484Z",
-    "verdict": "3/3 PASS (review aprovado apos correcao do atestado)",
-    "completude": "9/9 tasks; Rito ADR-002 literal 9fa4530b reutilizado sem auto-assinatura",
-    "corretude": "540+716 testes + cargo 85 + 8/8 provas + 8/8 mutantes; warning R9 byte-idêntico; canais medidos",
-    "coerencia": "ponte 10 D-ENGINE; transcript 16336B; guarda 3/3; selo c904f1c5; seguranca 14 (3 PASS + 11 N/A)",
-    "traceability": "18/18 RF",
-    "artefato": ".spec/frontend/prd-installer-rust-adr-004/VERIFY.md",
-    "report": "harness/prd-installer-rust-adr-004.json"
+    "at": "2026-11-17T00:31:19.154Z",
+    "verdict": "3/3 PASS (PRD-3 fechado)",
+    "completude": "7/7 tasks; 5/5 ADRs implementados",
+    "corretude": "540+716 testes + cargo 85 + differential 23/23 + mutante 0/23; selo c904f1c5",
+    "coerencia": "motor único; oráculo externo é a garantia; ponte D1 = 10 nomes em dívida declarada; security 14",
+    "traceability": "16/16 RF",
+    "artefato": ".spec/backend/prd-installer-rust-adr-005/VERIFY.md",
+    "report": "harness/prd-installer-rust-adr-005.json"
   },
   "commit": "a19acab",
   "remote": "git@github.com:freitasjh/harness.git (SSH; push + CI pendentes)",
@@ -1214,7 +1238,7 @@
   "prd_adr": {
     "prd_id": "prd-installer-rust",
     "prd_status": "approved",
-    "active_adr": "ADR-004",
+    "active_adr": "ADR-005",
     "adr_order": [
       "ADR-001",
       "ADR-002",
@@ -1260,6 +1284,13 @@
       "D6": "selo c904f1c5 invariante; suite Rust paralela",
       "D7": "binario autocontido + Node>=20 no destino",
       "D8": "5 ADRs por frente"
+    },
+    "summary": {
+      "prd": "prd-installer-rust",
+      "adrs_total": 5,
+      "adrs_merged": 4,
+      "adrs_pending_merge": 1,
+      "ponte_restante": "10 D-ENGINE (FU-D1-ENGINE10, decisao owner byte-paridade pendente)"
     }
   },
   "escalations": [
@@ -1948,45 +1979,38 @@
     "nota": "arquivamento refeito a partir da main pos-PRD-2; o PR #9 ficou stale e nao deve ser mergeado"
   },
   "cycle_in_progress": {
-    "adr": "ADR-004",
-    "title": "TUI de 10 telas — modelo declarativo, 5 campos/tela, 8 ops D-TUI",
-    "branch": "adr/prd-installer-rust/04-tui-dez-telas-impl",
-    "base": "9a74ba9",
-    "exempt_from_planner": "refactor de apresentação (ADR §rota); ADR-004 como entrada da SPEC",
-    "gate": "P0_P1 aprovado pelo owner 2026-11-16; ux-designer OBRIGATORIO antes da SPEC (fonte da verdade visual)"
+    "adr": "ADR-005",
+    "title": "Publicação do binário Rust, runtime do adotante e selo",
+    "branch": "adr/prd-installer-rust/05-publicacao-runtime-selo-impl",
+    "base": "d4e9924",
+    "gate": "P0_P1 pendente — última frente do PRD-3; ux-designer N/A (sem tela; publicação/cli)"
   },
   "spec": {
-    "score": "100% (6 aplicaveis / 5 N/A com motivo)",
-    "gate": ".spec/frontend/prd-installer-rust-adr-004/GATE-SPEC.md",
-    "ux": "parecer vinculante UX.md — M1..M8, zero byte",
-    "security": "Fase 1 pass — SECURITY.md STRIDE",
-    "rf_count": 18,
-    "items": 17,
-    "at": "2026-11-16T21:47:42.582Z"
+    "score": "100%",
+    "gate": ".spec/backend/prd-installer-rust-adr-005/GATE-SPEC.md",
+    "security": "Fase 1 pass",
+    "rf_count": 16,
+    "items": 16,
+    "at": "2026-11-16T23:33:13.919Z"
   },
   "plan": {
-    "lines": 62,
-    "tasks": 9,
+    "lines": 53,
+    "tasks": 7,
     "layers": {
-      "tui": 8,
-      "val": 3
+      "pub": 4,
+      "val": 3,
+      "fe": 0
     },
-    "mapped_rf": 18,
-    "at": "2026-11-16T22:03:23.398Z"
+    "mapped_rf": 16,
+    "at": "2026-11-16T23:49:30.321Z"
   },
   "batch": {
     "id": 3,
     "status": "review_approved",
-    "iteration": 1,
-    "commits": [
-      "e49037c",
-      "c71ea32"
-    ],
-    "ops_tui": 8,
-    "ponte": "10 D-ENGINE (8 D-TUI removidos)",
-    "byte_equal": "3/8 + 5 deltas nao-funcionais + 0 funcionais"
+    "commit": "2356aea101671c9987bb72e2b92f98db048c3800",
+    "final": true
   },
-  "next_gate": "loop de correcao (developer -> reviewer) ate 3 iteracoes; nao fazer push antes de APPROVED",
+  "next_gate": "HITL batch 2->3: posso avancar para o batch 3 (VAL-02 selo/differential/oraculo + VAL-03 VERIFY)?",
   "governance_note": {
     "at": "2026-11-16T21:26:46.319Z",
     "texto": "Developer escreveu no retorno que owner havia aprovado migrar só JSON-safe — falso. Owner aprovou 23 e depois ACEITOU o desvio para 13 com razao medida. Corrigido aqui para nao deixar decisao reescrita.",
