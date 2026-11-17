@@ -107,30 +107,34 @@
       "regra": "`.mjs vivo` fora do caminho de instalação; proibido segundo motor (D1)",
       "motivo": "o binário Rust que executa os 31 ops só nasce no ADR-003; fronteira e registry foram implementadas primeiro",
       "escopo": "única ponte `export … from './install.mjs'` em installer/installer-contract.mjs:15 (23 D-ENGINE + 8 D-TUI)",
-      "expires_when": "ADR-004 (8 TUI) + SDD de byte-paridade ou decisao owner (10 engine)",
+      "expires_when": "nunca por herança; só nova decisão §16 do owner",
       "aprovado_por": "owner 2026-11-16 (quitacao parcial apos parecer architect)",
       "data": "2026-11-16",
-      "status": "parcial_quitada_13_engine",
-      "escopo_restante": "18 nomes em installer/installer-contract.mjs:58 — 8 D-TUI + 10 D-ENGINE (runCli, runDoctor, runInit, runUpgrade, runWizard, collectAnswers, generateConfig, planMerge, runChecks, main)",
+      "status": "delta_aceito_owner_2026_11_17",
+      "escopo_restante": "10 nomes D-ENGINE em installer/installer-contract.mjs:57-58 — exceção ratificada por decisão §16 (não dívida)",
       "aprovacao_data": "2026-11-16T21:26:46.319Z",
       "aprovado_originalmente": "owner aprovou 9+29+23 (8 TUI debito) em 2026-11-16",
       "entregue": "owner aceitou desvio medido em 2026-11-16: 9 D-DATA + 29 D-PURE + 13 D-ENGINE migrados; 10 D-ENGINE + 8 D-TUI em divida",
       "razao_do_desvio": "prova-engine compara com canonicalJson; specs congeladas comparam byte a byte; 8 dos 10 ops divergem so na ordem de chaves JSON.stringify e 2 (collectAnswers, runChecks) precisam de revalidacao com placeholders interpolados",
       "decisao_original": "69 nomes medidos: 9 D-DATA -> registry; 29 D-PURE -> contract-pure.mjs; 23 D-ENGINE -> spawnSync Rust; 8 D-TUI -> debito datado ADR-004",
       "razao_divida_fechada": "revalidacao do reviewer com placeholders interpolados: os 10 ops em divida tem sideCanon:true — divergencia SOMENTE na ordem de chaves JSON.stringify, sem divergencia de conteudo. Divida real = byte-paridade, nao conteudo.",
-      "implementacao": "9 dados registry + 29 puros contract-pure.mjs (golden vs c63e333) + 13 engine spawnSync Rust; 18 nomes (8 TUI + 10 engine) em divida declarada"
+      "implementacao": "9 dados registry + 29 puros contract-pure.mjs (golden vs c63e333) + 13 engine spawnSync Rust; 18 nomes (8 TUI + 10 engine) em divida declarada",
+      "decisao_16": ".spec/prd/prd-installer-rust/DECISAO-16-delta-byte-paridade.md",
+      "ratificado_em": "2026-11-17T01:04:44.482Z"
     },
     {
       "portao": "D1-two-motors-restante",
       "ciclo": "prd-installer-rust / ADR-004",
       "regra": "reexport de 8 D-TUI em installer/installer-contract.mjs",
       "motivo": "dispatcher Rust tem apenas 23 OP_NAMES; os 8 D-TUI pertencem ao ADR-004 por decisao fechada",
-      "escopo": "10 nomes D-ENGINE em installer/installer-contract.mjs:57-58 (8 D-TUI quitados no ADR-004 / PR #20)",
-      "expires_when": "ADR-004 (TUI) + decisao owner sobre byte-paridade dos 10 engine",
-      "aprovado_por": "owner (aceite do desvio 2026-11-16)",
+      "escopo": "10 nomes D-ENGINE em installer/installer-contract.mjs:57-58 — divergência somente de ordem de chaves (sideCanon:true, sideBytes:false)",
+      "expires_when": "nunca por herança; só nova decisão §16 do owner",
+      "aprovado_por": "owner (decisão §16 2026-11-17: aceitar o delta)",
       "data": "2026-11-16T20:50:40.660Z",
-      "status": "pendente_byte_paridade",
-      "atualizado": "2026-11-16T23:31:53.888Z"
+      "status": "delta_aceito_owner_2026_11_17",
+      "atualizado": "2026-11-16T23:31:53.888Z",
+      "decisao_16": ".spec/prd/prd-installer-rust/DECISAO-16-delta-byte-paridade.md",
+      "ratificado_em": "2026-11-17T01:04:44.482Z"
     }
   ],
   "overrides_history": [
@@ -230,7 +234,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T00:57:12.110Z",
+  "last_update": "2026-11-17T01:04:44.482Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -254,7 +258,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 CONCLUIDO — 5/5 ADRs merged na main (1fe22cd). Pendencias: FU-D1-ENGINE10 (decisao owner), FU-DOCTOR-FLAKY (P3)",
+  "sdd_stage": "PRD-3 CONCLUIDO (5/5 ADRs merged). Ponte D1: 10 D-ENGINE com delta ACEITO por decisão §16 do owner (2026-11-17)",
   "backlog": {
     "total": 7,
     "todo": 0,
@@ -864,7 +868,11 @@
       "texto": "Resolver 10 D-ENGINE em divida: 8 divergem so na ordem de chaves (byte-paridade no Rust) e 2 (collectAnswers, runChecks) revalidar com placeholders interpolados. Nao reescrever specs congeladas sem decisao §16.",
       "origem": "developer + owner (aceite do desvio 2026-11-16)",
       "bloqueia": false,
-      "target": "SDD byte-paridade / owner"
+      "target": "SDD byte-paridade / owner",
+      "status": "resolvido_por_decisao_owner",
+      "resolvido_em": "2026-11-17T01:04:44.482Z",
+      "resolucao": "decisão §16 2026-11-17: aceitar delta de ordem de chaves; exceção ratificada, não byte-paridade no Rust",
+      "referencia": ".spec/prd/prd-installer-rust/DECISAO-16-delta-byte-paridade.md"
     },
     {
       "id": "FU-ADR004-01",
@@ -1299,7 +1307,7 @@
       "adrs_merged": 5,
       "adrs_pending_merge": 0,
       "concluido": "2026-11-17T00:57:12.110Z",
-      "ponte_restante": "10 D-ENGINE (FU-D1-ENGINE10, decisao owner byte-paridade pendente)"
+      "ponte_restante": "10 D-ENGINE — DELTA ACEITO por decisão §16 do owner (2026-11-17), não dívida pendente"
     }
   },
   "escalations": [
@@ -2043,6 +2051,17 @@
       "pid": 2221367,
       "dono": "node-Main",
       "nota": "pre-existente, NAO iniciada pelo batch 2 do ADR-004; nao matar — regra H5.1: conferir dono pela porta antes de qualquer kill"
+    }
+  ],
+  "decisoes_16": [
+    {
+      "id": "D16-D1-ENGINE10",
+      "prd": "prd-installer-rust",
+      "data": "2026-11-17T01:04:44.482Z",
+      "decisao": "aceitar delta de ordem de chaves dos 10 D-ENGINE na ponte install.mjs:57-58",
+      "artifacto": ".spec/prd/prd-installer-rust/DECISAO-16-delta-byte-paridade.md",
+      "aprovado_por": "owner",
+      "reabre_adr": false
     }
   ]
 }
