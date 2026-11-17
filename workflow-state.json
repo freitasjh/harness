@@ -84,12 +84,12 @@
     "P4_5": "approved_auto_2026_11_16 (security-review 14 itens: 3 PASS + 11 N/A motivados; zero segredos; Cargo.lock)"
   },
   "code_review": {
-    "last_invoked_at": "2026-11-17T00:05:17.782Z",
+    "last_invoked_at": "2026-11-17T00:19:34.906Z",
     "last_status": "passed",
     "critical_issues": 0,
     "attention_issues": 0,
-    "watch_items": 2,
-    "reviewer_notes": "Batch 1 ADR-005 APPROVED 0 criticos. Shim somente localizador (spawn, zero fs/escrita/rede/segundo motor); prova(op) sha identico ao direto e mutacao reprova; glibc->gnu mapeado; 2 atencoes de lotes futuros: PUB-04 matriz no stderr do fallback, PUB-03 exports ./package.json no pacote de plataforma."
+    "suggestions": 3,
+    "reviewer_notes": "Batch 2 ADR-005 APPROVED 0/0. 15/15 stdoutHash re-hashados; D7 e fallback replicados independentemente; V20 223/30373 sem re-pin; colisao de bin corrigida. 3 obs: darwin libc glibc inofensivo; D7 usa file: deps (sugestao fixture registry em VAL-02/03); README .txt registrar dono se virar convencao."
   },
   "overrides": [
     {
@@ -230,7 +230,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T00:16:20.126Z",
+  "last_update": "2026-11-17T00:19:34.906Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -254,7 +254,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-005 EXECUTION batch 2/3 CONCLUIDO (3/3; D7 provada sem toolchain; 3 pacotes; V20 restaurado) — code-reviewer em curso",
+  "sdd_stage": "PRD-3 ADR-005 EXECUTION batch 2 REVIEW APPROVED (0/0). PARADA HITL antes do batch 3",
   "backlog": {
     "total": 7,
     "todo": 1,
@@ -917,6 +917,14 @@
       "origem": "code-reviewer batch 1 ADR-005",
       "bloqueia": false,
       "target": "PUB-03"
+    },
+    {
+      "id": "FU-ADR005-03",
+      "created_at": "2026-11-17T00:19:34.906Z",
+      "texto": "VAL-02/03: considerar fixture de registry local que exercite selecao real os/cpu/libc via optionalDependencies (D7 atual usou file: deps explicita)",
+      "origem": "code-reviewer batch 2 ADR-005",
+      "bloqueia": false,
+      "target": "VAL-02"
     }
   ],
   "batches": [
@@ -2003,7 +2011,7 @@
   "batch": {
     "id": 2,
     "agent": "developer-engineer",
-    "status": "review_running",
+    "status": "review_approved",
     "commit": "411e440b3b6e6de4d498e434acf63a765218721f",
     "tasks": 3,
     "platforms": 3,
@@ -2022,7 +2030,7 @@
     },
     "relatorio_commands": 15
   },
-  "next_gate": "HITL batch 1->2: posso avancar para o batch 2 (PUB-03 pacotes de plataforma, PUB-04 fallback tripla, VAL-01 prova D7)?",
+  "next_gate": "HITL batch 2->3: posso avancar para o batch 3 (VAL-02 selo/differential/oraculo + VAL-03 VERIFY)?",
   "governance_note": {
     "at": "2026-11-16T21:26:46.319Z",
     "texto": "Developer escreveu no retorno que owner havia aprovado migrar só JSON-safe — falso. Owner aprovou 23 e depois ACEITOU o desvio para 13 com razao medida. Corrigido aqui para nao deixar decisao reescrita.",
