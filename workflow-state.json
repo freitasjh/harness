@@ -258,7 +258,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T01:49:32.578Z",
+  "last_update": "2026-11-17T01:53:54.069Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -282,12 +282,12 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "ADR-001 EIXOS EXECUTION batch 1 — inventário 8×6=48",
+  "sdd_stage": "ADR-001 EIXOS batch 1 CONCLUIDO (EIX-01: 48 pares, 63 testes) — code-reviewer em curso",
   "backlog": {
     "total": 6,
     "todo": 5,
-    "doing": 1,
-    "done": 0,
+    "doing": 0,
+    "done": 1,
     "ids": [
       "EIX-01",
       "EIX-02",
@@ -296,7 +296,7 @@
       "VAL-01",
       "VAL-02"
     ],
-    "doing_ids": [
+    "done_ids": [
       "EIX-01"
     ]
   },
@@ -1998,13 +1998,12 @@
   },
   "batch": {
     "id": 1,
-    "agent": "developer-engineer",
-    "skills": [
-      "node-architecture-specialist"
-    ],
-    "status": "running",
-    "tasks": 1,
-    "base": "ac39879"
+    "status": "review_running",
+    "commit": "9e27c2fe794ca7efb24006fb76f63253bb9ff4a0",
+    "pares": 48,
+    "novos_testes": 63,
+    "installer": 779,
+    "mobile_exception": "flutter+flutter declarada, dart+dart nao herda"
   },
   "next_gate": "HITL batch 2->3: posso avancar para o batch 3 (VAL-02 selo/differential/oraculo + VAL-03 VERIFY)?",
   "governance_note": {
