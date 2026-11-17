@@ -28,7 +28,7 @@
     "tasks": ".spec/backend/prd-installer-rust-adr-005/TASKS.md",
     "superseded_cycle": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/ (superseded: SPEC prescrevia `Plugin.define`, ausente no binario v2.0.32)",
     "archive": ".spec/archive/20261028-harness-design-system-agent/",
-    "prd": ".spec/prd/prd-installer-rust/PRD.md",
+    "prd": ".spec/prd/prd-eixos-separados-cli/PRD.md",
     "research": null,
     "adr_index": ".spec/prd/prd-installer-rust/ADR-INDEX.md",
     "adr": ".spec/prd/prd-installer-rust/ADRs/ADR-005-publicacao-runtime-selo/ADR.md",
@@ -81,7 +81,7 @@
       "FU32": "closed_approved_decision_B"
     },
     "G2_ADR": "approved_user_2026_11_16 (ADR-005 — branch de autoria)",
-    "G1_PRD": "pending_user_approval (novo PRD: eixos separados 48 combinacoes + CLI visual Copilot/Kiro)",
+    "G1_PRD": "approved_user_2026_11_17 (PRD prd-eixos-separados-cli, 16 seções, §16 com decisões owner; protótipo CLI antes da spec)",
     "P4_5": "approved_auto_2026_11_17 (security 14 itens: 3 PASS + 11 N/A motivados)"
   },
   "code_review": {
@@ -256,7 +256,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T01:30:16.133Z",
+  "last_update": "2026-11-17T01:32:59.041Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -280,7 +280,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "NOVA FEATURE — separação de eixos (48 combinações) + CLI visual; exceção §16 registrada; aguardando P0 com PICCO",
+  "sdd_stage": "NOVO PRD — RESEARCH + ADR-INDEX em curso; dois temas (eixos 48 combinações / CLI visual); protótipo antes da spec",
   "backlog": {
     "total": 7,
     "todo": 0,
@@ -1271,71 +1271,12 @@
     "env": "HARNESS_GATES=off (host)"
   },
   "prd_adr": {
-    "prd_id": "prd-installer-rust",
+    "prd_id": "prd-eixos-separados-cli",
     "prd_status": "approved",
-    "active_adr": "— (PRD-3 concluido)",
-    "adr_order": [
-      "ADR-001",
-      "ADR-002",
-      "ADR-003",
-      "ADR-004",
-      "ADR-005"
-    ],
-    "snapshots": [
-      {
-        "adr": "ADR-001",
-        "follow_ups_count": 0,
-        "escalations_count": 0,
-        "at": "2026-11-16T00:00:00-03:00",
-        "merge": "331e44f"
-      },
-      {
-        "adr": "ADR-002",
-        "follow_ups_count": 0,
-        "escalations_count": 0,
-        "at": "2026-11-16T00:00:00-03:00",
-        "merge": "fbdca4c"
-      },
-      {
-        "adr": "ADR-003",
-        "follow_ups_count": 2,
-        "escalations_count": 1,
-        "at": "2026-11-16T20:11:40.975Z",
-        "merge": "98f5900",
-        "nota": "loop de correcao 1/3 (tautologia do differential); divergencia real buildManifest.version corrigida"
-      },
-      {
-        "adr": "ADR-004",
-        "at": "2026-11-16T21:41:33.700Z",
-        "status": "in-progress",
-        "branch": "04-tui-dez-telas-impl"
-      },
-      {
-        "adr": "ADR-005",
-        "at": "2026-11-17T00:57:12.110Z",
-        "status": "merged",
-        "merge": "1fe22cd",
-        "nota": "7/7 tasks; selo c904f1c5 intacto; differential 23/23; wrapper/pacotes/D7 provados"
-      }
-    ],
-    "decisions_closed": {
-      "D1": "subprocesso/CLI — Rust e binario, 22 consumidores adaptados",
-      "D2": "paridade total antes de trocar",
-      "D3": "TUI com 10 telas completas",
-      "D4": "Node congelado c63e333 como oraculo + baselines literais",
-      "D5": "12 presets congelados; eixo rust no PRD-4",
-      "D6": "selo c904f1c5 invariante; suite Rust paralela",
-      "D7": "binario autocontido + Node>=20 no destino",
-      "D8": "5 ADRs por frente"
-    },
-    "summary": {
-      "prd": "prd-installer-rust",
-      "adrs_total": 5,
-      "adrs_merged": 5,
-      "adrs_pending_merge": 0,
-      "concluido": "2026-11-17T00:57:12.110Z",
-      "ponte_restante": "10 D-ENGINE — DELTA ACEITO por decisão §16 do owner (2026-11-17), não dívida pendente"
-    }
+    "active_adr": "— (RESEARCH em curso)",
+    "adr_order": [],
+    "snapshots": [],
+    "decisoes_anteriores": "prd-installer-rust 5/5 merged — reaberto por §16 D16-EIXOS-CLI"
   },
   "escalations": [
     {
