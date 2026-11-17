@@ -1,17 +1,12 @@
 import { t } from './locale.js'
 import { USER_ABORT, classifyAbort } from './abort.js'
 import { AXIS_IDS } from '../install.mjs'
+import { choicesForEixo, DEFAULTS } from './eixos.js'
 
 export const TELAS = Object.freeze(['backend', 'frontend', 'name', 'token'])
 
-const DEFAULTS = Object.freeze({ backend: 'java', frontend: 'react' })
-
 function abortError() {
   return Object.assign(new Error(t('abort.userAbort')), { code: USER_ABORT })
-}
-
-function choicesFor(axis, axes) {
-  return axes[axis].map((value) => ({ name: value, value }))
 }
 
 async function ask(promptFactory, signal) {
@@ -53,7 +48,7 @@ export async function runVisualWizard({
   const backend = await ask(
     () => p.select({
       message: t('wizard.backend.message'),
-      choices: choicesFor('backend', axes),
+      choices: choicesForEixo('backend', axes),
       default: DEFAULTS.backend,
     }),
     signal,
@@ -62,7 +57,7 @@ export async function runVisualWizard({
   const frontend = await ask(
     () => p.select({
       message: t('wizard.frontend.message'),
-      choices: choicesFor('frontend', axes),
+      choices: choicesForEixo('frontend', axes),
       default: DEFAULTS.frontend,
     }),
     signal,
