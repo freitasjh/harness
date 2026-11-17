@@ -230,7 +230,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T00:19:34.906Z",
+  "last_update": "2026-11-17T00:20:57.891Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -254,12 +254,12 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-005 EXECUTION batch 2 REVIEW APPROVED (0/0). PARADA HITL antes do batch 3",
+  "sdd_stage": "PRD-3 ADR-005 EXECUTION batch 3/3 — selo intacto, differential c63e333, VERIFY (fechamento do PRD-3)",
   "backlog": {
     "total": 7,
-    "todo": 1,
-    "doing": 0,
-    "done": 6,
+    "todo": 0,
+    "doing": 2,
+    "done": 5,
     "ids": [
       "PUB-01",
       "PUB-02",
@@ -269,14 +269,7 @@
       "VAL-02",
       "VAL-03"
     ],
-    "done_ids": [
-      "PUB-01",
-      "PUB-02",
-      "PUB-03",
-      "PUB-04",
-      "VAL-01"
-    ],
-    "todo_ids": [
+    "doing_ids": [
       "VAL-02",
       "VAL-03"
     ]
@@ -2009,26 +2002,18 @@
     "at": "2026-11-16T23:49:30.321Z"
   },
   "batch": {
-    "id": 2,
+    "id": 3,
     "agent": "developer-engineer",
-    "status": "review_approved",
-    "commit": "411e440b3b6e6de4d498e434acf63a765218721f",
-    "tasks": 3,
-    "platforms": 3,
-    "watch_closed": [
-      "FU-ADR005-01",
-      "FU-ADR005-02"
+    "skills": [
+      "node-architecture-specialist",
+      "rust-architecture-specialist",
+      "security-review"
     ],
-    "defeitos_extra": [
-      "colisao de bin (.bin linkava bin cru, burlando shim) — corrigido com bin por tripla",
-      "docs .md elevaram CDL population, convertidos para .txt — V20 223/30373 restaurado"
-    ],
-    "d7": {
-      "no_cargo": true,
-      "no_rustc": true,
-      "envelope_v1": true
-    },
-    "relatorio_commands": 15
+    "status": "running",
+    "tasks": 2,
+    "base": "f5c354a",
+    "selo": "c904f1c5",
+    "garantia": "oraculo externo c63e333 (differential), NAO o selo"
   },
   "next_gate": "HITL batch 2->3: posso avancar para o batch 3 (VAL-02 selo/differential/oraculo + VAL-03 VERIFY)?",
   "governance_note": {
