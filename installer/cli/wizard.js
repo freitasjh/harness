@@ -1,7 +1,8 @@
 import { t } from './locale.js'
 import { USER_ABORT, classifyAbort } from './abort.js'
 import { AXIS_IDS } from '../install.mjs'
-import { choicesForEixo, DEFAULTS } from './eixos.js'
+import { choicesForEixo, configFromSelection, DEFAULTS } from './eixos.js'
+import { readSecret, redactSecret } from './secret.js'
 
 export const TELAS = Object.freeze(['backend', 'frontend', 'name', 'token'])
 
@@ -21,8 +22,22 @@ async function ask(promptFactory, signal) {
   }
 }
 
-export async function defaultPrompts() {
-  const { select, input, password } = await import('@inquirer/prompts')
+export async function defaultPrompts({ importPrompts = () => import('@inquirer/prompts') } = {}) {
+  let mod
+  try {
+    mod = await importPrompts()
+  } catch (cause) {
+    const error = new Error(t('errors.promptsUnavailable'))
+    error.code = 'PROMPTS_UNAVAILABLE'
+    error.cause = cause
+    throw error
+  }
+  const { select, input, password } = mod || {}
+  if ([select, input, password].some((fn) => typeof fn !== 'function')) {
+    const error = new Error(t('errors.promptsUnavailable'))
+    error.code = 'PROMPTS_UNAVAILABLE'
+    throw error
+  }
   return { select, input, password }
 }
 
@@ -32,7 +47,7 @@ export function renderSummary({ backend, frontend, name, token }) {
     `${t('summary.backend')}: ${backend}`,
     `${t('summary.frontend')}: ${frontend}`,
     `${t('summary.name')}: ${name}`,
-    `${t('summary.token')}: ${t('summary.redacted')}`,
+    `${t('summary.token')}: ${redactSecret(token)}`,
     t('summary.confirm'),
   ].join('\n')
 }
@@ -71,16 +86,11 @@ export async function runVisualWizard({
     signal,
   )
 
-  const token = await ask(
-    () => p.password({
-      message: t('wizard.token.message'),
-      masked: t('wizard.token.masked'),
-    }),
-    signal,
-  )
+  const token = await ask(() => readSecret({ prompts: p, signal }), signal)
 
   const answers = { backend, frontend, name, token }
   const summary = renderSummary(answers)
+  const config = configFromSelection(answers, name)
   write(summary)
-  return { answers, telas: [...TELAS], summary }
+  return { answers, telas: [...TELAS], summary, config }
 }

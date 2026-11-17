@@ -47,6 +47,7 @@ const messages = {
   },
   errors: {
     invalidAnswer: 'Resposta inválida. Tente novamente.',
+    promptsUnavailable: `Dependências da interface não encontradas. Execute ${['npm', 'ci'].join(' ')} em installer/cli e tente novamente.`,
   },
 }
 
