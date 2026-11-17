@@ -1,8 +1,8 @@
 {
-  "current_feature": "tech-debt-doctor-spec-flake",
-  "current_phase": "BugAnalysis",
+  "current_feature": "novo-prd-eixos-e-cli",
+  "current_phase": "Discovery",
   "previous_phase": "Completed",
-  "next_phase": "BugFix",
+  "next_phase": "Planning",
   "type": "refactor",
   "layer": "agents/skills/rules",
   "repo": "harness",
@@ -147,6 +147,16 @@
       "aprovado_por": "owner (decisão §16 2026-11-17)",
       "data": "2026-11-17T01:11:16.598Z",
       "task": "FU-DOCTOR-FLAKY"
+    },
+    {
+      "portao": "reabertura-D5-ADR004-eixos-cli",
+      "ciclo": "novo PRD — separacao de eixos + nova CLI",
+      "regra": "PRD.md §16-D5 (12 presets casados congelados) + ADR-004 (transcript 16336B byte-idêntico, 0 transição nova) + ADR-001 (contract-v1 única superfície)",
+      "motivo": "owner declarou tempo perdido: instalador segue igual, opções casadas, nenhuma melhora visível; quer backend/frontend independentes e CLI visual tipo Copilot/Kiro",
+      "escopo": "substituir 12 presets casados por 48 combinações de eixos (8 backend x 6 frontend); substituir tela line-based por CLI interativa amigável",
+      "expires_when": "conclusão do novo PRD; reavaliação de compatibilidade",
+      "aprovado_por": "owner (decisão §16 2026-11-17)",
+      "data": "2026-11-17T01:28:48.585Z"
     }
   ],
   "overrides_history": [
@@ -246,7 +256,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T01:11:16.598Z",
+  "last_update": "2026-11-17T01:28:48.585Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -270,7 +280,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "TECH-DEBT FU-DOCTOR-FLAKY ABERTO — exceção §16 para editar veredito congelado; saneamento do indexOf em doctor.spec.mjs:61",
+  "sdd_stage": "NOVA FEATURE — separação de eixos (48 combinações) + CLI visual; exceção §16 registrada; aguardando P0 com PICCO",
   "backlog": {
     "total": 7,
     "todo": 0,
@@ -2079,6 +2089,20 @@
       "artifacto": ".spec/prd/prd-installer-rust/DECISAO-16-delta-byte-paridade.md",
       "aprovado_por": "owner",
       "reabre_adr": false
+    },
+    {
+      "id": "D16-EIXOS-CLI",
+      "prd": "novo (a definir)",
+      "data": "2026-11-17T01:28:48.585Z",
+      "decisao": "reabrir D5 e ADR-004: substituir presets casados por combinação livre de eixos (48) e criar CLI visual amigável",
+      "aprovado_por": "owner",
+      "reabre_adr": true,
+      "detalhes": {
+        "combinacoes": "todas as 48 (8 backend x 6 frontend)",
+        "compatibilidade": "substituir os 12 atuais",
+        "cli": "visual tipo Copilot/Kiro",
+        "criterio": "comportamental"
+      }
     }
   ]
 }
