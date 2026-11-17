@@ -474,5 +474,6 @@
       "autoAssinatura": "NENHUMA — developer-engineer nao escreveu nenhum veredito de validacao",
       "pushExecutado": false
     }
-  }
+  },
+  "perf": "soma dos comandos re-executados = 8153ms (campo sincronizado com val02.totais.durationMsSoma)"
 }
