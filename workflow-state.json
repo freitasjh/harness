@@ -67,7 +67,7 @@
     "P3_P4": "approved_auto_evidence_2026_11_17 (6 batches; review APPROVED 0/0)",
     "P4_P5": "approved_auto_evidence_QA_2026_11_17 (540+1091+cargo85; transcript real; segredo/sinal/eco PTY)",
     "P5_P6": "approved_owner_2026_11_17 (transcript 9fd70bb6 ratificado; nao-paridade 16336B; Veredito registrado)",
-    "P6_fim": "pending_human_push_merge (branch 02-cli-visual-impl @ d104498)",
+    "P6_fim": "done_commit_aed46b0 (PR #23 merge humano 2026-11-17; ADR-002 na main)",
     "B1_B2": "approved_user_2026_09_29",
     "FU32": "closed_approved_decision_B",
     "_previous_cycle_opencode_v2_only": {
@@ -259,7 +259,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T23:18:14.724Z",
+  "last_update": "2026-11-17T23:20:02.398Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -283,7 +283,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "ADR-002 CLI VISUAL CONCLUIDO (6/6, VERIFY 3/3, transcript ratificado). Aguardando push + merge",
+  "sdd_stage": "PRD eixos-separados-cli CONCLUIDO — 2/2 ADRs merged na main (aed46b0). Tela e eixos separados entregues",
   "backlog": {
     "total": 6,
     "todo": 0,
@@ -1426,16 +1426,24 @@
         "merge": "7fafde3",
         "at": "2026-11-17T17:19:03.287Z",
         "nota": "48 combinacoes por eixo, 6 batches, owner ratificou selo/baseline48/V20"
+      },
+      {
+        "adr": "ADR-002",
+        "status": "merged",
+        "merge": "aed46b0",
+        "at": "2026-11-17T23:20:02.398Z",
+        "nota": "6/6 tasks, CLI visual 4 telas N=4/M, transcript 2412B ratificado, delta owner"
       }
     ],
     "decisoes_anteriores": "prd-installer-rust 5/5 merged (reaberto D5/ADR-004 via §16 D16-EIXOS-CLI)",
     "summary": {
       "prd": "prd-eixos-separados-cli",
       "adrs_total": 2,
-      "adrs_merged": 1,
-      "adrs_pending_merge": 1,
+      "adrs_merged": 2,
+      "adrs_pending_merge": 0,
+      "concluido": "2026-11-17T23:20:02.398Z",
       "transcript": "2412B sha 9fd70bb6 ratificado",
-      "ponte_restante": "10 D-ENGINE (FU-D1-ENGINE10, decisao owner)"
+      "ponte_restante": "10 D-ENGINE (FU-D1-ENGINE10, delta aceito owner)"
     }
   },
   "escalations": [
