@@ -1,8 +1,8 @@
 {
-  "current_feature": "prd-installer-rust",
-  "current_phase": "Completed",
+  "current_feature": "tech-debt-doctor-spec-flake",
+  "current_phase": "BugAnalysis",
   "previous_phase": "Completed",
-  "next_phase": "—",
+  "next_phase": "BugFix",
   "type": "refactor",
   "layer": "agents/skills/rules",
   "repo": "harness",
@@ -36,7 +36,8 @@
     "security": ".spec/backend/prd-installer-rust-adr-005/SECURITY.md",
     "spec_gate": ".spec/backend/prd-installer-rust-adr-005/SPEC_GATE.md",
     "jira_board": ".spec/backend/prd-installer-rust-adr-005/JIRA_BOARD.md",
-    "ux": ".spec/frontend/prd-installer-rust-adr-004/UX.md"
+    "ux": ".spec/frontend/prd-installer-rust-adr-004/UX.md",
+    "tech_debt_task": ".spec/tech-debts/doctor-spec-mkdtemp-flake/TASKS.md"
   },
   "scope": {
     "interpretation": "esteira PRD->ADR->SDD no harness (visibilidade de intencao antes do codigo)",
@@ -135,6 +136,17 @@
       "atualizado": "2026-11-16T23:31:53.888Z",
       "decisao_16": ".spec/prd/prd-installer-rust/DECISAO-16-delta-byte-paridade.md",
       "ratificado_em": "2026-11-17T01:04:44.482Z"
+    },
+    {
+      "portao": "frozen-verdict-doctor-spec",
+      "ciclo": "prd-installer-rust / ADR-004",
+      "regra": "installer/__tests__/doctor.spec.mjs e veredito congelado (sha f10ef580) — edição exige re-selo do rito ADR-002 §2.4",
+      "motivo": "owner autorizou exceção §16 para sanar flake intermitente em doctor.spec.mjs:61 (sufixo mkdtemp com D0..D6 polui indexOf)",
+      "escopo": "somente a asserção de ordem no teste sequencia D0..D6; nenhuma mudança em runDoctor",
+      "expires_when": "execução da task FU-DOCTOR-FLAKY e re-medição do sha do literal; rubrica nova se sha mudar",
+      "aprovado_por": "owner (decisão §16 2026-11-17)",
+      "data": "2026-11-17T01:11:16.598Z",
+      "task": "FU-DOCTOR-FLAKY"
     }
   ],
   "overrides_history": [
@@ -234,7 +246,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T01:04:44.482Z",
+  "last_update": "2026-11-17T01:11:16.598Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -258,7 +270,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 CONCLUIDO (5/5 ADRs merged). Ponte D1: 10 D-ENGINE com delta ACEITO por decisão §16 do owner (2026-11-17)",
+  "sdd_stage": "TECH-DEBT FU-DOCTOR-FLAKY ABERTO — exceção §16 para editar veredito congelado; saneamento do indexOf em doctor.spec.mjs:61",
   "backlog": {
     "total": 7,
     "todo": 0,
@@ -897,7 +909,12 @@
       "origem": "developer batch 3 ADR-004",
       "bloqueia": false,
       "target": "tech-debt",
-      "registrado_em": ".spec/tech-debts/doctor-spec-mkdtemp-flake/TASKS.md (P3)"
+      "registrado_em": ".spec/tech-debts/doctor-spec-mkdtemp-flake/TASKS.md (P3)",
+      "status": "open",
+      "prioridade": "P3",
+      "excecao": "frozen-verdict-doctor-spec",
+      "escopo": "busca ancorada ao marcador real em doctor.spec.mjs:61, sem mudar runDoctor; re-medir sha e atualizar veredito congelado/ritual",
+      "aprovado_em": "2026-11-17T01:11:16.598Z"
     },
     {
       "id": "FU-ADR005-01",
