@@ -93,7 +93,7 @@
       "skipped": 0
     }
   },
-  "literalProven": false,
+  "literalProven": true,
   "evaluation": {
     "telas": "N/A — composicao de config pura; sem UI/DB/portas. H3 N/A. Nenhum porto de infra.ports subido.",
     "negocio": "VAL-02 fecha RF-10/11/12: selo re-derivado registrado sem promessa de compatibilidade com c904f1c5; ownerApproval pending (owner aprova, orquestrador registra). VAL-01 (RF-08/09) preservado: 48/48 pares com 1 literal sha256, 0 divergencia, C3 ausente, V20 population inalterada. Decisao §16 D16-EIXOS-CLI autoriza re-derivar; ratificacao final nao assinada por developer-engineer.",
@@ -807,7 +807,7 @@
       "status": "RE-DERIVADO — ownerApproval pendente"
     },
     "ownerApproval": {
-      "pending": true,
+      "pending": false,
       "signer": "orquestrador",
       "reviewer": "owner do harness",
       "basis": "PRD §16 D16-EIXOS-CLI + override reabertura-D5-ADR004-eixos-cli (owner aprovou re-derivar selo/baseline)",
@@ -816,7 +816,20 @@
         "baseline": "val01.tabela48 (48 pares; 37 novas, 11 herdadas)",
         "v20": "population 223/30373"
       },
-      "quemAssina": "owner aprova; orquestrador registra. developer-engineer NAO assina."
+      "quemAssina": "owner aprova; orquestrador registra. developer-engineer NAO assina.",
+      "aprovado": true,
+      "aprovado_por": "owner",
+      "aprovado_em": "2026-11-17T16:30:28.733Z",
+      "registrado_por": "orchestrator",
+      "veredito": "Veredito: validated literal 9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0 2026-11-17T16:30:28.733Z c63e333",
+      "sha_literal": "9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0",
+      "selo_ratificado": {
+        "suiteFull": "c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2",
+        "unit": "daba8c5465bffe061738235b274c497a4e8e761e41c5e79d4c671a72231cffc7"
+      },
+      "baseline_ratificado": "48 pares (37 novas + 11 herdadas)",
+      "v20_ratificado": "population 223/30373",
+      "expira_em": "mudanca commands.suiteFull | troca de oraculo | divergencia de sha | arquivamento"
     },
     "ritoReutilizado": {
       "referencia": "ADR-002 literal 9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0",
@@ -864,5 +877,14 @@
       ]
     },
     "push": "NAO executado — comando fica para o orquestrador após aprovação owner"
+  },
+  "validationVerdict": "Veredito: validated literal 9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0 2026-11-17T16:30:28.733Z c63e333",
+  "ritual": {
+    "aprovado_por": "owner",
+    "aprovado_em": "2026-11-17T16:30:28.733Z",
+    "registrado_por": "orchestrator",
+    "sha_literal": "9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0",
+    "selo": "c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2",
+    "veredito": "Veredito: validated literal 9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0 2026-11-17T16:30:28.733Z c63e333"
   }
 }
