@@ -14,26 +14,26 @@
     {
       "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
       "exitCode": 0,
-      "durationMs": 1128,
-      "durationMsMeasured": 1128,
-      "stdoutHash": "sha256:397f67d19b71c6b65b57475646c5e0635e0de66301c7185f77388093710cf8fa",
-      "stdoutBytes": 106237,
+      "durationMs": 1109,
+      "durationMsMeasured": 1109,
+      "stdoutHash": "sha256:6ec9a0c0565fa96017604f0f2fd1ecec1acf40361bf494810366be8a4c54f086",
+      "stdoutBytes": 106230,
       "counts": "540 passed / 0 failed / 0 skipped"
     },
     {
       "cmd": "node --test \"installer/__tests__/*.spec.mjs\"",
       "exitCode": 0,
-      "durationMs": 6036,
-      "durationMsMeasured": 6036,
-      "stdoutHash": "sha256:27663fd0f0de6f3a31498e7ee0df5b8dd68ee0142f0fe3b062a57138f953eb5a",
-      "stdoutBytes": 115300,
+      "durationMs": 6072,
+      "durationMsMeasured": 6072,
+      "stdoutHash": "sha256:7687235cf2b3dbf44839bce29c215bdaf189a993080840fd5141a0b1486a532c",
+      "stdoutBytes": 115285,
       "counts": "1059 passed / 0 failed / 0 skipped (golden.spec 95/95)"
     },
     {
       "cmd": "node scripts/static-checks.mjs",
       "exitCode": 0,
-      "durationMs": 232,
-      "durationMsMeasured": 232,
+      "durationMs": 266,
+      "durationMsMeasured": 266,
       "stdoutHash": "sha256:4a1e734a85037a1e26e20ea8531b7b4e64cf76d4b1fd7890b3b62529b7652ad5",
       "stdoutBytes": 1554,
       "counts": "PASS PRD-01 / ADR-01 / ADR-02 / V19 / V20"
@@ -50,9 +50,9 @@
     {
       "cmd": "cargo test --manifest-path installer-rs/Cargo.toml",
       "exitCode": 0,
-      "durationMs": 159,
-      "durationMsMeasured": 159,
-      "stdoutHash": "sha256:a358ba51cf358d59615115b2314e05782945f0630e9b785c02f5f05a02497e2f",
+      "durationMs": 140,
+      "durationMsMeasured": 140,
+      "stdoutHash": "sha256:5462ca9f1a3481ac0c85ca8f9d4dce6c9d29505e3a770245669a6a006aa51748",
       "stdoutBytes": 8664,
       "counts": "85 passed / 0 failed / 0 ignored"
     }
@@ -89,7 +89,7 @@
     "telas": "N/A — composicao de config pura; sem UI/DB/portas. H3 N/A. Nenhum porto de infra.ports subido.",
     "negocio": "VAL-01 = RF-08/RF-09. 48/48 pares com 1 literal sha256; 0 divergencia; C3 ausente; V20 population inalterada. Decisao §16 D16-EIXOS-CLI autoriza re-derivar; ratificacao final permanece com owner/orquestrador (nao assinada por developer-engineer).",
     "logica": "Autoridade C1 = tabelas ORACULO_* escritas a mao em golden.spec (espelham ORACULO_STACK_* de eixos-stack.spec.mjs:41-48), NUNCA a saida do gerador sob teste — anti-tautologia provada por esperadoPorEixo.toString() sem generateConfig + 0 mismatch 48/48. C2 (insta/diff) apenas revisor; C3 (auto-accept) proibida e ausente. Rito ADR-002 literal 9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0 reutilizado como referencia de forma, sem re-assinar nenhum veredito. Selo c904f1c5 intacto (VAL-02 separado).",
-    "perf": "5 comandos exit 0; soma durationMsMeasured=7601ms; sem regressao de duracao observada.",
+    "perf": "5 comandos exit 0; soma durationMsMeasured=7633ms (re-medidos no loop de correção 1); sem regressão de duração observada.",
     "bugs_identified": [
       {
         "id": "VAL01-OBS-1",
@@ -117,9 +117,9 @@
   "cleanup": {
     "ports": [],
     "processes": [],
-    "note": "Nada subido: sem UI/DB/portas — zero lsof/kill, zero pkill -f, zero push, zero gh. Nenhum worktree materializado. REPO_STATUS: mudanças restritas a installer/__tests__/golden.spec.mjs + harness/prd-eixos-separados-cli-adr-001.json. gate.js/harness.config.json/opencode.json/workflow-state.json/ADRs/specs/rules NÃO tocados.",
+    "note": "Nada subido: sem UI/DB/portas — zero lsof/kill, zero pkill -f, zero push, zero gh. Nenhum worktree materializado. REPO_STATUS (loop 1): mudanças restritas a installer/ratificacao-oraculo-48.mjs + harness/prd-eixos-separados-cli-adr-001.json. gate.js/harness.config.json/opencode.json/workflow-state.json/ADRs/specs/rules/gate/config/state NÃO tocados. golden.spec.mjs intacto neste loop (BASELINE_48 aprovado).",
     "repoWrites": [
-      "installer/__tests__/golden.spec.mjs",
+      "installer/ratificacao-oraculo-48.mjs",
       "harness/prd-eixos-separados-cli-adr-001.json"
     ]
   },
@@ -128,130 +128,156 @@
     "tabela48": [
       {
         "par": "java+vue",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"java\",frontend:\"vue\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs java vue",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"java backend\",\"frontend\":\"vue frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"chrome-devtools\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:86f29679f6c9e9e71dc6ca3db6e5fe923290d4705d28506a9db4677f264e2b0c",
         "ratificacao": "HERDADO — par ja coberto por preset congelado; sha256 re-registrado neste RELATORIO",
         "origem": "herdado",
-        "stacks": []
+        "stacks": [],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "java+react",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"java\",frontend:\"react\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs java react",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"java backend\",\"frontend\":\"react frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"chrome-devtools\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:592d601e1c358d415e367c3782c9d093f1db08bf5d275c0e2b60a1c1283b629a",
         "ratificacao": "HERDADO — par ja coberto por preset congelado; sha256 re-registrado neste RELATORIO",
         "origem": "herdado",
         "stacks": [
           "react"
-        ]
+        ],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "java+dart",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"java\",frontend:\"dart\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs java dart",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"java backend\",\"frontend\":\"dart frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"dart\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:d15f9f19d562b456b4a38b39f6df8cd028fbdce9f623895f713e03aba1c52c7d",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
-        "stacks": []
+        "stacks": [],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "java+flutter",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"java\",frontend:\"flutter\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs java flutter",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"java backend\",\"frontend\":\"flutter frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"marionette_mcp\",\"dart\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:e4d7ae3da0d5b7e06e0c30705b24e4d6867523e88b22cd6e9d6e60ad0abb4932",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
-        "stacks": []
+        "stacks": [],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "java+other",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"java\",frontend:\"other\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs java other",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"java backend\",\"frontend\":\"other frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:930f4c4204e84c236c5dfbbc1966c09ffe092e805dd681d2ade9c3c7cd7376b2",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
-        "stacks": []
+        "stacks": [],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "java+none",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"java\",frontend:\"none\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs java none",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"java backend\",\"frontend\":\"N/A — no frontend axis\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:bb7d89d904617e029c1eb5dc154f0f44a48b1a44a72b8f2523ce5f537480527e",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
-        "stacks": []
+        "stacks": [],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "node+vue",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"node\",frontend:\"vue\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs node vue",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"node backend\",\"frontend\":\"vue frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{\"suiteFull\":\"node --test\",\"unit\":\"node --test\"},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"chrome-devtools\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:a7c87078bdef46bcf89a05efa0992a6ce3632bc7916a7164064abec75b1bbd55",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
-        "stacks": []
+        "stacks": [],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "node+react",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"node\",frontend:\"react\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs node react",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"node backend\",\"frontend\":\"react frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{\"suiteFull\":\"node --test\",\"unit\":\"node --test\"},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"chrome-devtools\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:ef944ce9b824be7ea394c617fcde255b6258085b4f8b1da747cabb5a1f5cbad0",
         "ratificacao": "HERDADO — par ja coberto por preset congelado; sha256 re-registrado neste RELATORIO",
         "origem": "herdado",
         "stacks": [
           "react"
-        ]
+        ],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "node+dart",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"node\",frontend:\"dart\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs node dart",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"node backend\",\"frontend\":\"dart frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{\"suiteFull\":\"node --test\",\"unit\":\"node --test\"},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"dart\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:043af3174eb8141015ac44da28de8692409a30c291d28a8d18519b7179a4e198",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
-        "stacks": []
+        "stacks": [],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "node+flutter",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"node\",frontend:\"flutter\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs node flutter",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"node backend\",\"frontend\":\"flutter frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{\"suiteFull\":\"node --test\",\"unit\":\"node --test\"},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"marionette_mcp\",\"dart\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:1729f893cb0c80ea21b01509a7b1f3fd8a87fc2e832ddcf8f4500e3917e21e74",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
-        "stacks": []
+        "stacks": [],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "node+other",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"node\",frontend:\"other\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs node other",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"node backend\",\"frontend\":\"other frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{\"suiteFull\":\"node --test\",\"unit\":\"node --test\"},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:935d57570110098593cc53d5971e5ac60a23696e3f025bb3de16467ee35319b2",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
-        "stacks": []
+        "stacks": [],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "node+none",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"node\",frontend:\"none\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs node none",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"node backend\",\"frontend\":\"N/A — no frontend axis\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{\"suiteFull\":\"node --test\",\"unit\":\"node --test\"},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:e9a653009b1707cc92d1f3cf7499c78f848a9605050edf53208e98d256e109b8",
         "ratificacao": "HERDADO — par ja coberto por preset congelado; sha256 re-registrado neste RELATORIO",
         "origem": "herdado",
-        "stacks": []
+        "stacks": [],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "rust+vue",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"rust\",frontend:\"vue\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs rust vue",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"rust backend\",\"frontend\":\"vue frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"chrome-devtools\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:7a2f5cfa08c337932759247e5b7dbc9de4efd6d0d80d69e18f79ab96a54e6876",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
         "stacks": [
           "rust"
-        ]
+        ],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "rust+react",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"rust\",frontend:\"react\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs rust react",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"rust backend\",\"frontend\":\"react frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"chrome-devtools\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:3324b6df110fe62f47fbcb610ad5eaec75db523a5af0091d527e52138bacbe19",
         "ratificacao": "HERDADO — par ja coberto por preset congelado; sha256 re-registrado neste RELATORIO",
@@ -259,66 +285,78 @@
         "stacks": [
           "rust",
           "react"
-        ]
+        ],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "rust+dart",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"rust\",frontend:\"dart\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs rust dart",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"rust backend\",\"frontend\":\"dart frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"dart\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:c3d09ef1b03744098a5a2c6a71a95a5a8bc8193774c1d1c0d7af455cda295e88",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
         "stacks": [
           "rust"
-        ]
+        ],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "rust+flutter",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"rust\",frontend:\"flutter\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs rust flutter",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"rust backend\",\"frontend\":\"flutter frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"marionette_mcp\",\"dart\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:720e5b0857d274243d382803068cd69e4d7665ee7ed7b794b920363efb93f64b",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
         "stacks": [
           "rust"
-        ]
+        ],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "rust+other",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"rust\",frontend:\"other\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs rust other",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"rust backend\",\"frontend\":\"other frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:9fd75d840cdf0507b12ff2411ec146500ab5dfd3221fb534d6404874d561eac8",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
         "stacks": [
           "rust"
-        ]
+        ],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "rust+none",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"rust\",frontend:\"none\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs rust none",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"rust backend\",\"frontend\":\"N/A — no frontend axis\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:794c32004ad723b36ed47be53840ffdeedfeb4cb335038767497de311fbc9597",
         "ratificacao": "HERDADO — par ja coberto por preset congelado; sha256 re-registrado neste RELATORIO",
         "origem": "herdado",
         "stacks": [
           "rust"
-        ]
+        ],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "nestjs+vue",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"nestjs\",frontend:\"vue\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs nestjs vue",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"nestjs backend\",\"frontend\":\"vue frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"chrome-devtools\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:dbc246ebde080ce2dc24d66f919458592456f9b117ba2e30caa99457453db3cc",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
         "stacks": [
           "nestjs"
-        ]
+        ],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "nestjs+react",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"nestjs\",frontend:\"react\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs nestjs react",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"nestjs backend\",\"frontend\":\"react frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"chrome-devtools\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:0cbaf139bb2219383bf4a8c97650cfef33a3ede5f7eb5593fcd2057a31109c6e",
         "ratificacao": "HERDADO — par ja coberto por preset congelado; sha256 re-registrado neste RELATORIO",
@@ -326,66 +364,78 @@
         "stacks": [
           "nestjs",
           "react"
-        ]
+        ],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "nestjs+dart",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"nestjs\",frontend:\"dart\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs nestjs dart",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"nestjs backend\",\"frontend\":\"dart frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"dart\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:b185fa80b8fc86beebfa73b66f81a02e572b173a9beed31a38107a126b5352db",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
         "stacks": [
           "nestjs"
-        ]
+        ],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "nestjs+flutter",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"nestjs\",frontend:\"flutter\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs nestjs flutter",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"nestjs backend\",\"frontend\":\"flutter frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"marionette_mcp\",\"dart\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:0d9256dd6dd33b74de56b8d6b522d45129afe19e3aa0388f47241394c00cc9f8",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
         "stacks": [
           "nestjs"
-        ]
+        ],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "nestjs+other",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"nestjs\",frontend:\"other\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs nestjs other",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"nestjs backend\",\"frontend\":\"other frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:3e5bb0837c2570d28f9383164b110df6a2af59ed1fe04e207c3f1e0a78488471",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
         "stacks": [
           "nestjs"
-        ]
+        ],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "nestjs+none",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"nestjs\",frontend:\"none\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs nestjs none",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"nestjs backend\",\"frontend\":\"N/A — no frontend axis\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:9c71f11ea898be4fcf2c7810a255e6c366055fe5da4cd43b1232a1c1fb2985b9",
         "ratificacao": "HERDADO — par ja coberto por preset congelado; sha256 re-registrado neste RELATORIO",
         "origem": "herdado",
         "stacks": [
           "nestjs"
-        ]
+        ],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "dart+vue",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"dart\",frontend:\"vue\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs dart vue",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"dart backend\",\"frontend\":\"vue frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\",\"lib\":\"lib\",\"test\":\"test\"},\"commands\":{\"suiteFull\":\"dart test\",\"unit\":\"dart test\",\"analyze\":\"dart analyze\"},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"chrome-devtools\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:09e38c39d4a79d2f643b5e527850c5688558f4ae8d21578c16230b958e5a0038",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
         "stacks": [
           "dart"
-        ]
+        ],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "dart+react",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"dart\",frontend:\"react\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs dart react",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"dart backend\",\"frontend\":\"react frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\",\"lib\":\"lib\",\"test\":\"test\"},\"commands\":{\"suiteFull\":\"dart test\",\"unit\":\"dart test\",\"analyze\":\"dart analyze\"},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"chrome-devtools\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:f4a8407e93ee0b6f1c7a1e000b19a298dc0fb0f5e931d046482854e7186d6989",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
@@ -393,84 +443,100 @@
         "stacks": [
           "dart",
           "react"
-        ]
+        ],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "dart+dart",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"dart\",frontend:\"dart\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs dart dart",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"dart backend\",\"frontend\":\"dart frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\",\"lib\":\"lib\",\"test\":\"test\"},\"commands\":{\"suiteFull\":\"dart test\",\"unit\":\"dart test\",\"analyze\":\"dart analyze\"},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"dart\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:06ef5953bc7aff589fc0d0e03226d5d30a448ecc7b1f027ba417faee7da4e189",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
         "stacks": [
           "dart"
-        ]
+        ],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "dart+flutter",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"dart\",frontend:\"flutter\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs dart flutter",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"dart backend\",\"frontend\":\"flutter frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\",\"lib\":\"lib\",\"test\":\"test\"},\"commands\":{\"suiteFull\":\"dart test\",\"unit\":\"dart test\",\"analyze\":\"dart analyze\"},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"marionette_mcp\",\"dart\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:a73016ae096eb483c3a23c11823bfec4f3a8fb1d341ab14d9bccb82529b0b3fb",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
         "stacks": [
           "dart"
-        ]
+        ],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "dart+other",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"dart\",frontend:\"other\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs dart other",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"dart backend\",\"frontend\":\"other frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\",\"lib\":\"lib\",\"test\":\"test\"},\"commands\":{\"suiteFull\":\"dart test\",\"unit\":\"dart test\",\"analyze\":\"dart analyze\"},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:4b00e2023223cec8c793fd1caba5418e7c8c1095298525dfee5f8c156b37aee9",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
         "stacks": [
           "dart"
-        ]
+        ],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "dart+none",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"dart\",frontend:\"none\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs dart none",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"dart backend\",\"frontend\":\"N/A — no frontend axis\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\",\"lib\":\"lib\",\"test\":\"test\"},\"commands\":{\"suiteFull\":\"dart test\",\"unit\":\"dart test\",\"analyze\":\"dart analyze\"},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:cf86b1971eee96feb0ac54c851e06dabc52bcbb9f26fc8d48ef7fec503f1047f",
         "ratificacao": "HERDADO — par ja coberto por preset congelado; sha256 re-registrado neste RELATORIO",
         "origem": "herdado",
         "stacks": [
           "dart"
-        ]
+        ],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "flutter+vue",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"flutter\",frontend:\"vue\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs flutter vue",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"flutter backend\",\"frontend\":\"vue frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\",\"lib\":\"lib\",\"test\":\"test\"},\"commands\":{\"suiteFull\":\"flutter test\",\"unit\":\"flutter test\",\"analyze\":\"dart analyze\"},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"chrome-devtools\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:50d94240d39653ef33d8cf64d3fe2f27b8b9a0b52000e4f43a8e539c419f5de4",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
-        "stacks": []
+        "stacks": [],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "flutter+react",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"flutter\",frontend:\"react\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs flutter react",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"flutter backend\",\"frontend\":\"react frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\",\"lib\":\"lib\",\"test\":\"test\"},\"commands\":{\"suiteFull\":\"flutter test\",\"unit\":\"flutter test\",\"analyze\":\"dart analyze\"},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"chrome-devtools\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:f7f543eaaf98162bf87e95bf99edac726bc5679caf4b8a50c755fe3faf4b2b40",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
         "stacks": [
           "react"
-        ]
+        ],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "flutter+dart",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"flutter\",frontend:\"dart\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs flutter dart",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"flutter backend\",\"frontend\":\"dart frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\",\"lib\":\"lib\",\"test\":\"test\"},\"commands\":{\"suiteFull\":\"flutter test\",\"unit\":\"flutter test\",\"analyze\":\"dart analyze\"},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"dart\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:949652544dd42a803b163b54e5cfcb6ea056ec59d87fb9c2f5ad6f997bb8dcd9",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
-        "stacks": []
+        "stacks": [],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "flutter+flutter",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"flutter\",frontend:\"flutter\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs flutter flutter",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"flutter backend\",\"frontend\":\"flutter frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\",\"lib\":\"lib\",\"test\":\"test\"},\"commands\":{\"suiteFull\":\"flutter test\",\"unit\":\"flutter test\",\"analyze\":\"dart analyze\"},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"marionette_mcp\",\"dart\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:730d03151e296386068db5a72853a432f8e5b39848c98ea517d7a859093c2677",
         "ratificacao": "HERDADO — par ja coberto por preset congelado; sha256 re-registrado neste RELATORIO",
@@ -478,137 +544,167 @@
         "stacks": [
           "flutter",
           "dart"
-        ]
+        ],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "flutter+other",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"flutter\",frontend:\"other\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs flutter other",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"flutter backend\",\"frontend\":\"other frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\",\"lib\":\"lib\",\"test\":\"test\"},\"commands\":{\"suiteFull\":\"flutter test\",\"unit\":\"flutter test\",\"analyze\":\"dart analyze\"},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:f83cef56f842142f9673aef51ebd0cd6024fa72c70cece38ad15b1465d4b8cba",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
-        "stacks": []
+        "stacks": [],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "flutter+none",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"flutter\",frontend:\"none\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs flutter none",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"flutter backend\",\"frontend\":\"N/A — no frontend axis\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\",\"lib\":\"lib\",\"test\":\"test\"},\"commands\":{\"suiteFull\":\"flutter test\",\"unit\":\"flutter test\",\"analyze\":\"dart analyze\"},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:14ac389468c7e6a6614aa6bd6417e076053b8934f7b667621f50d570e4dd6902",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
-        "stacks": []
+        "stacks": [],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "other+vue",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"other\",frontend:\"vue\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs other vue",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"other backend\",\"frontend\":\"vue frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"chrome-devtools\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:929bc96f1281f7a85c9d5b8e297b65785a1aa2fd5633ee5806a2bf13234fc6e1",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
-        "stacks": []
+        "stacks": [],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "other+react",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"other\",frontend:\"react\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs other react",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"other backend\",\"frontend\":\"react frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"chrome-devtools\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:2685f76176897eaf418fdc8e21dfd17a17bee6adf8cd2cce6cef6bd01d886181",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
         "stacks": [
           "react"
-        ]
+        ],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "other+dart",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"other\",frontend:\"dart\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs other dart",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"other backend\",\"frontend\":\"dart frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"dart\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:3c721b7efbffabc4d58403d288daf95bec93f8ec6bbe3cab7e62281e2ff0ebc0",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
-        "stacks": []
+        "stacks": [],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "other+flutter",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"other\",frontend:\"flutter\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs other flutter",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"other backend\",\"frontend\":\"flutter frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"marionette_mcp\",\"dart\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:55aa1c04660a59d8507580992eaa3cd3a20b20bec493531af46ed69c483596ca",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
-        "stacks": []
+        "stacks": [],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "other+other",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"other\",frontend:\"other\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs other other",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"other backend\",\"frontend\":\"other frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:38863feaaec40fce100b25ba6f13759512fe8ea3ce800c4e6151663fbf5ca056",
         "ratificacao": "HERDADO — par ja coberto por preset congelado; sha256 re-registrado neste RELATORIO",
         "origem": "herdado",
-        "stacks": []
+        "stacks": [],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "other+none",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"other\",frontend:\"none\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs other none",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"other backend\",\"frontend\":\"N/A — no frontend axis\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:4358431c2130aa71c62e6b609e48dd9abb4915ed2c6c31c8500e194dc16e66f2",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
-        "stacks": []
+        "stacks": [],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "none+vue",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"none\",frontend:\"vue\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs none vue",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"N/A — no backend axis\",\"frontend\":\"vue frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"chrome-devtools\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:05bf5fc6ef86cd626bd7bb61aab2bd331a84d5fb8d9efcce725a4c35f694e9ec",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
-        "stacks": []
+        "stacks": [],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "none+react",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"none\",frontend:\"react\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs none react",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"N/A — no backend axis\",\"frontend\":\"react frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"chrome-devtools\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:20efc0fc06dc9e3a9a866ca46c14b3f07cd02ff70ed6a11a08580685f9a476f5",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
         "stacks": [
           "react"
-        ]
+        ],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "none+dart",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"none\",frontend:\"dart\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs none dart",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"N/A — no backend axis\",\"frontend\":\"dart frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"dart\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:c8177e5bc90ef861c775351ceaea41257e7722947162c922e846268cc3eb97c5",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
-        "stacks": []
+        "stacks": [],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "none+flutter",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"none\",frontend:\"flutter\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs none flutter",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"N/A — no backend axis\",\"frontend\":\"flutter frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[\"marionette_mcp\",\"dart\"]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:56b21bd37122bfa6b08202db30121b85e5caef2032659ff6ea9f8e5b2894cbc1",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
-        "stacks": []
+        "stacks": [],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "none+other",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"none\",frontend:\"other\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs none other",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"N/A — no backend axis\",\"frontend\":\"other frontend\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:3a5fbd984dc39a5a956080e0cf284c5b958c735d8d6ba4a09a8f38cf572b2feb",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
-        "stacks": []
+        "stacks": [],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       },
       {
         "par": "none+none",
-        "comando": "node --input-type=module -e 'import {generateConfig} from \"./installer/installer-contract.mjs\";console.log(JSON.stringify(generateConfig({project:\"demo\",axes:{backend:\"none\",frontend:\"none\"}})))'",
+        "comando": "node installer/ratificacao-oraculo-48.mjs none none",
         "literal": "{\"version\":1,\"project\":\"demo\",\"stack\":{\"backend\":\"N/A — no backend axis\",\"frontend\":\"N/A — no frontend axis\"},\"moduleMap\":{\"plugins\":\".opencode/plugins\",\"rules\":\".agents/rules\",\"schemas\":\".agents/schemas\"},\"commands\":{},\"infra\":{\"composeFile\":null,\"ports\":{\"backend\":null,\"frontend\":null}},\"mcp\":{\"required\":[]},\"protectedPaths\":[\".opencode/plugins/**\",\".agents/rules/**\",\".agents/schemas/**\",\".agents/agents/**\",\"opencode.json\",\"harness.config.json\"],\"gates\":{\"picco\":\"enforce\",\"evidence\":\"enforce\",\"hitlBatch\":\"enforce\",\"e2eGreenfield\":\"warn\"},\"riskPaths\":[\"**/security/**\",\"**/auth/**\"],\"escalateOnRisk\":{\"e2eGreenfield\":\"enforce\",\"evidenceScenario\":\"required\"},\"contraproveTimeoutMs\":900000,\"evidence\":{\"path\":\"harness/\",\"schema\":\".agents/schemas/harness-report.schema.json\"}}",
         "sha256": "sha256:d029fcfaa7dcc906578ba29d048ebf1aa95178d8d8b3584fef639d0e17fd2806",
         "ratificacao": "NOVO — sha256 registrado neste RELATORIO antes de virar baseline; aprovacao final owner/orquestrador pendente (C1)",
         "origem": "novo",
-        "stacks": []
+        "stacks": [],
+        "derivacao": "ORACULO_* escritas à mão: installer/ratificacao-oraculo-48.mjs (espelha golden.spec.mjs:193-235 ← eixos-stack.spec.mjs:41-48). literal = JSON canônico do oráculo; sha256 = sha256(literal).",
+        "comparacao": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4)."
       }
     ],
     "resumo": {
@@ -639,7 +735,10 @@
     "oraculoIndependente": {
       "fonte": "installer/__tests__/eixos-stack.spec.mjs:41-48 (ORACULO_STACK_BACKEND / ORACULO_STACK_FRONTEND / ORACULO_EXCECAO_STACKS) + tabelas ORACULO_* espelhadas em golden.spec.mjs",
       "antiTautologia": "esperadoPorEixo() e literalCanonico() não contêm generateConfig (assert por toString()); expected 0 mismatch nos 48 pares contra o gerador.",
-      "papelC2": "cargo insta review / diff = revisor de diff (redactions para valores volágeis), nunca aceitação de baseline."
+      "papelC2": "cargo insta review / diff = revisor de diff (redactions para valores volágeis), nunca aceitação de baseline.",
+      "provenienciaComando": "tabela48[].comando = derivação das tabelas ORACULO_* escritas à mão (node installer/ratificacao-oraculo-48.mjs <backend> <frontend>); 48/48 oráculo, 0 gerador. Re-hash: 48/48 literal→sha256 idêntico ao oráculo e ao BASELINE_48 do golden.spec (0 mismatch).",
+      "papelGerador": "generateConfig (gerador sob teste) aparece SÓ como comparação rotulada em golden.spec.mjs (48 pares gerador===oráculo); NÃO é origem de literal nem de sha256 (RF-08/E1; ADR-002 §2.4).",
+      "mutacao": "Oracle mutado (ORACULO_INVARIANTES contraproveTimeoutMs 900000→900001): 49/95 derrubados, 46 pass. Gerador mutado (generate-eixos.mjs INVARIANTES 900000→900001) com sha do oráculo intacto: 48/95 pegos, 47 pass — \"o sha256 ratificado bate com o oráculo independente\" e \"anti-tautologia: o oráculo NÃO chama o gerador\" seguem PASS. Restaurado: 95/95."
     },
     "v20": {
       "comando": "node scripts/static-checks.mjs",
@@ -667,6 +766,12 @@
       "FU-CARGO-ORACULO: rust commands vazio",
       "FU-NODE-REINDEX: desempate node",
       "2 sugestões review EIX-04 (call-sites COMPAT-CONGELADA, suiteCommand sobrepõe unit) para o VERIFY"
-    ]
+    ],
+    "provenienciaCorrecao": {
+      "motivo": "Review VAL-01 (commit d14b9bd): 48 tabela48[].comando diziam generateConfig (gerador sob teste) quando literal/sha vêm do oráculo independente — proveniência documental falsa (RF-08/E1; ADR-002 §2.4).",
+      "corrige": "comando → derivação ORACULO_*; generateConfig rebaixado a comparação rotulada; 4 etapas + cargo + golden.spec re-medidos.",
+      "nao_toca": "BASELINE_48 do golden.spec, mutações, C3, V20, rito reutilizado, selo c904f1c5, ADR/specs/rules/gate/config/state. Off-by-one 37/11 (VAL01-OBS-1) permanece dívida documental — decisão §16 do owner.",
+      "loop": "1/3"
+    }
   }
 }
