@@ -259,7 +259,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T22:42:33.883Z",
+  "last_update": "2026-11-17T22:50:19.035Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -283,12 +283,12 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "ADR-002 CLI VISUAL VAL-01 — transcript novo ratificado + rust+vue",
+  "sdd_stage": "ADR-002 CLI VISUAL VAL-01 CONCLUIDO (transcript novo 2412B, nao-paridade, q-cancel resolvido) — review em curso",
   "backlog": {
     "total": 6,
     "todo": 1,
-    "doing": 1,
-    "done": 4,
+    "doing": 0,
+    "done": 5,
     "ids": [
       "CLI-01",
       "CLI-02",
@@ -297,7 +297,11 @@
       "VAL-01",
       "VAL-02"
     ],
-    "doing_ids": [
+    "done_ids": [
+      "CLI-01",
+      "CLI-02",
+      "CLI-03",
+      "CLI-04",
       "VAL-01"
     ]
   },
@@ -1080,7 +1084,10 @@
       "texto": "locale.js:46 promete q para cancelar mas nao ha handler de tecla q real — @inquirer/select nao aborta em q nativamente; qa.spec simulou como ExitPromptError. Fidelidade do prototipo, pre-existente CLI-02 — decidir no VAL-01: implementar handler ou ajustar locale (sem reabrir prototipo sem §16)",
       "origem": "code-reviewer CLI-04",
       "bloqueia": false,
-      "target": "VAL-01"
+      "target": "VAL-01",
+      "status": "closed",
+      "fechado_em": "2026-11-17T22:50:19.034Z",
+      "resolucao": "decisao (b): locale q→Ctrl+C para cancelar; N/M inalterados"
     }
   ],
   "batches": [
@@ -2135,15 +2142,12 @@
   },
   "batch": {
     "id": 5,
-    "agent": "developer-engineer",
-    "skills": [
-      "node-architecture-specialist",
-      "security-review"
-    ],
-    "status": "running",
-    "tasks": 1,
-    "base": "504ac33",
-    "ratificacao_owner": "transcript novo (4 telas PT-BR), sem paridade com 16336B"
+    "status": "review_running",
+    "commit": "91b2e535a2234942d04995418f4f2baa244654dd",
+    "transcript": "2412B sha 9fd70bb6 — nao-paridade com 16336B declarada",
+    "q_cancel": "decisao (b) Ctrl+C para cancelar",
+    "rust_vue": "byte-idêntico ADR-001",
+    "installer": 1091
   },
   "next_gate": "HITL batch 4->5: posso avancar para VAL-01 (transcript novo ratificado, sem paridade com 16336B, rust+vue)? Decisao owner necessaria.",
   "governance_note": {
