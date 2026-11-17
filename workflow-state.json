@@ -1,7 +1,7 @@
 {
   "current_feature": "prd-installer-rust-adr-005",
-  "current_phase": "Discovery",
-  "previous_phase": "Completed",
+  "current_phase": "Completed",
+  "previous_phase": "Execution",
   "next_phase": "Planning",
   "type": "refactor",
   "layer": "agents/skills/rules",
@@ -61,10 +61,10 @@
     "G2_PRD": "approved_user_2026_10_22 (PRD prd-garantias-runtime aprovado sem ressalvas; §16 do PRD.md; 3 decisoes do owner)",
     "P1_P2": "approved_auto_architect_2026_11_16 (16/16 RF, score 100%, selo c904f1c5 intacto; F1/F2/F3 🟡 corrigidos) — AGUARDANDO CONFIRMACAO DO OWNER",
     "P2_P3": "approved_user_2026_11_16 (PLAN 53 linhas, TASKS 7 microtasks, 16 RF mapeados; SDD verdes)",
-    "P3_P4": "approved_auto_evidence_2026_11_16 (3 batches; review APPROVED apos 1 iteracao; R9 restaurado)",
-    "P4_P5": "approved_auto_evidence_QA_2026_11_16 (540+716 + cargo 85 + 8/8 provas + mutante 8/8; canais medidos; PTY cleanup com sinal)",
-    "P5_P6": "approved_auto_2026_11_16 (VERIFY 3/3 com evidencia re-executada; rito reutilizado sem auto-assinatura)",
-    "P6_fim": "done_commit_d4e9924 (PR #20 merge humano 2026-11-16; ADR-004 na main)",
+    "P3_P4": "approved_auto_evidence_2026_11_17 (3 batches; review APPROVED 0/0)",
+    "P4_P5": "approved_auto_evidence_QA_2026_11_17 (540+716+cargo85+differential23+mutante23)",
+    "P5_P6": "approved_auto_2026_11_17 (VERIFY 3/3; rito reutilizado sem auto-assinatura)",
+    "P6_fim": "pending_human_push_merge (branch 05-publicacao-runtime-selo-impl @ 2356aea)",
     "B1_B2": "approved_user_2026_09_29",
     "FU32": "closed_approved_decision_B",
     "_previous_cycle_opencode_v2_only": {
@@ -81,15 +81,15 @@
     },
     "G2_ADR": "approved_user_2026_11_16 (ADR-005 — branch de autoria)",
     "G1_PRD": "approved_user_2026_11_16 (PRD-3 prd-installer-rust; D1-D8 fechadas)",
-    "P4_5": "approved_auto_2026_11_16 (security-review 14 itens: 3 PASS + 11 N/A motivados; zero segredos; Cargo.lock)"
+    "P4_5": "approved_auto_2026_11_17 (security 14 itens: 3 PASS + 11 N/A motivados)"
   },
   "code_review": {
-    "last_invoked_at": "2026-11-17T00:19:34.906Z",
+    "last_invoked_at": "2026-11-17T00:31:19.154Z",
     "last_status": "passed",
     "critical_issues": 0,
     "attention_issues": 0,
-    "suggestions": 3,
-    "reviewer_notes": "Batch 2 ADR-005 APPROVED 0/0. 15/15 stdoutHash re-hashados; D7 e fallback replicados independentemente; V20 223/30373 sem re-pin; colisao de bin corrigida. 3 obs: darwin libc glibc inofensivo; D7 usa file: deps (sugestao fixture registry em VAL-02/03); README .txt registrar dono se virar convencao."
+    "note": "ADR-005 batch 3 review final APPROVED 0/0; selo c904f1c5 re-derivado, differential 23/23 com mutante 23 reprovado, presets idênticos, rito sem auto-assinatura. PRD-3 5/5 fechado.",
+    "ciclo": "prd-installer-rust-adr-005"
   },
   "overrides": [
     {
@@ -230,7 +230,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T00:27:49.118Z",
+  "last_update": "2026-11-17T00:31:19.154Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -254,7 +254,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-005 EXECUTION batch 3/3 CONCLUIDO (2/2; 7/7 tasks; selo intacto; differential 23/23; VERIFY 3/3) — review final do PRD-3 em curso",
+  "sdd_stage": "PRD-3 CONCLUIDO — 5/5 ADRs implementados e aprovados. Aguardando push + merge do ADR-005",
   "backlog": {
     "total": 7,
     "todo": 0,
@@ -1136,14 +1136,14 @@
     "pos_restart3": "orcamento ESGOTADO (2/2: fix + review); proxima delegacao nega; restart #4 necessario"
   },
   "verify": {
-    "at": "2026-11-16T23:26:57.484Z",
-    "verdict": "3/3 PASS (review aprovado apos correcao do atestado)",
-    "completude": "9/9 tasks; Rito ADR-002 literal 9fa4530b reutilizado sem auto-assinatura",
-    "corretude": "540+716 testes + cargo 85 + 8/8 provas + 8/8 mutantes; warning R9 byte-idêntico; canais medidos",
-    "coerencia": "ponte 10 D-ENGINE; transcript 16336B; guarda 3/3; selo c904f1c5; seguranca 14 (3 PASS + 11 N/A)",
-    "traceability": "18/18 RF",
-    "artefato": ".spec/frontend/prd-installer-rust-adr-004/VERIFY.md",
-    "report": "harness/prd-installer-rust-adr-004.json"
+    "at": "2026-11-17T00:31:19.154Z",
+    "verdict": "3/3 PASS (PRD-3 fechado)",
+    "completude": "7/7 tasks; 5/5 ADRs implementados",
+    "corretude": "540+716 testes + cargo 85 + differential 23/23 + mutante 0/23; selo c904f1c5",
+    "coerencia": "motor único; oráculo externo é a garantia; ponte D1 = 10 nomes em dívida declarada; security 14",
+    "traceability": "16/16 RF",
+    "artefato": ".spec/backend/prd-installer-rust-adr-005/VERIFY.md",
+    "report": "harness/prd-installer-rust-adr-005.json"
   },
   "commit": "a19acab",
   "remote": "git@github.com:freitasjh/harness.git (SSH; push + CI pendentes)",
@@ -1284,6 +1284,13 @@
       "D6": "selo c904f1c5 invariante; suite Rust paralela",
       "D7": "binario autocontido + Node>=20 no destino",
       "D8": "5 ADRs por frente"
+    },
+    "summary": {
+      "prd": "prd-installer-rust",
+      "adrs_total": 5,
+      "adrs_merged": 4,
+      "adrs_pending_merge": 1,
+      "ponte_restante": "10 D-ENGINE (FU-D1-ENGINE10, decisao owner byte-paridade pendente)"
     }
   },
   "escalations": [
@@ -1999,16 +2006,9 @@
   },
   "batch": {
     "id": 3,
-    "status": "review_running",
+    "status": "review_approved",
     "commit": "2356aea101671c9987bb72e2b92f98db048c3800",
-    "tasks": 2,
-    "selo": "c904f1c5 re-derivado",
-    "differential": "23/23 + mutante 23 reprovado",
-    "presets": "12/12 idênticos ao oráculo",
-    "claimed12of12": false,
-    "rito": "reutilizado sem auto-assinatura",
-    "verify": "3/3",
-    "security": "14 (3 PASS + 11 N/A)"
+    "final": true
   },
   "next_gate": "HITL batch 2->3: posso avancar para o batch 3 (VAL-02 selo/differential/oraculo + VAL-03 VERIFY)?",
   "governance_note": {
