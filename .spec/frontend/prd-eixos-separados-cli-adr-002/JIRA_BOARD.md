@@ -2,7 +2,7 @@
 
 | Key | Summary | RF | Prioridade | Risco | Depende de | Status |
 |---|---|---|---|---|---|---|
-| CLI-01 | Infra @inquirer + i18n PT-BR + AbortSignal | 04,08,12 | P0 | Médio | — | TODO |
+| CLI-01 | Infra @inquirer + i18n PT-BR + AbortSignal | 04,08,12 | P0 | Médio | — | DONE |
 | CLI-02 | 4 telas backend/frontend/nome + resumo (N=4) | 01,02,03,04 | P0 | Alto | CLI-01 | TODO |
 | CLI-03 | Seleção independente backend/frontend (ADR-001) | 06,10 | P0 | Alto | CLI-02 | TODO |
 | CLI-04 | Segredo, aborto 0 writes, restore de eco | 05,07 | P0 | Alto | CLI-02 | TODO |
