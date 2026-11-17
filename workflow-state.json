@@ -1,7 +1,7 @@
 {
-  "current_feature": "prd-eixos-separados-cli-adr-001",
-  "current_phase": "Completed",
-  "previous_phase": "Execution",
+  "current_feature": "prd-eixos-separados-cli-adr-002",
+  "current_phase": "Discovery",
+  "previous_phase": "Completed",
   "next_phase": "Planning",
   "type": "refactor",
   "layer": "agents/skills/rules",
@@ -31,7 +31,7 @@
     "prd": ".spec/prd/prd-eixos-separados-cli/PRD.md",
     "research": null,
     "adr_index": ".spec/prd/prd-installer-rust/ADR-INDEX.md",
-    "adr": ".spec/prd/prd-installer-rust/ADRs/ADR-005-publicacao-runtime-selo/ADR.md",
+    "adr": ".spec/prd/prd-eixos-separados-cli/ADRs/ADR-002-cli-visual/ADR.md",
     "prd_lines": ".spec/prd/prd-harness-inventory/PRD.md (162 linhas, 16 secoes, PRD-01 PASS)",
     "security": ".spec/backend/prd-eixos-separados-cli-adr-001/SECURITY.md",
     "spec_gate": ".spec/backend/prd-eixos-separados-cli-adr-001/SPEC_GATE.md",
@@ -60,14 +60,14 @@
     "rigor": "E1/E2 bloqueiam"
   },
   "gates": {
-    "P0_P1": "approved_user_2026_11_16 (Refactor de distribuicao; ux-designer N/A — publicacao sem tela)",
+    "P0_P1": "pending_user_approval (ADR-002 — Feature; ux-designer fonte visual já exercida no protótipo aprovado)",
     "G2_PRD": "approved_user_2026_10_22 (PRD prd-garantias-runtime aprovado sem ressalvas; §16 do PRD.md; 3 decisoes do owner)",
     "P1_P2": "approved_user_2026_11_17 (SPEC 13 RF 100%, architect aprovado)",
     "P2_P3": "approved_user_2026_11_17 (PLAN 51, TASKS 6, 13 RF, SDD verdes)",
     "P3_P4": "approved_auto_evidence_2026_11_17 (6 batches; review APPROVED 0/0)",
     "P4_P5": "approved_auto_evidence_QA_2026_11_17 (540+1059+cargo85+golden95; baseline 48)",
     "P5_P6": "approved_owner_2026_11_17 (selo+baseline48+V20 ratificados; Veredito registrado)",
-    "P6_fim": "pending_human_push_merge (branch 01-eixos-separados-impl @ 612adcf)",
+    "P6_fim": "done_commit_7fafde3 (PR #22 merge humano 2026-11-17; ADR-001 na main)",
     "B1_B2": "approved_user_2026_09_29",
     "FU32": "closed_approved_decision_B",
     "_previous_cycle_opencode_v2_only": {
@@ -82,7 +82,7 @@
       "B1_B2": "approved_user_2026_09_29",
       "FU32": "closed_approved_decision_B"
     },
-    "G2_ADR": "approved_user_2026_11_17 (ADR-001 13 itens + ADR-002 12 itens protótipo congelado)",
+    "G2_ADR": "approved_user_2026_11_17 (ADR-002 CLI visual, protótipo aprovado e congelado)",
     "G1_PRD": "approved_user_2026_11_17 (PRD prd-eixos-separados-cli, 16 seções, §16 com decisões owner; protótipo CLI antes da spec)",
     "P4_5": "approved_auto_2026_11_17 (security 14: 11 N/A + 3 PASS)",
     "G2_RESEARCH": "approved_user_2026_11_17 (A1 eixos + B1 setas+enter + C1 baseline validado; 7 alternativas, 11 fontes; protótipo aprovado antes do ADR)"
@@ -258,7 +258,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T16:30:49.229Z",
+  "last_update": "2026-11-17T17:19:03.287Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -282,7 +282,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "ADR-001 EIXOS CONCLUIDO (6/6; 48 combinacoes; owner ratificou). Aguardando push + merge; proximo ADR-002 CLI visual",
+  "sdd_stage": "NOVO PRD ADR-002 — CLI visual; protótipo N=4/M medido congelado; aguardando P0",
   "backlog": {
     "total": 6,
     "todo": 0,
@@ -1332,13 +1332,21 @@
   "prd_adr": {
     "prd_id": "prd-eixos-separados-cli",
     "prd_status": "approved",
-    "active_adr": "ADR-001 (aguardando G2)",
+    "active_adr": "ADR-002",
     "adr_order": [
       "ADR-001",
       "ADR-002"
     ],
-    "snapshots": [],
-    "decisoes_anteriores": "prd-installer-rust 5/5 merged — reaberto por §16 D16-EIXOS-CLI"
+    "snapshots": [
+      {
+        "adr": "ADR-001",
+        "status": "merged",
+        "merge": "7fafde3",
+        "at": "2026-11-17T17:19:03.287Z",
+        "nota": "48 combinacoes por eixo, 6 batches, owner ratificou selo/baseline48/V20"
+      }
+    ],
+    "decisoes_anteriores": "prd-installer-rust 5/5 merged (reaberto D5/ADR-004 via §16 D16-EIXOS-CLI)"
   },
   "escalations": [
     {
