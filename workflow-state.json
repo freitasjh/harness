@@ -88,11 +88,12 @@
     "G2_RESEARCH": "approved_user_2026_11_17 (A1 eixos + B1 setas+enter + C1 baseline validado; 7 alternativas, 11 fontes; protótipo aprovado antes do ADR)"
   },
   "code_review": {
-    "last_invoked_at": "2026-11-17T17:21:03.970Z",
+    "last_invoked_at": "2026-11-17T17:32:22.519Z",
     "last_status": "passed",
     "critical_issues": 0,
     "attention_issues": 0,
-    "reviewer_notes": "SPEC ADR-002 (CLI visual) APPROVED pelo architect: 12/12 RF 1:1, protótipo congelado N=4/M sem reabertura, nenhuma paridade com transcript 16336B, B2 full-screen fora, 5 N/A legítimos. 2 watch-outs: RF-08 grep inquire casa substring @inquirer (desambiguar no PLAN); ponteiro spec_gate corrigido."
+    "suggestions": 2,
+    "reviewer_notes": "CLI-01 APPROVED 0/0. Pin @inquirer 8.8.0 SDD, locale 29 chaves fail-closed (mutação provada), Ctrl+C USER_ABORT sem disfarce, grep B2 word-boundary com controle. 2 sugestões: fortalecer teste string solta (varrer install.mjs) no CLI-02; cobrir isAbortError/onAbort direto no CLI-04."
   },
   "overrides": [
     {
@@ -258,7 +259,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T17:29:44.448Z",
+  "last_update": "2026-11-17T17:32:22.519Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -282,7 +283,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "ADR-002 CLI VISUAL batch 1 CONCLUIDO (CLI-01: @inquirer+PT-BR+abort) — review em curso",
+  "sdd_stage": "ADR-002 CLI VISUAL batch 1 REVIEW APPROVED (0/0). PARADA HITL antes do CLI-02 (4 telas N=4/M)",
   "backlog": {
     "total": 6,
     "todo": 5,
@@ -1010,6 +1011,22 @@
       "origem": "review VAL-01",
       "bloqueia": false,
       "target": "VAL-02"
+    },
+    {
+      "id": "FU-CLI-STRING-SOLTA",
+      "created_at": "2026-11-17T17:32:22.519Z",
+      "texto": "Fortalecer teste de string solta em cli-infra.spec.mjs:142-156 — varrer install.mjs e checar prompt() no CLI-02 (hoje vacuo: so abort.js)",
+      "origem": "code-reviewer CLI-01",
+      "bloqueia": false,
+      "target": "CLI-02"
+    },
+    {
+      "id": "FU-CLI-ABORT-TEST",
+      "created_at": "2026-11-17T17:32:22.519Z",
+      "texto": "Cobrir isAbortError e onAbort com teste direto no CLI-04 (comportamento correto confirmado por sonda do reviewer)",
+      "origem": "code-reviewer CLI-01",
+      "bloqueia": false,
+      "target": "CLI-04"
     }
   ],
   "batches": [
@@ -2064,14 +2081,14 @@
   },
   "batch": {
     "id": 1,
-    "status": "review_running",
+    "status": "review_approved",
     "commit": "27e8c5104a900f01a26ded11b7a0f4f62a499d6d",
     "inquirer": "8.8.0",
     "locale_chaves": 29,
     "installer": 1064,
     "grep_b2": "0 com controle positivo"
   },
-  "next_gate": "HITL VAL-01->VAL-02: posso avancar para VAL-02? Vai exigir ratificacao owner do novo hash do selo (substitui c904f1c5) e do baseline 48.",
+  "next_gate": "HITL batch 1->2: posso avancar para CLI-02 (montar as 4 telas com setas+Enter, N=4 e M congelados)?",
   "governance_note": {
     "at": "2026-11-16T21:26:46.319Z",
     "texto": "Developer escreveu no retorno que owner havia aprovado migrar só JSON-safe — falso. Owner aprovou 23 e depois ACEITOU o desvio para 13 com razao medida. Corrigido aqui para nao deixar decisao reescrita.",
