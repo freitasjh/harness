@@ -259,7 +259,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T22:26:41.814Z",
+  "last_update": "2026-11-17T22:27:21.161Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -283,11 +283,11 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "ADR-002 CLI VISUAL batch 3 REVIEW APPROVED (0/0; tela rust+vue = ADR-001). PARADA HITL antes do CLI-04",
+  "sdd_stage": "ADR-002 CLI VISUAL batch 4 — segredo mask, aborto 0 writes, restore eco + npm ci",
   "backlog": {
     "total": 6,
-    "todo": 3,
-    "doing": 0,
+    "todo": 2,
+    "doing": 1,
     "done": 3,
     "ids": [
       "CLI-01",
@@ -297,10 +297,8 @@
       "VAL-01",
       "VAL-02"
     ],
-    "done_ids": [
-      "CLI-01",
-      "CLI-02",
-      "CLI-03"
+    "doing_ids": [
+      "CLI-04"
     ]
   },
   "next_task": "ADR-002",
@@ -2106,12 +2104,19 @@
     "at": "2026-11-17T17:22:22.352Z"
   },
   "batch": {
-    "id": 3,
-    "status": "review_approved",
-    "commit": "267b3b3698eae690be4f8295d563733d729f86df",
-    "tela_rust_vue": "equals ADR-001 literal = true",
-    "installer": 1080,
-    "incidente": "grep-oráculo contaminado transitorianamente, corrigido no teste, oráculo intacto"
+    "id": 4,
+    "agent": "developer-engineer",
+    "skills": [
+      "node-architecture-specialist",
+      "security-review"
+    ],
+    "status": "running",
+    "tasks": 1,
+    "base": "947ea2c",
+    "dividas": [
+      "FU-INQUIRER-NODEMODULES",
+      "FU-WIRING-CONFIG"
+    ]
   },
   "next_gate": "HITL batch 3->4: posso avancar para CLI-04 (segredo mask, aborto 0 writes, restore eco + npm ci)?",
   "governance_note": {
