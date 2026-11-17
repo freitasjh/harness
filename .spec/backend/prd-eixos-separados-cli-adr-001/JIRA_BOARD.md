@@ -2,7 +2,7 @@
 
 | Key | Summary | RF | Prioridade | Risco | Depende de | Status |
 |---|---|---|---|---|---|---|
-| EIX-01 | Inventário eixos 8×6=48 | 01,13 | P0 | Médio | — | TODO |
+| EIX-01 | Inventário eixos 8×6=48 | 01,13 | P0 | Médio | — | DONE |
 | EIX-02 | Composição backend/frontend | 02,03 | P0 | Alto | EIX-01 | TODO |
 | EIX-03 | Gerador textos derivados, rust+vue | 04,05 | P0 | Alto | EIX-02 | TODO |
 | EIX-04 | Migração 13 consumidores | 06,07 | P0 | Alto | EIX-03 | TODO |
