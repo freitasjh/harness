@@ -230,7 +230,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T00:05:17.782Z",
+  "last_update": "2026-11-17T00:06:30.115Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -254,11 +254,11 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-005 EXECUTION batch 1 REVIEW APPROVED (0/0; 2 watch items para PUB-03/04). PARADA HITL antes do batch 2",
+  "sdd_stage": "PRD-3 ADR-005 EXECUTION batch 2/3 — pacotes plataforma + fallback com matriz + prova D7 sem toolchain",
   "backlog": {
     "total": 7,
-    "todo": 5,
-    "doing": 0,
+    "todo": 2,
+    "doing": 3,
     "done": 2,
     "ids": [
       "PUB-01",
@@ -269,9 +269,10 @@
       "VAL-02",
       "VAL-03"
     ],
-    "done_ids": [
-      "PUB-01",
-      "PUB-02"
+    "doing_ids": [
+      "PUB-03",
+      "PUB-04",
+      "VAL-01"
     ]
   },
   "next_task": "ADR-002",
@@ -1994,14 +1995,19 @@
     "at": "2026-11-16T23:49:30.321Z"
   },
   "batch": {
-    "id": 1,
+    "id": 2,
     "agent": "developer-engineer",
-    "status": "review_approved",
-    "commit": "bb6353fc536410654c6dc06bc1ce6f8f8f445362",
-    "tasks": 2,
-    "build_scripts": 0,
-    "shim_prova": "sha idêntico ao binário direto",
-    "bug_achado": "glibc (sinal runtime) != gnu (sufixo npm) — mapeado no shim"
+    "skills": [
+      "node-architecture-specialist",
+      "security-review"
+    ],
+    "status": "running",
+    "tasks": 3,
+    "base": "68e6208",
+    "watch_items": [
+      "FU-ADR005-01 matriz no fallback",
+      "FU-ADR005-02 exports ./package.json"
+    ]
   },
   "next_gate": "HITL batch 1->2: posso avancar para o batch 2 (PUB-03 pacotes de plataforma, PUB-04 fallback tripla, VAL-01 prova D7)?",
   "governance_note": {
