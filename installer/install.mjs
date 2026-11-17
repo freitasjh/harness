@@ -757,7 +757,7 @@ function refWillExist(rel, writtenPaths) {
 }
 
 export function generateConfig(answers, { writtenPaths = null } = {}) {
-  if (!answers || !answers.project) throw new InstallError('answers.project required', 'BAD_ANSWER');
+  if (!answers || !answers.project) throw new InstallError('answers.project required', 'BAD_ANSWER'); else if (answers.axes) return generateConfigEixos(answers, { writtenPaths }); // EIX-04 §3 item 5: eixos => gerador novo; forma legada intacta
   // BE-04: axes presentes mas sem preset => BAD_ANSWER.
   if (answers.backend !== undefined && answers.frontend !== undefined) {
     if (presetOfAxes(answers.backend, answers.frontend) === null) {
@@ -3008,3 +3008,6 @@ export async function runUpgrade({
     throw e;
   }
 }
+
+// EIX-04 (ADR-001 §3 item 5): import no fim do arquivo para NAO deslocar a linha 413 — prova viva de OWNER_DECISIONS em .opencode/plugins/lib/inventory/checks.mjs:180.
+import { generateConfig as generateConfigEixos } from './generate-eixos.mjs'

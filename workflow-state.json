@@ -1,7 +1,7 @@
 {
-  "current_feature": "prd-eixos-separados-cli",
-  "current_phase": "Discovery",
-  "previous_phase": "Completed",
+  "current_feature": "prd-eixos-separados-cli-adr-001",
+  "current_phase": "Completed",
+  "previous_phase": "Execution",
   "next_phase": "Planning",
   "type": "refactor",
   "layer": "agents/skills/rules",
@@ -11,9 +11,9 @@
     "bug_report": "harness/harness-eixos-stack-p2.json",
     "source_tech_debt": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
     "previous_archive": ".spec/archive/20261018-harness-eixos-stack/",
-    "verify": ".spec/backend/prd-installer-rust-adr-005/VERIFY.md",
+    "verify": ".spec/backend/prd-eixos-separados-cli-adr-001/VERIFY.md",
     "harness_evidence": ".spec/archive/20261018-harness-eixos-stack/harness/",
-    "harness_report": "harness/prd-installer-rust-adr-003.json",
+    "harness_report": "harness/prd-eixos-separados-cli-adr-001.json",
     "tech_debt_p2": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
     "previous_cycle": {
       "cycle": ".spec/backend/harness-inventory-adr-001/",
@@ -22,10 +22,10 @@
       "harness_report": "harness/harness-inventory.json"
     },
     "c1_previous_bug": ".spec/bugs/harness-eixos-stack-p2/TASKS.md",
-    "proposal": ".spec/backend/prd-installer-rust-adr-005/PROPOSAL.md",
-    "spec": ".spec/backend/prd-installer-rust-adr-005/SPEC.md",
-    "plan": ".spec/backend/prd-installer-rust-adr-005/PLAN.md",
-    "tasks": ".spec/backend/prd-installer-rust-adr-005/TASKS.md",
+    "proposal": ".spec/backend/prd-eixos-separados-cli-adr-001/PROPOSAL.md",
+    "spec": ".spec/backend/prd-eixos-separados-cli-adr-001/SPEC.md",
+    "plan": ".spec/backend/prd-eixos-separados-cli-adr-001/PLAN.md",
+    "tasks": ".spec/backend/prd-eixos-separados-cli-adr-001/TASKS.md",
     "superseded_cycle": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/ (superseded: SPEC prescrevia `Plugin.define`, ausente no binario v2.0.32)",
     "archive": ".spec/archive/20261028-harness-design-system-agent/",
     "prd": ".spec/prd/prd-eixos-separados-cli/PRD.md",
@@ -33,11 +33,13 @@
     "adr_index": ".spec/prd/prd-installer-rust/ADR-INDEX.md",
     "adr": ".spec/prd/prd-installer-rust/ADRs/ADR-005-publicacao-runtime-selo/ADR.md",
     "prd_lines": ".spec/prd/prd-harness-inventory/PRD.md (162 linhas, 16 secoes, PRD-01 PASS)",
-    "security": ".spec/backend/prd-installer-rust-adr-005/SECURITY.md",
-    "spec_gate": ".spec/backend/prd-installer-rust-adr-005/SPEC_GATE.md",
-    "jira_board": ".spec/backend/prd-installer-rust-adr-005/JIRA_BOARD.md",
+    "security": ".spec/backend/prd-eixos-separados-cli-adr-001/SECURITY.md",
+    "spec_gate": ".spec/backend/prd-eixos-separados-cli-adr-001/SPEC_GATE.md",
+    "jira_board": ".spec/backend/prd-eixos-separados-cli-adr-001/JIRA_BOARD.md",
     "ux": ".spec/frontend/prd-installer-rust-adr-004/UX.md",
-    "tech_debt_task": ".spec/tech-debts/doctor-spec-mkdtemp-flake/TASKS.md"
+    "tech_debt_task": ".spec/tech-debts/doctor-spec-mkdtemp-flake/TASKS.md",
+    "adr1": ".spec/prd/prd-eixos-separados-cli/ADRs/ADR-001-eixos-separados/ADR.md",
+    "adr2": ".spec/prd/prd-eixos-separados-cli/ADRs/ADR-002-cli-visual/ADR.md"
   },
   "scope": {
     "interpretation": "esteira PRD->ADR->SDD no harness (visibilidade de intencao antes do codigo)",
@@ -60,12 +62,12 @@
   "gates": {
     "P0_P1": "approved_user_2026_11_16 (Refactor de distribuicao; ux-designer N/A — publicacao sem tela)",
     "G2_PRD": "approved_user_2026_10_22 (PRD prd-garantias-runtime aprovado sem ressalvas; §16 do PRD.md; 3 decisoes do owner)",
-    "P1_P2": "approved_auto_architect_2026_11_16 (16/16 RF, score 100%, selo c904f1c5 intacto; F1/F2/F3 🟡 corrigidos) — AGUARDANDO CONFIRMACAO DO OWNER",
-    "P2_P3": "approved_user_2026_11_16 (PLAN 53 linhas, TASKS 7 microtasks, 16 RF mapeados; SDD verdes)",
-    "P3_P4": "approved_auto_evidence_2026_11_17 (3 batches; review APPROVED 0/0)",
-    "P4_P5": "approved_auto_evidence_QA_2026_11_17 (540+716+cargo85+differential23+mutante23)",
-    "P5_P6": "approved_auto_2026_11_17 (VERIFY 3/3; rito reutilizado sem auto-assinatura)",
-    "P6_fim": "done_commit_1fe22cd (PR #21 merge humano 2026-11-17; PRD-3 5/5 ADRs merged na main)",
+    "P1_P2": "approved_user_2026_11_17 (SPEC 13 RF 100%, architect aprovado)",
+    "P2_P3": "approved_user_2026_11_17 (PLAN 51, TASKS 6, 13 RF, SDD verdes)",
+    "P3_P4": "approved_auto_evidence_2026_11_17 (6 batches; review APPROVED 0/0)",
+    "P4_P5": "approved_auto_evidence_QA_2026_11_17 (540+1059+cargo85+golden95; baseline 48)",
+    "P5_P6": "approved_owner_2026_11_17 (selo+baseline48+V20 ratificados; Veredito registrado)",
+    "P6_fim": "pending_human_push_merge (branch 01-eixos-separados-impl @ 612adcf)",
     "B1_B2": "approved_user_2026_09_29",
     "FU32": "closed_approved_decision_B",
     "_previous_cycle_opencode_v2_only": {
@@ -80,18 +82,17 @@
       "B1_B2": "approved_user_2026_09_29",
       "FU32": "closed_approved_decision_B"
     },
-    "G2_ADR": "approved_user_2026_11_16 (ADR-005 — branch de autoria)",
+    "G2_ADR": "approved_user_2026_11_17 (ADR-001 13 itens + ADR-002 12 itens protótipo congelado)",
     "G1_PRD": "approved_user_2026_11_17 (PRD prd-eixos-separados-cli, 16 seções, §16 com decisões owner; protótipo CLI antes da spec)",
-    "P4_5": "approved_auto_2026_11_17 (security 14 itens: 3 PASS + 11 N/A motivados)",
+    "P4_5": "approved_auto_2026_11_17 (security 14: 11 N/A + 3 PASS)",
     "G2_RESEARCH": "approved_user_2026_11_17 (A1 eixos + B1 setas+enter + C1 baseline validado; 7 alternativas, 11 fontes; protótipo aprovado antes do ADR)"
   },
   "code_review": {
-    "last_invoked_at": "2026-11-17T00:31:19.154Z",
+    "last_invoked_at": "2026-11-17T16:30:49.229Z",
     "last_status": "passed",
     "critical_issues": 0,
     "attention_issues": 0,
-    "note": "ADR-005 batch 3 review final APPROVED 0/0; selo c904f1c5 re-derivado, differential 23/23 com mutante 23 reprovado, presets idênticos, rito sem auto-assinatura. PRD-3 5/5 fechado.",
-    "ciclo": "prd-installer-rust-adr-005"
+    "reviewer_notes": "ADR-001 review final APPROVED 0/0; selo mesmo hash correto (sealCommands hash das commands); owner ratificou selo+baseline48+V20."
   },
   "overrides": [
     {
@@ -257,7 +258,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T01:40:43.675Z",
+  "last_update": "2026-11-17T16:30:49.229Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -281,20 +282,19 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "NOVO PRD — ADRs 001 (eixos) e 002 (CLI visual) em escrita; protótipo aprovado e congelado",
+  "sdd_stage": "ADR-001 EIXOS CONCLUIDO (6/6; 48 combinacoes; owner ratificou). Aguardando push + merge; proximo ADR-002 CLI visual",
   "backlog": {
-    "total": 7,
+    "total": 6,
     "todo": 0,
     "doing": 0,
-    "done": 7,
+    "done": 6,
     "ids": [
-      "PUB-01",
-      "PUB-02",
-      "PUB-03",
-      "PUB-04",
+      "EIX-01",
+      "EIX-02",
+      "EIX-03",
+      "EIX-04",
       "VAL-01",
-      "VAL-02",
-      "VAL-03"
+      "VAL-02"
     ]
   },
   "next_task": "ADR-002",
@@ -950,6 +950,63 @@
       "origem": "code-reviewer batch 2 ADR-005",
       "bloqueia": false,
       "target": "VAL-02"
+    },
+    {
+      "id": "FU-EIX-ORACULO",
+      "created_at": "2026-11-17T01:56:22.465Z",
+      "texto": "Ratificar via §16 o comando eixos.spec.mjs (48/48) em ADR-001 §3 item 1 / SPEC §4 / PLAN §5, ou migrar eixos-stack.spec.mjs no EIX-04 — comando congelado hoje prova 73/73 do oráculo legado de 12 presets",
+      "origem": "code-reviewer EIX-01",
+      "bloqueia": false,
+      "target": "EIX-04/VAL-02",
+      "status": "closed",
+      "fechado_em": "2026-11-17T14:57:00.671Z",
+      "prova": "EIX-04 review: comando literal rust backend/vue frontend; writtenPaths 6 casos; oráculo 48/108"
+    },
+    {
+      "id": "FU-CARGO-ORACULO",
+      "created_at": "2026-11-17T14:22:15.262Z",
+      "texto": "Registrar em VAL-01/§16: regra ADR §2.1 rust→cargo não tem comando no oráculo congelado (STACK_PROFILES.rust commands={}); NÃO inventar default agora — C3 proíbe",
+      "origem": "code-reviewer EIX-02",
+      "bloqueia": false,
+      "target": "VAL-01"
+    },
+    {
+      "id": "FU-NODE-REINDEX",
+      "created_at": "2026-11-17T14:22:15.262Z",
+      "texto": "Documentar em EIX-04/VAL-01 o desempate de re-indexação node (node/node-esm=node --test vs node+react={})",
+      "origem": "code-reviewer EIX-02",
+      "bloqueia": false,
+      "target": "VAL-01"
+    },
+    {
+      "id": "FU-GERADOR-REWIRING",
+      "created_at": "2026-11-17T14:32:07.385Z",
+      "texto": "EIX-04: reexecutar comando literal ADR §3 item 5 via installer-contract.mjs.generateConfig({project,axes:{rust,vue}}) e fazer devolver rust backend/vue frontend com commands backend + mcp frontend. NAO marcar RF-05 fechado antes disso",
+      "origem": "code-reviewer EIX-03",
+      "bloqueia": true,
+      "target": "EIX-04",
+      "status": "closed",
+      "fechado_em": "2026-11-17T14:57:00.671Z",
+      "prova": "EIX-04 review: comando literal rust backend/vue frontend; writtenPaths 6 casos; oráculo 48/108"
+    },
+    {
+      "id": "FU-WRITTENPATHS-BF04",
+      "created_at": "2026-11-17T14:32:07.385Z",
+      "texto": "EIX-04: portar writtenPaths (trim moduleMap/evidence.schema, BF-04) e suiteCommand para o gerador novo antes de trocar os 4 call-sites de install.mjs:759 — swap ingênuo perde semântica em silêncio",
+      "origem": "code-reviewer EIX-03",
+      "bloqueia": true,
+      "target": "EIX-04",
+      "status": "closed",
+      "fechado_em": "2026-11-17T14:57:00.671Z",
+      "prova": "EIX-04 review: comando literal rust backend/vue frontend; writtenPaths 6 casos; oráculo 48/108"
+    },
+    {
+      "id": "FU-RATIFICAR-48",
+      "created_at": "2026-11-17T15:20:56.712Z",
+      "texto": "VAL-02: owner ratificar baseline 48 — 37 novas (não 36; node+node-esm colapsam em node+none, 11 herdados). Of-by-one VAL01-OBS-1 documentado; ajuste normativo 36→37/12→11 é decisão §16 separada.",
+      "origem": "review VAL-01",
+      "bloqueia": false,
+      "target": "VAL-02"
     }
   ],
   "batches": [
@@ -1172,14 +1229,15 @@
     "pos_restart3": "orcamento ESGOTADO (2/2: fix + review); proxima delegacao nega; restart #4 necessario"
   },
   "verify": {
-    "at": "2026-11-17T00:31:19.154Z",
-    "verdict": "3/3 PASS (PRD-3 fechado)",
-    "completude": "7/7 tasks; 5/5 ADRs implementados",
-    "corretude": "540+716 testes + cargo 85 + differential 23/23 + mutante 0/23; selo c904f1c5",
-    "coerencia": "motor único; oráculo externo é a garantia; ponte D1 = 10 nomes em dívida declarada; security 14",
-    "traceability": "16/16 RF",
-    "artefato": ".spec/backend/prd-installer-rust-adr-005/VERIFY.md",
-    "report": "harness/prd-installer-rust-adr-005.json"
+    "at": "2026-11-17T16:30:49.229Z",
+    "verdict": "3/3 PASS (owner ratificou selo+baseline48+V20)",
+    "completude": "6/6 tasks; comando literal rust backend/vue frontend",
+    "corretude": "540+1059+cargo85+golden95; baseline 48 (37 novas) proveniência oráculo; C3 zero",
+    "coerencia": "motor único; 48 combinações por eixo; selo c904f1c5 ratificado; gate/config intocados",
+    "traceability": "13/13 RF",
+    "artefato": ".spec/backend/prd-eixos-separados-cli-adr-001/VERIFY.md",
+    "report": "harness/prd-eixos-separados-cli-adr-001.json",
+    "literalProven": true
   },
   "commit": "a19acab",
   "remote": "git@github.com:freitasjh/harness.git (SSH; push + CI pendentes)",
@@ -1274,8 +1332,11 @@
   "prd_adr": {
     "prd_id": "prd-eixos-separados-cli",
     "prd_status": "approved",
-    "active_adr": "— (RESEARCH em curso)",
-    "adr_order": [],
+    "active_adr": "ADR-001 (aguardando G2)",
+    "adr_order": [
+      "ADR-001",
+      "ADR-002"
+    ],
     "snapshots": [],
     "decisoes_anteriores": "prd-installer-rust 5/5 merged — reaberto por §16 D16-EIXOS-CLI"
   },
@@ -1973,11 +2034,11 @@
   },
   "spec": {
     "score": "100%",
-    "gate": ".spec/backend/prd-installer-rust-adr-005/GATE-SPEC.md",
+    "gate": ".spec/backend/prd-eixos-separados-cli-adr-001/GATE-SPEC.md",
     "security": "Fase 1 pass",
-    "rf_count": 16,
-    "items": 16,
-    "at": "2026-11-16T23:33:13.919Z"
+    "rf_count": 13,
+    "items": 13,
+    "at": "2026-11-17T01:47:31.392Z"
   },
   "plan": {
     "lines": 53,
@@ -1991,12 +2052,14 @@
     "at": "2026-11-16T23:49:30.321Z"
   },
   "batch": {
-    "id": 3,
-    "status": "review_approved",
-    "commit": "2356aea101671c9987bb72e2b92f98db048c3800",
-    "final": true
+    "id": 6,
+    "status": "review_running",
+    "commit": "ddf016f165150ebb5cbf4b001baeea4078ae1bc9",
+    "selo": "re-derivado = c904f1c5 (mesmo hash; commands byte-idênticas por RF-11)",
+    "owner_approval": "pending, nao forjado",
+    "verify": "3/3 + seguranca 14"
   },
-  "next_gate": "HITL batch 2->3: posso avancar para o batch 3 (VAL-02 selo/differential/oraculo + VAL-03 VERIFY)?",
+  "next_gate": "HITL VAL-01->VAL-02: posso avancar para VAL-02? Vai exigir ratificacao owner do novo hash do selo (substitui c904f1c5) e do baseline 48.",
   "governance_note": {
     "at": "2026-11-16T21:26:46.319Z",
     "texto": "Developer escreveu no retorno que owner havia aprovado migrar só JSON-safe — falso. Owner aprovou 23 e depois ACEITOU o desvio para 13 com razao medida. Corrigido aqui para nao deixar decisao reescrita.",
@@ -2059,5 +2122,16 @@
     "segredo": "[input is masked] / [REDACTED]",
     "combinacao_demo": "rust+vue escolhidos separadamente — OK",
     "nota": "congelado no ADR-002; B2 full-screen fica como divergencia declarada, nao escolhida"
+  },
+  "verify_val01": {
+    "baseline": 48,
+    "novas": 37,
+    "herdados": 11,
+    "sha_registrados": 48,
+    "proveniencia": "48 oraculo / 0 gerador",
+    "c3": false,
+    "mutacao_oraculo": "49/95 derrubados",
+    "v20": "223/30373 estavel",
+    "rito": "reutilizado, pendente owner"
   }
 }
