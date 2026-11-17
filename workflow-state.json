@@ -88,12 +88,12 @@
     "G2_RESEARCH": "approved_user_2026_11_17 (A1 eixos + B1 setas+enter + C1 baseline validado; 7 alternativas, 11 fontes; protótipo aprovado antes do ADR)"
   },
   "code_review": {
-    "last_invoked_at": "2026-11-17T21:10:36.340Z",
+    "last_invoked_at": "2026-11-17T22:26:41.814Z",
     "last_status": "passed",
     "critical_issues": 0,
     "attention_issues": 0,
-    "suggestions": 1,
-    "reviewer_notes": "CLI-02 APPROVED 0/0. N=4/M byte-idêntico ao congelado (78/78 bytes), setas de choices reais AXIS_IDS, mutação de literal/chave reprova, grep string solta sem falso-positivo. Divida obrigatoria ate VAL-02: @inquirer pinado sem node_modules — npm ci + erro legivel em defaultPrompts()."
+    "suggestions": 2,
+    "reviewer_notes": "CLI-03 APPROVED 0/0. Tela rust+vue byte-idêntica ao literal ADR-001; isolamento commands/mcp por mutação; N=4/M inalterados; oráculo 17 intacto; incidente grep transitório sem resíduo. Sugestões: wiring configFromSelection em produção (CLI-04/VAL-01); unificar AXIS_IDS via re-export (VAL-02)."
   },
   "overrides": [
     {
@@ -259,7 +259,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T22:22:45.181Z",
+  "last_update": "2026-11-17T22:26:41.814Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -283,7 +283,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "ADR-002 CLI VISUAL batch 3 CONCLUIDO (CLI-03: rust+vue na tela = ADR-001) — review em curso",
+  "sdd_stage": "ADR-002 CLI VISUAL batch 3 REVIEW APPROVED (0/0; tela rust+vue = ADR-001). PARADA HITL antes do CLI-04",
   "backlog": {
     "total": 6,
     "todo": 3,
@@ -1037,6 +1037,22 @@
       "origem": "code-reviewer CLI-02",
       "bloqueia": false,
       "target": "CLI-04/VAL-02"
+    },
+    {
+      "id": "FU-WIRING-CONFIG",
+      "created_at": "2026-11-17T22:26:41.814Z",
+      "texto": "Garantir wiring de configFromSelection em producao (runVisualWizard caller) no CLI-04/VAL-01 — hoje so consumidor e o teste",
+      "origem": "code-reviewer CLI-03",
+      "bloqueia": false,
+      "target": "CLI-04"
+    },
+    {
+      "id": "FU-AXIS-IDS-UNICO",
+      "created_at": "2026-11-17T22:26:41.814Z",
+      "texto": "Considerar re-export unico de AXIS_IDS (hoje 2 copias literais byte-iguais em install.mjs e installer-contract.mjs) no VAL-02",
+      "origem": "code-reviewer CLI-03",
+      "bloqueia": false,
+      "target": "VAL-02"
     }
   ],
   "batches": [
@@ -2091,13 +2107,13 @@
   },
   "batch": {
     "id": 3,
-    "status": "review_running",
+    "status": "review_approved",
     "commit": "267b3b3698eae690be4f8295d563733d729f86df",
     "tela_rust_vue": "equals ADR-001 literal = true",
     "installer": 1080,
     "incidente": "grep-oráculo contaminado transitorianamente, corrigido no teste, oráculo intacto"
   },
-  "next_gate": "HITL batch 2->3: posso avancar para CLI-03 (backend/frontend separados via ADR-001, rust+vue na tela)?",
+  "next_gate": "HITL batch 3->4: posso avancar para CLI-04 (segredo mask, aborto 0 writes, restore eco + npm ci)?",
   "governance_note": {
     "at": "2026-11-16T21:26:46.319Z",
     "texto": "Developer escreveu no retorno que owner havia aprovado migrar só JSON-safe — falso. Owner aprovou 23 e depois ACEITOU o desvio para 13 com razao medida. Corrigido aqui para nao deixar decisao reescrita.",
