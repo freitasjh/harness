@@ -1,8 +1,8 @@
 {
-  "current_feature": "prd-installer-rust-adr-005",
+  "current_feature": "prd-installer-rust",
   "current_phase": "Completed",
-  "previous_phase": "Execution",
-  "next_phase": "Planning",
+  "previous_phase": "Completed",
+  "next_phase": "—",
   "type": "refactor",
   "layer": "agents/skills/rules",
   "repo": "harness",
@@ -64,7 +64,7 @@
     "P3_P4": "approved_auto_evidence_2026_11_17 (3 batches; review APPROVED 0/0)",
     "P4_P5": "approved_auto_evidence_QA_2026_11_17 (540+716+cargo85+differential23+mutante23)",
     "P5_P6": "approved_auto_2026_11_17 (VERIFY 3/3; rito reutilizado sem auto-assinatura)",
-    "P6_fim": "pending_human_push_merge (branch 05-publicacao-runtime-selo-impl @ 2356aea)",
+    "P6_fim": "done_commit_1fe22cd (PR #21 merge humano 2026-11-17; PRD-3 5/5 ADRs merged na main)",
     "B1_B2": "approved_user_2026_09_29",
     "FU32": "closed_approved_decision_B",
     "_previous_cycle_opencode_v2_only": {
@@ -230,7 +230,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T00:31:19.154Z",
+  "last_update": "2026-11-17T00:57:12.110Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -254,7 +254,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 CONCLUIDO — 5/5 ADRs implementados e aprovados. Aguardando push + merge do ADR-005",
+  "sdd_stage": "PRD-3 CONCLUIDO — 5/5 ADRs merged na main (1fe22cd). Pendencias: FU-D1-ENGINE10 (decisao owner), FU-DOCTOR-FLAKY (P3)",
   "backlog": {
     "total": 7,
     "todo": 0,
@@ -1238,12 +1238,13 @@
   "prd_adr": {
     "prd_id": "prd-installer-rust",
     "prd_status": "approved",
-    "active_adr": "ADR-005",
+    "active_adr": "— (PRD-3 concluido)",
     "adr_order": [
       "ADR-001",
       "ADR-002",
       "ADR-003",
-      "ADR-004"
+      "ADR-004",
+      "ADR-005"
     ],
     "snapshots": [
       {
@@ -1273,6 +1274,13 @@
         "at": "2026-11-16T21:41:33.700Z",
         "status": "in-progress",
         "branch": "04-tui-dez-telas-impl"
+      },
+      {
+        "adr": "ADR-005",
+        "at": "2026-11-17T00:57:12.110Z",
+        "status": "merged",
+        "merge": "1fe22cd",
+        "nota": "7/7 tasks; selo c904f1c5 intacto; differential 23/23; wrapper/pacotes/D7 provados"
       }
     ],
     "decisions_closed": {
@@ -1288,8 +1296,9 @@
     "summary": {
       "prd": "prd-installer-rust",
       "adrs_total": 5,
-      "adrs_merged": 4,
-      "adrs_pending_merge": 1,
+      "adrs_merged": 5,
+      "adrs_pending_merge": 0,
+      "concluido": "2026-11-17T00:57:12.110Z",
       "ponte_restante": "10 D-ENGINE (FU-D1-ENGINE10, decisao owner byte-paridade pendente)"
     }
   },
