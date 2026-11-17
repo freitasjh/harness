@@ -1,0 +1,289 @@
+{
+  "version": 1,
+  "demand": "prd-installer-rust-adr-005",
+  "agent": "developer-engineer",
+  "phase": "Testing",
+  "batch": 2,
+  "tasks": [
+    "PUB-03",
+    "PUB-04",
+    "VAL-01"
+  ],
+  "branch": "adr/prd-installer-rust/05-publicacao-runtime-selo-impl",
+  "gitSha": "7651b045c7c5dc4a08ded1b2ab95d17cec6143c1",
+  "gitShaBasis": "HEAD lido no inicio desta medicao (commit de estado \"iniciar batch 2\"); o commit desta entrega e feito DEPOIS da medicao e registrado no retorno ao orquestrador. Chave de cache da contraprova, nao autorreferencia.",
+  "timingBasis": "durationMs medido por process.hrtime.bigint() em torno de cada spawnSync (ms inteiros, arredondados); nao estimativa, nao copiado de relatorio anterior. stdoutHash = sha256 dos bytes brutos de stdout capturados em /tmp/opencode/pub-d7/captures/.",
+  "commands": [
+    {
+      "cmd": "command -v cargo || echo 'no cargo'",
+      "exitCode": 0,
+      "durationMs": 3,
+      "stdoutHash": "sha256:f81a3224dd0d70bc0a1da79474fdb4d3a9e9e4c56de4abdc822281f993b205bd",
+      "stdoutBytes": 9,
+      "capture": "/tmp/opencode/pub-d7/captures/01-d7-cargo.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "no cargo (PATH=/tmp/opencode/pub-d7/cleanbin:/usr/bin:/bin — node/npm presentes, toolchain Rust ausente)",
+      "resolution": "item 3 da interface / ADR §2.4: PATH sem cargo; comando executado via bash -c com env limpo. 'no cargo' = ausencia confirmada."
+    },
+    {
+      "cmd": "command -v rustc || echo 'no rustc'",
+      "exitCode": 0,
+      "durationMs": 1,
+      "stdoutHash": "sha256:042881364a3c5b028ab439a91bc2e553ac8ef793fcddf7911694a39a9de8a6c6",
+      "stdoutBytes": 9,
+      "capture": "/tmp/opencode/pub-d7/captures/02-d7-rustc.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "no rustc (mesmo PATH limpo)",
+      "resolution": "item 3 da interface / ADR §2.4: mesmo PATH limpo."
+    },
+    {
+      "cmd": "node -v",
+      "exitCode": 0,
+      "durationMs": 4,
+      "stdoutHash": "sha256:fe9da612097c5b1f2808feef32b5685e7a19a607fd96c7d6abe1454f0edc7e1c",
+      "stdoutBytes": 8,
+      "capture": "/tmp/opencode/pub-d7/captures/03-d7-node.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "v26.7.0 (major >= 20)",
+      "resolution": "D7: Node >= 20 no destino (docs/INSTALACAO.md:17); medido v26.7.0."
+    },
+    {
+      "cmd": "npm install --offline --install-links --no-audit --no-fund --ignore-scripts",
+      "exitCode": 0,
+      "durationMs": 185,
+      "stdoutHash": "sha256:acf48085515f7637686a22ee4054d54ac7720b5681cd76ea34cf1c4b4b628077",
+      "stdoutBytes": 21,
+      "capture": "/tmp/opencode/pub-d7/captures/04-d7-install.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "added 2 packages (segunda execucao: \"up to date in 139ms\"); npm install --offline --install-links --no-audit --no-fund --ignore-scripts — zero script de build, zero rede, zero cargo",
+      "resolution": "instalacao do wrapper + pacote da plataforma por file: locais, --offline, --ignore-scripts: nenhuma compilacao, nenhum download, nenhuma toolchain. Os 2 alvos incompativeis foram tratados como optionalDependencies ausentes pelo npm."
+    },
+    {
+      "cmd": "printf '%s\\n' '{\"v\":1,\"op\":\"inventory\",\"args\":{},\"answers\":{},\"target\":null}' | ./node_modules/.bin/harness-installer contract-v1 | tee /tmp/opencode/pub-d7/out.json",
+      "exitCode": 0,
+      "durationMs": 28,
+      "stdoutHash": "sha256:928ae962bfb8fab66ac391cc640bf5d8dbd973be08a3367ed715bb9ae36b2a1e",
+      "stdoutBytes": 401,
+      "capture": "/tmp/opencode/pub-d7/captures/05-d7-contract.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "{\"v\":1,\"ok\":true,\"op\":\"inventory\",...} via ./node_modules/.bin/harness-installer (link para o shim do wrapper), nao para o binario cru",
+      "resolution": "Apos corrigir colisao de nomes de bin (pacotes de plataforma usam harness-installer-<alvo>), node_modules/.bin/harness-installer aponta para o shim do wrapper — o fallback da ADR §2.2 nao e bypassado. stdout e o envelope do binario, byte-a-byte."
+    },
+    {
+      "cmd": "node -e 'const e=JSON.parse(require(\"fs\").readFileSync(\"/tmp/opencode/pub-d7/out.json\",\"utf8\")); if(e.v!==1||typeof e.ok!==\"boolean\") process.exit(2); console.log(e.op,e.ok)'",
+      "exitCode": 0,
+      "durationMs": 22,
+      "stdoutHash": "sha256:2ec63e3d3634d95a33735a0f7d517c10d4f044108725c2b70ae1cb22e9053341",
+      "stdoutBytes": 15,
+      "capture": "/tmp/opencode/pub-d7/captures/06-d7-envelope.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "inventory true — e.v===1 e typeof e.ok===\"boolean\"",
+      "resolution": "criterio literal de ADR §2.4 item 6 / SPEC RF-11."
+    },
+    {
+      "cmd": "grep -cE 'cargo build|rustc ' node_modules/harness-installer/package.json || true",
+      "exitCode": 0,
+      "durationMs": 2,
+      "stdoutHash": "sha256:9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "stdoutBytes": 2,
+      "capture": "/tmp/opencode/pub-d7/captures/07-d7-grep-build.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "0 — grep -cE \"cargo build|rustc \" node_modules/harness-installer/package.json",
+      "resolution": "SPEC RF-03/ADR §2.4: 0 ocorrencias de cargo build/rustc no manifesto instalado."
+    },
+    {
+      "cmd": "find packaging -name install.mjs",
+      "exitCode": 0,
+      "durationMs": 1,
+      "stdoutHash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutBytes": 0,
+      "capture": "/tmp/opencode/pub-d7/captures/08-find-install-mjs.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "vazio (0 bytes) — find packaging -name install.mjs",
+      "resolution": "ADR §2.3 / SPEC RF-06: install.mjs nao entra no pacote."
+    },
+    {
+      "cmd": "node --input-type=module -e \"import {sealCommands} from './.opencode/plugins/lib/seal.mjs';import fs from 'node:fs';console.log(sealCommands(JSON.parse(fs.readFileSync('harness.config.json','utf8')).commands))\"",
+      "exitCode": 0,
+      "durationMs": 31,
+      "stdoutHash": "sha256:4cadeebe9f4cfdfe6e03adeb6be8db528748d607a8cae58d886da7f1543c7917",
+      "stdoutBytes": 160,
+      "capture": "/tmp/opencode/pub-d7/captures/09-seal.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "suiteFull=c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2; unit=daba8c5465bffe061738235b274c497a4e8e761e41c5e79d4c671a72231cffc7",
+      "resolution": "ADR §2.5: selo re-derivado de harness.config.json via seal.mjs; c904f1c5 e daba8c5 byte-identicos; nenhum HARNESS_SEAL_JSON novo."
+    },
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 1014,
+      "stdoutHash": "sha256:130ce778153f7c985c621193eb234052c19a3ab0696546b4112f98c64dc88311",
+      "stdoutBytes": 109341,
+      "capture": "/tmp/opencode/pub-d7/captures/10-stage1-plugins.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "tests 540 / pass 540 / fail 0 / skipped 0",
+      "resolution": "1o termo de commands.suiteFull, reexecutado (harness.config.json)."
+    },
+    {
+      "cmd": "node --test \"installer/__tests__/*.spec.mjs\"",
+      "exitCode": 0,
+      "durationMs": 5904,
+      "stdoutHash": "sha256:1c4747aa1969e71a825ea5525e7da7bedd0fb1fec126e63cafeb5d0eb2f39aa1",
+      "stdoutBytes": 87978,
+      "capture": "/tmp/opencode/pub-d7/captures/11-stage2-installer.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "tests 716 / pass 716 / fail 0 / skipped 0",
+      "resolution": "2o termo de commands.suiteFull, reexecutado."
+    },
+    {
+      "cmd": "node scripts/static-checks.mjs",
+      "exitCode": 0,
+      "durationMs": 184,
+      "stdoutHash": "sha256:4a1e734a85037a1e26e20ea8531b7b4e64cf76d4b1fd7890b3b62529b7652ad5",
+      "stdoutBytes": 1564,
+      "capture": "/tmp/opencode/pub-d7/captures/12-stage3-static.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "13 PASS / 0 FAIL; V15 rede em installer/=0; V20 population=223/30373, prescriptions=137, incondicional=0; PASS PRD-01/ADR-01/ADR-02",
+      "resolution": "3o termo de commands.suiteFull; V15=0 (rede-zero); V20 inalterado apos documentacao entregue como .txt (population 223/30373 preservada, instrumento protegido nao tocado)."
+    },
+    {
+      "cmd": "node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 40,
+      "stdoutHash": "sha256:e5e528c52d79fceaa1be828bd89116aa6e0be73294d2e99d39c4febe99e84516",
+      "stdoutBytes": 51,
+      "capture": "/tmp/opencode/pub-d7/captures/13-stage4-vendor.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "vendor-check OK (.agents/skills/.vendor-lock.json)",
+      "resolution": "4o termo de commands.suiteFull."
+    },
+    {
+      "cmd": "cargo test --manifest-path installer-rs/Cargo.toml --offline",
+      "exitCode": 0,
+      "durationMs": 132,
+      "stdoutHash": "sha256:547d33308225fbb58823113fc16b59d37f66a7505e9f25959d78749f9f7e87e5",
+      "stdoutBytes": 6917,
+      "capture": "/tmp/opencode/pub-d7/captures/14-cargo-parallel.out",
+      "envKind": "full (cargo paralelo, fora do selo)",
+      "observed": "85 passed / 0 failed (soma dos 7 blocos test result: ok) — cargo test --manifest-path installer-rs/Cargo.toml --offline; PATH COMPLETO, paralelo, FORA do selo (D6)",
+      "resolution": "D6/custo aceito: suite Rust em comando paralelo, PATH COMPLETO, ausente de commands.suiteFull e de HARNESS_SEAL_JSON. Nao e contraprova."
+    },
+    {
+      "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node --test \"installer/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs && node scripts/vendor-skills.mjs --check",
+      "exitCode": 0,
+      "durationMs": 7014,
+      "stdoutHash": "sha256:325d6cad2025c1734a8150d0d19f8b411d0e831b07e2a53545f3807262aeae05",
+      "stdoutBytes": 198959,
+      "capture": "/tmp/opencode/pub-d7/captures/15-suitefull-sealed.out",
+      "envKind": "clean (sem cargo/rustc)",
+      "observed": "commands.suiteFull literal: 2 blocos (tests 540/pass 540/fail 0; tests 716/pass 716/fail 0), static e vendor concluidos; exit 0",
+      "resolution": "comando selado reexecutado na integra; exit 0; contraprova verde."
+    }
+  ],
+  "counts": {
+    "unit": {
+      "passed": 540,
+      "failed": 0,
+      "skipped": 0
+    },
+    "it": {
+      "passed": 716,
+      "failed": 0,
+      "skipped": 0
+    },
+    "frontend": {
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "countsNote": "Medido na reexecucao final: plugins 540/540, installer 716/716 (baseline entregue), frontend 0 (stack.frontend N/A). Os comandos packaging/ (7+5+6) nao entram em counts — fora de commands.suiteFull; executados a parte e verdes.",
+  "d7": {
+    "cleanPath": "/tmp/opencode/pub-d7/cleanbin:/usr/bin:/bin (symlinks node+npm; cargo/rustc ausentes)",
+    "commandVCargo": "no cargo",
+    "commandVRustc": "no rustc",
+    "nodeVersion": "v26.7.0",
+    "installCommand": "npm install --offline --install-links --no-audit --no-fund --ignore-scripts",
+    "installExitCode": 0,
+    "contractRequest": "{\"v\":1,\"op\":\"inventory\",\"args\":{},\"answers\":{},\"target\":null}",
+    "contractExitCode": 0,
+    "envelope": "{\"v\":1,\"ok\":true,\"op\":\"inventory\",\"result\":{\"layers\":[{\"layer\":\"opencode.json\",\"present\":false},{\"layer\":\".agents/agents\",\"present\":false},{\"layer\":\".agents/rules\",\"present\":false},{\"layer\":\".agents/schemas\",\"present\":false},{\"layer\":\".agents/skills\",\"present\":false},{\"layer\":\".opencode/plugins\",\"present\":false},{\"layer\":\"harness.config.json\",\"present\":false}],\"target\":\"/tmp/opencode/pub-d7/app\"}}",
+    "envelopeV": 1,
+    "okType": "boolean",
+    "grepBuildHits": 0,
+    "v15Network": 0,
+    "determinacaoBin": "node_modules/.bin/harness-installer -> ../harness-installer/shim.mjs (verificado por readlink -f); platform bin renomeado para harness-installer-<alvo> para evitar colisao no .bin"
+  },
+  "followUpsClosed": [
+    {
+      "id": "FU-ADR005-01",
+      "status": "closed",
+      "proof": "stderr literal do fallback contem a tripla detectada (linux/x64/glibc), o cabecalho MATRIZ DE ALVOS PUBLICADOS com linux-x64-gnu, linux-x64-musl e darwin-arm64, e ACAO CORRETIVA; exit 1, stdout 0 bytes; teste packaging/wrapper/__tests__/fallback.spec.mjs (5/5) confronta a matriz impressa com as optionalDependencies do wrapper."
+    },
+    {
+      "id": "FU-ADR005-02",
+      "status": "closed",
+      "proof": "exports[\"./package.json\"]=\"./package.json\" nos 3 package.json de plataforma; require.resolve(<pacote>/package.json) resolve nos 3 (teste FU-ADR005-02) e o ataque com exports sem ./package.json derruba com ERR_PACKAGE_PATH_NOT_EXPORTED (6/6 no arquivo de plataformas)."
+    }
+  ],
+  "frozen": {
+    "sealSuiteFull": "c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2",
+    "sealUnit": "daba8c5465bffe061738235b274c497a4e8e761e41c5e79d4c671a72231cffc7",
+    "suiteSteps": 4,
+    "presets": 12,
+    "newPreset": false,
+    "newOp": false,
+    "newKey": false,
+    "rustInContraprova": false,
+    "differential": "fora do selo; nao executado neste batch (VAL-02 permanece TODO)",
+    "note": "cargo test rodou em PATH COMPLETO como comando paralelo (D6), ausente de commands.suiteFull e HARNESS_SEAL_JSON."
+  },
+  "literalRito": {
+    "sha": "9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0",
+    "source": "harness/prd-installer-rust-adr-002.json:425 (e confirmado em prd-installer-rust-adr-004.json:706)",
+    "reused": true,
+    "writtenByThisAgent": false,
+    "verdictWrittenHere": null,
+    "note": "Literal ADR-002 reutilizado e verificado por sha256 do ARQUIVO installer/__tests__/oracle-literal.sha256. NENHUM \"Veredito: validated literal\" assinado por este agente — rito permanece sob autoridade do owner. Nao ha rubrica pendente neste batch."
+  },
+  "e2e": {
+    "applicable": false,
+    "reason": "infra.composeFile=null, infra.ports backend/frontend=null, stack backend/frontend N/A; sem servidor, DB, porta ou browser. D7 e prova de runtime de instalacao, nao H3 (wipe+12 passos)."
+  },
+  "evaluation": {
+    "telas": "n/a — distribuicao/pacote npm, sem UI; equivalente observavel: 4 etapas 0 falhas + V20 population=223/30373 preservada (docs entregues como .txt para nao perturbar instrumento protegido).",
+    "negocio": "3/3 tasks entregues (PUB-03/04, VAL-01); 2/2 follow-ups fechados com prova; 12 presets/23+8 ops/contrato inalterados; nenhuma chave, preset, op ou codigo novo.",
+    "logica": "Fallback para tripla desconhecida: tripla + matriz + acao, exit 1, stdout vazio, sem rede/cargo/segundo motor. Colisao de bin detectada e corrigida: pacotes de plataforma usam nome distinto, .bin do wrapper aponta ao shim. Selo re-derivado intacto; Rust em comando paralelo fora da contraprova.",
+    "perf": "suiteFull 7014 ms (plugins 1014, installer 5904, static 184, vendor 40); cargo 132 ms; install offline 185 ms; contrato 28 ms. Sem regressao atribuivel ao batch."
+  },
+  "brainStore": [
+    "sessoes/projetos/harness/2026-11-16-dev-prd-installer-rust-adr-005-batch2"
+  ],
+  "cleanup": {
+    "ports": [],
+    "processes": [],
+    "note": "Nada subido: infra null, stack N/A; zero lsof/kill, zero pkill -f, zero push, zero gh, zero npm publish. Diretorio /tmp/opencode/pub-d7 (app, stage, cleanbin, captures, logs) e descartavel; binario de teste copiado de installer-rs/target/debug (ja existente, sem compilacao no destino). Nenhum servidor residual.",
+    "repoWrites": [
+      "packaging/wrapper/shim.mjs",
+      "packaging/wrapper/__tests__/fallback.spec.mjs",
+      "packaging/platforms/{linux-x64-gnu,linux-x64-musl,darwin-arm64}/package.json",
+      "packaging/platforms/__tests__/platforms.spec.mjs",
+      "packaging/platforms/README.txt",
+      "packaging/README.txt",
+      "packaging/__tests__/d7-proof.spec.mjs",
+      ".spec/backend/prd-installer-rust-adr-005/JIRA_BOARD.md (3 statuses -> DONE)",
+      "harness/prd-installer-rust-adr-005.json"
+    ]
+  },
+  "selfReported": false,
+  "selfReportedNote": "Exit codes, hashes, bytes e duracoes observados diretamente por este agente na reexecucao final (capturas em /tmp/opencode/pub-d7/captures/). A contraprova do gate reexecuta commands.suiteFull; counts/README declarados aqui auto-declarados por natureza (SPEC ADR-002).",
+  "limitsDeclared": [
+    "REPORT e evidencia auto-declarada, nao prova; prova = contraprova do gate reexecutando o comando selado lido de harness.config.json (SPEC ADR-002).",
+    "Cargo/cobertura Rust rodou em comando paralelo com PATH COMPLETO, EXPLICITAMENTE fora de commands.suiteFull e HARNESS_SEAL_JSON (D6). Nao e contraprova e nao entra no selo.",
+    "VAL-02/VAL-03 NAO executados neste batch; oraculo/differential c63e333 nao revalidado aqui. Rito 9fa4530b reutilizado, nao re-assinado.",
+    "Instalacao D7 usou file: locais + --offline + --ignore-scripts para simular registry sem rede; o binario copiado veio de build pre-existente (installer-rs/target/debug), sem compilacao no PATH limpo.",
+    "Documentacao entregue como .txt (nao .md) para nao alterar population CDL 223/30373: instrumento em .opencode/plugins/** e protegido, nao foi tocado. Nenhum teste foi re-pinado para acomodar este batch.",
+    "Nenhuma escrita em gate.js, harness.config.json, seal.mjs, opencode.json, workflow-state.json, ADR/specs/rules; nenhum push, gh, npm publish ou pkill -f."
+  ],
+  "notes": "Batch 2 do ADR-005: PUB-03 (matriz os/cpu/libc + exports ./package.json + bin sem colisao), PUB-04 (fallback com tripla + MATRIZ + acao, exit 1, stdout vazio), VAL-01 (prova D7 em PATH sem cargo/rustc com envelope v:1). 4 etapas 540/716/13 PASS/0 FAIL + cargo 85/85 + suiteFull selado exit 0; selo c904f1c5 intacto; 2 follow-ups fechados; trailer Harness-Gate-Change no commit. Sem push."
+}
