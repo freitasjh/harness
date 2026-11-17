@@ -1,8 +1,8 @@
 {
   "current_feature": "prd-eixos-separados-cli-adr-002",
-  "current_phase": "Planning",
-  "previous_phase": "Discovery",
-  "next_phase": "Planning",
+  "current_phase": "Completed",
+  "previous_phase": "Execution",
+  "next_phase": "—",
   "type": "refactor",
   "layer": "agents/skills/rules",
   "repo": "harness",
@@ -65,9 +65,9 @@
     "P1_P2": "approved_user_2026_11_17 (SPEC 12 RF 100%, architect aprovado, protótipo congelado)",
     "P2_P3": "approved_user_2026_11_17 (PLAN 53, TASKS 6, 12 RF, SDD verdes)",
     "P3_P4": "approved_auto_evidence_2026_11_17 (6 batches; review APPROVED 0/0)",
-    "P4_P5": "approved_auto_evidence_QA_2026_11_17 (540+1059+cargo85+golden95; baseline 48)",
-    "P5_P6": "approved_owner_2026_11_17 (selo+baseline48+V20 ratificados; Veredito registrado)",
-    "P6_fim": "done_commit_7fafde3 (PR #22 merge humano 2026-11-17; ADR-001 na main)",
+    "P4_P5": "approved_auto_evidence_QA_2026_11_17 (540+1091+cargo85; transcript real; segredo/sinal/eco PTY)",
+    "P5_P6": "pending_owner_ratification (transcript 9fd70bb6 + não-paridade 16336B)",
+    "P6_fim": "pending_human_push_merge (branch 02-cli-visual-impl @ 96b0be9)",
     "B1_B2": "approved_user_2026_09_29",
     "FU32": "closed_approved_decision_B",
     "_previous_cycle_opencode_v2_only": {
@@ -88,12 +88,12 @@
     "G2_RESEARCH": "approved_user_2026_11_17 (A1 eixos + B1 setas+enter + C1 baseline validado; 7 alternativas, 11 fontes; protótipo aprovado antes do ADR)"
   },
   "code_review": {
-    "last_invoked_at": "2026-11-17T22:53:09.610Z",
+    "last_invoked_at": "2026-11-17T23:17:37.670Z",
     "last_status": "passed",
     "critical_issues": 0,
     "attention_issues": 0,
-    "suggestions": 2,
-    "reviewer_notes": "VAL-01 APPROVED 0/0. Transcript real (regen sha-idêntico 9fd70bb6, 2412B, node-pty xterm-256color, segredo 0 vazamento), não-paridade com 16336B declarada, sha antes do baseline, rito não forjado, N/M inalterados, rust+vue byte-idêntico ADR-001. Sugestões: hint.navigation nao consumido por prompt (dica visivel e a do @inquirer em ingles); precisao claim grep Veredito (3 negacoes, nao 0)."
+    "suggestions": 1,
+    "reviewer_notes": "ADR-002 review final APPROVED 0/0. VERIFY 3/3 com evidência re-medida, segurança 14/14, ratificação pendente sem forja, nenhuma paridade com 16336B, N/M congelados, rust+vue byte-idêntico ADR-001. 1 sugestão documental (campo perf) corrigida em 96b0be9."
   },
   "overrides": [
     {
@@ -259,7 +259,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T23:15:46.128Z",
+  "last_update": "2026-11-17T23:17:37.670Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -283,7 +283,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "ADR-002 CLI VISUAL batch 6 CONCLUIDO (6/6, VERIFY 3/3) — review final em curso",
+  "sdd_stage": "ADR-002 CLI VISUAL CONCLUIDO (6/6, VERIFY 3/3). Aguardando ratificação owner do transcript + push/merge",
   "backlog": {
     "total": 6,
     "todo": 0,
@@ -1311,15 +1311,15 @@
     "pos_restart3": "orcamento ESGOTADO (2/2: fix + review); proxima delegacao nega; restart #4 necessario"
   },
   "verify": {
-    "at": "2026-11-17T16:30:49.229Z",
-    "verdict": "3/3 PASS (owner ratificou selo+baseline48+V20)",
-    "completude": "6/6 tasks; comando literal rust backend/vue frontend",
-    "corretude": "540+1059+cargo85+golden95; baseline 48 (37 novas) proveniência oráculo; C3 zero",
-    "coerencia": "motor único; 48 combinações por eixo; selo c904f1c5 ratificado; gate/config intocados",
-    "traceability": "13/13 RF",
-    "artefato": ".spec/backend/prd-eixos-separados-cli-adr-001/VERIFY.md",
-    "report": "harness/prd-eixos-separados-cli-adr-001.json",
-    "literalProven": true
+    "at": "2026-11-17T23:17:37.670Z",
+    "verdict": "3/3 PASS (ratificação owner pendente)",
+    "completude": "6/6 tasks; 4 telas N=4/M congelado",
+    "corretude": "540+1091+cargo85 + transcript real 2412B + rust+vue byte-idêntico ADR-001",
+    "coerencia": "B1 não B2, protótipo não reaberto, selo c904f1c5, nenhuma paridade 16336B",
+    "traceability": "12/12 RF",
+    "artefato": ".spec/frontend/prd-eixos-separados-cli-adr-002/VERIFY.md",
+    "report": "harness/prd-eixos-separados-cli-adr-002.json",
+    "transcriptSha": "9fd70bb612f5ca795bfcb036b492eed7e1e100d801b0023a8a39107f115e18db"
   },
   "commit": "a19acab",
   "remote": "git@github.com:freitasjh/harness.git (SSH; push + CI pendentes)",
