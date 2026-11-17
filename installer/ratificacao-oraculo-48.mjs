@@ -12,7 +12,7 @@
 //
 // Uso:
 //   node installer/ratificacao-oraculo-48.mjs <backend> <frontend>
-// Imprime o literal canonico (JSON de 1 linha) no stdout; sha256 = sha256(stdout).
+// Imprime o literal canonico (JSON de 1 linha) no stdout; sha256 = sha256(literal canonico, sem o newline de stdout).
 // Ex.: node installer/ratificacao-oraculo-48.mjs java vue
 
 import { createHash } from 'node:crypto';
