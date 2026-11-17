@@ -230,7 +230,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T00:20:57.891Z",
+  "last_update": "2026-11-17T00:27:49.118Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -254,22 +254,18 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "PRD-3 ADR-005 EXECUTION batch 3/3 — selo intacto, differential c63e333, VERIFY (fechamento do PRD-3)",
+  "sdd_stage": "PRD-3 ADR-005 EXECUTION batch 3/3 CONCLUIDO (2/2; 7/7 tasks; selo intacto; differential 23/23; VERIFY 3/3) — review final do PRD-3 em curso",
   "backlog": {
     "total": 7,
     "todo": 0,
-    "doing": 2,
-    "done": 5,
+    "doing": 0,
+    "done": 7,
     "ids": [
       "PUB-01",
       "PUB-02",
       "PUB-03",
       "PUB-04",
       "VAL-01",
-      "VAL-02",
-      "VAL-03"
-    ],
-    "doing_ids": [
       "VAL-02",
       "VAL-03"
     ]
@@ -2003,17 +1999,16 @@
   },
   "batch": {
     "id": 3,
-    "agent": "developer-engineer",
-    "skills": [
-      "node-architecture-specialist",
-      "rust-architecture-specialist",
-      "security-review"
-    ],
-    "status": "running",
+    "status": "review_running",
+    "commit": "2356aea101671c9987bb72e2b92f98db048c3800",
     "tasks": 2,
-    "base": "f5c354a",
-    "selo": "c904f1c5",
-    "garantia": "oraculo externo c63e333 (differential), NAO o selo"
+    "selo": "c904f1c5 re-derivado",
+    "differential": "23/23 + mutante 23 reprovado",
+    "presets": "12/12 idênticos ao oráculo",
+    "claimed12of12": false,
+    "rito": "reutilizado sem auto-assinatura",
+    "verify": "3/3",
+    "security": "14 (3 PASS + 11 N/A)"
   },
   "next_gate": "HITL batch 2->3: posso avancar para o batch 3 (VAL-02 selo/differential/oraculo + VAL-03 VERIFY)?",
   "governance_note": {
