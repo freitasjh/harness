@@ -4,7 +4,7 @@
 |---|---|---|---|---|---|---|
 | EIX-01 | Inventário eixos 8×6=48 | 01,13 | P0 | Médio | — | DONE |
 | EIX-02 | Composição backend/frontend | 02,03 | P0 | Alto | EIX-01 | DONE |
-| EIX-03 | Gerador textos derivados, rust+vue | 04,05 | P0 | Alto | EIX-02 | TODO |
+| EIX-03 | Gerador textos derivados, rust+vue | 04,05 | P0 | Alto | EIX-02 | DONE |
 | EIX-04 | Migração 13 consumidores | 06,07 | P0 | Alto | EIX-03 | TODO |
 | VAL-01 | Baseline 48 ratificado + V20 | 08,09 | P0 | Alto | EIX-04 | TODO |
 | VAL-02 | Selo re-derivado + VERIFY | 10,11,12 | P0 | Alto | VAL-01 | TODO |
