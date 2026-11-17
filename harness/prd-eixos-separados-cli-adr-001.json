@@ -3,46 +3,46 @@
   "demand": "prd-eixos-separados-cli-adr-001",
   "agent": "developer-engineer",
   "phase": "Testing",
-  "gitSha": "b46018fbe02d4d4aa248fd8d9b50926348d90c11",
+  "gitSha": "c00681e3aea623b3cf4e810c6a5386c4ea11be14",
   "gitShaBasis": {
     "command": "git rev-parse HEAD",
     "branch": "adr/prd-eixos-separados-cli/01-eixos-separados-impl",
-    "measured": "b46018fbe02d4d4aa248fd8d9b50926348d90c11",
-    "note": "HEAD no inicio de VAL-01; arvore limpa (git status --short vazio). Unica escrita do ciclo: golden.spec.mjs + este RELATORIO; o SHA do commit final e registrado apos o commit, na entrada de retorno."
+    "measured": "c00681e3aea623b3cf4e810c6a5386c4ea11be14",
+    "note": "HEAD no inicio de VAL-02; arvore limpa (git status --short vazio). Escritas deste batch: este RELATORIO + .spec/backend/prd-eixos-separados-cli-adr-001/VERIFY.md. gate.js/harness.config.json/seal.mjs/opencode.json/workflow-state.json/ADRs/specs/rules intactos. SHA do commit final registrado na entrada de retorno (Anexo B)."
   },
   "commands": [
     {
       "cmd": "node --test \".opencode/plugins/__tests__/*.spec.mjs\"",
       "exitCode": 0,
-      "durationMs": 1109,
-      "durationMsMeasured": 1109,
-      "stdoutHash": "sha256:6ec9a0c0565fa96017604f0f2fd1ecec1acf40361bf494810366be8a4c54f086",
-      "stdoutBytes": 106230,
+      "durationMs": 1238,
+      "durationMsMeasured": 1238,
+      "stdoutHash": "sha256:d978778a5539f45be47fb859bfa4696078d8801a7cff642947cb0fccc75199a9",
+      "stdoutBytes": 109403,
       "counts": "540 passed / 0 failed / 0 skipped"
     },
     {
       "cmd": "node --test \"installer/__tests__/*.spec.mjs\"",
       "exitCode": 0,
-      "durationMs": 6072,
-      "durationMsMeasured": 6072,
-      "stdoutHash": "sha256:7687235cf2b3dbf44839bce29c215bdaf189a993080840fd5141a0b1486a532c",
-      "stdoutBytes": 115285,
+      "durationMs": 5823,
+      "durationMsMeasured": 5823,
+      "stdoutHash": "sha256:e1f33b7be7874f762965278f50c4ed45a9ba41b6459749c1b2f6342d5880496a",
+      "stdoutBytes": 119317,
       "counts": "1059 passed / 0 failed / 0 skipped (golden.spec 95/95)"
     },
     {
       "cmd": "node scripts/static-checks.mjs",
       "exitCode": 0,
-      "durationMs": 266,
-      "durationMsMeasured": 266,
+      "durationMs": 272,
+      "durationMsMeasured": 272,
       "stdoutHash": "sha256:4a1e734a85037a1e26e20ea8531b7b4e64cf76d4b1fd7890b3b62529b7652ad5",
-      "stdoutBytes": 1554,
+      "stdoutBytes": 1564,
       "counts": "PASS PRD-01 / ADR-01 / ADR-02 / V19 / V20"
     },
     {
       "cmd": "node scripts/vendor-skills.mjs --check",
       "exitCode": 0,
-      "durationMs": 46,
-      "durationMsMeasured": 46,
+      "durationMs": 59,
+      "durationMsMeasured": 59,
       "stdoutHash": "sha256:e5e528c52d79fceaa1be828bd89116aa6e0be73294d2e99d39c4febe99e84516",
       "stdoutBytes": 51,
       "counts": "exit 0"
@@ -50,11 +50,20 @@
     {
       "cmd": "cargo test --manifest-path installer-rs/Cargo.toml",
       "exitCode": 0,
-      "durationMs": 140,
-      "durationMsMeasured": 140,
-      "stdoutHash": "sha256:5462ca9f1a3481ac0c85ca8f9d4dce6c9d29505e3a770245669a6a006aa51748",
+      "durationMs": 175,
+      "durationMsMeasured": 175,
+      "stdoutHash": "sha256:2104c2907850da93c5289461372057ff55c224b7bf609e31122f16e199a46bb0",
       "stdoutBytes": 8664,
       "counts": "85 passed / 0 failed / 0 ignored"
+    },
+    {
+      "cmd": "node --test installer/__tests__/golden.spec.mjs",
+      "exitCode": 0,
+      "durationMs": 135,
+      "durationMsMeasured": 135,
+      "stdoutHash": "sha256:401c59694e83899b83bb02a5b83dc1d4393b5e3dde75c8e3e3c7a74ba46bdbe0",
+      "stdoutBytes": 8026,
+      "counts": "95 passed / 0 failed / 0 skipped (48 pares gerador === oráculo, 0 divergência)"
     }
   ],
   "counts": {
@@ -87,9 +96,9 @@
   "literalProven": false,
   "evaluation": {
     "telas": "N/A — composicao de config pura; sem UI/DB/portas. H3 N/A. Nenhum porto de infra.ports subido.",
-    "negocio": "VAL-01 = RF-08/RF-09. 48/48 pares com 1 literal sha256; 0 divergencia; C3 ausente; V20 population inalterada. Decisao §16 D16-EIXOS-CLI autoriza re-derivar; ratificacao final permanece com owner/orquestrador (nao assinada por developer-engineer).",
-    "logica": "Autoridade C1 = tabelas ORACULO_* escritas a mao em golden.spec (espelham ORACULO_STACK_* de eixos-stack.spec.mjs:41-48), NUNCA a saida do gerador sob teste — anti-tautologia provada por esperadoPorEixo.toString() sem generateConfig + 0 mismatch 48/48. C2 (insta/diff) apenas revisor; C3 (auto-accept) proibida e ausente. Rito ADR-002 literal 9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0 reutilizado como referencia de forma, sem re-assinar nenhum veredito. Selo c904f1c5 intacto (VAL-02 separado).",
-    "perf": "5 comandos exit 0; soma durationMsMeasured=7633ms (re-medidos no loop de correção 1); sem regressão de duração observada.",
+    "negocio": "VAL-02 fecha RF-10/11/12: selo re-derivado registrado sem promessa de compatibilidade com c904f1c5; ownerApproval pending (owner aprova, orquestrador registra). VAL-01 (RF-08/09) preservado: 48/48 pares com 1 literal sha256, 0 divergencia, C3 ausente, V20 population inalterada. Decisao §16 D16-EIXOS-CLI autoriza re-derivar; ratificacao final nao assinada por developer-engineer.",
+    "logica": "Autoridade C1 = tabelas ORACULO_* escritas a mao em golden.spec (espelham ORACULO_STACK_* de eixos-stack.spec.mjs:41-48), NUNCA a saida do gerador sob teste — anti-tautologia provada por esperadoPorEixo.toString() sem generateConfig + 0 mismatch 48/48. C2 (insta/diff) apenas revisor; C3 (auto-accept) proibida e ausente (grep = 0). Valor re-derivado de sealCommands(commands) registrado como novo selo ratificado-pendente; NENHUMA afirmação de compatibilidade/paridade com c904f1c5 — commands byte-idênticos ao baseline fazem o hash convergir, o que NAO dispensa ratificacao. Rito ADR-002 literal 9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0 reutilizado como forma, sem re-assinar nenhum veredito (literalProven=false).",
+    "perf": "6 comandos exit 0; soma durationMsMeasured=7702ms (1238+5823+272+59+175+135, medidos neste batch); sem regressao de duracao observada.",
     "bugs_identified": [
       {
         "id": "VAL01-OBS-1",
@@ -112,15 +121,16 @@
     ]
   },
   "brainStore": [
-    "sessoes/projetos/harness/2026-11-17-dev-val01-eixos-separados-cli-adr001"
+    "sessoes/projetos/harness/2026-11-17-dev-val01-eixos-separados-cli-adr001",
+    "sessoes/projetos/harness/2026-11-17-dev-val02-eixos-separados-cli-adr001"
   ],
   "cleanup": {
     "ports": [],
     "processes": [],
-    "note": "Nada subido: sem UI/DB/portas — zero lsof/kill, zero pkill -f, zero push, zero gh. Nenhum worktree materializado. REPO_STATUS (loop 1): mudanças restritas a installer/ratificacao-oraculo-48.mjs + harness/prd-eixos-separados-cli-adr-001.json. gate.js/harness.config.json/opencode.json/workflow-state.json/ADRs/specs/rules/gate/config/state NÃO tocados. golden.spec.mjs intacto neste loop (BASELINE_48 aprovado).",
+    "note": "Nada subido: sem UI/DB/portas — zero lsof/kill, zero pkill -f, zero push, zero gh. Nenhum worktree materializado. REPO_STATUS (VAL-02): mudanças restritas a harness/prd-eixos-separados-cli-adr-001.json + .spec/backend/prd-eixos-separados-cli-adr-001/VERIFY.md. gate.js/harness.config.json/seal.mjs/opencode.json/workflow-state.json/ADRs/specs/rules/gate/config/state NÃO tocados (git diff --exit-code vazio). golden.spec.mjs intacto (BASELINE_48 aprovado). Comando de push NAO executado — fica para o orquestrador apos aprovacao do owner.",
     "repoWrites": [
-      "installer/ratificacao-oraculo-48.mjs",
-      "harness/prd-eixos-separados-cli-adr-001.json"
+      "harness/prd-eixos-separados-cli-adr-001.json",
+      ".spec/backend/prd-eixos-separados-cli-adr-001/VERIFY.md"
     ]
   },
   "selfReported": false,
@@ -773,5 +783,86 @@
       "nao_toca": "BASELINE_48 do golden.spec, mutações, C3, V20, rito reutilizado, selo c904f1c5, ADR/specs/rules/gate/config/state. Off-by-one 37/11 (VAL01-OBS-1) permanece dívida documental — decisão §16 do owner.",
       "loop": "1/3"
     }
+  },
+  "val02": {
+    "task": "VAL-02 — selo re-derivado, harness íntegro, VERIFY (RF-10/11/12)",
+    "selo": {
+      "metodo": "sealCommands(JSON.parse(fs.readFileSync('harness.config.json','utf8')).commands)",
+      "derivado": {
+        "suiteFull": "c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2",
+        "unit": "daba8c5465bffe061738235b274c497a4e8e761e41c5e79d4c671a72231cffc7"
+      },
+      "anterior": {
+        "suiteFull": "c904f1c5d7e9369cbeafa1d7721973b53c0eeb558e22d182679a14287aa649a2",
+        "unit": "daba8c5465bffe061738235b274c497a4e8e761e41c5e79d4c671a72231cffc7",
+        "fonte": "ADR-001 §3 item 10 (hoje) + RELATÓRIO val01.selo"
+      },
+      "commandsDiff": {
+        "gitCommand": "git diff 2fed40a..HEAD -- harness.config.json",
+        "linhas": 0,
+        "interpretacao": "commands byte-idênticos ao baseline (suiteFull/unit inalterados); required por RF-11/§16. Hash re-derivado converge numericamente ao valor antigo por construção."
+      },
+      "afirmacaoDeCompatibilidade": false,
+      "declaracao": "Nova re-derivação registrada e ratificada-pendente. NENHUMA afirmação de compatibilidade ou paridade com c904f1c5. A igualdade numérica decorre de commands inalterados e NÃO dispensa ratificação owner; um hash distinto exigiria mudar commands, proibido por §16/RF-11.",
+      "status": "RE-DERIVADO — ownerApproval pendente"
+    },
+    "ownerApproval": {
+      "pending": true,
+      "signer": "orquestrador",
+      "reviewer": "owner do harness",
+      "basis": "PRD §16 D16-EIXOS-CLI + override reabertura-D5-ADR004-eixos-cli (owner aprovou re-derivar selo/baseline)",
+      "targets": {
+        "selo": "val02.selo.derivado (suiteFull + unit)",
+        "baseline": "val01.tabela48 (48 pares; 37 novas, 11 herdadas)",
+        "v20": "population 223/30373"
+      },
+      "quemAssina": "owner aprova; orquestrador registra. developer-engineer NAO assina."
+    },
+    "ritoReutilizado": {
+      "referencia": "ADR-002 literal 9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0",
+      "papel": "reutilizado como referência de forma (C1 autoridade / C2 só revisor de diff / C3 proibida; sha256 do artefato antes de virar baseline)",
+      "literalProven": false,
+      "autoAssinatura": "NENHUMA — nenhuma linha 'Veredito: validated literal' foi escrita neste batch.",
+      "prova": "grep -rn 'Veredito: validated literal' nos 2 artefatos ⇒ 4 ocorrências, TODAS em contexto negado/metalinguístico: RELATÓRIO:825 'NENHUMA linha ... foi escrita', RELATÓRIO:826 'prova: grep ...', VERIFY:75 'nenhuma linha ...', VERIFY:141 'Não é um Veredito: validated literal'. NENHUMA ocorrência é um veredito afirmativo."
+    },
+    "invariantes": {
+      "gateGrep": {
+        "cmd": "grep -c 'install\\.mjs\\|installer/' .opencode/plugins/gate.js",
+        "resultado": 0
+      },
+      "gitDiffProtegidos": {
+        "cmd": "git diff --exit-code -- .opencode/plugins/gate.js .opencode/plugins/lib/seal.mjs harness.config.json opencode.json workflow-state.json",
+        "exitCode": 0,
+        "resultado": "vazio"
+      },
+      "configBaseline": "git diff 2fed40a..HEAD -- harness.config.json = 0 linhas; infra/gates/protectedPaths/riskPaths/escalateOnRisk/contraproveTimeoutMs/evidence byte-idênticos; nenhum preset/chave/comando/default novo sem §16",
+      "c3": "grep -rnE 'INSTA_UPDATE=always|insta accept' scripts/ installer/ .agents/ ⇒ 0",
+      "rf04": "generator modules Q&A literals = 0; 34 ocorrências restritas à camada congelada contract-registry.mjs (16) + install.mjs (18), permitida por ADR §2.2",
+      "oraculo": "c63e333 fora do caminho: oráculo congelado em contract-registry.mjs, não executado"
+    },
+    "verify": {
+      "path": ".spec/backend/prd-eixos-separados-cli-adr-001/VERIFY.md",
+      "dimensoes": {
+        "completude": "✅ 6/6 tasks DONE (EIX-01..04, VAL-01, VAL-02)",
+        "corretude": "✅ 540/1059(95)/85 + 6 comandos exit 0 + literal rust+vue + baseline 48",
+        "coerencia": "✅ motor único, eixos separados, selo re-derivado com ownerApproval pending, gate intocado"
+      },
+      "segurancaFase4": {
+        "itens": 14,
+        "enderecados": "11 N/A motivados + 3 ✅",
+        "criticos": 0,
+        "verdict": "pass"
+      },
+      "dividasDocumentadas": [
+        "FU-CARGO-ORACULO: rust commands vazio = dado do oráculo",
+        "FU-NODE-REINDEX: desempate node",
+        "EIX-04-R1: call-sites COMPAT-CONGELADA em runDoctor:1364-1379 e defaultSuiteFor:2205",
+        "EIX-04-R2: suiteCommand sobrepõe unit como no legado",
+        "VAL01-OBS-1: off-by-one 37 novas / 11 herdadas (normativo 36/12)",
+        "VAL01-OBS-2: stdoutHash não-determinístico (duration_ms)",
+        "VAL01-OBS-3: arquivos órfãos pré-existentes em installer/__tests__/"
+      ]
+    },
+    "push": "NAO executado — comando fica para o orquestrador após aprovação owner"
   }
 }
