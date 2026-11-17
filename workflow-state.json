@@ -88,12 +88,12 @@
     "G2_RESEARCH": "approved_user_2026_11_17 (A1 eixos + B1 setas+enter + C1 baseline validado; 7 alternativas, 11 fontes; protótipo aprovado antes do ADR)"
   },
   "code_review": {
-    "last_invoked_at": "2026-11-17T15:12:01.647Z",
-    "last_status": "failed",
+    "last_invoked_at": "2026-11-17T15:20:56.712Z",
+    "last_status": "passed",
     "critical_issues": 0,
-    "attention_issues": 1,
-    "reviewer_notes": "VAL-01 REPROVADO por proveniência documental: 48 tabela48[].comando dizem generateConfig (gerador sob teste) quando literal/sha vêm do oráculo independente. Baseline técnico sólido (mutação oráculo derruba 49/95, gerador contido, C3 zero, rito não forjado). Corrigir comando → ORACULO_* e rotular generateConfig como comparação.",
-    "ciclo": "prd-eixos-separados-cli-adr-001"
+    "attention_issues": 0,
+    "suggestions": 1,
+    "reviewer_notes": "VAL-01 APPROVED apos loop 1/3: proveniência 48 oráculo/0 gerador, sha 48/48 idêntico ao BASELINE_48, mutação oráculo derruba 49/95. Ratificação owner pendente por design. 1 sugestão cosmética (comentário sha) corrigida em 57da322."
   },
   "overrides": [
     {
@@ -259,7 +259,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T15:17:32.367Z",
+  "last_update": "2026-11-17T15:20:56.712Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -281,9 +281,9 @@
   },
   "harness_status": "passed (REPORT harness/prd-installer-rust-adr-002.json schema-valido; 540+638 testes; literalProven=true apos assinatura do owner; selo c904f1c5 intacto)",
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
-  "code_review_status": "failed_correction_loop",
+  "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "ADR-001 EIXOS VAL-01 LOOP 1/3 — proveniência corrigida (48 oráculo), re-review em curso; push bloqueado",
+  "sdd_stage": "ADR-001 EIXOS VAL-01 REVIEW APPROVED (baseline 48, proveniência oráculo). PARADA HITL antes do VAL-02 (selo novo)",
   "backlog": {
     "total": 6,
     "todo": 1,
@@ -1007,6 +1007,14 @@
       "status": "closed",
       "fechado_em": "2026-11-17T14:57:00.671Z",
       "prova": "EIX-04 review: comando literal rust backend/vue frontend; writtenPaths 6 casos; oráculo 48/108"
+    },
+    {
+      "id": "FU-RATIFICAR-48",
+      "created_at": "2026-11-17T15:20:56.712Z",
+      "texto": "VAL-02: owner ratificar baseline 48 — 37 novas (não 36; node+node-esm colapsam em node+none, 11 herdados). Of-by-one VAL01-OBS-1 documentado; ajuste normativo 36→37/12→11 é decisão §16 separada.",
+      "origem": "review VAL-01",
+      "bloqueia": false,
+      "target": "VAL-02"
     }
   ],
   "batches": [
@@ -2052,7 +2060,7 @@
   },
   "batch": {
     "id": 5,
-    "status": "review_running_iter1",
+    "status": "review_approved",
     "iteration": 1,
     "commit": "d14b9bd900fbe8990fd77f214a9ff7f946625a35",
     "blocker": "proveniência tabela48[].comando (gerador vs oráculo)",
@@ -2063,7 +2071,7 @@
       "sha": "48/48 identico ao oraculo, 0 mismatch"
     }
   },
-  "next_gate": "loop de correção (developer→reviewer) até 3 iterações; VAL-02 so após APPROVED",
+  "next_gate": "HITL VAL-01->VAL-02: posso avancar para VAL-02? Vai exigir ratificacao owner do novo hash do selo (substitui c904f1c5) e do baseline 48.",
   "governance_note": {
     "at": "2026-11-16T21:26:46.319Z",
     "texto": "Developer escreveu no retorno que owner havia aprovado migrar só JSON-safe — falso. Owner aprovou 23 e depois ACEITOU o desvio para 13 com razao medida. Corrigido aqui para nao deixar decisao reescrita.",
@@ -2126,5 +2134,16 @@
     "segredo": "[input is masked] / [REDACTED]",
     "combinacao_demo": "rust+vue escolhidos separadamente — OK",
     "nota": "congelado no ADR-002; B2 full-screen fica como divergencia declarada, nao escolhida"
+  },
+  "verify_val01": {
+    "baseline": 48,
+    "novas": 37,
+    "herdados": 11,
+    "sha_registrados": 48,
+    "proveniencia": "48 oraculo / 0 gerador",
+    "c3": false,
+    "mutacao_oraculo": "49/95 derrubados",
+    "v20": "223/30373 estavel",
+    "rito": "reutilizado, pendente owner"
   }
 }
