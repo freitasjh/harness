@@ -473,7 +473,33 @@
       "seguranca": "14/14 pass",
       "autoAssinatura": "NENHUMA — developer-engineer nao escreveu nenhum veredito de validacao",
       "pushExecutado": false
+    },
+    "ownerApproval": {
+      "pending": false,
+      "aprovado": true,
+      "aprovado_por": "owner",
+      "aprovado_em": "2026-11-17T23:18:05.354Z",
+      "registrado_por": "orchestrator",
+      "veredito": "Veredito: validated literal 9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0 2026-11-17T23:18:05.354Z c63e333",
+      "transcript_ratificado": {
+        "sha256": "9fd70bb612f5ca795bfcb036b492eed7e1e100d801b0023a8a39107f115e18db",
+        "bytes": 2412,
+        "nome": "harness/prd-eixos-separados-cli-adr-002.transcript.txt",
+        "nao_paridade_com": "16336 B / fe1f9187 — declarada, item 9"
+      },
+      "config_rust_vue": "sha256:7a2f5cfa08c337932759247e5b7dbc9de4efd6d0d80d69e18f79ab96a54e6876 byte-idêntico ADR-001",
+      "expira_em": "mudanca N/M | novo transcript | divergencia de sha | arquivamento"
     }
   },
-  "perf": "soma dos comandos re-executados = 8153ms (campo sincronizado com val02.totais.durationMsSoma)"
+  "perf": "soma dos comandos re-executados = 8153ms (campo sincronizado com val02.totais.durationMsSoma)",
+  "literalProven": true,
+  "validationVerdict": "Veredito: validated literal 9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0 2026-11-17T23:18:05.354Z c63e333",
+  "ritual": {
+    "aprovado_por": "owner",
+    "aprovado_em": "2026-11-17T23:18:05.354Z",
+    "registrado_por": "orchestrator",
+    "sha_literal": "9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0",
+    "transcript_sha": "9fd70bb612f5ca795bfcb036b492eed7e1e100d801b0023a8a39107f115e18db",
+    "veredito": "Veredito: validated literal 9fa4530bbe0d431781a159cced28c011e1d94a8abea5ca1cc8465608976552f0 2026-11-17T23:18:05.354Z c63e333"
+  }
 }
