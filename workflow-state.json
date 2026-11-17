@@ -258,7 +258,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T14:40:33.056Z",
+  "last_update": "2026-11-17T14:54:03.365Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -282,12 +282,12 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "ADR-001 EIXOS batch 4 — rewiring 13 consumidores + writtenPaths/suiteCommand + oráculo 48",
+  "sdd_stage": "ADR-001 EIXOS batch 4 CONCLUIDO (EIX-04:RF-05 fechado, 1006 testes) — review em curso",
   "backlog": {
     "total": 6,
     "todo": 2,
-    "doing": 1,
-    "done": 3,
+    "doing": 0,
+    "done": 4,
     "ids": [
       "EIX-01",
       "EIX-02",
@@ -296,7 +296,10 @@
       "VAL-01",
       "VAL-02"
     ],
-    "doing_ids": [
+    "done_ids": [
+      "EIX-01",
+      "EIX-02",
+      "EIX-03",
       "EIX-04"
     ]
   },
@@ -2038,18 +2041,13 @@
   },
   "batch": {
     "id": 4,
-    "agent": "developer-engineer",
-    "skills": [
-      "node-architecture-specialist"
-    ],
-    "status": "running",
-    "tasks": 1,
-    "base": "ad72a69",
-    "bloqueantes": [
-      "FU-GERADOR-REWIRING",
-      "FU-WRITTENPATHS-BF04",
-      "FU-EIX-ORACULO"
-    ]
+    "status": "review_running",
+    "commit": "8d1394dcddde9fb9c359df846c7eb4d335aaeb11",
+    "installer": 1006,
+    "comando_literal": "rust backend vue frontend (ANTES: N/A Node-only) — RF-05 fechado",
+    "oraculo": "eixos-stack.spec 48 pares/108 testes",
+    "consumidores": "18 vereditos, 0 orfaos",
+    "import_fim": "install.mjs:3013 sob revisao"
   },
   "next_gate": "HITL batch 3->4: posso avancar para EIX-04 (rewiring 13 consumidores + writtenPaths/suiteCommand + oráculo 48)?",
   "governance_note": {
