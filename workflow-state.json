@@ -88,11 +88,11 @@
     "G2_RESEARCH": "approved_user_2026_11_17 (A1 eixos + B1 setas+enter + C1 baseline validado; 7 alternativas, 11 fontes; protótipo aprovado antes do ADR)"
   },
   "code_review": {
-    "last_invoked_at": "2026-11-17T14:22:15.262Z",
+    "last_invoked_at": "2026-11-17T14:32:07.385Z",
     "last_status": "passed",
     "critical_issues": 0,
     "attention_issues": 2,
-    "reviewer_notes": "EIX-02 APPROVED. 48 pares com campo pelo eixo certo; skills/rules do registry provadas por mutação; rust commands={} correto (oráculo STACK_PROFILES.rust={}), não tabela incompleta. 2 dívidas para VAL-01/§16: regra ADR §2.1 rust→cargo sem comando no oráculo (não corrigir agora — C3), desempate re-indexação node."
+    "reviewer_notes": "EIX-03 APPROVED. Textos derivados provados por mutação de eixo/template; 48 configs únicas; fail-closed tipado. 2 IMPORTANTE para EIX-04: (1) comando literal do ADR §3 item 5 via installer-contract.mjs.generateConfig ainda devolve N/A Node-only — consumidor real install.mjs:759 (4 call-sites) no gerador antigo; NAO marcar RF-05 fechado antes desse comando passar. (2) portar writtenPaths BF-04 e suiteCommand no swap, senão perda silenciosa."
   },
   "overrides": [
     {
@@ -258,7 +258,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T14:28:32.495Z",
+  "last_update": "2026-11-17T14:32:07.385Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -282,7 +282,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "ADR-001 EIXOS batch 3 CONCLUIDO (EIX-03: rust+vue ponta a ponta, 109 testes) — review em curso",
+  "sdd_stage": "ADR-001 EIXOS batch 3 REVIEW APPROVED (0 criticos; RF-05 so fecha no EIX-04 quando comando literal passar). PARADA HITL antes do EIX-04",
   "backlog": {
     "total": 6,
     "todo": 2,
@@ -979,6 +979,22 @@
       "origem": "code-reviewer EIX-02",
       "bloqueia": false,
       "target": "VAL-01"
+    },
+    {
+      "id": "FU-GERADOR-REWIRING",
+      "created_at": "2026-11-17T14:32:07.385Z",
+      "texto": "EIX-04: reexecutar comando literal ADR §3 item 5 via installer-contract.mjs.generateConfig({project,axes:{rust,vue}}) e fazer devolver rust backend/vue frontend com commands backend + mcp frontend. NAO marcar RF-05 fechado antes disso",
+      "origem": "code-reviewer EIX-03",
+      "bloqueia": true,
+      "target": "EIX-04"
+    },
+    {
+      "id": "FU-WRITTENPATHS-BF04",
+      "created_at": "2026-11-17T14:32:07.385Z",
+      "texto": "EIX-04: portar writtenPaths (trim moduleMap/evidence.schema, BF-04) e suiteCommand para o gerador novo antes de trocar os 4 call-sites de install.mjs:759 — swap ingênuo perde semântica em silêncio",
+      "origem": "code-reviewer EIX-03",
+      "bloqueia": true,
+      "target": "EIX-04"
     }
   ],
   "batches": [
@@ -2024,14 +2040,14 @@
   },
   "batch": {
     "id": 3,
-    "status": "review_running",
+    "status": "review_approved",
     "commit": "bd171f94cc4d14793bcc55f0322f2190e9cbba2c",
     "novos_testes": 109,
     "installer": 958,
     "rust_vue_config": "rust backend / vue frontend, commands {}, mcp chrome-devtools, 48 configs validas",
     "fronteira": "ADR cita installer-contract.mjs.generateConfig; gerador novo em generate-eixos.mjs; rewiring=EIX-04"
   },
-  "next_gate": "HITL batch 2->3: posso avancar para EIX-03 (gerador com textos derivados, rust+vue de ponta a ponta)?",
+  "next_gate": "HITL batch 3->4: posso avancar para EIX-04 (rewiring 13 consumidores + writtenPaths/suiteCommand + oráculo 48)?",
   "governance_note": {
     "at": "2026-11-16T21:26:46.319Z",
     "texto": "Developer escreveu no retorno que owner havia aprovado migrar só JSON-safe — falso. Owner aprovou 23 e depois ACEITOU o desvio para 13 com razao medida. Corrigido aqui para nao deixar decisao reescrita.",
