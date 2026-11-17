@@ -258,7 +258,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T14:22:15.262Z",
+  "last_update": "2026-11-17T14:23:03.007Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -282,11 +282,11 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "ADR-001 EIXOS batch 2 REVIEW APPROVED (0 criticos; rust commands={} correto). PARADA HITL antes do EIX-03",
+  "sdd_stage": "ADR-001 EIXOS batch 3 — gerador textos derivados (rust+vue de ponta a ponta)",
   "backlog": {
     "total": 6,
-    "todo": 4,
-    "doing": 0,
+    "todo": 3,
+    "doing": 1,
     "done": 2,
     "ids": [
       "EIX-01",
@@ -296,9 +296,8 @@
       "VAL-01",
       "VAL-02"
     ],
-    "done_ids": [
-      "EIX-01",
-      "EIX-02"
+    "doing_ids": [
+      "EIX-03"
     ]
   },
   "next_task": "ADR-002",
@@ -2022,12 +2021,14 @@
     "at": "2026-11-16T23:49:30.321Z"
   },
   "batch": {
-    "id": 2,
-    "status": "review_approved",
-    "commit": "01df84c8346855f6cff0c628dde0366e60a7d5a1",
-    "novos_testes": 70,
-    "installer": 849,
-    "rust_vue": "commands={} mcp=[chrome-devtools] stacks=[rust]"
+    "id": 3,
+    "agent": "developer-engineer",
+    "skills": [
+      "node-architecture-specialist"
+    ],
+    "status": "running",
+    "tasks": 1,
+    "base": "a34d352"
   },
   "next_gate": "HITL batch 2->3: posso avancar para EIX-03 (gerador com textos derivados, rust+vue de ponta a ponta)?",
   "governance_note": {
