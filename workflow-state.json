@@ -88,12 +88,12 @@
     "G2_RESEARCH": "approved_user_2026_11_17 (A1 eixos + B1 setas+enter + C1 baseline validado; 7 alternativas, 11 fontes; protótipo aprovado antes do ADR)"
   },
   "code_review": {
-    "last_invoked_at": "2026-11-17T22:41:56.034Z",
+    "last_invoked_at": "2026-11-17T22:53:09.610Z",
     "last_status": "passed",
     "critical_issues": 0,
     "attention_issues": 0,
-    "suggestions": 3,
-    "reviewer_notes": "CLI-04 APPROVED 0/0. Segredo 0 em cmdline/stdout/stderr/transcript; aborto 0 writes (hash identico) com erro comum preservado; SIGTERM restaura eco (stty echo ON) e node morre por sinal (code=null signal=SIGTERM) — exit 143 e do wrapper script -e, legitimo; npm ci + PROMPTS_UNAVAILABLE; wiring config byte-idêntico ADR-001. 3 sugestoes: registrar medicao direta sinal no VERIFY; .gitignore node_modules; q-cancel sem handler real (fidelidade prototipo, levar ao VAL-01)."
+    "suggestions": 2,
+    "reviewer_notes": "VAL-01 APPROVED 0/0. Transcript real (regen sha-idêntico 9fd70bb6, 2412B, node-pty xterm-256color, segredo 0 vazamento), não-paridade com 16336B declarada, sha antes do baseline, rito não forjado, N/M inalterados, rust+vue byte-idêntico ADR-001. Sugestões: hint.navigation nao consumido por prompt (dica visivel e a do @inquirer em ingles); precisao claim grep Veredito (3 negacoes, nao 0)."
   },
   "overrides": [
     {
@@ -259,7 +259,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T22:50:19.035Z",
+  "last_update": "2026-11-17T22:53:09.610Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -283,7 +283,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "ADR-002 CLI VISUAL VAL-01 CONCLUIDO (transcript novo 2412B, nao-paridade, q-cancel resolvido) — review em curso",
+  "sdd_stage": "ADR-002 CLI VISUAL batch 5 REVIEW APPROVED (0/0; transcript real nao-paridade). PARADA HITL antes do VAL-02 (ultimo)",
   "backlog": {
     "total": 6,
     "todo": 1,
@@ -1088,6 +1088,14 @@
       "status": "closed",
       "fechado_em": "2026-11-17T22:50:19.034Z",
       "resolucao": "decisao (b): locale q→Ctrl+C para cancelar; N/M inalterados"
+    },
+    {
+      "id": "FU-HINT-VISIVEL",
+      "created_at": "2026-11-17T22:53:09.610Z",
+      "texto": "hint.navigation (Ctrl+C para cancelar) nao e consumido por nenhum prompt — dica visivel e a embutida do @inquirer em ingles (↑↓ navigate / ⏎ select). Decidir no VAL-02: consumir a chave no prompt ou registrar como limitacao da lib B1",
+      "origem": "code-reviewer CLI-04/VAL-01",
+      "bloqueia": false,
+      "target": "VAL-02"
     }
   ],
   "batches": [
@@ -2142,14 +2150,14 @@
   },
   "batch": {
     "id": 5,
-    "status": "review_running",
+    "status": "review_approved",
     "commit": "91b2e535a2234942d04995418f4f2baa244654dd",
     "transcript": "2412B sha 9fd70bb6 — nao-paridade com 16336B declarada",
     "q_cancel": "decisao (b) Ctrl+C para cancelar",
     "rust_vue": "byte-idêntico ADR-001",
     "installer": 1091
   },
-  "next_gate": "HITL batch 4->5: posso avancar para VAL-01 (transcript novo ratificado, sem paridade com 16336B, rust+vue)? Decisao owner necessaria.",
+  "next_gate": "HITL batch 5->6: posso avancar para VAL-02 (VERIFY 3/3) e depois ratificar transcript + apresentar push?",
   "governance_note": {
     "at": "2026-11-16T21:26:46.319Z",
     "texto": "Developer escreveu no retorno que owner havia aprovado migrar só JSON-safe — falso. Owner aprovou 23 e depois ACEITOU o desvio para 13 com razao medida. Corrigido aqui para nao deixar decisao reescrita.",
