@@ -1,5 +1,5 @@
 {
-  "current_feature": "novo-prd-eixos-e-cli",
+  "current_feature": "prd-eixos-separados-cli",
   "current_phase": "Discovery",
   "previous_phase": "Completed",
   "next_phase": "Planning",
@@ -81,7 +81,7 @@
       "FU32": "closed_approved_decision_B"
     },
     "G2_ADR": "approved_user_2026_11_16 (ADR-005 — branch de autoria)",
-    "G1_PRD": "approved_user_2026_11_16 (PRD-3 prd-installer-rust; D1-D8 fechadas)",
+    "G1_PRD": "pending_user_approval (novo PRD: eixos separados 48 combinacoes + CLI visual Copilot/Kiro)",
     "P4_5": "approved_auto_2026_11_17 (security 14 itens: 3 PASS + 11 N/A motivados)"
   },
   "code_review": {
@@ -256,7 +256,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T01:28:48.585Z",
+  "last_update": "2026-11-17T01:30:16.133Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -2102,7 +2102,9 @@
         "compatibilidade": "substituir os 12 atuais",
         "cli": "visual tipo Copilot/Kiro",
         "criterio": "comportamental"
-      }
+      },
+      "config": "compor por eixo: commands/moduleMap do backend, mcp/stacks/skills do frontend, textos derivados",
+      "selo": "re-derivar golden.spec/V20/selo no novo PRD com baseline aprovado pelo owner"
     }
   ]
 }
