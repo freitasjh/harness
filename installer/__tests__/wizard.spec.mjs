@@ -2,9 +2,10 @@
 // Estilo do repo: node:test + assert/strict, streams injetados (sem TTY real).
 // Contrato: ADR-010 / RF-15 / I11 — o wizard apresenta, valida e confirma;
 // NUNCA escreve nem gera config por conta propria.
-import { describe, it, afterEach } from 'node:test';
+import { describe, it, afterEach, before } from 'node:test';
 import assert from 'node:assert/strict';
 import os from 'node:os';
+import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import fs from 'node:fs';
 import { Readable, Writable } from 'node:stream';
@@ -1102,5 +1103,142 @@ describe('EX-FE-07 range do menu DERIVADO de items.length (A4)', () => {
     assert.equal(picked.stack, 'node', 'repetiu e aceitou');
     assert.match(lines.join('\n'), /\[1\/2\] escolha \[1-5\] \(q cancela\) > /);
     assert.match(lines.join('\n'), /fora de \[1,5\]/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// CLI-02 — wizard visual B1 (ADR-002). N=4 / M congelados do protótipo aprovado.
+// Prompts e saída injetados: sem TTY real, sem comando digitado.
+describe('CLI-02 · wizard visual B1 (ADR-002) — N=4 / M congelado / zero comando', () => {
+  const specDir = path.dirname(fileURLToPath(import.meta.url));
+  const repo = path.join(specDir, '..', '..');
+  const PROTO = JSON.parse(fs.readFileSync(path.join(repo, 'workflow-state.json'), 'utf8')).prototype;
+  const TELA_ORDER = ['backend', 'frontend', 'nome', 'token'];
+  let wizard, tr;
+
+  before(async () => {
+    wizard = await import('../cli/wizard.js');
+    tr = (await import('../cli/locale.js')).t;
+  });
+
+  function fakePrompts(script) {
+    const calls = [];
+    return {
+      calls,
+      async select(config) {
+        const target = script.shift();
+        const choices = config.choices || [];
+        const def = Math.max(0, choices.findIndex((c) => c.value === config.default));
+        const idx = choices.findIndex((c) => c.value === target);
+        assert.ok(idx >= 0, `alvo ${target} ausente nas choices`);
+        calls.push({ kind: 'select', message: config.message, target, arrows: Math.abs(idx - def), enter: 1 });
+        return target;
+      },
+      async input(config) {
+        const target = script.shift();
+        calls.push({ kind: 'input', message: config.message, placeholder: config.placeholder, value: target, keys: ['Enter'] });
+        return target;
+      },
+      async password(config) {
+        const target = script.shift();
+        calls.push({ kind: 'password', message: config.message, masked: config.masked, chars: String(target).length, enter: 1, value: target });
+        return target;
+      },
+    };
+  }
+
+  async function run(script, options = {}) {
+    const prompts = fakePrompts(script);
+    const written = [];
+    const result = await wizard.runVisualWizard({ prompts, write: (s) => written.push(s), ...options });
+    return { prompts, written, result };
+  }
+
+  function measureM(calls) {
+    assert.equal(calls.length, 4, 'N de prompts deve ser 4');
+    return calls.map((c, i) => {
+      if (c.kind === 'select') return `${c.arrows} seta${c.arrows === 1 ? '' : 's'}+Enter (${TELA_ORDER[i]})`;
+      if (c.kind === 'input') return `Enter (${TELA_ORDER[i]})`;
+      return 'token+Enter';
+    }).join(' / ');
+  }
+
+  it('N=4 exato, ordem backend→frontend→nome→token + resumo (sem 5ª tela)', async (tctx) => {
+    const { prompts, written, result } = await run(['rust', 'vue', 'meu-projeto', 'SEGREDO_PROVA']);
+    assert.deepEqual(wizard.TELAS, ['backend', 'frontend', 'name', 'token']);
+    assert.equal(wizard.TELAS.length, PROTO.telas_N);
+    assert.deepEqual(prompts.calls.map((c) => c.kind), ['select', 'select', 'input', 'password']);
+    assert.deepEqual(result.answers, { backend: 'rust', frontend: 'vue', name: 'meu-projeto', token: 'SEGREDO_PROVA' });
+    assert.equal(written.length, 1, 'resumo é saída única, não 5ª tela');
+    tctx.diagnostic(`telas=${wizard.TELAS.join('→')}→resumo (N=${wizard.TELAS.length})`);
+  });
+
+  it('M medido idêntico ao congelado no state.prototype', async (tctx) => {
+    const { prompts } = await run(['rust', 'vue', 'meu-projeto', 'SEGREDO_PROVA']);
+    const measured = measureM(prompts.calls);
+    assert.equal(prompts.calls[0].arrows, 2);
+    assert.equal(prompts.calls[1].arrows, 1);
+    assert.equal(measured, PROTO.interacoes_M);
+    tctx.diagnostic(`M medido    = ${measured}`);
+    tctx.diagnostic(`M congelado = ${PROTO.interacoes_M}`);
+  });
+
+  it('zero comando digitado: backend/frontend select, nome input, token password', async () => {
+    const { prompts } = await run(['rust', 'vue', 'meu-projeto', 'SEGREDO_PROVA']);
+    const [backend, frontend, name, token] = prompts.calls;
+    assert.equal(backend.kind, 'select');
+    assert.equal(frontend.kind, 'select');
+    assert.equal(name.kind, 'input');
+    assert.equal(token.kind, 'password');
+    assert.equal(PROTO.comandos_digitados, 0);
+    assert.equal(name.placeholder, tr('wizard.name.placeholder'));
+    assert.equal(token.masked, tr('wizard.token.masked'));
+  });
+
+  it('todo texto vem de t(chave) do locale PT-BR', async () => {
+    const { prompts, written } = await run(['rust', 'vue', 'meu-projeto', 'SEGREDO_PROVA']);
+    assert.equal(prompts.calls[0].message, tr('wizard.backend.message'));
+    assert.equal(prompts.calls[1].message, tr('wizard.frontend.message'));
+    assert.equal(prompts.calls[2].message, tr('wizard.name.message'));
+    assert.equal(prompts.calls[3].message, tr('wizard.token.message'));
+    const out = written.join('\n');
+    for (const key of ['summary.title', 'summary.backend', 'summary.frontend', 'summary.name', 'summary.token', 'summary.confirm']) {
+      assert.equal(out.includes(tr(key)), true, `resumo sem ${key}`);
+    }
+    assert.equal(PROTO.i18n, 'PT-BR');
+  });
+
+  it('resumo mostra [REDACTED] e nunca o token em claro', async () => {
+    const { written } = await run(['rust', 'vue', 'meu-projeto', 'SEGREDO_PROVA']);
+    const out = written.join('\n');
+    assert.equal(out.includes(tr('summary.redacted')), true);
+    assert.equal(out.includes('SEGREDO_PROVA'), false);
+    assert.equal(PROTO.segredo.includes(tr('summary.redacted')), true);
+  });
+
+  it('aborto (ExitPromptError/AbortSignal) ⇒ USER_ABORT, sem resumo e sem tela extra', async () => {
+    class ExitPromptError extends Error {
+      constructor() { super('interrupt'); this.name = 'ExitPromptError'; }
+    }
+    const prompts = {
+      select: async () => { throw new ExitPromptError(); },
+      input: async () => { throw new Error('input não deveria ser chamado'); },
+      password: async () => { throw new Error('password não deveria ser chamado'); },
+    };
+    const written = [];
+    await assert.rejects(
+      () => wizard.runVisualWizard({ prompts, write: (s) => written.push(s) }),
+      (e) => e.code === 'USER_ABORT',
+    );
+    assert.deepEqual(written, []);
+
+    const controller = new AbortController();
+    controller.abort();
+    const p2 = fakePrompts(['rust', 'vue', 'n', 't']);
+    await assert.rejects(
+      () => wizard.runVisualWizard({ prompts: p2, signal: controller.signal, write: () => {} }),
+      (e) => e.code === 'USER_ABORT',
+    );
+    assert.equal(p2.calls.length, 0, 'nenhuma tela após abort');
   });
 });

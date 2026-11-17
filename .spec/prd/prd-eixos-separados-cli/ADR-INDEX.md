@@ -36,7 +36,7 @@
 
 | order | id | title | status | depends_on | dir | branch | merge |
 |---|---|---|---|---|---|---|---|
-| 1 | ADR-001 | Eixos separados: compor config por eixo (commands/moduleMap do backend; mcp/stacks/skills do frontend; textos derivados), 8×6=48 combinações substituindo os 12 presets, 13 consumidores migrados, selo e baseline re-derivados com ratificação do owner | todo | — | ADRs/ADR-001-eixos-separados/ | adr/prd-eixos-separados-cli/01-eixos-separados | — |
+| 1 | ADR-001 | Eixos separados: compor config por eixo (commands/moduleMap do backend; mcp/stacks/skills do frontend; textos derivados), 8×6=48 combinações substituindo os 12 presets, 13 consumidores migrados, selo e baseline re-derivados com ratificação do owner | todo | merged | ADRs/ADR-001-eixos-separados/ | adr/prd-eixos-separados-cli/01-eixos-separados | feat(#22) `7fafde3` — merge humano 2026-11-17 |
 | 2 | ADR-002 | CLI visual setas+enter: substituir a tela line-based por prompts interativos com i18n PT-BR, segredo sem eco e nunca em argv, com critério comportamental medido (N telas, M interações, zero comando digitado) e protótipo ao vivo antes da spec | todo | ADR-001 | ADRs/ADR-002-cli-visual/ | adr/prd-eixos-separados-cli/02-cli-visual | — |
 
 ## Insumo das linhas

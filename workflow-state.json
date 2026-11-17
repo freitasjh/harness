@@ -1,8 +1,8 @@
 {
-  "current_feature": "prd-eixos-separados-cli-adr-001",
+  "current_feature": "prd-eixos-separados-cli-adr-002",
   "current_phase": "Completed",
   "previous_phase": "Execution",
-  "next_phase": "Planning",
+  "next_phase": "—",
   "type": "refactor",
   "layer": "agents/skills/rules",
   "repo": "harness",
@@ -11,9 +11,9 @@
     "bug_report": "harness/harness-eixos-stack-p2.json",
     "source_tech_debt": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
     "previous_archive": ".spec/archive/20261018-harness-eixos-stack/",
-    "verify": ".spec/backend/prd-eixos-separados-cli-adr-001/VERIFY.md",
+    "verify": ".spec/frontend/prd-eixos-separados-cli-adr-002/VERIFY.md",
     "harness_evidence": ".spec/archive/20261018-harness-eixos-stack/harness/",
-    "harness_report": "harness/prd-eixos-separados-cli-adr-001.json",
+    "harness_report": "harness/prd-eixos-separados-cli-adr-002.json",
     "tech_debt_p2": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
     "previous_cycle": {
       "cycle": ".spec/backend/harness-inventory-adr-001/",
@@ -22,20 +22,20 @@
       "harness_report": "harness/harness-inventory.json"
     },
     "c1_previous_bug": ".spec/bugs/harness-eixos-stack-p2/TASKS.md",
-    "proposal": ".spec/backend/prd-eixos-separados-cli-adr-001/PROPOSAL.md",
-    "spec": ".spec/backend/prd-eixos-separados-cli-adr-001/SPEC.md",
-    "plan": ".spec/backend/prd-eixos-separados-cli-adr-001/PLAN.md",
-    "tasks": ".spec/backend/prd-eixos-separados-cli-adr-001/TASKS.md",
+    "proposal": ".spec/frontend/prd-eixos-separados-cli-adr-002/PROPOSAL.md",
+    "spec": ".spec/frontend/prd-eixos-separados-cli-adr-002/SPEC.md",
+    "plan": ".spec/frontend/prd-eixos-separados-cli-adr-002/PLAN.md",
+    "tasks": ".spec/frontend/prd-eixos-separados-cli-adr-002/TASKS.md",
     "superseded_cycle": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/ (superseded: SPEC prescrevia `Plugin.define`, ausente no binario v2.0.32)",
     "archive": ".spec/archive/20261028-harness-design-system-agent/",
     "prd": ".spec/prd/prd-eixos-separados-cli/PRD.md",
     "research": null,
     "adr_index": ".spec/prd/prd-installer-rust/ADR-INDEX.md",
-    "adr": ".spec/prd/prd-installer-rust/ADRs/ADR-005-publicacao-runtime-selo/ADR.md",
+    "adr": ".spec/prd/prd-eixos-separados-cli/ADRs/ADR-002-cli-visual/ADR.md",
     "prd_lines": ".spec/prd/prd-harness-inventory/PRD.md (162 linhas, 16 secoes, PRD-01 PASS)",
-    "security": ".spec/backend/prd-eixos-separados-cli-adr-001/SECURITY.md",
-    "spec_gate": ".spec/backend/prd-eixos-separados-cli-adr-001/SPEC_GATE.md",
-    "jira_board": ".spec/backend/prd-eixos-separados-cli-adr-001/JIRA_BOARD.md",
+    "security": ".spec/frontend/prd-eixos-separados-cli-adr-002/SECURITY.md",
+    "spec_gate": ".spec/frontend/prd-eixos-separados-cli-adr-002/GATE-SPEC.md",
+    "jira_board": ".spec/frontend/prd-eixos-separados-cli-adr-002/JIRA_BOARD.md",
     "ux": ".spec/frontend/prd-installer-rust-adr-004/UX.md",
     "tech_debt_task": ".spec/tech-debts/doctor-spec-mkdtemp-flake/TASKS.md",
     "adr1": ".spec/prd/prd-eixos-separados-cli/ADRs/ADR-001-eixos-separados/ADR.md",
@@ -60,14 +60,14 @@
     "rigor": "E1/E2 bloqueiam"
   },
   "gates": {
-    "P0_P1": "approved_user_2026_11_16 (Refactor de distribuicao; ux-designer N/A — publicacao sem tela)",
+    "P0_P1": "approved_auto_pending_architect (ADR-002 CLI visual; protótipo aprovado e congelado; ux-designer já exercida)",
     "G2_PRD": "approved_user_2026_10_22 (PRD prd-garantias-runtime aprovado sem ressalvas; §16 do PRD.md; 3 decisoes do owner)",
-    "P1_P2": "approved_user_2026_11_17 (SPEC 13 RF 100%, architect aprovado)",
-    "P2_P3": "approved_user_2026_11_17 (PLAN 51, TASKS 6, 13 RF, SDD verdes)",
+    "P1_P2": "approved_user_2026_11_17 (SPEC 12 RF 100%, architect aprovado, protótipo congelado)",
+    "P2_P3": "approved_user_2026_11_17 (PLAN 53, TASKS 6, 12 RF, SDD verdes)",
     "P3_P4": "approved_auto_evidence_2026_11_17 (6 batches; review APPROVED 0/0)",
-    "P4_P5": "approved_auto_evidence_QA_2026_11_17 (540+1059+cargo85+golden95; baseline 48)",
-    "P5_P6": "approved_owner_2026_11_17 (selo+baseline48+V20 ratificados; Veredito registrado)",
-    "P6_fim": "pending_human_push_merge (branch 01-eixos-separados-impl @ 612adcf)",
+    "P4_P5": "approved_auto_evidence_QA_2026_11_17 (540+1091+cargo85; transcript real; segredo/sinal/eco PTY)",
+    "P5_P6": "approved_owner_2026_11_17 (transcript 9fd70bb6 ratificado; nao-paridade 16336B; Veredito registrado)",
+    "P6_fim": "pending_human_push_merge (branch 02-cli-visual-impl @ d104498)",
     "B1_B2": "approved_user_2026_09_29",
     "FU32": "closed_approved_decision_B",
     "_previous_cycle_opencode_v2_only": {
@@ -82,17 +82,18 @@
       "B1_B2": "approved_user_2026_09_29",
       "FU32": "closed_approved_decision_B"
     },
-    "G2_ADR": "approved_user_2026_11_17 (ADR-001 13 itens + ADR-002 12 itens protótipo congelado)",
+    "G2_ADR": "approved_user_2026_11_17 (ADR-002 CLI visual, protótipo aprovado e congelado)",
     "G1_PRD": "approved_user_2026_11_17 (PRD prd-eixos-separados-cli, 16 seções, §16 com decisões owner; protótipo CLI antes da spec)",
     "P4_5": "approved_auto_2026_11_17 (security 14: 11 N/A + 3 PASS)",
     "G2_RESEARCH": "approved_user_2026_11_17 (A1 eixos + B1 setas+enter + C1 baseline validado; 7 alternativas, 11 fontes; protótipo aprovado antes do ADR)"
   },
   "code_review": {
-    "last_invoked_at": "2026-11-17T16:30:49.229Z",
+    "last_invoked_at": "2026-11-17T23:17:37.670Z",
     "last_status": "passed",
     "critical_issues": 0,
     "attention_issues": 0,
-    "reviewer_notes": "ADR-001 review final APPROVED 0/0; selo mesmo hash correto (sealCommands hash das commands); owner ratificou selo+baseline48+V20."
+    "suggestions": 1,
+    "reviewer_notes": "ADR-002 review final APPROVED 0/0. VERIFY 3/3 com evidência re-medida, segurança 14/14, ratificação pendente sem forja, nenhuma paridade com 16336B, N/M congelados, rust+vue byte-idêntico ADR-001. 1 sugestão documental (campo perf) corrigida em 96b0be9."
   },
   "overrides": [
     {
@@ -258,7 +259,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T16:30:49.229Z",
+  "last_update": "2026-11-17T23:18:14.724Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -282,17 +283,17 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "ADR-001 EIXOS CONCLUIDO (6/6; 48 combinacoes; owner ratificou). Aguardando push + merge; proximo ADR-002 CLI visual",
+  "sdd_stage": "ADR-002 CLI VISUAL CONCLUIDO (6/6, VERIFY 3/3, transcript ratificado). Aguardando push + merge",
   "backlog": {
     "total": 6,
     "todo": 0,
     "doing": 0,
     "done": 6,
     "ids": [
-      "EIX-01",
-      "EIX-02",
-      "EIX-03",
-      "EIX-04",
+      "CLI-01",
+      "CLI-02",
+      "CLI-03",
+      "CLI-04",
       "VAL-01",
       "VAL-02"
     ]
@@ -1007,6 +1008,87 @@
       "origem": "review VAL-01",
       "bloqueia": false,
       "target": "VAL-02"
+    },
+    {
+      "id": "FU-CLI-STRING-SOLTA",
+      "created_at": "2026-11-17T17:32:22.519Z",
+      "texto": "Fortalecer teste de string solta em cli-infra.spec.mjs:142-156 — varrer install.mjs e checar prompt() no CLI-02 (hoje vacuo: so abort.js)",
+      "origem": "code-reviewer CLI-01",
+      "bloqueia": false,
+      "target": "CLI-02"
+    },
+    {
+      "id": "FU-CLI-ABORT-TEST",
+      "created_at": "2026-11-17T17:32:22.519Z",
+      "texto": "Cobrir isAbortError e onAbort com teste direto no CLI-04 (comportamento correto confirmado por sonda do reviewer)",
+      "origem": "code-reviewer CLI-01",
+      "bloqueia": false,
+      "target": "CLI-04",
+      "status": "closed",
+      "fechado_em": "2026-11-17T22:41:56.034Z"
+    },
+    {
+      "id": "FU-INQUIRER-NODEMODULES",
+      "created_at": "2026-11-17T21:10:36.340Z",
+      "texto": "@inquirer/prompts 8.8.0 + i18n 1.4.0 pinados em installer/cli/package.json mas SEM node_modules — instalar via npm ci e dar erro legivel em defaultPrompts() quando a lib faltar (hoje ERR_MODULE_NOT_FOUND obscuro). Obrigatorio ate VAL-02; nao mascara defeito de logica (testes injetam prompts e medem N/M/i18n).",
+      "origem": "code-reviewer CLI-02",
+      "bloqueia": false,
+      "target": "CLI-04/VAL-02",
+      "status": "closed",
+      "fechado_em": "2026-11-17T22:41:56.034Z"
+    },
+    {
+      "id": "FU-WIRING-CONFIG",
+      "created_at": "2026-11-17T22:26:41.814Z",
+      "texto": "Garantir wiring de configFromSelection em producao (runVisualWizard caller) no CLI-04/VAL-01 — hoje so consumidor e o teste",
+      "origem": "code-reviewer CLI-03",
+      "bloqueia": false,
+      "target": "CLI-04",
+      "status": "closed",
+      "fechado_em": "2026-11-17T22:41:56.034Z"
+    },
+    {
+      "id": "FU-AXIS-IDS-UNICO",
+      "created_at": "2026-11-17T22:26:41.814Z",
+      "texto": "Considerar re-export unico de AXIS_IDS (hoje 2 copias literais byte-iguais em install.mjs e installer-contract.mjs) no VAL-02",
+      "origem": "code-reviewer CLI-03",
+      "bloqueia": false,
+      "target": "VAL-02"
+    },
+    {
+      "id": "FU-SINAL-DIRETO",
+      "created_at": "2026-11-17T22:41:56.034Z",
+      "texto": "Registrar no VERIFY/harness do ADR-002 a medicao direta code=null/signal=SIGTERM ao lado do 143=128+15 (wrapper script -e) — prova ExitStatus com sinal, nunca exit 0",
+      "origem": "code-reviewer CLI-04",
+      "bloqueia": false,
+      "target": "VAL-02"
+    },
+    {
+      "id": "FU-GITIGNORE-CLI",
+      "created_at": "2026-11-17T22:41:56.034Z",
+      "texto": "Adicionar .gitignore versionado em installer/cli/ para node_modules (hoje só .git/info/exclude local, nao versionado)",
+      "origem": "code-reviewer CLI-04",
+      "bloqueia": false,
+      "target": "VAL-02"
+    },
+    {
+      "id": "FU-Q-CANCEL",
+      "created_at": "2026-11-17T22:41:56.034Z",
+      "texto": "locale.js:46 promete q para cancelar mas nao ha handler de tecla q real — @inquirer/select nao aborta em q nativamente; qa.spec simulou como ExitPromptError. Fidelidade do prototipo, pre-existente CLI-02 — decidir no VAL-01: implementar handler ou ajustar locale (sem reabrir prototipo sem §16)",
+      "origem": "code-reviewer CLI-04",
+      "bloqueia": false,
+      "target": "VAL-01",
+      "status": "closed",
+      "fechado_em": "2026-11-17T22:50:19.034Z",
+      "resolucao": "decisao (b): locale q→Ctrl+C para cancelar; N/M inalterados"
+    },
+    {
+      "id": "FU-HINT-VISIVEL",
+      "created_at": "2026-11-17T22:53:09.610Z",
+      "texto": "hint.navigation (Ctrl+C para cancelar) nao e consumido por nenhum prompt — dica visivel e a embutida do @inquirer em ingles (↑↓ navigate / ⏎ select). Decidir no VAL-02: consumir a chave no prompt ou registrar como limitacao da lib B1",
+      "origem": "code-reviewer CLI-04/VAL-01",
+      "bloqueia": false,
+      "target": "VAL-02"
     }
   ],
   "batches": [
@@ -1229,15 +1311,15 @@
     "pos_restart3": "orcamento ESGOTADO (2/2: fix + review); proxima delegacao nega; restart #4 necessario"
   },
   "verify": {
-    "at": "2026-11-17T16:30:49.229Z",
-    "verdict": "3/3 PASS (owner ratificou selo+baseline48+V20)",
-    "completude": "6/6 tasks; comando literal rust backend/vue frontend",
-    "corretude": "540+1059+cargo85+golden95; baseline 48 (37 novas) proveniência oráculo; C3 zero",
-    "coerencia": "motor único; 48 combinações por eixo; selo c904f1c5 ratificado; gate/config intocados",
-    "traceability": "13/13 RF",
-    "artefato": ".spec/backend/prd-eixos-separados-cli-adr-001/VERIFY.md",
-    "report": "harness/prd-eixos-separados-cli-adr-001.json",
-    "literalProven": true
+    "at": "2026-11-17T23:17:37.670Z",
+    "verdict": "3/3 PASS (ratificação owner pendente)",
+    "completude": "6/6 tasks; 4 telas N=4/M congelado",
+    "corretude": "540+1091+cargo85 + transcript real 2412B + rust+vue byte-idêntico ADR-001",
+    "coerencia": "B1 não B2, protótipo não reaberto, selo c904f1c5, nenhuma paridade 16336B",
+    "traceability": "12/12 RF",
+    "artefato": ".spec/frontend/prd-eixos-separados-cli-adr-002/VERIFY.md",
+    "report": "harness/prd-eixos-separados-cli-adr-002.json",
+    "transcriptSha": "9fd70bb612f5ca795bfcb036b492eed7e1e100d801b0023a8a39107f115e18db"
   },
   "commit": "a19acab",
   "remote": "git@github.com:freitasjh/harness.git (SSH; push + CI pendentes)",
@@ -1332,13 +1414,29 @@
   "prd_adr": {
     "prd_id": "prd-eixos-separados-cli",
     "prd_status": "approved",
-    "active_adr": "ADR-001 (aguardando G2)",
+    "active_adr": "ADR-002",
     "adr_order": [
       "ADR-001",
       "ADR-002"
     ],
-    "snapshots": [],
-    "decisoes_anteriores": "prd-installer-rust 5/5 merged — reaberto por §16 D16-EIXOS-CLI"
+    "snapshots": [
+      {
+        "adr": "ADR-001",
+        "status": "merged",
+        "merge": "7fafde3",
+        "at": "2026-11-17T17:19:03.287Z",
+        "nota": "48 combinacoes por eixo, 6 batches, owner ratificou selo/baseline48/V20"
+      }
+    ],
+    "decisoes_anteriores": "prd-installer-rust 5/5 merged (reaberto D5/ADR-004 via §16 D16-EIXOS-CLI)",
+    "summary": {
+      "prd": "prd-eixos-separados-cli",
+      "adrs_total": 2,
+      "adrs_merged": 1,
+      "adrs_pending_merge": 1,
+      "transcript": "2412B sha 9fd70bb6 ratificado",
+      "ponte_restante": "10 D-ENGINE (FU-D1-ENGINE10, decisao owner)"
+    }
   },
   "escalations": [
     {
@@ -2034,32 +2132,33 @@
   },
   "spec": {
     "score": "100%",
-    "gate": ".spec/backend/prd-eixos-separados-cli-adr-001/GATE-SPEC.md",
-    "security": "Fase 1 pass",
-    "rf_count": 13,
-    "items": 13,
-    "at": "2026-11-17T01:47:31.392Z"
+    "gate": ".spec/frontend/prd-eixos-separados-cli-adr-002/GATE-SPEC.md",
+    "security": "pass",
+    "prototipo": "aprovado e congelado N=4/M medido",
+    "rf_count": 12,
+    "items": 12,
+    "at": "2026-11-17T17:19:36.799Z"
   },
   "plan": {
     "lines": 53,
-    "tasks": 7,
+    "tasks": 6,
     "layers": {
-      "pub": 4,
-      "val": 3,
-      "fe": 0
+      "cli": 4,
+      "val": 2
     },
-    "mapped_rf": 16,
-    "at": "2026-11-16T23:49:30.321Z"
+    "mapped_rf": 12,
+    "at": "2026-11-17T17:22:22.352Z"
   },
   "batch": {
     "id": 6,
     "status": "review_running",
-    "commit": "ddf016f165150ebb5cbf4b001baeea4078ae1bc9",
-    "selo": "re-derivado = c904f1c5 (mesmo hash; commands byte-idênticas por RF-11)",
-    "owner_approval": "pending, nao forjado",
-    "verify": "3/3 + seguranca 14"
+    "commit": "392de228c65af5568382a1352247d4e3e0908e70",
+    "verify": "3/3 + seguranca 14/14",
+    "ratificacao": "pending — transcript 9fd70bb6",
+    "sugestoes": "hint B1 / sinal direto / gitignore documentadas",
+    "installer": 1091
   },
-  "next_gate": "HITL VAL-01->VAL-02: posso avancar para VAL-02? Vai exigir ratificacao owner do novo hash do selo (substitui c904f1c5) e do baseline 48.",
+  "next_gate": "HITL batch 5->6: posso avancar para VAL-02 (VERIFY 3/3) e depois ratificar transcript + apresentar push?",
   "governance_note": {
     "at": "2026-11-16T21:26:46.319Z",
     "texto": "Developer escreveu no retorno que owner havia aprovado migrar só JSON-safe — falso. Owner aprovou 23 e depois ACEITOU o desvio para 13 com razao medida. Corrigido aqui para nao deixar decisao reescrita.",

@@ -4,6 +4,9 @@ import os from 'node:os';
 import path from 'node:path';
 import fs from 'node:fs';
 import { Readable, Writable } from 'node:stream';
+import { spawn } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
 import {
   QUESTIONS,
   validateAnswer,
@@ -17,6 +20,8 @@ import {
   formatError,
 } from '../installer-contract.mjs';
 import { oracleSource } from './oracle.mjs';
+
+const specDir = path.dirname(fileURLToPath(import.meta.url));
 
 let dirs = [];
 function mkTemp(files = {}) {
@@ -256,5 +261,270 @@ describe('INS-18 wizard W3: token mascarado, proxima resposta intacta', () => {
     });
     assert.equal(res.answers.deployToken, 'TOKEN-w3-9');
     assert.ok(!buf.includes('TOKEN-w3-9'), 'token nunca exibido no wizard');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// CLI-04 — segredo sem eco, aborto 0 writes, restore de eco (ADR-002 §3 5/7).
+// Oráculo escrito à mão: nenhum valor é lido do módulo sob teste para formar
+// a expectativa. `SEGREDO_PROVA` é canário — nunca entra em argv/canal.
+// ---------------------------------------------------------------------------
+
+function treeHash(root) {
+  const hash = createHash('sha256');
+  const walk = (dir) => {
+    const entries = fs.readdirSync(dir, { withFileTypes: true })
+      .sort((a, b) => a.name.localeCompare(b.name));
+    for (const entry of entries) {
+      const full = path.join(dir, entry.name);
+      const rel = path.relative(root, full);
+      if (entry.isDirectory()) {
+        hash.update(`d:${rel}\n`);
+        walk(full);
+      } else {
+        const content = fs.readFileSync(full);
+        hash.update(`f:${rel}:${content.length}\n`);
+        hash.update(content);
+      }
+    }
+  };
+  walk(root);
+  return hash.digest('hex');
+}
+
+function runPty({ command, env = {}, input = '', inputDelayMs = 0, closeStdin = true, timeoutMs = 20000 }) {
+  return new Promise((resolve, reject) => {
+    const child = spawn('script', ['-q', '-e', '-c', command, '/dev/null'], {
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: { ...process.env, ...env },
+    });
+    let stdout = '';
+    let stderr = '';
+    child.stdout.on('data', (chunk) => { stdout += chunk.toString(); });
+    child.stderr.on('data', (chunk) => { stderr += chunk.toString(); });
+    child.on('error', reject);
+    const timer = setTimeout(() => {
+      try { child.kill('SIGKILL'); } catch { /* já encerrado */ }
+      reject(new Error('PTY timeout'));
+    }, timeoutMs);
+    child.on('close', (code, signal) => {
+      clearTimeout(timer);
+      resolve({ code, signal, stdout, stderr });
+    });
+    if (input) {
+      if (inputDelayMs > 0) {
+        setTimeout(() => { try { child.stdin.write(input); } catch { /* já encerrado */ } }, inputDelayMs);
+        if (closeStdin) setTimeout(() => { try { child.stdin.end(); } catch { /* já encerrado */ } }, inputDelayMs + 1200);
+      } else {
+        child.stdin.write(input);
+        if (closeStdin) child.stdin.end();
+      }
+    } else if (closeStdin) {
+      child.stdin.end();
+    }
+  });
+}
+
+async function waitForFile(file, timeoutMs = 10000) {
+  const started = Date.now();
+  while (!fs.existsSync(file)) {
+    if (Date.now() - started > timeoutMs) throw new Error(`arquivo não apareceu: ${file}`);
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+}
+
+describe('CLI-04 · segredo mask real (não só [REDACTED] do resumo)', () => {
+  it('password config mascarar entrada, desliga toggle e vem da chave de locale', async () => {
+    const secret = await import('../cli/secret.js');
+    const { t } = await import('../cli/locale.js');
+    const cfg = secret.secretPromptConfig();
+    assert.equal(cfg.message, t('wizard.token.message'));
+    assert.equal(cfg.toggleMask, false, 'Ctrl+T não pode revelar o segredo');
+    assert.equal(cfg.mask, false, 'usa maskedText do tema; string repetiria por caractere');
+    assert.equal(cfg.theme.style.maskedText, t('wizard.token.masked'));
+    assert.equal(JSON.stringify(cfg).includes('SEGREDO_PROVA'), false);
+  });
+
+  it('redactSecret: resumo e manifesto nunca contêm o valor', async () => {
+    const secret = await import('../cli/secret.js');
+    const { t } = await import('../cli/locale.js');
+    assert.equal(secret.redactSecret('SEGREDO_PROVA'), t('summary.redacted'));
+    assert.equal(secret.redactSecret(''), t('summary.redacted'));
+    assert.ok(!secret.redactSecret('SEGREDO_PROVA').includes('SEGREDO'));
+  });
+
+  it('SEGREDO_PROVA 0 em /proc/$PID/cmdline, stdout, stderr e transcript (PTY real)', async () => {
+    const secret = await import('../cli/secret.js');
+    assert.equal(typeof secret.readSecret, 'function');
+    const out = path.join(mkTemp({}), 'child.json');
+    const fixture = path.join(specDir, 'fixtures', 'cli04-secret-child.mjs');
+    const res = await runPty({
+      command: `${process.execPath} ${fixture}`,
+      env: { CLI04_CHILD_OUT: out },
+      input: 'SEGREDO_PROVA\r',
+      inputDelayMs: 700,
+    });
+    assert.equal(res.code, 0, `child falhou: ${res.stderr}`);
+    const state = JSON.parse(fs.readFileSync(out, 'utf8'));
+    assert.equal(state.length, 'SEGREDO_PROVA'.length, 'valor lido em memória');
+    assert.equal(state.cmdlineLeaked, false, 'cmdline vazou SEGREDO_PROVA');
+    assert.ok(!res.stdout.includes('SEGREDO_PROVA'), 'stdout vazou SEGREDO_PROVA');
+    assert.ok(!res.stderr.includes('SEGREDO_PROVA'), 'stderr vazou SEGREDO_PROVA');
+    assert.ok(!fs.readFileSync(out, 'utf8').includes('SEGREDO_PROVA'), 'estado/transcript vazou');
+  });
+});
+
+describe('CLI-04 · aborto q/EOF/ExitPromptError/USER_ABORT ⇒ 0 writes', () => {
+  it('hash de árvore antes=depois e nenhum write no aborto', async () => {
+    const { runVisualWizard } = await import('../cli/wizard.js');
+    const { USER_ABORT } = await import('../cli/abort.js');
+    const target = mkTemp({ 'mantido.txt': 'conteudo\n', 'sub/a.txt': 'a' });
+    const before = treeHash(target);
+    let writes = 0;
+    const sink = () => { writes += 1; };
+
+    const controller = new AbortController();
+    controller.abort();
+    const never = async () => { throw new Error('prompt não devia ser chamado'); };
+    await assert.rejects(
+      runVisualWizard({ prompts: { select: never, input: never, password: never }, signal: controller.signal, write: sink }),
+      (error) => error.code === USER_ABORT,
+    );
+
+    const promptsExit = {
+      select: async () => { const e = new Error('interrupt'); e.name = 'ExitPromptError'; throw e; },
+      input: never,
+      password: never,
+    };
+    await assert.rejects(
+      runVisualWizard({ prompts: promptsExit, write: sink }),
+      (error) => error.code === USER_ABORT,
+    );
+
+    const promptsQ = {
+      select: async () => { const e = new Error('q'); e.name = 'ExitPromptError'; throw e; },
+      input: never,
+      password: never,
+    };
+    await assert.rejects(
+      runVisualWizard({ prompts: promptsQ, write: sink }),
+      (error) => error.code === USER_ABORT,
+    );
+
+    assert.equal(writes, 0, 'nenhum write em nenhum caminho de aborto');
+    assert.equal(treeHash(target), before, 'hash da árvore mudou => write no aborto');
+  });
+
+  it('erro comum NÃO é disfarçado de aborto', async () => {
+    const { runVisualWizard } = await import('../cli/wizard.js');
+    const { USER_ABORT } = await import('../cli/abort.js');
+    const prompts = {
+      select: async () => { throw new Error('boom-real'); },
+      input: async () => '',
+      password: async () => '',
+    };
+    await assert.rejects(
+      runVisualWizard({ prompts, write: () => {} }),
+      (error) => /boom-real/.test(error.message) && error.code !== USER_ABORT,
+    );
+  });
+});
+
+describe('CLI-04 · isAbortError e onAbort (dívida do review CLI-01)', () => {
+  it('isAbortError distingue AbortError de erro comum', async () => {
+    const { isAbortError, USER_ABORT, classifyAbort } = await import('../cli/abort.js');
+    class AbortError extends Error {
+      constructor() { super('aborted'); this.name = 'AbortError'; }
+    }
+    assert.equal(isAbortError(new AbortError()), true);
+    assert.equal(isAbortError(new Error('boom')), false);
+    assert.equal(isAbortError(null), false);
+    assert.equal(classifyAbort(new AbortError()), USER_ABORT);
+  });
+
+  it('onAbort registra uma vez e devolve unsubscribe idempotente', async () => {
+    const { onAbort } = await import('../cli/abort.js');
+    const controller = new AbortController();
+    let calls = 0;
+    const off = onAbort(controller.signal, () => { calls += 1; });
+    assert.equal(typeof off, 'function');
+    controller.abort();
+    assert.equal(calls, 1, 'abort disparou exatamente uma vez');
+    controller.abort();
+    assert.equal(calls, 1, 'handler once');
+    off();
+    const offNoSignal = onAbort(null, () => { calls += 1; });
+    assert.doesNotThrow(offNoSignal);
+  });
+});
+
+describe('CLI-04 · SIGTERM com prompt aberto restaura o eco', () => {
+  it('stty -a mostra eco ON, término por sinal (nunca exit 0), handler idempotente', async () => {
+    const secret = await import('../cli/secret.js');
+    assert.equal(typeof secret.installSignalEchoGuard, 'function');
+    assert.equal(typeof secret.restoreEcho, 'function');
+    const out = path.join(mkTemp({}), 'signal.json');
+    const fixture = path.join(specDir, 'fixtures', 'cli04-signal-child.mjs');
+    const running = runPty({
+      command: `${process.execPath} ${fixture}`,
+      env: { CLI04_SIGNAL_OUT: out },
+      closeStdin: false,
+    });
+    await waitForFile(out);
+    const pid = JSON.parse(fs.readFileSync(out, 'utf8')).pid;
+    process.kill(pid, 'SIGTERM');
+    const res = await running;
+    assert.notEqual(res.code, 0, 'exit 0 após sinal é proibido');
+    const state = JSON.parse(fs.readFileSync(out, 'utf8'));
+    assert.equal(state.restored, true, 'restore não executou');
+    assert.equal(state.signal, 'SIGTERM');
+    assert.match(state.stty, /(?:^|\s)echo(?:\s|$)/, 'stty -a não mostrou eco ON');
+    assert.doesNotMatch(state.stty, /(?:^|\s)-echo(?:\s|$)/, 'stty -a mostrou -echo');
+  });
+});
+
+describe('CLI-04 · dívidas: defaultPrompts legível + wiring configFromSelection', () => {
+  it('defaultPrompts() sem lib => erro legível PROMPTS_UNAVAILABLE, não ERR_MODULE_NOT_FOUND', async () => {
+    const { defaultPrompts } = await import('../cli/wizard.js');
+    const { t } = await import('../cli/locale.js');
+    const cause = Object.assign(new Error("Cannot find package '@inquirer/prompts'"), { code: 'ERR_MODULE_NOT_FOUND' });
+    await assert.rejects(
+      defaultPrompts({ importPrompts: async () => { throw cause; } }),
+      (error) => {
+        assert.equal(error.code, 'PROMPTS_UNAVAILABLE');
+        assert.match(error.message, /npm ci/i);
+        assert.equal(error.message.includes('ERR_MODULE_NOT_FOUND'), false);
+        assert.equal(error.cause, cause, 'causa preservada para diagnóstico');
+        return true;
+      },
+    );
+    assert.match(t('errors.promptsUnavailable'), /npm ci/i);
+  });
+
+  it('runVisualWizard (caminho de produção) entrega config de configFromSelection', async () => {
+    const { runVisualWizard } = await import('../cli/wizard.js');
+    const { generateConfig } = await import('../installer-contract.mjs');
+    const calls = [];
+    const script = ['rust', 'vue', 'demo', 'SEGREDO_PROVA'];
+    const prompts = {
+      select: async (cfg) => {
+        const value = script.shift();
+        const idx = cfg.choices.findIndex((c) => c.value === value);
+        const def = cfg.choices.findIndex((c) => c.value === cfg.default);
+        calls.push({ kind: 'select', arrows: Math.abs(idx - def) });
+        return value;
+      },
+      input: async () => { calls.push({ kind: 'input' }); return 'demo'; },
+      password: async () => { calls.push({ kind: 'password' }); return 'SEGREDO_PROVA'; },
+    };
+    const result = await runVisualWizard({ prompts, write: () => {} });
+    assert.ok(result.config, 'configFromSelection não foi chamado no caminho de produção');
+    const literal = generateConfig({ project: 'demo', axes: { backend: 'rust', frontend: 'vue' } });
+    assert.equal(JSON.stringify(result.config), JSON.stringify(literal), 'config divergiu da ADR-001');
+    assert.deepEqual(result.telas, ['backend', 'frontend', 'name', 'token']);
+    assert.equal(calls.length, 4, 'N/M alterados');
+    assert.equal(calls[0].arrows, 2, 'java→rust = 2 setas');
+    assert.equal(calls[1].arrows, 1, 'react→vue = 1 seta');
+    assert.ok(!JSON.stringify(result.summary).includes('SEGREDO_PROVA'), 'resumo vazou segredo');
   });
 });
