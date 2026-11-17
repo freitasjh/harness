@@ -88,11 +88,12 @@
     "G2_RESEARCH": "approved_user_2026_11_17 (A1 eixos + B1 setas+enter + C1 baseline validado; 7 alternativas, 11 fontes; protótipo aprovado antes do ADR)"
   },
   "code_review": {
-    "last_invoked_at": "2026-11-17T14:32:07.385Z",
+    "last_invoked_at": "2026-11-17T14:57:00.671Z",
     "last_status": "passed",
     "critical_issues": 0,
-    "attention_issues": 2,
-    "reviewer_notes": "EIX-03 APPROVED. Textos derivados provados por mutação de eixo/template; 48 configs únicas; fail-closed tipado. 2 IMPORTANTE para EIX-04: (1) comando literal do ADR §3 item 5 via installer-contract.mjs.generateConfig ainda devolve N/A Node-only — consumidor real install.mjs:759 (4 call-sites) no gerador antigo; NAO marcar RF-05 fechado antes desse comando passar. (2) portar writtenPaths BF-04 e suiteCommand no swap, senão perda silenciosa."
+    "attention_issues": 0,
+    "suggestions": 2,
+    "reviewer_notes": "EIX-04 APPROVED 0 criticos. 3 bloqueantes fechados: comando literal rust backend/vue frontend, writtenPaths BF-04 preservado por mutação comparativa (6 casos), oráculo 48 pares/108 testes. Import install.mjs:3013 legítimo (static hoisted, movido ao fim para preservar linha 413 de OWNER_DECISIONS.proof/V19). 2 sugestões documentais para VERIFY VAL-02: call-sites COMPAT-CONGELADA (runDoctor:1364-1379, defaultSuiteFor:2205); suiteCommand sobrepõe unit como no legado."
   },
   "overrides": [
     {
@@ -258,7 +259,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T14:54:03.365Z",
+  "last_update": "2026-11-17T14:57:00.671Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -282,7 +283,7 @@
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
   "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
-  "sdd_stage": "ADR-001 EIXOS batch 4 CONCLUIDO (EIX-04:RF-05 fechado, 1006 testes) — review em curso",
+  "sdd_stage": "ADR-001 EIXOS batch 4 REVIEW APPROVED (0 criticos; RF-05 fechado; 3 bloqueantes fechados). PARADA HITL antes do VAL-01",
   "backlog": {
     "total": 6,
     "todo": 2,
@@ -963,7 +964,10 @@
       "texto": "Ratificar via §16 o comando eixos.spec.mjs (48/48) em ADR-001 §3 item 1 / SPEC §4 / PLAN §5, ou migrar eixos-stack.spec.mjs no EIX-04 — comando congelado hoje prova 73/73 do oráculo legado de 12 presets",
       "origem": "code-reviewer EIX-01",
       "bloqueia": false,
-      "target": "EIX-04/VAL-02"
+      "target": "EIX-04/VAL-02",
+      "status": "closed",
+      "fechado_em": "2026-11-17T14:57:00.671Z",
+      "prova": "EIX-04 review: comando literal rust backend/vue frontend; writtenPaths 6 casos; oráculo 48/108"
     },
     {
       "id": "FU-CARGO-ORACULO",
@@ -987,7 +991,10 @@
       "texto": "EIX-04: reexecutar comando literal ADR §3 item 5 via installer-contract.mjs.generateConfig({project,axes:{rust,vue}}) e fazer devolver rust backend/vue frontend com commands backend + mcp frontend. NAO marcar RF-05 fechado antes disso",
       "origem": "code-reviewer EIX-03",
       "bloqueia": true,
-      "target": "EIX-04"
+      "target": "EIX-04",
+      "status": "closed",
+      "fechado_em": "2026-11-17T14:57:00.671Z",
+      "prova": "EIX-04 review: comando literal rust backend/vue frontend; writtenPaths 6 casos; oráculo 48/108"
     },
     {
       "id": "FU-WRITTENPATHS-BF04",
@@ -995,7 +1002,10 @@
       "texto": "EIX-04: portar writtenPaths (trim moduleMap/evidence.schema, BF-04) e suiteCommand para o gerador novo antes de trocar os 4 call-sites de install.mjs:759 — swap ingênuo perde semântica em silêncio",
       "origem": "code-reviewer EIX-03",
       "bloqueia": true,
-      "target": "EIX-04"
+      "target": "EIX-04",
+      "status": "closed",
+      "fechado_em": "2026-11-17T14:57:00.671Z",
+      "prova": "EIX-04 review: comando literal rust backend/vue frontend; writtenPaths 6 casos; oráculo 48/108"
     }
   ],
   "batches": [
@@ -2041,7 +2051,7 @@
   },
   "batch": {
     "id": 4,
-    "status": "review_running",
+    "status": "review_approved",
     "commit": "8d1394dcddde9fb9c359df846c7eb4d335aaeb11",
     "installer": 1006,
     "comando_literal": "rust backend vue frontend (ANTES: N/A Node-only) — RF-05 fechado",
@@ -2049,7 +2059,7 @@
     "consumidores": "18 vereditos, 0 orfaos",
     "import_fim": "install.mjs:3013 sob revisao"
   },
-  "next_gate": "HITL batch 3->4: posso avancar para EIX-04 (rewiring 13 consumidores + writtenPaths/suiteCommand + oráculo 48)?",
+  "next_gate": "HITL batch 4->5: posso avancar para VAL-01 (baseline 48 com ratificacao das 36 novas + V20)? Decisao owner §16 necessaria para o baseline.",
   "governance_note": {
     "at": "2026-11-16T21:26:46.319Z",
     "texto": "Developer escreveu no retorno que owner havia aprovado migrar só JSON-safe — falso. Owner aprovou 23 e depois ACEITOU o desvio para 13 com razao medida. Corrigido aqui para nao deixar decisao reescrita.",
