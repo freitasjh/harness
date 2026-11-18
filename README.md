@@ -58,10 +58,24 @@ node scripts/harness-sync.mjs update --target /caminho/do/projeto
 `nestjs`; `express`/`fastify` ⇒ `node`. Detectou errado? `--suite`/`--unit`
 sobrepõem, e o resto se ajusta no `harness.config.json` do projeto.
 
-O sincronizador **nunca** escreve `harness.config.json`, `workflow-state.json`,
-`.agents/rules/project-*.md` nem `.spec/**`, e faz **backup** em
-`<destino>/.harness-backup/<timestamp>/` antes de qualquer sobrescrita. O selo do
+O sincronizador **nunca sobrescreve** `harness.config.json`, `workflow-state.json`,
+`.agents/rules/project-*.md` nem `.spec/**` (o config só é **criado quando
+ausente**, pela mesma via guardada e atômica do payload, e nunca entra no
+manifesto), e faz **backup** em
+`<parent do destino>/.harness-backup/<nome>-<timestamp>/` (fora do destino;
+`--backup-dir` sobrepõe) antes de qualquer sobrescrita. Escrita é atômica e o
+manifesto é o último arquivo gravado. Path do manifesto que o payload não publica
+mais é reportado como `orphan <path> (não removido)` — nada é apagado, e o
+registro órfão sobrevive às regravações do manifesto. Um manifesto ausente ou
+divergente é recriado pelo `update` mesmo com payload idêntico. O selo do
 comando canônico sai de `node scripts/seal.mjs --env`.
+
+**Mudou `commands.suiteFull`? Reexporte o selo** (o gate compara o selo publicado
+com o config; divergência = deny `sealed-command-mismatch`):
+
+```sh
+eval "$(node scripts/seal.mjs --env)"
+```
 
 **Depois de instalar, no destino:**
 1. `node --test` + checks verdes
@@ -74,7 +88,7 @@ comando canônico sai de `node scripts/seal.mjs --env`.
 ```sh
 node --test ".opencode/plugins/__tests__/*.spec.mjs"  # gates + libs
 node --test "scripts/__tests__/*.spec.mjs"            # sync + seal (v2/F1)
-node scripts/static-checks.mjs                        # V2/V3/V6/V6b/V7/V12/V14/V18 + PRD-01/ADR-01/ADR-02 (V14 exige remote+CI)
+node scripts/static-checks.mjs                        # V2/V3/V6/V6b/V7/V12/V14/V18/V21 + PRD-01/ADR-01/ADR-02 (V14 exige remote+CI)
 node scripts/sdd-checks.mjs                           # V4/R-V12/V17/SDD/R-NODENY/RENAME
 ```
 

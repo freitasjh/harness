@@ -7,7 +7,10 @@
   "layer": "agents/skills/rules",
   "repo": "harness",
   "artifacts": {
+    "proposal": ".spec/governance/harness-v2/PROPOSAL.md",
+    "spec": ".spec/governance/harness-v2/SPEC.md",
     "plan": ".spec/governance/harness-v2/PLAN.md",
+    "tasks": ".spec/governance/harness-v2/TASKS.md",
     "baseline": ".spec/governance/harness-v2/baseline-v1.md"
   },
   "scope": {
@@ -228,7 +231,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-18T15:13:38.339Z",
+  "last_update": "2026-11-18T17:07:44.991Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -248,10 +251,10 @@
     "U5": "c - dois ancoras",
     "U6": "b - selo de hash"
   },
-  "harness_status": "passed (REPORT harness/prd-installer-rust-adr-002.json schema-valido; 540+638 testes; literalProven=true apos assinatura do owner; selo c904f1c5 intacto)",
+  "harness_status": "passed",
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
-  "code_review_status_ciclo": "prd-installer-rust-adr-002: 1 rodada, 2 criticos (sha do literal errado; rito auto-assinado) + 3 importantes — todos fechados; assinatura final pelo owner",
+  "code_review_status_ciclo": "harness-v2/F1",
   "sdd_stage": "PRD eixos-separados-cli CONCLUIDO — 2/2 ADRs merged na main (aed46b0). Tela e eixos separados entregues",
   "backlog": {
     "total": 6,
@@ -2227,13 +2230,16 @@
         "suite": "540+1091 pass"
       },
       "F1": {
-        "status": "done-pending-review",
-        "suite": "418 plugins + 22 sync, 0 fail",
-        "deletion": "173 files / 32088 lines"
+        "status": "done",
+        "suite": "418 plugins + 80 scripts, 0 fail",
+        "deletion": "173 files / 32088 lines",
+        "review": "APPROVED (parecer #5)",
+        "debt": [
+          "harness-v2-path-identity D1/D2/D3"
+        ]
       }
     },
     "pending": [
-      "code-review F1",
       "F2",
       "F3",
       "F4",
@@ -2241,6 +2247,7 @@
       "F6",
       "F7",
       "F8"
-    ]
+    ],
+    "reviews": 5
   }
 }

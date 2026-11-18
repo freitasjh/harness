@@ -14,22 +14,41 @@
 // declared in the `BASELINE` of `.opencode/plugins/lib/refs/checks.mjs`, and on
 // a baseline entry that went stale. Pure core, no new command in the seal.
 //
-// REMOVED IN v2 (F1) — declared loss, not a silent pass:
-//   V15 (network references in the installer tree), V19 (per-axis artifact
-//   inventory) and V20 (CDL over the installer skill) measured the INSTALLER
-//   payload: network references inside that directory, artifact classes
-//   declared by its axes, and the clean-destination rubric over its skill.
-//   The directories named `installer`, `installer-rs` and `packaging`, plus
-//   `.agents/skills/harness-installer`, were deleted in v2, so those checks
-//   lose their subject: a scanner pointed at a deleted directory can only
-//   return "0 hits" forever, which is precisely the "silently green" defect
-//   this removal must avoid claiming. What they no longer measure: (a) network
-//   calls reachable from the install path — the subject is gone, and the
-//   replacement `scripts/harness-sync.mjs` is covered by
-//   `scripts/__tests__/sync.spec.mjs` (NET-01, source-level); (b) per-axis
-//   artifact inventory — axes no longer exist (no wizard, no profiles); (c)
-//   the CDL rubric over the installer skill — the skill is gone. V2/V3/V6/V6b/
-//   V7/V12/V14/V18, PRD-01 and ADR-01/ADR-02 are unchanged.
+// REMOVED IN v2 (F1) — declared LOSS, with what each module really measured and
+// the real population, not a silent pass:
+//
+//   V20 (CDL) — the Clean Destination Criterion. It was NOT a check over the
+//   installer: it read LIVE `.md` prose repo-wide — population measured at
+//   removal: 223 files / 30,373 lines — applied a 4-verdict rubric per line,
+//   and published technology-citing prohibitions as a COUNTER
+//   (`prohibition-cited` = 27 at removal), not as verdicts. Its pinned debt
+//   list is NOT "96 debts at removal": the baseline peaked at 96 entries in
+//   `47c906b` and was driven to zero by ADR-002/ADR-003/ADR-005 before the
+//   removal — measured 80 in `9bf383c`, 38 in `c061514`, and 0 in `381b5e0`
+//   (tag v1.0) and 0 in the commit de remoção `346a263` (its parent, `47f9237`,
+//   still carried the modules).
+//   V19 (inventory) — the canonical inventory: roster parity (`opencode.json`
+//   registration ↔ directories that carry `AGENT.md`/`PROMPT.md`), citation by
+//   token, the vendor lock as the class source (never a path prefix), and the
+//   per-axis artifact inventory (skills 47, rules 8, agents 10/10 at removal).
+//
+//   Only the AXIS VOCABULARY of both depended on the deleted tree. The rest
+//   measured THIS repository. What is no longer measured, stated plainly:
+//   (a) the prose rubric of V20 (4 verdicts + `prohibition-cited`; the baseline
+//       peaked at 96 entries and was already 0 at removal) — registered as tech
+//       debt for the orchestrator (`.spec/tech-debts/harness-v2-cdl/TASKS.md`),
+//       not covered by any check today; identity of another project's prose in
+//       skills/rules/agents is therefore UNMEASURED;
+//   (b) citation-by-token and the vendor-lock class derivation of V19;
+//   (c) the per-axis inventory — the axes no longer exist (no wizard, no
+//       profiles), so there is nothing to inventory.
+//   V21 below restores the cheap, bidirectional half of (b): registration ↔
+//   disk, naming both sides on failure. It does not restore token citation.
+//   V15 (network references inside the installer tree) also lost its subject:
+//   its successor `NET-01` (`scripts/__tests__/sync.spec.mjs`) scans the two
+//   scripts on the install path and keeps the module/package/command classes;
+//   the E1..E9 escapes of the old check are NOT measured any more.
+//   V2/V3/V6/V6b/V7/V12/V14/V18, PRD-01 and ADR-01/ADR-02 are unchanged.
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -236,6 +255,64 @@ function checkRefs(root = REPO_ROOT) {
   record("V18", ok ? "PASS" : "FAIL", detail);
 }
 
+// --- V21: roster ↔ disk parity (F1-fix, D1=A) -----------------------------
+// Restores the cheap, BIDIRECTIONAL half of the deleted V19 inventory: the
+// roster declared in `opencode.json` and the directories under `.agents/agents`
+// must agree, and every directory must carry the role file (`AGENT.md` or
+// `PROMPT.md`, the `code-reviewer` case). Citation-by-token and the vendor-lock
+// class derivation are NOT restored — declared loss in the header of this file.
+const ROSTER_PATH = "opencode.json";
+const ROSTER_DIR = ".agents/agents";
+const ROLE_FILES = ["AGENT.md", "PROMPT.md"];
+
+// `root` is injectable for the same reason as the other adapters: the verdict
+// must be testable against a fixture without touching the real roster.
+export function rosterParity(root = REPO_ROOT) {
+  const rosterFile = join(root, ROSTER_PATH);
+  if (!existsSync(rosterFile)) {
+    return { ok: false, registered: [], dirs: [], problems: [`${ROSTER_PATH} ausente`] };
+  }
+  let roster;
+  try {
+    roster = JSON.parse(readFileSync(rosterFile, "utf8"));
+  } catch (e) {
+    return { ok: false, registered: [], dirs: [], problems: [`${ROSTER_PATH}: JSON inválido (${e.message})`] };
+  }
+  const registered = Object.keys(roster?.agent ?? {}).sort();
+  const dirAbs = join(root, ROSTER_DIR);
+  const dirs = existsSync(dirAbs)
+    ? readdirSync(dirAbs, { withFileTypes: true })
+        .filter((e) => e.isDirectory())
+        .map((e) => e.name)
+        .sort()
+    : [];
+
+  const problems = [];
+  const registeredSet = new Set(registered);
+  for (const name of registered) {
+    if (!dirs.includes(name)) {
+      problems.push(`registro sem diretório: ${name}`);
+    } else if (!ROLE_FILES.some((file) => existsSync(join(dirAbs, name, file)))) {
+      problems.push(`diretório sem AGENT.md/PROMPT.md: ${name}`);
+    }
+  }
+  for (const name of dirs) {
+    if (!registeredSet.has(name)) problems.push(`diretório sem entrada no registro: ${name}`);
+  }
+  return { ok: problems.length === 0, registered, dirs, problems };
+}
+
+function checkRosterParity(root = REPO_ROOT) {
+  const { ok, registered, dirs, problems } = rosterParity(root);
+  record(
+    "V21",
+    ok ? "PASS" : "FAIL",
+    ok
+      ? `roster↔disco em paridade (registrados=${registered.length}, diretórios=${dirs.length})`
+      : problems.join("; "),
+  );
+}
+
 // PAP-04 (🟡3): `root` is injectable so the ADAPTER's verdict — the `ok` flag that
 // defines the process exit code, not just the console line — is testable against
 // a malformed fixture without touching the repo's real `.spec/**`. Production
@@ -250,6 +327,7 @@ export function runStaticChecks(root = REPO_ROOT) {
   checkV14();
   checkRefs(root);
   checkPrd(root);
+  checkRosterParity(root);
   reportLegacyBaseline();
   const failed = results.filter((r) => r.status === "FAIL");
   return { ok: failed.length === 0, results };

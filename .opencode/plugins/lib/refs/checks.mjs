@@ -15,7 +15,12 @@
 //
 //   C1 live-orphan          alvo ausente, citante vivo, sem supressão
 //                           → BASELINE (dívida com dono) ou FAIL
-//   C2 foreign-baseline     C1 cujo assunto é de eixo que `stack.*` declara N/A
+//   C2 foreign-baseline     C1 cujo assunto declara, NA ENTRADA DA BASELINE,
+//                           um eixo ausente (dono + motivo + reativação). A
+//                           classe é do registro, não um predicado sobre o
+//                           config: o check nunca lê `targets.*` para decidir
+//                           se a dívida existe — ele confia na entrada e
+//                           expira quando a citação desaparece.
 //                           → BASELINE (dívida com dono + reativação)
 //   C3 declared-non-defect  citação em NON_DEFECT (reason + proof) → suprimida
 //   C4 vendor-internal      todos os citantes em skill do `.vendor-lock.json`

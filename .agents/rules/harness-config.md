@@ -24,8 +24,15 @@ plugins never hardcode its values (SPEC ADR-003). Enforcement lives in
 
 > Nota (v2/F1, 2026-11-18): o instalador v1 foi apagado e `stack` virou
 > `targets` (`{frontend, backend}`, detectado). `harness.config.json` continua
-> sendo um arquivo do PROJETO: o sincronizador nunca o escreve depois do `init`
-> e o `update` o reporta como `skip` (dado preservado, não payload).
+> sendo um arquivo do PROJETO: o sincronizador só o **cria quando ausente**
+> (`init`, ou `update` num alvo sem config), pela mesma via guardada e atômica do
+> payload (`assertSafeWrite` + `writeAtomic`), e exige `commands.suiteFull` não
+> nulo **na criação do config** (os dois verbos que podem criá-lo recusam com
+> exit 1), e **nunca o sobrescreve** — com o config presente, o verbo o reporta
+> como `skip` e ele não entra no manifesto (dado preservado, não payload). Config
+> **presente** com `commands.suiteFull` nulo não é reescrito: o `update` imprime
+> `WARN commands.suiteFull nulo em harness.config.json — o gate negará Completed
+> até ser preenchido` e sai 0; corrigir o comando é ato do operador.
 
 ## Fail-closed (RF-01/RF-02)
 
@@ -76,9 +83,15 @@ de `scripts/harness-sync.mjs` — três verbos, zero pergunta, zero rede:
 
 | Verbo | Contrato |
 |---|---|
-| `init --target <dir>` | exige alvo sem estado do harness (`.agents/` ou `.harness-manifest.json` ⇒ falha mandando usar `update`); copia o payload e gera `harness.config.json` mínimo (`version`, `project`, `targets`, `commands`, `evidence`, `protectedPaths`). `--suite`/`--unit` sobrepõem a detecção. |
-| `update --target <dir>` | backup obrigatório em `<target>/.harness-backup/<timestamp>/` antes de qualquer escrita; grava **só** `{p : sha256(destino/p) ≠ sha256(fonte/p)}`; idempotente (2ª execução = 0 writes). Merge de `opencode.json` só nas chaves que a fonte declara. |
-| `doctor --target <dir>` | somente leitura: camadas do payload, JSON válido de `opencode.json`/`harness.config.json`/manifesto, `commands.suiteFull` não nulo. Exit 1 nomeando cada falha com o path. |
+| `init --target <dir>` | exige alvo sem estado do harness (`.agents/`, `.agents/skills/`, `.opencode/plugins/`, `.opencode/commands/` ou `.harness-manifest.json` ⇒ falha mandando usar `update`); **recusa com exit 1 quando `commands.suiteFull` fica nulo** (mensagem pede `--suite <cmd>`), porque um config sem comando canônico faz todo gate que o lê falhar fechado depois; copia o payload e gera `harness.config.json` mínimo (`version`, `project`, `targets`, `commands`, `evidence`, `protectedPaths`). `--suite`/`--unit` sobrepõem a detecção. |
+| `update --target <dir>` | backup obrigatório em `<parent do target>/.harness-backup/<nome-do-target>-<timestamp ISO com ms>/` — **nunca dentro do target** (lá seria conteúdo a inspecionar e a enumerar de novo) — antes de qualquer escrita; `--backup-dir <dir>` sobrepõe e um dir dentro do target é recusado. Grava **só** `{p : sha256(destino/p) ≠ sha256(fonte/p)}`; idempotente (2ª execução = 0 writes). Merge de `opencode.json` só nas chaves que a fonte declara. Path do manifesto ausente do payload sai como `orphan <path> (não removido)`: **não existe `--prune` nesta fase**, a remoção é decisão humana. Órfão apagado ou editado à mão ⇒ `doctor` FAIL (`arquivo do manifesto ausente`/`sha256 divergente`); reparo: podar a entrada do manifesto, ou apagar `.harness-manifest.json` e rodar `update` (`manifest rewritten`). |
+| `doctor --target <dir>` | somente leitura: camadas do payload, JSON válido de `opencode.json`/`harness.config.json`/manifesto, `commands.suiteFull` não nulo, **sha256 de cada arquivo do manifesto recomputado** (1 byte adulterado ⇒ FAIL; entrada que é symlink ⇒ FAIL, nunca re-hash através do link) e WARN sobre o pin do checkout `brain` irmão (divergência ou ausência nunca viram exit 1). Exit 1 nomeando cada falha com o path. |
+
+Toda escrita é atômica (`<arquivo>.tmp-<pid>` + `rename`, o temporário aberto com
+`wx`/`O_EXCL` e removido em qualquer erro, então um link plantado no nome
+previsível é recusado) e o manifesto é o último write; qualquer symlink em
+componente do path de destino, ou `target` igual à fonte, **aborta o run
+inteiro** antes do backup.
 
 `--dry-run` imprime o plano (`create`/`update`/`skip` por path) e não escreve nem
 cria backup. Manifesto = `.harness-manifest.json` (`{version, files:{path: sha256}}`).

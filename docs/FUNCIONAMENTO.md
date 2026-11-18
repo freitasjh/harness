@@ -105,15 +105,15 @@ ele re-executa.
 | `.agents/rules/prd-adr-pipeline.md` | Contrato da esteira PRD → RESEARCH → ADR-INDEX → ADR | `1-79` |
 | `.agents/rules/sdd-workflow-standard.md` | Layout `.spec/**` + campos canônicos de `workflow-state.json` | `1-50` |
 | `.agents/rules/brain-context.md` | Ponte para o repo `brain` (dono da regra) | `1-15` |
-| `.agents/agents/*/AGENT.md` | 10 diretórios de agente — 9 com `AGENT.md` + `code-reviewer/PROMPT.md` — e o `opencode.json` registra os mesmos 10: registro↔disco em paridade (ADR-001) | `opencode.json:12-102`; `orchestrator/AGENT.md:220-245`, `:439-472` |
+| `.agents/agents/*/AGENT.md` | 10 diretórios de agente — 9 com `AGENT.md` + `code-reviewer/PROMPT.md` — e o `opencode.json` registra os mesmos 10: registro↔disco em paridade nos dois sentidos, medido por `V21` (`rosterParity`) | `opencode.json:12-102`; `scripts/static-checks.mjs:269-314`; `orchestrator/AGENT.md:220-245`, `:439-472` |
 | `.agents/skills/` | Playbooks: `prompt-optimizer`, `sdd-compiler`, `harness-report`, `security-review`, `brain` | — |
 | `.opencode/plugins/lib/prd-adr-pipeline/` | Módulo da esteira PRD→ADR: `checks.mjs` + 4 templates (norma fica na rule) | `checks.mjs:417-495` |
 | `.agents/schemas/harness-report.schema.json` | Schema canônico do relatório de evidência | `7-19`, `40-48` |
-| `scripts/static-checks.mjs` | Checks estáticos V2/V3/V6/V7/V12/V14/V15 + PRD/ADR-01/02 | `42-47`, `254-342`, `371-382` |
+| `scripts/static-checks.mjs` | Checks estáticos V2/V3/V6/V6b/V7/V12/V14/V18/V21 + PRD/ADR-01/02 (334 linhas) | `129-153` (V6..V7), `155-188` (V12), `190-209` (V14), `235-250` (V18), `269-314` (V21), `317-330` (runner) |
 | `scripts/sdd-checks.mjs` | Checks executáveis V4/V17/SDD-01..03/R-V12/R-NODENY/RENAME-01 | `367-421` |
 | `scripts/vendor-skills.mjs` | Vendorização de skills + `--check` de drift (sem rede no check) | `5-26` |
 | `scripts/__tests__/sync.spec.mjs` | Testes do sincronizador e do selo (v2/F1) | diretório |
-| `scripts/harness-sync.mjs` | Sincronizador repo→repo (v2/F1): `init`/`update`/`doctor`, manifesto sha256, backup, merge de `opencode.json` | `1-40` (contrato), `buildPlan`, `applyPlan` |
+| `scripts/harness-sync.mjs` | Sincronizador repo→repo (v2/F1): `init`/`update`/`doctor`, manifesto sha256 (ledger que preserva órfão e se recria), backup fora do target, merge de `opencode.json`, recusa de symlink (payload, config gerado, manifesto e diretório de backup). Toda escrita passa por `writeGuarded` (guard + atômico na mesma função; `writeAtomic` é privado) | `57-79` (contrato), `assertNoLinkInPath`/`assertSafeWrite`/`assertSafeBackupDir`/`assertNotSource`, `writeGuarded`, `planConfig`, `buildPlan`, `applyPlan`, `runDoctor` |
 | `.github/workflows/harness-integrity.yml` | CI: job `static-checks` + job `integrity` (trailer obrigatório) | `16-32`, `34-86` |
 | `.githooks/pre-commit` | Espelho local do CI (exige `HARNESS_GATE_APPROVER`) | `9-38` |
 | `workflow-state.json` | Estado do ciclo (81 chaves de topo; subconjunto canônico em `sdd-workflow-standard.md` §2) | raiz |
@@ -130,14 +130,14 @@ enforcement que o gate implementa.
 |---|---|---|---|---|
 | 1 | **Gates bloqueantes** — delegação sem PICCO nega; conclusão sem contraprova nega; 3º `task` sem turno humano nega; higiene de shell nega; escrita em path protegido nega | `DenyError` lançado no hook `execute.before` | `gate.js:1175-1179` (registro), `gate.js:356-369` (motivos) | 🟢 runtime |
 | 2 | **Evidência machine-checkable** — conclusão exige relatório válido + re-execução do comando canônico (verificador ≠ executor) | schema + selo `sha256` + cache | `gate.js:739-806`, `.agents/schemas/harness-report.schema.json`, `seal.mjs:14-29` | 🟠 parcial — o executor padrão só observa exit code (`gate.js:726-737`) |
-| 3 | **Zero path hardcoded** — comandos, paths e módulos vêm do config do projeto | check estático V3 + loader do config | `scripts/static-checks.mjs:42-47`, `:274-275`, `config.mjs:13-33` | 🟠 parcial — V3 varre 3 arquivos + 2 diretórios, não o `gate.js` |
+| 3 | **Zero path hardcoded** — comandos, paths e módulos vêm do config do projeto | check estático V3 + loader do config | `scripts/static-checks.mjs:83-104`, `:150`, `config.mjs:13-33` | 🟠 parcial — V3 varre 3 arquivos + 2 diretórios, não o `gate.js` |
 | 4 | **Portão de prompt** — 6 elementos PICCO; sem eles o orquestrador pergunta em vez de adivinhar | skill `prompt-optimizer` + GATE-02 | `gate.js:489-521`, `.agents/rules/workflow-rules.md:12-55` | 🟢 para a tag obrigatória · 🟡 para E3..E6 (só aviso, `gate.js:500-505`) |
 | 5 | **SDD governado** — SPEC → PLAN → TASKS → execução → VERIFY → archive, com portões humanos | skills `sdd-compiler` + `scripts/sdd-checks.mjs` | `.agents/rules/workflow-rules.md:144-328`, `scripts/sdd-checks.mjs:367-421` | 🟡 processo |
 | 6 | **Cobertura de risco** — mudança em `riskPaths` sobe o E2E a `enforce` | `escalateOnRisk` no config | `harness.config.json:44-54` | 🔴 declarado-aberto no runtime — nenhum gate consome `riskPaths` (ver §10a) |
 | 7 | **Kill-switch e modo fora do worktree** — `HARNESS_GATES=off` no host desliga a suíte; o modo por gate vem de `HARNESS_GATE_<GATE>` (com `_REASON` não vazio para rebaixar); o config não decide modo, só é auditado | env do host + `resolveGateMode`/`auditConfigGates` | `gate.js:61-62`, `:77-79`, `:98-117`, `:252-272`, `:1366`, `config.mjs:35-40` | 🟢 por construção |
 | 8 | **Memória persistente** — decisões, erros e lições no Brain (busca antes, registra depois) | skill `brain` (MCP) | `.agents/rules/brain-context.md:1-15`, `workflow-rules.md:402-414` | 🟡 processo |
 | 9 | **Sincronizador** — leva o harness a outro repo sem copiar domínio alheio; determinístico (só o que mudou), com backup obrigatório e zero rede | `scripts/harness-sync.mjs` + `.harness-manifest.json` | `scripts/harness-sync.mjs` (`buildPlan`/`applyPlan`), `scripts/__tests__/sync.spec.mjs` | 🟢 neste repo (suite própria) · 🟡 no destino |
-| 10 | **Esteira PRD→ADR→SDD** — 1 ADR = 1 branch = 1 ciclo SDD, sem deny novo no runtime | `PRD-01`/`ADR-01`/`ADR-02` dentro do `suiteFull` | `.opencode/plugins/lib/prd-adr-pipeline/checks.mjs:417-495`, `static-checks.mjs:361-363` | 🟢 neste repo (CI) · 🟡 no destino |
+| 10 | **Esteira PRD→ADR→SDD** — 1 ADR = 1 branch = 1 ciclo SDD, sem deny novo no runtime | `PRD-01`/`ADR-01`/`ADR-02` dentro do `suiteFull` | `.opencode/plugins/lib/prd-adr-pipeline/checks.mjs:417-495`, `static-checks.mjs:224-233` | 🟢 neste repo (CI) · 🟡 no destino |
 | 11 | **Contraprova com selo** — o comando canônico é selado por `sha256`; divergência nega | `seal.mjs` + `verifySealOrDeny` | `gate.js:146-161`, `:748-749`, `:918-929` | 🟢 runtime (fail-closed: selo ausente ⇒ `empty-seal`) |
 | 12 | **Escopo de escrita por papel** — orquestrador só em `.spec/**` + state; qa-engineer só em `harness/`; reviewer e ux-designer não escrevem | `checkWriteAccess` | `gate.js:556-568`, `:652-681` | 🟠 parcial — depende da identidade de agente no payload (ver §10b) |
 | 13 | **Pausa HITL entre batches** — 3º `task` consecutivo sem turno humano nega | contador por sessão + fronteira de turno do event stream | `gate.js:1059-1102`, `:1270-1297` | 🟠 parcial (fronteira depende do stream emitir) |
@@ -484,7 +484,7 @@ Regras: nenhuma ADR nasce antes do bloco §16 do PRD preenchido
 Validação mecânica: `PRD-01` (7 seções obrigatórias), `ADR-01` (1:1 índice↔disco),
 `ADR-02` (ordem, `status`, `branch`, `merge`) — implementados em
 `.opencode/plugins/lib/prd-adr-pipeline/checks.mjs` e executados **dentro** do `suiteFull`
-(`scripts/static-checks.mjs:371-378`, `:361-363`). Nível: 🟢 neste repo (rodam no CI) ·
+(`scripts/static-checks.mjs:317-330`, `:224-233`). Nível: 🟢 neste repo (rodam no CI) ·
 🟡 no repo-destino (não há CI prometeido lá).
 
 ---
@@ -530,14 +530,17 @@ intencional (`isDeclaredDeviation`, `gate.js:896-907`).
 
 | ID | Script | O que acusa | Nível |
 |---|---|---|---|
-| V2 | `static-checks.mjs:272-273` | ocorrência de `permission.ask` nos arquivos escopados | 🟢 (CI) |
-| V3 | `static-checks.mjs:274-275` | literal de projeto hardcoded (`docker-compose-postgresql`, `-pl application`) | 🟠 — escopo restrito a `SCAN_FILES`/`SCAN_DIRS` (`static-checks.mjs:42-47`) |
-| V6 / V6b | `static-checks.mjs:254-268` | config e schema são JSON válido | 🟢 |
-| V7 | `static-checks.mjs:276-277` | `output.system = <scalar>` (hook morto) | 🟢 |
-| V12 | `static-checks.mjs:288-321` | referência órfã a `harness-continuous.md` | 🟡 INFO — não falha o build (`:320`); a enforcing real é R-V12 |
-| V14 | `static-checks.mjs:323-342` | git + remote + CI presentes (ADR-007 operante) | 🟢 neste repo (remote `git@github.com:freitasjh/harness.git` existe) |
-| ~~V15~~ | removido em v2/F1 | media referência de rede na árvore do instalador v1, apagada | sucessor: `NET-01` em `scripts/__tests__/sync.spec.mjs` (fonte de `harness-sync.mjs`/`seal.mjs` sem rede) — perda declarada em `gate-contract.md:31` |
-| PRD-01 / ADR-01 / ADR-02 | `static-checks.mjs:361-363` → `.opencode/plugins/lib/prd-adr-pipeline/checks.mjs` | 7 seções do PRD; 1:1 do índice de ADRs; ordem/branch/merge | 🟢 neste repo · 🟡 no destino |
+| V2 | `static-checks.mjs:148` | ocorrência de `permission.ask` nos arquivos escopados | 🟢 (CI) |
+| V3 | `static-checks.mjs:150` | literal de projeto hardcoded (`docker-compose-postgresql`, `-pl application`) | 🟠 — escopo restrito a `SCAN_FILES`/`SCAN_DIRS` (`static-checks.mjs:83-104`) |
+| V6 / V6b | `static-checks.mjs:129-143` | config e schema são JSON válido | 🟢 |
+| V7 | `static-checks.mjs:152` | `output.system = <scalar>` (hook morto) | 🟢 |
+| V12 | `static-checks.mjs:155-188` | referência órfã a `harness-continuous.md` | 🟡 INFO — não falha o build (`:187`); a enforcing real é R-V12 |
+| V14 | `static-checks.mjs:190-209` | git + remote + CI presentes (ADR-007 operante) | 🟢 neste repo (remote `git@github.com:freitasjh/harness.git` existe) |
+| V18 | `static-checks.mjs:235-250` → `.opencode/plugins/lib/refs/checks.mjs` | referência viva a `rules/*.md` ausente e não declarada na BASELINE | 🟢 |
+| V21 | `static-checks.mjs:269-314` (`rosterParity`) | paridade `opencode.json` ↔ `.agents/agents/**` nos dois sentidos + arquivo de papel (`AGENT.md`/`PROMPT.md`) | 🟢 — repõe a metade barata do V19; citação por token e classe por `.vendor-lock.json` continuam **não medidas** |
+| ~~V15~~ | removido em v2/F1 | media referência de rede na árvore do instalador v1, apagada | sucessor: `NET-01` em `scripts/__tests__/sync.spec.mjs` — cobre módulo de rede, cliente HTTP de pacote e comando (`curl`/`wget`, `git clone|push|pull|fetch`, `npm install`, `npx`) na fonte de `harness-sync.mjs`/`seal.mjs`; as arestas E1..E9 do V15 **não** voltam — perda declarada em `gate-contract.md:31` |
+| ~~V19/V20~~ | removidos em v2/F1 | V20 media prosa viva `.md` repo-wide (223 arquivos / 30.373 linhas no momento da remoção; régua de 4 vereditos + `prohibition-cited=27` como contador; a baseline de dívidas **chegou a 96 entradas no pico** (`47c906b`) e foi zerada por ADR-002/003/005 antes da remoção — 80 em `9bf383c`, 38 em `c061514`, **0** em `381b5e0` (tag v1.0) e **0** no commit de remoção); V19 media o inventário (roster, citação por token, vendor lock, inventário por eixo) | nenhum check mede a régua de prosa nem a citação por token hoje; débito registrado em `.spec/tech-debts/harness-v2-cdl/TASKS.md`. Só a metade roster↔disco voltou, como `V21` |
+| PRD-01 / ADR-01 / ADR-02 | `static-checks.mjs:224-233` → `.opencode/plugins/lib/prd-adr-pipeline/checks.mjs` | 7 seções do PRD; 1:1 do índice de ADRs; ordem/branch/merge | 🟢 neste repo · 🟡 no destino |
 | V4 | `sdd-checks.mjs:370-372` | orçamento de linhas das rules (1090 de 1705) | 🟢 |
 | R-V12 | `sdd-checks.mjs:374-376` | referência órfã ao arquivo fundido (FAIL real) | 🟢 |
 | V17 | `sdd-checks.mjs:378-381` | tabela de vocabulário canônico de `current_phase` | 🟢 |
@@ -589,9 +592,26 @@ sem pergunta, sem perfil de stack e sem rede:
 
 | Verbo | Faz | Não faz |
 |---|---|---|
-| `init --target <dir>` | copia o payload (`.agents/{agents,rules,schemas,skills}`, `.opencode/{plugins,commands}`, `scripts/harness-sync.mjs`, `scripts/seal.mjs`, `opencode.json`), gera `harness.config.json` mínimo e o manifesto | não roda em alvo que já tem `.agents/` ou manifesto (manda usar `update`) |
-| `update --target <dir>` | backup em `.harness-backup/<timestamp>/` e grava **só** `{p : sha256(destino) ≠ sha256(fonte)}` | não sobrescreve `harness.config.json`, `workflow-state.json`, `.agents/rules/project-*.md` nem `.spec/**`; 2ª execução = 0 writes |
-| `doctor --target <dir>` | valida camadas, JSON de `opencode.json`/`harness.config.json`/manifesto e `commands.suiteFull`; exit 1 com o path de cada falha | não escreve nada |
+| `init --target <dir>` | copia o payload (`.agents/{agents,rules,schemas,skills}`, `.opencode/{plugins,commands}`, `scripts/harness-sync.mjs`, `scripts/seal.mjs`, `opencode.json`), gera `harness.config.json` mínimo e o manifesto | não roda em alvo que já carrega estado do harness (`.agents/`, `.agents/skills/`, `.opencode/plugins/`, `.opencode/commands/` ou o manifesto — manda usar `update`); **não instala config com `commands.suiteFull` nulo** (exit 1 pedindo `--suite <cmd>`; guarda compartilhada com o `update`) |
+| `update --target <dir>` | backup em `<parent do target>/.harness-backup/<nome>-<timestamp>/` (ou `--backup-dir <dir>`) e grava **só** `{p : sha256(destino) ≠ sha256(fonte)}` | não sobrescreve `harness.config.json`, `workflow-state.json`, `.agents/rules/project-*.md` nem `.spec/**` (config só é **criado** se ausente, com o mesmo guard de `commands.suiteFull` do `init`); **não apaga nada**: path do manifesto ausente do payload sai como `orphan <path> (não removido)` e **sobrevive à regravação do manifesto**; 2ª execução = 0 writes; manifesto ausente/divergente é recriado (`manifest rewritten`) com payload idêntico |
+| `doctor --target <dir>` | valida camadas, JSON de `opencode.json`/`harness.config.json`/manifesto, `commands.suiteFull`, **recomputa o sha256 de cada arquivo do manifesto** (entrada que é symlink ⇒ FAIL, o hash nunca é lido através do link) e avisa (WARN) sobre o pin do `brain` irmão; exit 1 com o path de cada falha | não escreve nada; WARN de `brain` nunca vira exit 1 |
+
+Toda escrita passa por duas checagens de segurança que **abortam o run inteiro**
+antes do backup: `assertSafeWrite` (nenhum symlink em componente do path de
+destino, `lstat` por componente — vale para payload, `harness.config.json` gerado
+e manifesto) e `assertNotSource` (`target` não pode ser a própria fonte). O
+diretório de **backup** é validado pela mesma regra (`assertSafeBackupDir`,
+inclusive o destino de `--backup-dir`). A gravação é atômica
+(`<arquivo>.tmp-<pid>` + `rename`, também nas cópias de backup): o temporário é
+aberto com `wx` (`O_CREAT|O_EXCL`), então um link plantado no nome previsível é
+**recusado** em vez de seguido, e o temporário é removido em qualquer erro; o
+manifesto é o **último** write. O `doctor` também checa a **entrada** de cada
+arquivo do manifesto com `lstat`: arquivo substituído por symlink é FAIL mesmo
+que os bytes do outro lado sejam idênticos.
+
+Órfão apagado ou editado à mão ⇒ `doctor` FAIL (`arquivo do manifesto ausente` /
+`sha256 divergente do manifesto`); reparo: podar a entrada do manifesto, ou
+apagar `.harness-manifest.json` e rodar `update` (`manifest rewritten`).
 
 `targets` e `commands` são **detectados** por arquivo (`pom.xml` ⇒ java/`mvn test`,
 `Cargo.toml` ⇒ rust/`cargo test`, `package.json` com `react`/`vue`, `@nestjs/core`,
@@ -600,8 +620,9 @@ sem pergunta, sem perfil de stack e sem rede:
 O selo do comando canônico continua saindo de `sha256`/`sealCommands`
 (`.opencode/plugins/lib/seal.mjs`) via `node scripts/seal.mjs --env`.
 
-Cobertura: `scripts/__tests__/sync.spec.mjs` (init/update/doctor, preservação, backup,
-idempotência, dry-run, detecção, selo, `NET-01` rede-zero na fonte).
+Cobertura: `scripts/__tests__/sync.spec.mjs` (init/update/doctor, preservação,
+backup fora do target, idempotência, dry-run, detecção, recusa de symlink,
+órfãos, hash do doctor, pin do brain, selo, `NET-01` rede-zero na fonte).
 
 ## 9. Agentes e permissões
 
@@ -643,8 +664,8 @@ de garantia. Nada aqui propõe implementação.
 |---|---|---|---|
 | a1 | `gates.e2eGreenfield: "warn"` **não tem efeito no runtime**: nenhum gate declara `gateName = "e2eGreenfield"` e o gate não cria modo a partir do config; `auditConfigGates` declara a chave **inerte** (1 WARN por chave/valor) | `harness.config.json:42`; `gate.js:1180-1183`; `gate.js:252-272`, `:260-264` | 🟡 processo — chave auditada como inerte, sem efeito |
 | a2 | `riskPaths` e `escalateOnRisk` **não têm consumidor no runtime**: nenhuma chave é lida por `gate.js`; o gerador de config do instalador v1 era a única outra ocorrência e saiu em v2/F1 | `harness.config.json:44-54`; `gate-contract.md:48-51` | 🔴 declarado-aberto no runtime |
-| a3 | O check V3 ("zero literal hardcoded") escaneia **3 arquivos + 2 diretórios** — `harness.config.json`, `opencode.json`, `.agents/rules/harness-config.md`, `.agents/schemas/**`, `.opencode/plugins/lib/**`. O próprio `gate.js` e as demais rules **não** são escopados | `scripts/static-checks.mjs:42-47`, `:274-275`; `gate-contract.md:16` (I3) | 🟠 parcial |
-| a4 | V12 é **INFO** (não falha o build); a enforcing real do mesmo item é R-V12, em outro script | `scripts/static-checks.mjs:320`; `scripts/sdd-checks.mjs:374-376` | 🟢 / 🟠 |
+| a3 | O check V3 ("zero literal hardcoded") escaneia **3 arquivos + 2 diretórios** — `harness.config.json`, `opencode.json`, `.agents/rules/harness-config.md`, `.agents/schemas/**`, `.opencode/plugins/lib/**`. O próprio `gate.js` e as demais rules **não** são escopados | `scripts/static-checks.mjs:83-104`, `:150`; `gate-contract.md:16` (I3) | 🟠 parcial |
+| a4 | V12 é **INFO** (não falha o build); a enforcing real do mesmo item é R-V12, em outro script | `scripts/static-checks.mjs:187`; `scripts/sdd-checks.mjs:374-376` | 🟢 / 🟠 |
 | a5 | O schema do report tem campo `e2e` "required when escalateOnRisk fires", mas a regra que dispara o `escalateOnRisk` não é executável por máquina | `.agents/schemas/harness-report.schema.json:49-52`; `harness.config.json:51-54` | 🟡 processo |
 | a6 | A comparação de contagens da contraprova é inalcançável no caminho real: o executor padrão devolve `counts: null` e o schema **exige** `counts` | `gate.js:726-737`, `:784-804`; `.agents/schemas/harness-report.schema.json:40-48` | 🟠 parcial |
 | a7 | **Modo por gate agora vem do env do host (ADR-001, implementado em 2026-10-22)**: `HARNESS_GATE_<GATE>` = `"enforce"`/`"warn"`; `"warn"` exige `_REASON` não vazio; ausente ou fora do domínio ⇒ `"enforce"` (fail-closed). `resolveGateMode` (`gate.js:98-117`) é puro; `modeForGate` (`:126-130`) é o resolvedor de referência e o dispatcher usa `announceGateMode` (`:278-313`). O antigo `resolveMode` **foi removido** (ADR-001 item 4) e o `gates.*` do config **não decide modo** — é auditado 1× por (chave, valor) (`:252-272`) e chave sem gate registrado é inerte (`:260-264`); em `warn` o `DenyError` vira log + allow (`:328-331`). O corte vem depois da carga+auditoria do config e antes de qualquer resolução de modo (`:1366`) | `gate.js:98-117`, `:126-130`, `:252-272`, `:278-313`, `:328-331`, `:1366`; `config.mjs:38-40`; `harness.config.json:38-43`; `gate-contract.md:26` (RF-01/RF-02), `:28` (KILL) | 🟢 runtime — o canal é o env do processo host, não o worktree; rebaixamento/recusa são anunciados (ADR-001) |
@@ -659,7 +680,7 @@ de garantia. Nada aqui propõe implementação.
 | b3 | `permission.bash = "allow"` para os 10 agentes; o gate só enxerga `bash` por parse. A própria escrita de governança pelo orquestrador é registrada como **evasão declarada** | `opencode.json:18-19,27-28,36-37,45-46,54-55,63-64,72-73,81-82,90-91,99-100` (par `edit`/`bash` de cada um dos 10 agentes); `workflow-state.json` → `enforcement_status.pendente` | 🟠 — backstop é CI/pre-commit (`gate-contract.md:22`, I9) |
 | b4 | A detecção de path em patch é **heurística por 4 regexes**, e o glob de path protegido é implementação própria | `gate.js:578-594`, `:537-551` | 🟠 parcial |
 | b5 | As regras por papel dependem da identidade de agente, que vem do payload do hook. Sem a entrada no mapa `sessionID → agente`, **nenhuma** regra por agente se aplica (fail-open) | `gate.js:405-408`, `:410-427`, `:1346` | 🟠 parcial |
-| b6 | O check de rede V15 declara 9 escapes (E1..E9), entre eles comando em variável, alias de `fetch`, specifier construído e padrão dividido entre linhas | `scripts/static-checks.mjs:144-175`; `gate-contract.md:31` | 🟠 parcial |
+| b6 | A varredura de rede do caminho de instalação (`NET-01`) cobre 3 classes na **fonte** dos dois scripts — módulo de rede (`http`/`net`/`tls`…), cliente HTTP de pacote (`axios`/`got`/`undici`…) e comando de rede (`curl`/`wget`, `git clone|push|pull|fetch`, `npm install`, `npx`). **Não** cobre o que o V15 declarava como E1..E9: comando montado em variável, `fetch` alcançado por alias, specifier construído em runtime e padrão dividido entre linhas; e a varredura nunca olha skills vendorizadas | `scripts/__tests__/sync.spec.mjs` (NET-01); `gate-contract.md:31` | 🟠 parcial — perda declarada, não silenciosa |
 
 ### (c) Custos de operação
 
@@ -762,10 +783,10 @@ de garantia. Nada aqui propõe implementação.
 | `.agents/agents/orchestrator/AGENT.md:478` | regra H1..H7: carregada por `opencode.json` (`instructions` global + prompt por agente; alcance por config, não medido no binário); enforcement em `gate.js` |
 | `.agents/skills/harness-report/SKILL.md:10-24` | relatório auto-declarado × contraprova |
 | `.agents/schemas/harness-report.schema.json:7-19`, `:40-52` | campos obrigatórios e condicionais |
-| `scripts/static-checks.mjs:42-47` | escopo de V2/V3/V7 |
-| `scripts/static-checks.mjs:254-342` | V2/V3/V6/V7/V12/V14 |
-| `scripts/static-checks.mjs:344-352` | baseline legado (INFO) |
-| `scripts/static-checks.mjs:361-382` | checks PRD e veredito do processo |
+| `scripts/static-checks.mjs:83-104` | escopo de V2/V3/V7 |
+| `scripts/static-checks.mjs:129-209` | V6/V6b/V2/V3/V7/V12/V14 |
+| `scripts/static-checks.mjs:211-218` | baseline legado (INFO) |
+| `scripts/static-checks.mjs:224-233`, `:317-330` | checks PRD, V21 e veredito do processo |
 | `scripts/sdd-checks.mjs:131-136`, `:367-421` | convenção de gates e os 8 checks de SDD |
 | `scripts/sdd-checks.mjs:150-161`, `:243-313` | buckets non-cycle e resolução do ciclo |
 | `scripts/vendor-skills.mjs:5-26` | vendor `--check` sem rede |

@@ -588,7 +588,7 @@ Para **TODO** desenvolvimento, as skills apropriadas **OBRIGATORIAMENTE** devem 
 
 ## 9. Documentos de Referência
 
-> **Dívida declarada (ADR-004 §4):** dependências de eixo Java/db (backend, migração) saíram do payload comum — dono **PRD-4** (`prd-axes-split`), reativadas quando `harness.config.json.stack.backend` deixar de ser `N/A`. O ponteiro para o design system de frontend saiu dos agentes — dono **PRD-5** (cria o arquivo). Referências a documentos de arquitetura/stack seguem com dono **ADR-005**. Nada aqui autoriza remover a SSoT de segurança: ela agora é a skill `security-review`.
+> **Dívida declarada (ADR-004 §4):** dependências de eixo Java/db (backend, migração) saíram do payload comum — dono **PRD-4** (`prd-axes-split`), reativadas quando `harness.config.json.targets.backend` deixar de ser nulo (hoje o repo declara backend de runtime Node, sem eixo Java/db). O ponteiro para o design system de frontend saiu dos agentes — dono **PRD-5** (cria o arquivo). Referências a documentos de arquitetura/stack seguem com dono **ADR-005**. Nada aqui autoriza remover a SSoT de segurança: ela agora é a skill `security-review`.
 
 | Documento | Propósito |
 |-----------|-----------|
