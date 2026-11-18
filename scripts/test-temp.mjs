@@ -6,7 +6,10 @@
 // 2x por ciclo de harness) acumulava lixo: medido em 2026-10-09, ~2057
 // órfãos de prefixo do repo em /tmp antes desta correção.
 //
-// Regras do contrato (testadas em installer/__tests__/test-temp.spec.mjs):
+// Regras do contrato (exercitadas pelas specs que o consomem — a spec dedicada
+// vivia na suite do instalador v1 e saiu com ele em v2/F1; este utilitário
+// continua a ser usado por `.opencode/plugins/__tests__/` e por
+// `scripts/__tests__/`):
 //   R1. tmp() cria o dir, escreve os arquivos pedidos e REGISTRA o caminho.
 //       cleanup() remove EXATAMENTE os caminhos registrados — nunca nome
 //       solto, nunca glob.

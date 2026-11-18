@@ -9,8 +9,8 @@ plugins never hardcode its values (SPEC ADR-003). Enforcement lives in
 
 | Key | Value in this repo |
 |---|---|
-| `version` / `project` | `1` / `"harness"` |
-| `stack.backend` / `stack.frontend` | `N/A` with inline justification — this repo has no Java/Maven backend and no Vue/Vite frontend; the runtime is Node ESM (opencode plugins). No build command from another project was copied here; that was the original sin this config fixes. |
+| `version` / `project` | `2` / `"harness"` |
+| `targets.frontend` / `targets.backend` | `null` / `"node"` — detected, never chosen in a menu (`scripts/harness-sync.mjs`: `package.json`/`pom.xml`/`Cargo.toml`). `null` means "not present in this repo": no Vue/Vite frontend; the runtime is Node ESM (opencode plugins). No build command from another project was copied here; that was the original sin this config fixes. |
 | `moduleMap` | real paths: plugins, rules, schemas |
 | `commands.suiteFull` | canonical contraprova command: node tests + static checks |
 | `commands.unit` | node tests only |
@@ -22,10 +22,10 @@ plugins never hardcode its values (SPEC ADR-003). Enforcement lives in
 | `contraproveTimeoutMs` | identical to SPEC §5.1; re-execution past this timeout is a `contraprove-timeout` deny (ADR-002) |
 | `evidence` | `harness/` + report schema path |
 
-> Nota (installer-melhoria, 2026-10-11): menu W2m 5 itens produto→stack,
-> entrypoints `init`/`doctor` e padrão de erro 4-linhas **não alteram**
-> `harness.config.json` — comandos, portas, `mcp.required` e selo `suiteFull`
-> idênticos; `STACK_VALUES`/`STACK_PROFILES` preservados sem nova key.
+> Nota (v2/F1, 2026-11-18): o instalador v1 foi apagado e `stack` virou
+> `targets` (`{frontend, backend}`, detectado). `harness.config.json` continua
+> sendo um arquivo do PROJETO: o sincronizador nunca o escreve depois do `init`
+> e o `update` o reporta como `skip` (dado preservado, não payload).
 
 ## Fail-closed (RF-01/RF-02)
 
@@ -68,28 +68,25 @@ green. V12 reports live-code refs as INFO; the fusion landed in DOC-02 and
 is enforced as FAIL (R-V12 in `scripts/sdd-checks.mjs`). V14 FAILs honestly with `REMOTE_URL_PENDING` while no
 git remote exists — that is the declared state, not a masked one.
 
-## Perfis de stack do instalador (ADR-008 + harness-eixos-stack, 2026-10-18)
+## Sincronizador de payload (v2/F1) — substitui os perfis de stack
 
-`STACK_PROFILES` (`installer/install.mjs`) é o **registry único** das capacidades por preset:
-`axes` (IDs de eixo, `AXIS_IDS`), `backend`/`frontend` (rótulos **literais** — nunca concatenados),
-`commands`, `mcp`, `moduleMap` e `stacks`. Presets atuais (**12**): `node`, `node-esm`, `java+vue`,
-**`java+react`**, `rust`, `nestjs`, `node+react`, `nestjs+react`, `rust+react`, `outra`, `flutter`, `dart`.
-`stacks` **não** é campo independente: deriva do eixo
-por `stacksFor(axes)` (+ `STACKS_FOR_EXCEPTIONS` declarada — o par mobile `flutter` → `['flutter','dart']`).
+O instalador v1 (wizard, `STACK_PROFILES`, eixos, TUI) **não existe mais**: as
+árvores `installer`, `installer-rs` e `packaging` foram apagadas. O papel dele é
+de `scripts/harness-sync.mjs` — três verbos, zero pergunta, zero rede:
 
-O gating de artefato deriva do **eixo declarado**, NUNCA do nome do arquivo (ADR-002): skills
-**vendorizadas** pelo `stacks` do `.vendor-lock.json` (declarado na origem do vendor,
-`scripts/vendor-skills.mjs`) e skills **locais** (sem entrada no lock) pelo mapa de **exclusão**
-`SKILLS_BY_AXIS` + `SKILLS_COMMON`; `.agents/rules/**` pelo mapa de **exclusão** `RULES_BY_AXIS` +
-`RULES_COMMON` (`installer/install.mjs:350-421`, validado na carga contra `AXIS_IDS` — declaração
-inválida é falha de carga, nunca no-op silencioso; os dois mapas usam a mesma semântica de exclusão
-por par `{eixo,id}` do destino). Perfis de backend **go**/**rust** ainda não existem; a rota para
-eixos separados na pergunta está em `ADR-005` do ciclo `harness-eixos-stack`.
+| Verbo | Contrato |
+|---|---|
+| `init --target <dir>` | exige alvo sem estado do harness (`.agents/` ou `.harness-manifest.json` ⇒ falha mandando usar `update`); copia o payload e gera `harness.config.json` mínimo (`version`, `project`, `targets`, `commands`, `evidence`, `protectedPaths`). `--suite`/`--unit` sobrepõem a detecção. |
+| `update --target <dir>` | backup obrigatório em `<target>/.harness-backup/<timestamp>/` antes de qualquer escrita; grava **só** `{p : sha256(destino/p) ≠ sha256(fonte/p)}`; idempotente (2ª execução = 0 writes). Merge de `opencode.json` só nas chaves que a fonte declara. |
+| `doctor --target <dir>` | somente leitura: camadas do payload, JSON válido de `opencode.json`/`harness.config.json`/manifesto, `commands.suiteFull` não nulo. Exit 1 nomeando cada falha com o path. |
 
-O perfil mobile `flutter`/`dart` continua sendo o caso especial declarado: `generateConfig` resolve
-por `STACK_PROFILES` (puro). Perfil `flutter` → `mcp.required ['marionette_mcp','dart']`, `commands
-{suiteFull:'flutter test', unit, analyze:'dart analyze'}`, `moduleMap {lib,test}`. Vendor de 22 skills
-`dart-*`/`flutter-*` (BSD-3-Clause) com `.vendor-lock.json` + `scripts/vendor-skills.mjs --check`
-(ADR-009). Wizard interativo W0..W7 + auto-detecção de `pubspec.yaml` (ADR-010); o menu `W2m` é em
-**2 passos** (tipo de projeto → frontend, ADR-004) com range derivado de `WIZARD_MENU.length`.
-Canário R3 agora por **escopo** (substring só em código/config; pula prosa `.md`).
+`--dry-run` imprime o plano (`create`/`update`/`skip` por path) e não escreve nem
+cria backup. Manifesto = `.harness-manifest.json` (`{version, files:{path: sha256}}`).
+
+Dado do projeto que **nunca** é escrito nem removido: `harness.config.json`,
+`workflow-state.json`, `.agents/rules/project-*.md` e `.spec/**`.
+
+O gating de artefato por eixo (`SKILLS_BY_AXIS`/`RULES_BY_AXIS`) saiu com o
+instalador: o payload é fixo e o que o destino recebe deixou de depender de um
+eixo declarado. O vendor de skills (`scripts/vendor-skills.mjs` + `.vendor-lock.json`)
+continua sendo o único ponto source-side; o `--check` roda sem rede.

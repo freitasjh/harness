@@ -12,4 +12,4 @@ inclusion: always
 - Evidência: campo `brainStore` em harness report (`.agents/schemas/harness-report.schema.json:16,57`) mantido.
 - Fluxo: busca → implementa → registra → finaliza (detalhe no dono).
 - Pin G1: ref `../brain/.agents/skills/brain/SKILL.md` esperada em commit `8b965093a00d291195313fe457b3aa35bbff71f2` (verificar: `git -C ../brain rev-parse HEAD`); divergência = doctor warn com motivo+caminho, nunca silent/fail.
-- Fallback (sem checkout brain / brain ausente): URL canônica `PIN-ME` (resolver: `git -C ../brain remote get-url origin && git -C ../brain rev-parse HEAD`); doctor warn-não-fail (`installer/install.mjs:743-772`); nunca gravar regra alheia.
+- Fallback (sem checkout brain / brain ausente): URL canônica `PIN-ME` (resolver: `git -C ../brain remote get-url origin && git -C ../brain rev-parse HEAD`); doctor warn-não-fail (o doctor do payload vive em `scripts/harness-sync.mjs`; ausência do checkout brain nunca vira erro fatal); nunca gravar regra alheia.

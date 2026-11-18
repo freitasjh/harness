@@ -13,7 +13,7 @@
 //
 // Purity (RF-02/NFR-1): read-only `node:fs`/`node:path`; no network, no MCP,
 // no child process, no file writing. Lives under `.opencode/plugins/lib/**`,
-// a path the installer propagates (ADR-002); the norm stays in the rule.
+// a path `scripts/harness-sync.mjs` copies (ADR-002); the norm stays in the rule.
 //
 // What the guard proves, and all it proves (enforced by the test at
 // `.opencode/plugins/__tests__/prd-checks.spec.mjs`): the set of STATIC import

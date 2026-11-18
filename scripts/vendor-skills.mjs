@@ -13,8 +13,8 @@
 //
 // Politica P-02=(i): skill sem licenca identificavel NAO e vendorizada
 // (fail-closed). `--check` recomputa o treeHash e FALHA em divergencia ou
-// symlink. O caminho de instalacao (`installer/install.mjs`) permanece
-// rede-zero (V15); este script e o unico ponto source-side.
+// symlink. O caminho de instalacao (`scripts/harness-sync.mjs`, v2) e
+// rede-zero e nao clona nada; este script e o unico ponto source-side.
 //
 //   node scripts/vendor-skills.mjs --source <dir> --lock <skills-lock.json> \
 //     [--dest <dir>] [--source-commit <src>=<sha>] [--source-license <src>=<spdx>]
@@ -632,7 +632,9 @@ export function resolveLicense({ skillDir, source, sourceLicenses }) {
 // FALLBACK de eixo por prefixo conhecido (RF-03/A1): so `dart-`/`flutter-`.
 // O eixo normal vem DECLARADO na origem (`stacks` do source-lock); este
 // fallback existe apenas para compatibilidade com as skills mobile ja
-// vendorizadas (assert de `installer/__tests__/vendor.spec.mjs` congelado).
+// vendorizadas (o assert congelado vivia na suite do instalador v1 e saiu com
+// ele em v2/F1 — o comportamento abaixo continua exercitado pelo `--check` do
+// lock).
 export function inferStacks(name) {
   if (name.startsWith("dart-")) return ["dart"];
   if (name.startsWith("flutter-")) return ["flutter"];
@@ -887,7 +889,7 @@ function renderNotice(built) {
   lines.push("");
   lines.push("## Limites declarados");
   lines.push("");
-  lines.push("- Rede em RUNTIME dentro de skill opcional (`scripts/fetch-stitch.sh`, `@swc/core`, Stitch MCP) NAO e cacada pelo V15 (escopo `installer/`): 🟠 parcial, declarado.");
+  lines.push("- Rede em RUNTIME dentro de skill opcional (`scripts/fetch-stitch.sh`, `@swc/core`, Stitch MCP) NAO e cacada por scanner: o V15 media o instalador v1 (apagado em v2/F1) e saiu com ele — o caminho de instalacao (`scripts/harness-sync.mjs`) e coberto por `scripts/__tests__/sync.spec.mjs`: 🟠 parcial, declarado.");
   lines.push("- Fidelidade da transcricao das fontes `declared-evidence` e 🟡 processo (evidencia citada), nao garantia de runtime.");
   // AT-1 (review Batch 4): a fidelidade da COPIA ao commit pinado e 🟡 PROCESSO,
   // e as divergencias CONHECIDAS sao NOMEADAS (skill + revisao real + o que

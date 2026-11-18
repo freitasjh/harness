@@ -1,9 +1,9 @@
 {
-  "version": 1,
+  "version": 2,
   "project": "harness",
-  "stack": {
-    "backend": "N/A — this repo has no Java/Maven backend; runtime is Node ESM (opencode plugins)",
-    "frontend": "N/A — this repo has no Vue/Vite frontend; UI validation runs via chrome-devtools MCP against consumers"
+  "targets": {
+    "frontend": null,
+    "backend": "node"
   },
   "moduleMap": {
     "plugins": ".opencode/plugins",
@@ -11,7 +11,7 @@
     "schemas": ".agents/schemas"
   },
   "commands": {
-    "suiteFull": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node --test \"installer/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs && node scripts/vendor-skills.mjs --check",
+    "suiteFull": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node --test \"scripts/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs && node scripts/vendor-skills.mjs --check",
     "unit": "node --test \".opencode/plugins/__tests__/*.spec.mjs\""
   },
   "infra": {

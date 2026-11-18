@@ -60,7 +60,7 @@ exige `gh`; nenhum push automático.
   fica intocado — SPEC §12.1). O bloqueio é o PR humano.
 - `prompt-optimizer` valida a **demanda** (E1..E6), **nunca** o PRD (fecha o
   parcial D13; `workflow-rules.md` §0).
-- `.opencode/plugins/lib/prd-adr-pipeline/` é **path propagável** (installer): o
+- `.opencode/plugins/lib/prd-adr-pipeline/` é **path propagável** (copiado por `scripts/harness-sync.mjs`): o
   **módulo** aqui é mecanismo executável + templates (sem `SKILL.md`), e a norma
   é esta rule. Enforcement no repo-destino: 🟡 processo até F3; só aqui roda.
 

@@ -429,7 +429,7 @@ SOFTWARE.
 
 ## Limites declarados
 
-- Rede em RUNTIME dentro de skill opcional (`scripts/fetch-stitch.sh`, `@swc/core`, Stitch MCP) NAO e cacada pelo V15 (escopo `installer/`): 🟠 parcial, declarado.
+- Rede em RUNTIME dentro de skill opcional (`scripts/fetch-stitch.sh`, `@swc/core`, Stitch MCP) NAO e cacada por scanner: o V15 media o instalador v1 (apagado em v2/F1) e saiu com ele — o caminho de instalacao (`scripts/harness-sync.mjs`) e coberto por `scripts/__tests__/sync.spec.mjs`: 🟠 parcial, declarado.
 - Fidelidade da transcricao das fontes `declared-evidence` e 🟡 processo (evidencia citada), nao garantia de runtime.
 - Fidelidade byte-a-byte da COPIA DA SKILL ao commit pinado e 🟡 PROCESSO: verificada na vendorizacao e NAO re-verificada pelo `--check` (que compara com o lock commitado).
   Divergencia CONHECIDA e NAO corrigida em 3 skill(s): o `sourceCommit` declarado NAO descreve o conteudo delas — a copia veio de outra revisao e foi preservada para nao alterar os hashes congelados do lock (invariante I5 do ciclo).

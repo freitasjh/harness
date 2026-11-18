@@ -22,8 +22,8 @@ jobs:
           node-version: "22"
       - name: Plugin unit tests (TST-02)
         run: node --test ".opencode/plugins/__tests__/*.spec.mjs"
-      - name: Installer tests (TST-02, FU-29)
-        run: node --test "installer/__tests__/*.spec.mjs"
+      - name: Sync/scripts tests (v2/F1: replaces the installer suite)
+        run: node --test "scripts/__tests__/*.spec.mjs"
       - name: Static checks V2/V3/V6/V7/V12/V14 (TST-02)
         run: node scripts/static-checks.mjs
       - name: Vendor drift check (ADR-009/RF-13/I9, FU-29)

@@ -241,7 +241,7 @@ describe("PL-06 — loader border intact + deny/allow verdicts unchanged", () =>
 
   it("loader border intact: loadConfigOrDeny reads the file, ensureConfig passes through", () => {
     const fromFile = loadConfigOrDeny();
-    assert.equal(fromFile.version, 1, "file config loads via loadConfigOrDeny");
+    assert.equal(fromFile.version, 2, "file config loads via loadConfigOrDeny (v2 schema)");
     const probe = { gates: { picco: "enforce" }, marker: "shape-probe" };
     assert.equal(ensureConfig({ config: probe }), probe, "ensureConfig returns injected config as-is");
   });

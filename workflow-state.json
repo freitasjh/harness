@@ -1,45 +1,14 @@
 {
-  "current_feature": "prd-eixos-separados-cli-adr-002",
-  "current_phase": "Completed",
-  "previous_phase": "Execution",
-  "next_phase": "—",
+  "current_feature": "harness-v2",
+  "current_phase": "Execution",
+  "previous_phase": "Completed",
+  "next_phase": "Execution",
   "type": "refactor",
   "layer": "agents/skills/rules",
   "repo": "harness",
   "artifacts": {
-    "bug_tasks": ".spec/bugs/gate-counts-observation/TASKS.md",
-    "bug_report": "harness/harness-eixos-stack-p2.json",
-    "source_tech_debt": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
-    "previous_archive": ".spec/archive/20261018-harness-eixos-stack/",
-    "verify": ".spec/frontend/prd-eixos-separados-cli-adr-002/VERIFY.md",
-    "harness_evidence": ".spec/archive/20261018-harness-eixos-stack/harness/",
-    "harness_report": "harness/prd-eixos-separados-cli-adr-002.json",
-    "tech_debt_p2": ".spec/tech-debts/harness-eixos-stack-p2/TASKS.md",
-    "previous_cycle": {
-      "cycle": ".spec/backend/harness-inventory-adr-001/",
-      "merge": "fe7c408",
-      "verify": ".spec/backend/harness-inventory-adr-001/VERIFY.md",
-      "harness_report": "harness/harness-inventory.json"
-    },
-    "c1_previous_bug": ".spec/bugs/harness-eixos-stack-p2/TASKS.md",
-    "proposal": ".spec/frontend/prd-eixos-separados-cli-adr-002/PROPOSAL.md",
-    "spec": ".spec/frontend/prd-eixos-separados-cli-adr-002/SPEC.md",
-    "plan": ".spec/frontend/prd-eixos-separados-cli-adr-002/PLAN.md",
-    "tasks": ".spec/frontend/prd-eixos-separados-cli-adr-002/TASKS.md",
-    "superseded_cycle": ".spec/archive/20261015-opencode-v2-plugin-migration-superseded/ (superseded: SPEC prescrevia `Plugin.define`, ausente no binario v2.0.32)",
-    "archive": ".spec/archive/20261028-harness-design-system-agent/",
-    "prd": ".spec/prd/prd-eixos-separados-cli/PRD.md",
-    "research": null,
-    "adr_index": ".spec/prd/prd-installer-rust/ADR-INDEX.md",
-    "adr": ".spec/prd/prd-eixos-separados-cli/ADRs/ADR-002-cli-visual/ADR.md",
-    "prd_lines": ".spec/prd/prd-harness-inventory/PRD.md (162 linhas, 16 secoes, PRD-01 PASS)",
-    "security": ".spec/frontend/prd-eixos-separados-cli-adr-002/SECURITY.md",
-    "spec_gate": ".spec/frontend/prd-eixos-separados-cli-adr-002/GATE-SPEC.md",
-    "jira_board": ".spec/frontend/prd-eixos-separados-cli-adr-002/JIRA_BOARD.md",
-    "ux": ".spec/frontend/prd-installer-rust-adr-004/UX.md",
-    "tech_debt_task": ".spec/tech-debts/doctor-spec-mkdtemp-flake/TASKS.md",
-    "adr1": ".spec/prd/prd-eixos-separados-cli/ADRs/ADR-001-eixos-separados/ADR.md",
-    "adr2": ".spec/prd/prd-eixos-separados-cli/ADRs/ADR-002-cli-visual/ADR.md"
+    "plan": ".spec/governance/harness-v2/PLAN.md",
+    "baseline": ".spec/governance/harness-v2/baseline-v1.md"
   },
   "scope": {
     "interpretation": "esteira PRD->ADR->SDD no harness (visibilidade de intencao antes do codigo)",
@@ -259,7 +228,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-17T23:20:02.398Z",
+  "last_update": "2026-11-18T15:13:38.339Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -2015,7 +1984,9 @@
       "regra": "NAO editar os artefatos do ciclo superseded (SPEC/PROPOSAL/PLAN/TASKS ficam como estao) — a supersession e declarada aqui e no SPEC/PROPOSAL do ciclo novo (RF-06).",
       "status": "superseded",
       "archivado_em": "2026-10-20"
-    }
+    },
+    "prd-installer-rust",
+    "prd-eixos-separados-cli"
   ],
   "harness_status_detail": "suite selada verde: plugins 379/379, installer 516/516, static 10 PASS, sdd 8 PASS, selo intacto",
   "archive": {
@@ -2240,5 +2211,36 @@
     "mutacao_oraculo": "49/95 derrubados",
     "v20": "223/30373 estavel",
     "rito": "reutilizado, pendente owner"
+  },
+  "harness_v2": {
+    "started_at": "2026-11-18T11:54:43-03:00",
+    "branch": "v2",
+    "decisions": {
+      "Q1": "A clean-room acceptance",
+      "Q2": "A delete installer",
+      "Q3": "A react+vue+storybook"
+    },
+    "phases": {
+      "F0": {
+        "status": "done",
+        "evidence": ".spec/governance/harness-v2/baseline-v1.md",
+        "suite": "540+1091 pass"
+      },
+      "F1": {
+        "status": "done-pending-review",
+        "suite": "418 plugins + 22 sync, 0 fail",
+        "deletion": "173 files / 32088 lines"
+      }
+    },
+    "pending": [
+      "code-review F1",
+      "F2",
+      "F3",
+      "F4",
+      "F5",
+      "F6",
+      "F7",
+      "F8"
+    ]
   }
 }
