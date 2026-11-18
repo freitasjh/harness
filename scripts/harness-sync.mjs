@@ -36,14 +36,21 @@
 //       (the v1 `V15` check has no subject now that the installer tree is
 //       gone; this file is covered by NET-01 in `scripts/__tests__/sync.spec.mjs`
 //       instead of a scanner over a deleted directory).
-//   G6. No write through a symlink — every path this run writes (payload,
-//       generated config, manifest) is checked component by component with
-//       `lstat` before the plan is applied and again before each write; the
-//       BACKUP destination is checked the same way, including the directory a
-//       `--backup-dir` names. A link anywhere in a chain aborts the WHOLE run
-//       with exit 1, before the backup and before any byte is written. The
-//       check runs on the PATH, not on `existsSync`: `existsSync` follows the
-//       link, so a dangling link would read as "absent" and the write would
+//   G6. No write through a planted link — the TARGET write surface is every
+//       path this run writes (payload, generated config, manifest): each one is
+//       walked component by component with `lstat` BELOW the target root,
+//       before the plan is applied and again before each write, so a link on a
+//       component or on the leaf aborts the WHOLE run with exit 1, before the
+//       backup and before any byte is written. The BACKUP path lives outside the
+//       target, so that walk does not cover it: its surface is the DEEPEST
+//       EXISTING ANCESTOR — a link AT that ancestor (dangling, or naming a
+//       destination) is a refusal, and the destination is then compared with the
+//       target by IDENTITY (`realpath`), so a link between that ancestor and the
+//       target cannot hide an in-target copy behind a lexical "outside".
+//       Ancestors ABOVE the deepest existing one are the operator's filesystem
+//       (e.g. `/tmp` is a link on some systems) and are not interrogated here.
+//       The check runs on the PATH, not on `existsSync`: `existsSync` follows
+//       the link, so a dangling link would read as "absent" and the write would
 //       land on the far side of it.
 //   G7. Atomic replace — each file (payload, config, manifest and each backup
 //       copy) is written as `<name>.tmp-<pid>` and then renamed; the manifest
@@ -103,11 +110,10 @@ export const BRAIN_PIN = "8b965093a00d291195313fe457b3aa35bbff71f2";
 
 // Payload owned by the harness. Everything here is overwritten on `update`
 // when its hash differs; nothing outside it is touched.
-// `.opencode/commands` is listed ahead of the layer it will carry: the source
-// repo has no such directory yet, so `walkFiles` returns [] for it today and
-// `doctor` skips it (it only checks layers the source publishes). The entry
-// stays so F2 can populate it without a second contract change — until then it
-// is a documented pending layer, not a silent one.
+// `.opencode/commands` carries the three operator commands (`/harness-init`,
+// `/harness-update`, `/harness-doctor`): the source publishes them since F2, so
+// `walkFiles` copies them and `doctor` validates the layer. Before F2 the entry
+// was a documented pending layer (empty source ⇒ skipped), not a silent one.
 export const PAYLOAD_DIRS = Object.freeze([
   ".agents/agents",
   ".agents/rules",
@@ -163,6 +169,28 @@ function lexists(abs) {
   }
 }
 
+// `init` cria o alvo antes de planejar; um `mkdirSync` sobre um link quebrado
+// sobe ENOENT e sobre um arquivo comum sobe EEXIST — os dois como stack trace.
+// A pergunta "o que existe neste path?" é respondida com `lstat` (nunca `stat`,
+// que responde sobre o outro lado do elo) e vira recusa nomeada. `null` significa
+// "não existe (init pode criar) ou é um diretório".
+function unusableTargetReason(targetDir) {
+  let st;
+  try {
+    st = fs.lstatSync(targetDir);
+  } catch {
+    return null;
+  }
+  let isDir = false;
+  try {
+    isDir = fs.statSync(targetDir).isDirectory();
+  } catch {
+    isDir = false; // link quebrado: `stat` não resolve
+  }
+  if (isDir) return null;
+  return st.isSymbolicLink() ? "target é link quebrado" : "target não é diretório";
+}
+
 // --- write safety (G6) -----------------------------------------------------
 // A symlink planted in the target turns "copy the payload" into "overwrite a
 // file outside the target". The check is component by component with `lstat`
@@ -214,46 +242,86 @@ export function assertSafeWrite(targetDir, rel) {
   return assertNoLinkInPath(targetDir, rel);
 }
 
+// Identity of a path as the OS answers it at write time. `realpath` collapses
+// every link in the chain; the lexical fallback exists for a path that does not
+// exist yet (`init` on a brand-new target), where there is no other identity to
+// compare.
+function canonicalOrLexical(abs) {
+  try {
+    return fs.realpathSync(abs);
+  } catch {
+    return path.resolve(abs);
+  }
+}
+
 // A target that IS the source would make `update` compare a file with itself
 // and report 0 writes while the backup machinery walks the real payload.
+//
+// D2 (F2): the comparison was lexical, so `--target <symlink para este
+// checkout>` read as "a different directory" and `update` wrote
+// `.harness-manifest.json` INTO the source — the manifest then described the
+// harness itself. The identity question is answered by `realpath` when the path
+// exists; the lexical fallback stays for a target that does not exist yet.
 export function assertNotSource(targetDir) {
-  if (path.resolve(targetDir) === path.resolve(SOURCE_ROOT)) {
+  if (canonicalOrLexical(path.resolve(targetDir)) === canonicalOrLexical(path.resolve(SOURCE_ROOT))) {
     throw new Error("target é a própria fonte: rode do checkout do harness");
   }
 }
 
 // N7: the backup lives OUTSIDE the target, so `assertSafeWrite` (which resolves
-// relative to the target) does not cover it. The same component-by-component
-// `lstat` rule applies: a symlink anywhere below the deepest existing ancestor
-// — including the directory `--backup-dir` names — would make the COPY of a
-// project file land wherever the link points. Ancestors above it are the
-// operator's filesystem (e.g. `/tmp` is a link on some systems) and are not
-// this run's write surface.
-export function assertSafeBackupDir(dir) {
+// relative to the target) does not cover it. Its surface is the DEEPEST
+// EXISTING ANCESTOR of the backup path: a link AT it — including the directory
+// `--backup-dir` names — would make the COPY of a project file land wherever
+// the link points, so it refuses the run. Ancestors above it are the operator's
+// filesystem (e.g. `/tmp` is a link on some systems) and are not interrogated.
+// A link BELOW that ancestor is answered by the identity check below (D1), not
+// by a walk: `realpath` of the ancestor collapses it, and containment against
+// the target decides.
+//
+// D1 (F2): the walk alone was blind to an INTERMEDIATE link. `lstat` follows
+// intermediate components, so `--backup-dir /b/mid/link/sub` with `link`
+// planted and `sub` reachable through it reported `sub` as the deepest existing
+// component — a plain directory — and the real tree underneath (`<target>/…`)
+// was never compared with the target: the backup landed INSIDE it while the log
+// printed a lexical path "outside". The deepest existing ancestor is now
+// canonicalised with `realpathSync`, so no link deeper in the chain can hide,
+// and containment is decided by IDENTITY against `realpath(targetDir)` — the
+// same path the write actually reaches. A link AT that ancestor (dangling, or
+// naming a destination) is still a refusal on its own: G6 is not narrowed.
+export function assertSafeBackupDir(dir, targetDir) {
   const abs = path.resolve(dir);
   const chain = [];
   for (let current = abs; ; current = path.dirname(current)) {
     chain.unshift(current);
     if (path.dirname(current) === current) break;
   }
-  let deepestExisting = -1;
+  let anchor = null;
   for (let i = chain.length - 1; i >= 0; i -= 1) {
     if (lexists(chain[i])) {
-      deepestExisting = i;
+      anchor = chain[i];
       break;
     }
   }
-  for (let i = deepestExisting; i >= 0 && i < chain.length; i += 1) {
-    let st;
-    try {
-      st = fs.lstatSync(chain[i]);
-    } catch {
-      break; // below a missing component nothing can be a link
-    }
-    if (st.isSymbolicLink()) {
-      throw new Error(`symlink no diretório de backup (${abs}) → ${chain[i]}; run recusado`);
-    }
-    if (!st.isDirectory()) break; // a file in the chain: mkdir will fail loudly
+  if (!anchor) return abs; // nothing exists: there is no component to cross
+
+  let canonical;
+  try {
+    canonical = fs.realpathSync(anchor);
+  } catch {
+    // Dangling link: `lstat` sees the entry, `realpath` cannot resolve it.
+    throw new Error(`symlink no diretório de backup (${abs}) → ${anchor}; run recusado`);
+  }
+  if (fs.lstatSync(anchor).isSymbolicLink()) {
+    // The path the operator named is itself a link: the copy would cross it.
+    throw new Error(`symlink no diretório de backup (${abs}) → ${anchor}; run recusado`);
+  }
+
+  const missing = path.relative(anchor, abs);
+  const real = missing ? path.join(canonical, missing) : canonical;
+  const realTarget = canonicalOrLexical(path.resolve(targetDir));
+  const relativeToTarget = path.relative(realTarget, real);
+  if (!relativeToTarget.startsWith("..") && !path.isAbsolute(relativeToTarget)) {
+    throw new Error(`backup dentro do target: ${abs}`);
   }
   return abs;
 }
@@ -508,6 +576,13 @@ function backupTimestamp() {
   return new Date().toISOString().replace(/[:.]/g, "-");
 }
 
+// O destino do backup que o apply usaria, resolvido do mesmo jeito no apply e no
+// `--dry-run`: um dry-run que não roda o guard do backup exibe como aplicável um
+// plano que o apply recusaria.
+function backupDirFor(targetDir, opts = {}) {
+  return opts.backupDir ? path.resolve(opts.backupDir) : defaultBackupDir(targetDir);
+}
+
 // N2: the manifest is a LEDGER, not a snapshot of the current payload. Entries
 // the target records and the payload no longer publishes are orphans: they are
 // reported, never deleted, and they must survive every rewrite of the manifest
@@ -552,14 +627,11 @@ function applyPlan(targetDir, plan, { backupDir } = {}) {
   const target = path.resolve(targetDir);
   let dir = null;
   if (writes.length > 0) {
-    dir = backupDir ? path.resolve(backupDir) : defaultBackupDir(target);
-    const relativeToTarget = path.relative(target, dir);
-    if (!relativeToTarget.startsWith("..") && !path.isAbsolute(relativeToTarget)) {
-      throw new Error(`backup não pode ficar dentro do target (${dir})`);
-    }
-    // N7: the backup directory is outside the target and therefore outside
-    // `assertSafeWrite`; a link there would capture the copy of a project file.
-    assertSafeBackupDir(dir);
+    dir = backupDirFor(target, { backupDir });
+    // N7 + D1: one guard for the backup directory — a link at the deepest
+    // existing ancestor, and containment by IDENTITY (the lexical check answered
+    // "outside" while the real path sat inside the target).
+    assertSafeBackupDir(dir, target);
   }
 
   let backedUp = 0;
@@ -644,6 +716,13 @@ export function runInit(targetDir, opts = {}) {
     log(`harness-sync init: ${error.message}`);
     return 1;
   }
+  // A recusa vale para o `--dry-run` também: um plano só é aplicável se o alvo
+  // pode receber a escrita.
+  const unusable = unusableTargetReason(targetDir);
+  if (unusable) {
+    log(`harness-sync init: ${unusable}: ${targetDir}`);
+    return 1;
+  }
   if (!dryRun) fs.mkdirSync(targetDir, { recursive: true });
 
   for (const marker of HARNESS_STATE_MARKERS) {
@@ -713,6 +792,19 @@ export function runUpdate(targetDir, opts = {}) {
   // one; the guard is the same one `init` uses, so this path cannot install a
   // config whose canonical command is null.
   if (!requireSuiteFull(configEntry, log, "update")) return 1;
+  // O dry-run roda o MESMO guard de backup do apply, antes de exibir o plano:
+  // sem isto, `--dry-run --backup-dir <target>/bk` listava um plano que o apply
+  // recusaria — o operador confirmava uma escrita que nunca poderia acontecer.
+  // Só há destino de backup quando há write a preservar (mesma condição do
+  // apply: `init`-like run e manifesto regravado não copiam nada).
+  if (dryRun && plan.some((entry) => entry.action !== "skip")) {
+    try {
+      assertSafeBackupDir(backupDirFor(targetDir, opts), targetDir);
+    } catch (error) {
+      log(`harness-sync update: ${error.message}`);
+      return 1;
+    }
+  }
   // I1: an EXISTING config is project data — never rewritten, so its null
   // `suiteFull` cannot be repaired here. Silence would be a green `update` on a
   // target where every gate reading the config fails closed at Completion: the

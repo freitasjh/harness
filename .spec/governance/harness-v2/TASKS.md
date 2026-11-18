@@ -55,16 +55,19 @@ Status: open. `commands.suiteFull` mudou; operador roda `eval "$(node scripts/se
 ## F2 — Comandos
 
 ### CMD-01 — `/harness-init`
-Status: open. Detecta, mostra plano, confirma, aplica; sem wizard.
+Status: done. `.opencode/commands/harness-init.md` (37 l.): recusa estado pré-existente, `--dry-run`, confirmação, apply, doctor; canal para `--suite`/`--unit`.
 
 ### CMD-02 — `/harness-update`
-Status: open. Backup fora do target, diff por hash, órfãos reportados.
+Status: done. 40 l.: backup fora do alvo anunciado, plano, confirmação, apply, doctor; canal para `--backup-dir`.
 
 ### CMD-03 — `/harness-doctor`
-Status: open. Somente leitura; falha nomeando path.
+Status: done. 20 l.: somente leitura, exit code + cada FAIL com path, sem corrigir.
 
 ### CMD-04 — `.opencode/commands/` no payload
-Status: open. Camada hoje listada no payload e ausente na origem; entra com F2.
+Status: done. Camada copiada no `init`, presente no manifesto e validada pelo `doctor` (ausente/vazia/symlink/arquivo removido ⇒ FAIL). Contrato em `scripts/__tests__/commands.spec.mjs` (frontmatter, `$ARGUMENTS`, ≤40 linhas, ordem plano→confirmação→apply).
+
+### CMD-05 — D1/D2 e encerramento do F2
+Status: done. `realpath` no backup (D1) e em `assertNotSource` (D2); init recusa link quebrado; `--dry-run` roda o guard de backup. Parecer do F2: APPROVED, 0 críticos.
 
 ## F3 — Fluxo PRD → ADR
 

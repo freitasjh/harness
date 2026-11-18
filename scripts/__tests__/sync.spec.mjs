@@ -384,7 +384,7 @@ describe("SYNC-04 — determinismo e backup (G1/G2) — A4", () => {
     writeFileSync(join(target, rel), "# adulterado 2\n");
     const refused = sync("update", target, ["--backup-dir", join(target, "backups")]);
     assert.equal(refused.code, 1, refused.out);
-    assert.match(refused.out, /backup não pode ficar dentro do target/);
+    assert.match(refused.out, /backup dentro do target/);
     assert.equal(readFileSync(join(target, rel), "utf8"), "# adulterado 2\n", "recusa antes de qualquer write");
   });
 });
@@ -789,6 +789,195 @@ describe("SYNC-13 — N7: diretório de backup é guardado e a cópia é atômic
     assert.match(res.out, /symlink no diretório de backup/);
     assert.deepEqual(readdirSync(outside), []);
     assert.equal(readFileSync(join(target, rel), "utf8"), "# adulterado\n");
+  });
+});
+
+describe("SYNC-21 — D1: identidade do diretório de backup sob link INTERMEDIÁRIO (F2)", () => {
+  // Defeito: `lstat` segue componentes intermediários, então o ancestral mais
+  // fundo EXISTENTE era a própria folha (`sub`), lida como diretório comum — o
+  // link em `mid/link` nunca era inspecionado e a contenção era lexical. Os dois
+  // casos abaixo exigem exit 1 com ZERO writes: um porque o caminho real cai
+  // dentro do target, o outro porque o elo nomeado está na cadeia.
+  it("D1(a): ancestral symlinkado apontando para DENTRO do target ⇒ exit 1, backup dentro do target", () => {
+    const target = newTarget();
+    assert.equal(init(target).code, 0);
+    const rel = ".agents/rules/workflow-rules.md";
+    writeFileSync(join(target, rel), "# adulterado\n");
+
+    const inside = join(target, ".agents", "backup-alvo");
+    mkdirSync(join(inside, "sub"), { recursive: true });
+    const mid = join(TMP.tmp(), "mid");
+    mkdirSync(mid, { recursive: true });
+    symlinkSync(inside, join(mid, "link"));
+    // `sub` existe ATRAVÉS do elo: é exatamente isso que cegava o walk antigo.
+    const backupDir = join(mid, "link", "sub");
+    assert.equal(lstatSync(backupDir).isDirectory(), true, "a folha resolve pelo link");
+
+    const res = sync("update", target, ["--backup-dir", backupDir]);
+    assert.equal(res.code, 1, res.out);
+    assert.match(res.out, /backup dentro do target/);
+    assert.equal(readFileSync(join(target, rel), "utf8"), "# adulterado\n", "recusa antes de qualquer write");
+    assert.deepEqual(readdirSync(join(inside, "sub")), [], "nada copiado para dentro do target");
+    assert.deepEqual(
+      walkAll(target).filter((p) => /\.tmp-\d+$/.test(p)),
+      [],
+      "nenhum temporário de escrita atômica sobrou",
+    );
+  });
+
+  it("D1(b): ancestral symlinkado apontando para FORA com componente inexistente ⇒ exit 1, nada escrito", () => {
+    const target = newTarget();
+    assert.equal(init(target).code, 0);
+    const rel = ".agents/rules/workflow-rules.md";
+    writeFileSync(join(target, rel), "# adulterado\n");
+
+    const outside = join(TMP.tmp(), "fora-bk");
+    mkdirSync(outside, { recursive: true });
+    const mid = join(TMP.tmp(), "mid");
+    mkdirSync(mid, { recursive: true });
+    symlinkSync(outside, join(mid, "link"));
+    // A folha NÃO existe: o ancestral mais fundo existente é o próprio elo, e um
+    // link nomeado na cadeia continua sendo recusa (G6 não afrouxou).
+    const backupDir = join(mid, "link", "nao-existe");
+
+    const res = sync("update", target, ["--backup-dir", backupDir]);
+    assert.equal(res.code, 1, res.out);
+    assert.match(res.out, /symlink no diretório de backup/);
+    assert.equal(readFileSync(join(target, rel), "utf8"), "# adulterado\n");
+    assert.deepEqual(readdirSync(outside), [], "nada atravessa o elo");
+    assert.equal(existsSync(backupDir), false, "o diretório de backup não é criado");
+  });
+});
+
+describe("SYNC-22 — D2: identidade do target quando ele é um symlink para a fonte (F2)", () => {
+  it("target symlinkado para o checkout ⇒ update e doctor exit 1, manifesto não nasce na fonte", () => {
+    const link = join(TMP.tmp(), "atalho-para-a-fonte");
+    symlinkSync(REPO_ROOT, link);
+
+    const update = sync("update", link);
+    assert.equal(update.code, 1, update.out);
+    assert.match(update.out, /target é a própria fonte/);
+
+    const doctor = sync("doctor", link);
+    assert.equal(doctor.code, 1, doctor.out);
+    assert.match(doctor.out, /target é a própria fonte/);
+
+    assert.equal(existsSync(join(REPO_ROOT, ".harness-manifest.json")), false, "a fonte não ganha manifesto");
+    // Contraprova na VCS: o defeito deixava o manifesto como arquivo novo aqui.
+    const gitStatus = spawnSync("git", ["-C", REPO_ROOT, "status", "--porcelain", "--", ".harness-manifest.json"], {
+      encoding: "utf8",
+    });
+    assert.equal(gitStatus.status, 0, gitStatus.stderr);
+    assert.equal(gitStatus.stdout.trim(), "", "nenhum manifesto no checkout da fonte");
+  });
+});
+
+describe("SYNC-23 — borda do init: alvo que não pode ser criado recusa com mensagem, não com crash (F2)", () => {
+  // Defeito: `mkdirSync` no alvo subia ENOENT (link quebrado) / EEXIST (arquivo
+  // comum) como stack trace, enquanto `harness-config.md` promete mensagem
+  // acionável. A recusa tem de nomear o que existe no path, sair 1 e escrever 0.
+  it("link quebrado ⇒ exit 1 nomeado, sem stack trace, zero writes", () => {
+    const parent = TMP.tmp();
+    const dest = join(parent, "nao-existe");
+    const link = join(parent, "alvo-quebrado");
+    symlinkSync(dest, link);
+
+    const res = sync("init", link, SUITE);
+    assert.equal(res.code, 1, res.out);
+    assert.match(res.out, /target é link quebrado/);
+    assert.doesNotMatch(res.out, /\n\s+at |node:fs:/, "nenhuma stack trace na recusa");
+    assert.equal(existsSync(dest), false, "o destino do link não é criado");
+    assert.deepEqual(readdirSync(parent), ["alvo-quebrado"], "zero writes no parent");
+  });
+
+  it("alvo é arquivo comum ⇒ exit 1 nomeado (nunca EEXIST como stack)", () => {
+    const parent = TMP.tmp();
+    const file = join(parent, "arquivo");
+    writeFileSync(file, "x");
+
+    const res = sync("init", file, SUITE);
+    assert.equal(res.code, 1, res.out);
+    assert.match(res.out, /target não é diretório/);
+    assert.doesNotMatch(res.out, /\n\s+at |node:fs:/);
+    assert.equal(readFileSync(file, "utf8"), "x", "o arquivo existente fica intacto");
+  });
+});
+
+describe("SYNC-24 — --dry-run valida o destino do backup antes de exibir o plano (F2)", () => {
+  // Defeito: o dry-run listava um plano que o apply recusaria — o operador
+  // confirmava uma escrita que nunca poderia acontecer. A validação do backup
+  // roda no dry-run, com o mesmo guard do apply.
+  it("--backup-dir dentro do target recusa no dry-run, sem imprimir plano aplicável", () => {
+    const target = newTarget();
+    assert.equal(init(target).code, 0);
+    const rel = ".agents/rules/workflow-rules.md";
+    writeFileSync(join(target, rel), "# adulterado\n");
+
+    const res = sync("update", target, ["--dry-run", "--backup-dir", join(target, "bk")]);
+    assert.equal(res.code, 1, res.out);
+    assert.match(res.out, /backup dentro do target/);
+    assert.doesNotMatch(res.out, /dry-run:/, "o plano não é exibido como aplicável");
+    assert.doesNotMatch(res.out, new RegExp(`update ${rel.replace(/[.]/g, "\\.")}`), "nem a linha do write pendente");
+    assert.equal(existsSync(join(target, "bk")), false, "zero writes no dry-run");
+    assert.equal(readFileSync(join(target, rel), "utf8"), "# adulterado\n");
+    assert.deepEqual(backupDirs(target), []);
+  });
+
+  it("--backup-dir symlinkado também recusa no dry-run", () => {
+    const target = newTarget();
+    assert.equal(init(target).code, 0);
+    writeFileSync(join(target, ".agents/rules/workflow-rules.md"), "# adulterado\n");
+
+    const realDir = join(dirname(target), "backups-reais");
+    mkdirSync(realDir, { recursive: true });
+    const linkDir = join(dirname(target), "backups-link");
+    symlinkSync(realDir, linkDir);
+
+    const res = sync("update", target, ["--dry-run", "--backup-dir", linkDir]);
+    assert.equal(res.code, 1, res.out);
+    assert.match(res.out, /symlink no diretório de backup/);
+    assert.doesNotMatch(res.out, /dry-run:/);
+    assert.deepEqual(readdirSync(realDir), [], "o dry-run não atravessa o link");
+  });
+});
+
+describe("CMD-01 — camada .opencode/commands no payload (F2)", () => {
+  const COMMANDS = ["harness-init.md", "harness-update.md", "harness-doctor.md"];
+
+  it("init copia os três comandos byte a byte e o doctor valida a camada", () => {
+    const target = newTarget();
+    const res = init(target);
+    assert.equal(res.code, 0, res.out);
+    for (const name of COMMANDS) {
+      const dest = join(target, ".opencode/commands", name);
+      assert.equal(existsSync(dest), true, `${name} copiado`);
+      assert.equal(readFileSync(dest, "utf8"), readFileSync(join(REPO_ROOT, ".opencode/commands", name), "utf8"));
+    }
+    const manifest = readJson(join(target, ".harness-manifest.json"));
+    assert.equal(".opencode/commands/harness-init.md" in manifest.files, true, "camada entra no manifesto");
+
+    const doctor = sync("doctor", target);
+    assert.equal(doctor.code, 0, doctor.out);
+  });
+
+  it("comando apagado no destino ⇒ doctor FAIL nomeando o path", () => {
+    const target = newTarget();
+    assert.equal(init(target).code, 0);
+    rmSync(join(target, ".opencode/commands/harness-doctor.md"));
+
+    const doctor = sync("doctor", target);
+    assert.equal(doctor.code, 1, doctor.out);
+    assert.match(doctor.out, /arquivo do manifesto ausente: \.opencode\/commands\/harness-doctor\.md/);
+  });
+
+  it("camada inteira removida no destino ⇒ doctor FAIL 'camada ausente'", () => {
+    const target = newTarget();
+    assert.equal(init(target).code, 0);
+    rmSync(join(target, ".opencode/commands"), { recursive: true, force: true });
+
+    const doctor = sync("doctor", target);
+    assert.equal(doctor.code, 1, doctor.out);
+    assert.match(doctor.out, /camada ausente: \.opencode\/commands/);
   });
 });
 

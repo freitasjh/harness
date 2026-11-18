@@ -599,15 +599,30 @@ sem pergunta, sem perfil de stack e sem rede:
 Toda escrita passa por duas checagens de segurança que **abortam o run inteiro**
 antes do backup: `assertSafeWrite` (nenhum symlink em componente do path de
 destino, `lstat` por componente — vale para payload, `harness.config.json` gerado
-e manifesto) e `assertNotSource` (`target` não pode ser a própria fonte). O
-diretório de **backup** é validado pela mesma regra (`assertSafeBackupDir`,
-inclusive o destino de `--backup-dir`). A gravação é atômica
+e manifesto) e `assertNotSource` (`target` não pode ser a própria fonte — compara
+`realpath`, então `--target` que é symlink para este checkout é recusado sem criar
+manifesto na fonte). O diretório de **backup** é validado pela mesma regra
+(`assertSafeBackupDir`): o ancestral existente mais fundo é canonicalizado por
+`realpath` e a contenção é decidida contra `realpath(target)`, então uma cadeia
+symlinkada que resolve para dentro do alvo é recusada (`backup dentro do
+target`, mesmo com caminho lexical "fora"; link no ancestral existente mais
+fundo do backup (ou na folha que `--backup-dir` nomeia) continua recusando
+(`symlink no diretório de backup`), e ancestrais acima dele não são superfície da
+run; o fallback lexical vale só para path inexistente. A gravação é atômica
 (`<arquivo>.tmp-<pid>` + `rename`, também nas cópias de backup): o temporário é
 aberto com `wx` (`O_CREAT|O_EXCL`), então um link plantado no nome previsível é
 **recusado** em vez de seguido, e o temporário é removido em qualquer erro; o
 manifesto é o **último** write. O `doctor` também checa a **entrada** de cada
 arquivo do manifesto com `lstat`: arquivo substituído por symlink é FAIL mesmo
 que os bytes do outro lado sejam idênticos.
+
+O mesmo contrato está disponível como **comando do operador** no destino:
+`.opencode/commands/` é camada do payload, então `init` copia
+`harness-init.md`, `harness-update.md` e `harness-doctor.md` (`/harness-init [dir]`,
+`/harness-update [dir]`, `/harness-doctor [dir]`). Cada um só orquestra o CLI —
+mostra `--dry-run`, pede confirmação antes de aplicar, fecha com `doctor` — e
+nenhum pergunta stack/perfil. O `doctor` valida a camada (ausente, vazia ou
+symlink ⇒ FAIL; arquivo apagado ⇒ `arquivo do manifesto ausente`).
 
 Órfão apagado ou editado à mão ⇒ `doctor` FAIL (`arquivo do manifesto ausente` /
 `sha256 divergente do manifesto`); reparo: podar a entrada do manifesto, ou
@@ -622,7 +637,9 @@ O selo do comando canônico continua saindo de `sha256`/`sealCommands`
 
 Cobertura: `scripts/__tests__/sync.spec.mjs` (init/update/doctor, preservação,
 backup fora do target, idempotência, dry-run, detecção, recusa de symlink,
-órfãos, hash do doctor, pin do brain, selo, `NET-01` rede-zero na fonte).
+identidade de path sob link — D1/D2, órfãos, hash do doctor, pin do brain, selo,
+`NET-01` rede-zero na fonte) + `scripts/__tests__/commands.spec.mjs` (contrato dos
+três comandos: frontmatter, `$ARGUMENTS`, plano antes de aplicar, ≤ 40 linhas).
 
 ## 9. Agentes e permissões
 

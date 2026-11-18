@@ -231,7 +231,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-18T17:07:44.991Z",
+  "last_update": "2026-11-18T17:32:36.754Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -2237,10 +2237,19 @@
         "debt": [
           "harness-v2-path-identity D1/D2/D3"
         ]
+      },
+      "F2": {
+        "status": "done",
+        "commands": [
+          "harness-init",
+          "harness-update",
+          "harness-doctor"
+        ],
+        "suite": "418 plugins + 103 scripts",
+        "review": "APPROVED (0 criticos)"
       }
     },
     "pending": [
-      "F2",
       "F3",
       "F4",
       "F5",
