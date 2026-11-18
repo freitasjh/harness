@@ -126,25 +126,28 @@ Status: open (melhoria não-bloqueante do review F5): assertar presença de `typ
 ## F6 — Frontend/design
 
 ### DESIGN-01 — Fim da contradição de frontend
-Status: open. React e Vue viram skills por eixo; regra always-on só aponta.
+Status: done. Standards 382→12 linhas (skills são donas); shadcn+axios+lucide canônico; zero PrimeVue/Remix/ri-*.
 
 ### DESIGN-02 — Skills de design
-Status: open. `design-system`, `storybook`, `frontend-quality`.
+Status: done. 3 skills criadas; DESIGN.md/tokens portados; matriz de estados + a11y + anti-slop.
 
 ### DESIGN-03 — Portar harness-frontend
-Status: open. `init.mjs`, `build-tokens.mjs`, `validate.mjs`, `DESIGN.md` + adapter Vue.
+Status: done. scripts em `.agents/skills/storybook/scripts/` (rede-zero, --dry-run) + templates/tokens em `design-system/`.
 
 ### DESIGN-04 — Comandos de UI
-Status: open. `ui-bootstrap`, `ui-audit`, `ui-review`.
+Status: done. 36/30/30 linhas; detectam framework; plano→confirmação→apply; `ui-audit` não edita.
 
 ### DESIGN-05 — UX sem Pulse
-Status: open. `ux-designer` e `design-system-specialist` leem tokens/`DESIGN.md` do destino.
+Status: done. ux 309→73 e design-system 101→62; zero Pulse/hex/fonte em prompts; template-* com nota de ilustração.
 
 ### DESIGN-06 — `frontend_evidence` no gate
 Status: open. `stories[]`, `screenshots[]`, `a11y` obrigatórios quando `targets.frontend` ≠ null.
 
 ### DESIGN-07 — Dart/Flutter fora do core
 Status: open. 22 skills saem do payload; vendor sob demanda.
+
+### DESIGN-08 — Consistência de estados e validate
+Status: open (3 melhorias do review F6a, F6b): canonizar 9 estados em `validate.mjs`/skills/comandos; trocar `includes` por âncora de export; typo `criad`→`criados` em `ui-bootstrap.md:14`.
 
 ## F7 — Gates e estado
 

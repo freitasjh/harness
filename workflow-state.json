@@ -341,14 +341,20 @@
         "status": "done",
         "suite": "477 plugins + 126 scripts",
         "review": "APPROVED"
+      },
+      "F6a": {
+        "status": "done",
+        "suite": "477 plugins + 140 scripts",
+        "review": "APPROVED",
+        "rules_lines": 779
       }
     },
     "pending": [
-      "F6",
+      "F6b",
       "F7",
       "F8"
     ],
     "reviews": 5
   },
-  "last_update": "2026-11-18T22:36:59.906Z"
+  "last_update": "2026-11-18T23:00:01.207Z"
 }

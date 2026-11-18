@@ -18,7 +18,11 @@ import { fileURLToPath } from "node:url";
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const DIR = join(REPO_ROOT, ".opencode", "commands");
-const COMMANDS = ["harness-init.md", "harness-update.md", "harness-doctor.md"];
+const COMMANDS = [
+  "harness-init.md", "harness-update.md", "harness-doctor.md",
+  "ui-bootstrap.md", "ui-audit.md", "ui-review.md",
+];
+const UI_COMMANDS = ["ui-bootstrap.md", "ui-audit.md", "ui-review.md"];
 
 function read(name) {
   return readFileSync(join(DIR, name), "utf8");
@@ -55,7 +59,7 @@ function assertPlanThenApply(text, verb) {
 }
 
 describe("CMD-01/02/03 — comandos do operador", () => {
-  it("a camada publica exatamente os três comandos", () => {
+  it("a camada publica exatamente os seis comandos (3 harness + 3 ui)", () => {
     assert.deepEqual(readdirSync(DIR).sort(), [...COMMANDS].sort());
   });
 
@@ -103,6 +107,33 @@ describe("CMD-01/02/03 — comandos do operador", () => {
     assert.match(text, /exit code/);
     assert.match(text, /FAIL <o quê>: <path>/);
     assert.match(text, /Nada é escrito/, "o comando declara que não escreve");
+  });
+});
+
+describe("UI-01..03 — comandos de UI (F6a)", () => {
+  for (const name of UI_COMMANDS) {
+    it(`${name}: frontmatter, $ARGUMENTS, ≤ 40 linhas e sem vocabulário proibido`, () => {
+      const text = read(name);
+      assert.match(text, /^---\ndescription: .+\n---\n/);
+      assert.match(body(text), /\$ARGUMENTS/);
+      assert.ok(text_line_count(text) <= 40, `${name}: ${text_line_count(text)} linhas`);
+      assert.doesNotMatch(text, /\bstack\b|\bperfil\b|\beixo\b|\bwizard\b|installer\//i);
+    });
+  }
+
+  it("ui-bootstrap: detecta, mostra plano, pede confirmação e só depois aplica", () => {
+    const text = read("ui-bootstrap.md");
+    assert.match(text, /package\.json/, "detecta em vez de perguntar");
+    assertPlanThenApply(text, "init.mjs");
+    assert.match(text, /build-tokens\.mjs --target <dir>/);
+    assert.match(text, /validate\.mjs --target <dir>/);
+  });
+
+  it("ui-audit e ui-review: somente leitura", () => {
+    assert.match(read("ui-audit.md"), /não edita nada/i);
+    assert.match(read("ui-review.md"), /Nada é editado/i);
+    assert.match(read("ui-audit.md"), /arquivo:linha|CAMINHO:LINHA/);
+    assert.match(read("ui-review.md"), /1280×800|1280px/);
   });
 });
 
