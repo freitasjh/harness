@@ -2,6 +2,11 @@
 
 Verificação pós-implementação obrigatória antes do `archive`. Três dimensões devem ser ✅ para avançar.
 
+> **Layout v2 (por ADR):** `verify` roda no diretório do ADR e gera
+> `ADRs/ADR-00N-{slug}/VERIFY.md`. `TASKS.md`/`SPEC.md` citados abaixo são os do
+> ADR; `ADR.md` equivale à seção de ADRs. Um ADR `merged` com `unit: adr` não
+> fecha sem este arquivo (`ADR-01`).
+
 ## Dimensão 1: Completeness (Completude)
 
 - [ ] **Tasks 100%**: Todos os checkboxes em `TASKS.md` marcados como concluídos.

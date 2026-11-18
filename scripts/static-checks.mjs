@@ -335,5 +335,7 @@ export function runStaticChecks(root = REPO_ROOT) {
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const { ok } = runStaticChecks();
-  process.exit(ok ? 0 : 1);
+  // Drain before exiting (F3a review, item 16): `process.exit` drops the pending
+  // tail of a piped stdout, which is exactly where the PASS/FAIL lines live.
+  process.exitCode = ok ? 0 : 1;
 }

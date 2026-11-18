@@ -72,16 +72,19 @@ Status: done. `realpath` no backup (D1) e em `assertNotSource` (D2); init recusa
 ## F3 — Fluxo PRD → ADR
 
 ### FLOW-01 — `workflow.md` único
-Status: open. Discovery → PRD → RESEARCH → ADR-INDEX → ADR → SPEC/TASKS → impl → verify → archive.
+Status: done. 220 linhas; absorveu `sdd-workflow-standard.md`; §2.4 traceability; 🟡 nas imperativas sem mecanismo; V17 preservado.
 
 ### FLOW-02 — SPEC/TASKS dentro do ADR
-Status: open. `ADR-01`/`ADR-02` exigem `ADR.md` + `SPEC.md` + `TASKS.md` no diretório do ADR.
+Status: done. Coluna `unit` (`adr|legacy`, estrita em minúsculas); `prd_version: 2` força `unit: adr`; ADR legado retrocompatível.
 
 ### FLOW-03 — `sdd-compiler` v2
-Status: open. Modos `spec-from-adr`, `tasks-from-adr`, `verify`, `archive`; sai PROPOSAL por feature.
+Status: done. Modos ativos `spec-from-adr`/`tasks-from-adr`/`verify`/`archive`; asserts e templates por ADR; `sdd-feedback` alinhado.
 
 ### FLOW-04 — Estado enxuto
-Status: open. `workflow-state.json` ≤ 20 KB + `workflow-history.jsonl`.
+Status: open. F3b (próximo): compactação + `workflow-history.jsonl`.
+
+### FLOW-05 — SDD-02 layout-aware e docs por símbolo
+Status: done. Drift do ADR nomeado pelo estado julga antes do legado; `unit` vem do ledger; 395 citações por linha trocadas por símbolo/seção + guarda `docs-citations.spec.mjs`. Review final: APPROVED.
 
 ## F4 — Agentes
 

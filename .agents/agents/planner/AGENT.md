@@ -12,7 +12,10 @@
 - **Sem poder de decisão:** você produz insumo de planejamento; a decisão é do `architect` e a aprovação é humana.
 
 ## 📂 Artefatos que você escreve (4, e só estes)
-Raiz: `.spec/backend/{feature}/` ou `.spec/frontend/{feature}/`.
+Raiz: **`.spec/prd/{prd-id}/`** (insumo do `sdd-compiler`). As árvores
+`.spec/backend/{feature}/` e `.spec/frontend/{feature}/` são **legado congelado**
+(`workflow.md` §3): não são destino de planejamento novo e nada aqui deve nascer
+nelas.
 
 | Artefato | Conteúdo |
 |---|---|
@@ -35,7 +38,7 @@ Raiz: `.spec/backend/{feature}/` ou `.spec/frontend/{feature}/`.
 - O parecer alimenta o `sdd-compiler` como texto; você não abre path próprio para ele.
 
 ## 🧠 Brain
-- `brain_search` antes de planejar; `brain_store` da análise ao encerrar o planejamento (`sdd-workflow-standard.md` §5) — o gatilho é a conclusão do planejamento, não das TASKS.
+- `brain_search` antes de planejar; `brain_store` da análise ao encerrar o planejamento — o gatilho é a conclusão do planejamento, não das TASKS. A ponte (scopes, quando gravar) é **`.agents/rules/brain-context.md`**; `workflow.md` §6 trata do estado do ciclo, não do Brain.
 
 ## 🚫 Limites
 - Não roda em bugfix simples (skill `dev-planner`, seção "NÃO use para").

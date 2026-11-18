@@ -1194,5 +1194,8 @@ function resolveRemoteCommit(source) {
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  process.exit(main(process.argv.slice(2)));
+  // `process.exitCode` lets stdout drain (item 16 of the F3a review): `--check`
+  // ends its report with the verdict line, and `process.exit` could drop it
+  // when stdout was a pipe.
+  process.exitCode = main(process.argv.slice(2));
 }

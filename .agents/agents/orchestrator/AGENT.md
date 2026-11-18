@@ -138,9 +138,11 @@ contrato de saída e exemplos em `references/picco-template.md`.
 
 > 🚨 OBRIGATÓRIO antes de archive. Verificar se specs batem com código.
 
-**Comando:** `/sdd.trace [feature]`
-**Score mínimo:** 80% para passar gate
-**Assert:** `.agents/skills/sdd-compiler/asserts/traceability-gate.md`
+**Onde está a regra:** `.agents/rules/workflow.md` §2.4 — score mínimo 80%, por
+ADR, e a régua completa em
+`.agents/skills/sdd-compiler/asserts/traceability-gate.md`.
+**Quem executa:** o `sdd-compiler` no modo `verify` (não há comando de trace).
+**Nível:** 🟡 processo — o portão é o parecer do `sdd-compiler` + revisão humana.
 
 ### 4. Fonte da Verdade Visual — `ux-designer` (NON-NEGOTIABLE)
 
@@ -237,8 +239,8 @@ P3 ──[USUÁRIO]──> P4 ──[USUÁRIO]──> P5 ──[USUÁRIO]──>
 | Portão | Fase | Pergunta ao Usuário |
 |--------|------|---------------------|
 | P0→P1 | Fim Fase 0 | "Classificação como **[Feature/Bugfix/Refactor]** está correta? Posso avançar para Análise?" |
-| P1→P2 | Fim Fase 1 | "SPEC gerada com score **X%** (fórmula em `asserts/spec-gate.md` §5; 🔴 Y críticos corrigidos). Aprova seguir para Planejamento?" |
-| P2→P3 | Fim Fase 2 | "PLAN + TASKS validados (**X tasks**, **Y microtasks**). Aprova delegar para implementação?" |
+| P1→P2 | Fim Fase 1 | "SPEC do ADR gerada com score **X%** (fórmula em `asserts/spec-gate.md` §5; 🔴 Y críticos corrigidos). Aprova seguir para Planejamento?" |
+| P2→P3 | Fim Fase 2 | "TASKS do ADR validadas (**X tasks**, **Y microtasks**). Aprova delegar para implementação?" |
 | P3→P4 | Fim Fase 3 | "Implementação concluída, code review feito. Aprova seguir para Quality Gate / Harness?" |
 | P4→P5 | Fim Fase 4 | "Harness executado: **X passaram, Y falharam**. Logs em anexo. Aprova seguir para Verify?" |
 | P5→P6 | Fim Fase 5 | "VERIFY.md gerado: 3 dimensões **[✅/❌]** . Aprova arquivar?" |
@@ -277,6 +279,10 @@ Validação da esteira: `PRD-01`/`ADR-01`/`ADR-02`
 
 ## Fases do Workflow (SDD — Spec-Driven Development)
 
+> **Fonte única do fluxo:** `.agents/rules/workflow.md` (esteira, layout por ADR,
+> bugfix, code review, estado). As fases abaixo são o **roteiro operacional** do
+> orquestrador; em conflito, `workflow.md` vence.
+
 ### Fase 0: Descoberta & Triagem
 1. Classifique demanda como **Feature**, **Bugfix** ou **Refactor**.
 2. Invoque agentes `architect` e `product-manager` para mapear impactos e regras técnicas.
@@ -299,24 +305,23 @@ Validação da esteira: `PRD-01`/`ADR-01`/`ADR-02`
    - Basear a análise no Design System **Pulse** e na skill `ui-ux-pro-max`.
    - Retornar: parecer do visual existente, propostas de melhoria/inovação, fluxos recomendados, adesão ao Pulse.
 6. Carregue `frontend-design` apenas como apoio complementar à direção visual — não substitui o parecer do `ux-designer`.
-7. Incorpore as decisões do `ux-designer` na PROPOSTA e na SPEC (seção de UX/visual).
+7. Incorpore as decisões do `ux-designer` na SPEC do ADR (seção de UX/visual).
 8. Invoque subagente `architect` para validar design, corrija gaps.
-9. Gere **PROPOSTA**: `sdd-compiler` modo `generate-proposal` → `.spec/[backend|frontend]/[feature]/PROPOSAL.md`.
-10. Gere **SPEC**: `sdd-compiler` modo `generate-spec` → `SPEC.md` (inclui Delta Specs).
-11. Revise SPEC: `sdd-compiler` (`asserts/spec-gate.md`) — relatório de gaps e conformidade; revisor do destino, se houver.
-12. **Security Review:** carregue skill `security-review` e execute a revisão de segurança da SPEC (threat modeling STRIDE, checklist OWASP Top 10, cobertura ASVS L2). Gere relatório de segurança.
-13. Corrija todos 🔴 críticos e 🟠 alta prioridade (incluindo gaps de segurança).
-14. Salve artefatos em `.spec/backend/{dominio}/` ou `.spec/frontend/{dominio}/`.
-15. **PORTÃO P1→P2:** Apresente score da SPEC calculado por `asserts/spec-gate.md` do `sdd-compiler` (§5: itens atendidos / itens aplicáveis × 100, itens `N/A` com motivo fora do denominador), número de ADRs, total de gaps corrigidos, parecer do `ux-designer` e **parecer do `security-review`** (threat model, gaps de segurança, cobertura ASVS). Pergunte: "SPEC gerada com score **X%** (🔴 Y críticos corrigidos). Parecer do ux-designer: **[resumo]**. Parecer do security-review: **[resumo]**. Aprova seguir para Planejamento?" Aguarde resposta.
+9. Gere **SPEC do ADR**: `sdd-compiler` modo `spec-from-adr` → `.spec/prd/{prd-id}/ADRs/ADR-00N-{slug}/SPEC.md` (RF/NFR rastreáveis ao `ADR.md`; inclui Delta Specs).
+10. Revise a SPEC: `sdd-compiler` (`asserts/spec-gate.md`) — relatório de gaps e conformidade; revisor do destino, se houver.
+11. **Security Review:** carregue skill `security-review` e execute a revisão de segurança da SPEC (threat modeling STRIDE, checklist OWASP Top 10, cobertura ASVS L2). Gere relatório de segurança.
+12. Corrija todos 🔴 críticos e 🟠 alta prioridade (incluindo gaps de segurança).
+13. Salve os artefatos **no diretório do ADR** — não existe SPEC/TASKS de funcionalidade inteira (`workflow.md` §1).
+14. **PORTÃO P1→P2:** Apresente score da SPEC calculado por `asserts/spec-gate.md` do `sdd-compiler` (§5: itens atendidos / itens aplicáveis × 100, itens `N/A` com motivo fora do denominador), total de gaps corrigidos, parecer do `ux-designer` e **parecer do `security-review`** (threat model, gaps de segurança, cobertura ASVS). Pergunte: "SPEC do ADR gerada com score **X%** (🔴 Y críticos corrigidos). Parecer do ux-designer: **[resumo]**. Parecer do security-review: **[resumo]**. Aprova seguir para Planejamento?" Aguarde resposta.
 
 ### Fase 2: Planejamento & Decomposição Atômica
-1. Carregue `sdd-compiler` modo `generate-plan` → `PLAN.md` a partir da SPEC aprovada.
-2. Submeta plano ao `product-manager` para validação de negócio.
-3. Carregue `sdd-compiler` modo `generate-tasks` → `TASKS.md`.
+1. Registre a unidade de entrega: 1 ADR = 1 branch = 1 PR (`workflow.md` §1).
+2. Submeta a SPEC do ADR ao `product-manager` para validação de negócio.
+3. Carregue `sdd-compiler` modo `tasks-from-adr` → `.../ADRs/ADR-00N-{slug}/TASKS.md` (seções `### <ID>`).
 4. Carregue skill `jira-microtask-breaker` para quebrar escopo em microtarefas granulares com critérios de aceite de teste.
-5. Valide contra `asserts/plan-gate.md` e `asserts/tasks-gate.md`.
-6. **PORTÃO P2→P3:** Apresente total de tasks, microtasks, dependências entre tarefas. Pergunte: "PLAN + TASKS validados (**X tasks**, **Y microtasks**). Aprova delegar para implementação?"
-7. Atualize `workflow-state.json` com a primeira tarefa ativa.
+5. Valide contra `asserts/tasks-gate.md` (`spec-gate` já aplicado no P1).
+6. **PORTÃO P2→P3:** Apresente total de tasks, microtasks, dependências entre tarefas. Pergunte: "TASKS do ADR validadas (**X tasks**, **Y microtasks**). Aprova delegar para implementação?"
+7. Atualize `workflow-state.json` (`artifacts.adr` + primeira tarefa ativa).
 
 ### Fase 3: Delegação Técnica Pura
 
@@ -416,13 +421,13 @@ Antes de avançar para Fase 5, execute a skill `security-review` no modo **Fase 
    - **Completude:** Todos checkboxes TASKS.md marcados, zero TODOs.
    - **Corretude:** Build limpo, testes passando (confirmado pelo `qa-engineer`), requisitos SPEC cobertos.
    - **Coerência:** ADRs refletidos no código, sem vazamento de camada.
-2. Gere `.spec/[feature]/VERIFY.md`.
+2. Gere `.../ADRs/ADR-00N-{slug}/VERIFY.md` (o VERIFY é do ADR, não da funcionalidade).
 3. **BLOQUEIA archive** se qualquer dimensão falhar — retorne para Fase 3/4. Mas antes, **HITL obrigatório:** apresente relatório de verificação ao usuário: "VERIFY.md gerado. Dimensões: Completude **[✅/❌]** , Corretude **[✅/❌]** , Coerência **[✅/❌]** . Deseja: (a) retornar para correção (re-delegar), (b) fazer override e arquivar mesmo assim, (c) cancelar?"
 4. **PORTÃO P5→P6:** Com todas dimensões ✅ e security verify **pass**, pergunte: "VERIFY.md aprovado. Security Verify: **pass**. Aprova seguir para Arquivo?"
 
 ### Fase 6: Arquivo & Aprendizado Contínuo
 1. Execute apenas com VERIFY.md aprovado (todas 3 dimensões ✅) ou override explícito do usuário.
-2. Carregue `sdd-compiler` modo `archive` — mescle Delta Specs em `.doc/`, mova `.spec/[feature]/` → `.spec/archive/[YYYYMMDD]-[feature]/`.
+2. Carregue `sdd-compiler` modo `archive` — mescle Delta Specs em `.doc/` e mova o **PRD inteiro** `.spec/prd/{prd-id}/` → `.spec/archive/[YYYYMMDD]-prd-{prd-id}/`.
 3. **Registro no Brain:**
    - Sessão: `brain_store("sessoes", "taskflow/<data>", "## Sessao\n\nResumo...")`
    - Lições: `brain_store("estudos", "taskflow/<feature>/<conceito>", "conteudo completo", scope="projetos|global")`
@@ -667,8 +672,8 @@ tool por si só — prosa descreve, runtime nega (SPEC §2; `gate-contract.md` �
 |----------|---------|
 | `AGENTS.md` | Visão geral do projeto, stack, convenções |
 | `workflow-rules.md §5` | **FONTE DA VERDADE** do harness (H1-H7) — suite completa, zero tolerância, E2E greenfield, avaliação contínua, portão de conclusão |
-| `.agents/rules/workflow-rules.md` | Workflow SDD + Bugfix completo |
-| `.agents/rules/sdd-workflow-standard.md` | Estrutura de arquivos & gestão de estado |
+| `.agents/rules/workflow.md` | **Fonte única do fluxo**: esteira PRD→ADR, SDD por ADR, bugfix, code review, estado |
+| `.agents/rules/workflow-rules.md` | Prompt Gate + Harness Contínuo (H0–H7) |
 | `.agents/rules/frontend-coding-standards.md` | Padrões frontend |
 | Skill `security-review` | **Fonte da verdade** de segurança (OWASP/ASVS/MASVS) — web, API, mobile |
 | `.agents/rules/brain-context.md` | Protocolo de contexto do Brain |

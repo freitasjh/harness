@@ -231,7 +231,7 @@
       "created": "2026-11-11T14:45:33.515Z"
     }
   ],
-  "last_update": "2026-11-18T17:32:36.754Z",
+  "last_update": "2026-11-18T19:36:31.749Z",
   "follow_ups_prd11": [
     "D4 (arquitetura, nao bloqueia): o enum de `status` do ADR-INDEX nao modela 'decisao realizada mas nao mergeada'. O dogfood usou `merged` + sha do commit, documentado no proprio indice — leitura honesta, mas 'merged' e load-bearing em SPEC §4.4 (gatilho de arquivamento do PRD). Fechar a lacuna: valor novo no enum OU definicao do estado de meta-ciclo na regra `.agents/rules/prd-adr-pipeline.md`, e remover a convencao local do artefato."
   ],
@@ -254,7 +254,7 @@
   "harness_status": "passed",
   "harness_evidence": "harness/harness-inventory-adr-004.json — 15 comandos; V19 PASS com counters fechando (48=25+22+0+1; 8=7+1+0; 10=10+0); 5 mutacoes com FAIL literal fora do repo",
   "code_review_status": "passed",
-  "code_review_status_ciclo": "harness-v2/F1",
+  "code_review_status_ciclo": "harness-v2/F3a",
   "sdd_stage": "PRD eixos-separados-cli CONCLUIDO — 2/2 ADRs merged na main (aed46b0). Tela e eixos separados entregues",
   "backlog": {
     "total": 6,
@@ -2247,10 +2247,16 @@
         ],
         "suite": "418 plugins + 103 scripts",
         "review": "APPROVED (0 criticos)"
+      },
+      "F3a": {
+        "status": "done",
+        "suite": "449 plugins + 112 scripts",
+        "review": "APPROVED",
+        "docs": "citacoes por simbolo + guarda"
       }
     },
     "pending": [
-      "F3",
+      "F3b",
       "F4",
       "F5",
       "F6",

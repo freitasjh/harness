@@ -49,17 +49,21 @@ export function buildSeal(configPath = DEFAULT_CONFIG) {
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const opts = parseArgs(process.argv.slice(2));
+  // Same drain rule as the other launchers (F3a review, item 16): the seal is
+  // printed on the LAST line, and `process.exit` could drop it on a pipe.
   if (opts.help) {
     console.log("uso: node scripts/seal.mjs [--config <path>] [--env]");
-    process.exit(0);
+  } else {
+    let seal;
+    try {
+      seal = buildSeal(opts.config);
+    } catch (error) {
+      console.error(`seal: ${error.message}`);
+      process.exitCode = 1;
+    }
+    if (seal) {
+      const json = JSON.stringify(seal);
+      console.log(opts.env ? `HARNESS_SEAL_JSON=${json}` : json);
+    }
   }
-  let seal;
-  try {
-    seal = buildSeal(opts.config);
-  } catch (error) {
-    console.error(`seal: ${error.message}`);
-    process.exit(1);
-  }
-  const json = JSON.stringify(seal);
-  console.log(opts.env ? `HARNESS_SEAL_JSON=${json}` : json);
 }

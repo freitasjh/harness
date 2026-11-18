@@ -586,13 +586,14 @@ describe("SYNC-08 — órfãos são reportados, nunca removidos (A7)", () => {
 
     const res = sync("update", target);
     assert.equal(res.code, 0, res.out);
-    assert.match(res.out, /orphan scripts\/legado-removido\.mjs \(não removido\)/);
+    assert.match(res.out, /orphan scripts\/legado-removido\.mjs \(não removido\)/, res.out);
     assert.equal(existsSync(join(target, rel)), true, "órfão NUNCA é apagado");
     assert.equal(readFileSync(join(target, rel), "utf8"), content);
     // Zero writes ⇒ o manifesto NÃO é reescrito (G1): a entrada órfã continua
     // lá e volta a ser reportada na próxima execução, até uma decisão humana.
     assert.equal(rel in readJson(manifestPath).files, true, "manifesto intacto: 0 writes");
-    assert.match(sync("update", target).out, /orphan scripts\/legado-removido\.mjs/);
+    const second = sync("update", target);
+    assert.match(second.out, /orphan scripts\/legado-removido\.mjs/, second.out);
   });
 });
 
@@ -669,8 +670,8 @@ describe("SYNC-10 — N2: órfão sobrevive à regravação do manifesto", () =>
 
     const first = sync("update", target);
     assert.equal(first.code, 0, first.out);
-    assert.match(first.out, /update: 1 file\(s\) written/);
-    assert.match(first.out, /orphan scripts\/legado\.mjs \(não removido\)/);
+    assert.match(first.out, /update: 1 file\(s\) written/, first.out);
+    assert.match(first.out, /orphan scripts\/legado\.mjs \(não removido\)/, first.out);
     assert.equal(
       readJson(manifestPath).files[rel],
       sha256(Buffer.from(content)),
@@ -680,7 +681,7 @@ describe("SYNC-10 — N2: órfão sobrevive à regravação do manifesto", () =>
 
     const second = sync("update", target);
     assert.equal(second.code, 0, second.out);
-    assert.match(second.out, /update: 0 file\(s\) written/);
+    assert.match(second.out, /update: 0 file\(s\) written/, second.out);
     assert.match(second.out, /orphan scripts\/legado\.mjs \(não removido\)/, "o órfão continua visível");
 
     // O ledger continua honesto: o doctor re-hasheia o órfão e passa.
@@ -1078,6 +1079,9 @@ describe("SYNC-14 — R-1: o temporário da escrita atômica é guardado (`wx`)"
   // O temporário carrega o pid de QUEM escreve, logo o elo só é plantável pelo
   // próprio processo que grava: o launcher abaixo planta e chama `runUpdate` no
   // MESMO processo (pid == o do escritor) e sai com o código do verbo.
+  // O launcher sai por `process.exitCode`, nunca `process.exit(código)` (item
+  // 16 do review): com stdout em pipe a escrita é assíncrona e o exit imediato
+  // descarta a última linha — o código de saída continuava 1 e o texto faltava.
   function runUpdateWithPlantedTmp(target, destTmpBase, linkTarget, opts = {}) {
     const script = [
       'import { symlinkSync, mkdirSync } from "node:fs";',
@@ -1085,7 +1089,7 @@ describe("SYNC-14 — R-1: o temporário da escrita atômica é guardado (`wx`)"
       `mkdirSync(dirname(${JSON.stringify(destTmpBase)}), { recursive: true });`,
       `symlinkSync(${JSON.stringify(linkTarget)}, ${JSON.stringify(destTmpBase)} + ".tmp-" + process.pid);`,
       `const { runUpdate } = await import(${JSON.stringify(SYNC)});`,
-      `process.exit(runUpdate(${JSON.stringify(target)}, ${JSON.stringify(opts)}));`,
+      `process.exitCode = runUpdate(${JSON.stringify(target)}, ${JSON.stringify(opts)});`,
     ].join("\n");
     return spawnSync(process.execPath, ["--input-type=module", "-e", script], { encoding: "utf8" });
   }
@@ -1115,7 +1119,7 @@ describe("SYNC-14 — R-1: o temporário da escrita atômica é guardado (`wx`)"
     const res = runUpdateWithPlantedTmp(target, join(target, rel), outside);
     const text = out(res);
     assert.equal(res.status, 1, text);
-    assert.match(text, /temporário já existe: possível symlink plantado/);
+    assert.match(text, /temporário já existe: possível symlink plantado/, text);
     // O farol do defeito: `writeFileSync` sem `wx` seguiria o elo e gravaria FORA.
     assert.equal(readFileSync(outside, "utf8"), "INTOCADO\n", "nenhum byte atravessou o link");
     assert.equal(lstatSync(join(target, rel)).isSymbolicLink(), false, "o destino não vira link");
@@ -1138,7 +1142,7 @@ describe("SYNC-14 — R-1: o temporário da escrita atômica é guardado (`wx`)"
     const res = runUpdateWithPlantedTmp(target, manifestPath, outside);
     const text = out(res);
     assert.equal(res.status, 1, text);
-    assert.match(text, /temporário já existe: possível symlink plantado/);
+    assert.match(text, /temporário já existe: possível symlink plantado/, text);
     assert.equal(readFileSync(outside, "utf8"), "{}\n", "o farol não é escrito");
     assert.equal(lstatSync(manifestPath).isSymbolicLink(), false, "o manifesto continua arquivo regular");
     noTmpLeft(target);
@@ -1157,7 +1161,7 @@ describe("SYNC-14 — R-1: o temporário da escrita atômica é guardado (`wx`)"
     const res = runUpdateWithPlantedTmp(target, join(dir, rel), outside, { backupDir: dir });
     const text = out(res);
     assert.equal(res.status, 1, text);
-    assert.match(text, /temporário já existe: possível symlink plantado/);
+    assert.match(text, /temporário já existe: possível symlink plantado/, text);
     assert.equal(readFileSync(outside, "utf8"), "INTOCADO\n");
     assert.equal(readFileSync(join(target, rel), "utf8"), "# adulterado\n", "a cópia falhou antes do write");
     noTmpLeft(target, dir);
@@ -1302,13 +1306,15 @@ describe("SYNC-18 — L1: a CÓPIA DE BACKUP passa pelo mesmo guard (SYNC-14(d))
       "  static now() { return fixed.getTime(); }",
       "};",
       `const { runUpdate } = await import(${JSON.stringify(SYNC)});`,
-      `process.exit(runUpdate(${JSON.stringify(target)}, {}));`,
+      // `process.exitCode` (item 16): `process.exit(código)` descarta o stdout
+      // pendente do pipe e a linha de recusa — a asserção de texto — se perdia.
+      `process.exitCode = runUpdate(${JSON.stringify(target)}, {});`,
     ].join("\n");
     const res = spawnSync(process.execPath, ["--input-type=module", "-e", script], { encoding: "utf8" });
     const text = `${res.stdout ?? ""}${res.stderr ?? ""}`;
 
     assert.equal(res.status, 1, text);
-    assert.match(text, /symlink no destino/);
+    assert.match(text, /symlink no destino/, text);
     assert.deepEqual(readdirSync(outside), [], "o backup default não atravessa o elo");
     assert.equal(readFileSync(join(target, rel), "utf8"), "# adulterado\n");
     assert.deepEqual(
@@ -1412,6 +1418,80 @@ describe("TMP-01 — fixtures não vazam para /tmp", () => {
     assert.ok(existsSync(dir));
     TMP.cleanup();
     assert.equal(existsSync(dir), false);
+  });
+});
+
+// --- SYNC-25 / item 16 do review do F3a: o flake da ÚLTIMA linha ------------
+// Reproduzido 2× em 22 execuções do glob: os testes que asserem a ÚLTIMA linha
+// do stdout de um filho (SYNC-08 órfão, R-1(b) temporário, L1(d) symlink)
+// falhavam de forma intermitente, sempre com a linha final ausente e o exit
+// code correto. Causa: `process.exit(<código>)` depois de escrever no stdout.
+// Com stdout em PIPE a escrita é assíncrona; o exit imediato descarta o que
+// ainda estava pendente. `process.exitCode = <código>` deixa o loop drenar e
+// preserva o mesmo código de saída.
+//
+// O pino é DETERMINÍSTICO de duas formas complementares:
+//   (a) estrutural — nenhum launcher de `scripts/` pode voltar a usar o exit
+//       imediato. Isto falha no instante da regressão, sem depender de carga;
+//   (b) comportamental — um filho que escreve mais que o buffer do pipe
+//       (≈64 KiB) tem TODAS as linhas, inclusive a última, quando sai por
+//       exitCode. A asserção da última linha é a mesma do flake.
+describe("SYNC-25 — launchers drenam stdout antes de sair (flake da última linha)", () => {
+  // Montado em runtime para este arquivo não acusar a si mesmo.
+  const EXIT_CALL = ["process", "exit("].join(".");
+
+  it("nenhum launcher de scripts/ usa exit imediato depois de escrever", () => {
+    // Comentários são removidos antes da varredura: as próprias notas do fix
+    // citam `process.exit` para explicar o defeito, e citar não é usar.
+    const code = (text) =>
+      text
+        .split("\n")
+        .map((line) => line.replace(/\/\/.*$/, ""))
+        .join("\n");
+    const launchers = [
+      "scripts/harness-sync.mjs",
+      "scripts/static-checks.mjs",
+      "scripts/sdd-checks.mjs",
+      "scripts/vendor-skills.mjs",
+      "scripts/seal.mjs",
+    ];
+    for (const rel of launchers) {
+      const source = readFileSync(join(REPO_ROOT, rel), "utf8");
+      assert.equal(
+        code(source).includes(EXIT_CALL),
+        false,
+        `${rel} usa ${EXIT_CALL}<código>: o tail do stdout pode ser descartado no pipe — use process.exitCode`,
+      );
+    }
+  });
+
+  it("nenhum launcher DESTA spec regrediu para exit imediato", () => {
+    const source = readFileSync(fileURLToPath(import.meta.url), "utf8");
+    const semComentarios = source
+      .split("\n")
+      .map((line) => line.replace(/\/\/.*$/, ""))
+      .join("\n");
+    assert.equal(
+      semComentarios.includes(`${EXIT_CALL}runUpdate`),
+      false,
+      `launcher de teste com ${EXIT_CALL}runUpdate(...): use process.exitCode = runUpdate(...)`,
+    );
+  });
+
+  it("volume acima do buffer do pipe chega inteiro e o código de saída é preservado", () => {
+    const lines = 20_000; // ~200 KiB >> buffer típico de pipe (64 KiB)
+    const script = [
+      `for (let i = 0; i < ${lines}; i += 1) console.log("linha-" + i);`,
+      "process.exitCode = 7;",
+    ].join("\n");
+    const res = spawnSync(process.execPath, ["--input-type=module", "-e", script], {
+      encoding: "utf8",
+      maxBuffer: 64 * 1024 * 1024,
+    });
+    const got = String(res.stdout ?? "").trimEnd().split("\n");
+    assert.equal(res.status, 7, `código de saída preservado; stderr=${res.stderr ?? ""}`);
+    assert.equal(got.length, lines, `linhas recebidas=${got.length} (escrita pendente descartada?)`);
+    assert.equal(got[got.length - 1], `linha-${lines - 1}`, "a ÚLTIMA linha sobrevive ao pipe");
   });
 });
 

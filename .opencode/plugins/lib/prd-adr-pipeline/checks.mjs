@@ -35,6 +35,15 @@
 //                       "veredito" does not count) and bold is accepted.
 //   - ADR-INDEX.md    = markdown table; minimal columns
 //                       order,id,title,status,depends_on,dir,branch,merge.
+//                       OPTIONAL column `unit` (`adr` | `legacy`; absent ⇒
+//                       `legacy`; the enum is STRICT lowercase — `ADR` is a
+//                       typo and ADR-02 names it): `unit: adr` declares the ADR
+//                       as the delivery unit, so its directory also carries
+//                       `SPEC.md` and `TASKS.md` (+ `VERIFY.md` once
+//                       `status=merged`). A PRD that declares `prd_version: 2`
+//                       (frontmatter or a `> prd_version: 2` line) requires
+//                       `unit: adr` on every `in-progress`/`merged` row; legacy
+//                       PRDs keep the original contract (`ADR.md` only).
 //   - ADR.md          = `depende-de` + "interface congelada" (label case and
 //                       spacing are free; only the terms must be present).
 //   - branch regex    = ^adr/[a-z0-9-]+/\d{2}-[a-z0-9-]+$
@@ -44,7 +53,17 @@ import { join } from "node:path";
 const PRD_ROOT = ".spec/prd";
 const REQUIRED_SECTIONS = [1, 2, 5, 6, 7, 9, 16];
 const INDEX_COLUMNS = ["order", "id", "title", "status", "depends_on", "dir", "branch", "merge"];
+// Optional columns: read when present, never reported as missing.
+const OPTIONAL_COLUMNS = ["unit"];
 const INDEX_STATUS = new Set(["todo", "in-progress", "merged", "dropped"]);
+const UNIT_ENUM = new Set(["adr", "legacy"]);
+// Per-ADR layout (F3a): the ADR directory is the delivery unit, so the scoped
+// SDD artifacts live with it. `ADR.md` is already required by ADR-01 for every
+// row; `unit: adr` adds these two (and `VERIFY.md` once merged).
+const ADR_UNIT_FILES = ["SPEC.md", "TASKS.md"];
+// PRD v2 marker: frontmatter line (`prd_version: 2`) or quoted line
+// (`> prd_version: 2`). Reads the VALUE, so `prd_version: 2.1` is not v2.
+const PRD_V2_RE = /^[ \t]*>?[ \t]*prd_version[ \t]*:[ \t]*2[ \t]*$/m;
 
 // `ADR-01` counts sources in RESEARCH.md by searching for the literal URL scheme
 // `https?://` (string de busca) inside the document. That is a SEARCH STRING in
@@ -178,9 +197,28 @@ function parseIndex(text) {
   const rows = table.rows.map((cells) => {
     const row = {};
     for (const c of INDEX_COLUMNS) row[c] = c in at ? String(cells[at[c]] ?? "").trim() : "";
+    for (const c of OPTIONAL_COLUMNS) row[c] = c in at ? String(cells[at[c]] ?? "").trim() : "";
     return row;
   });
   return { missing, rows };
+}
+
+// Absent `unit` cell/column means `legacy` — the retrocompatible default, so a
+// PRD written before the per-ADR layout stays valid without edits.
+//
+// STRICT (F3a review, item 15): the value is NOT lowercased. `unit: ADR` is a
+// typo, not a synonym — normalizing it would make the layout switch depend on
+// the case and a `ADR` row would silently render ADR-01's SPEC/TASKS demand
+// inert. Only the exact lowercase spellings are the enum; anything else is an
+// ADR-02 issue naming the offending cell.
+function unitOf(row) {
+  const v = String(row?.unit ?? "").trim();
+  return v === "" ? "legacy" : v;
+}
+
+function unitIsLowercaseTypo(row) {
+  const raw = String(row?.unit ?? "").trim();
+  return raw !== "" && raw !== raw.toLowerCase();
 }
 
 // §4.2 row contract: `order` is an integer ≥1 and `status` is one of the enum.
@@ -334,6 +372,28 @@ function evalAdr01(prdDir) {
     }
   }
 
+  // Per-ADR layout (F3a): a row with `unit: adr` declares the ADR directory as
+  // the delivery unit, so `SPEC.md` + `TASKS.md` must live there, and a MERGED
+  // unit must also carry its `VERIFY.md` (proof the scoped cycle closed). Rows
+  // without the column or with `legacy` keep the original contract: `ADR.md`
+  // only. A row whose `dir` is empty/out of pattern is already reported above;
+  // it cannot name a directory to inspect.
+  const rowByDir = new Map();
+  for (const r of rows) {
+    const b = basename(r.dir);
+    if (b) rowByDir.set(b, r);
+  }
+  for (const d of dirs) {
+    const r = rowByDir.get(d);
+    if (!r || unitOf(r) !== "adr") continue;
+    for (const f of ADR_UNIT_FILES) {
+      if (!existsSync(join(adrRoot, d, f))) issues.push(`ADRs/${d}/ unit=adr sem ${f}`);
+    }
+    if (r.status === "merged" && !existsSync(join(adrRoot, d, "VERIFY.md"))) {
+      issues.push(`ADRs/${d}/ unit=adr com status merged sem VERIFY.md`);
+    }
+  }
+
   if (dirs.length > 0) {
     const researchRes = readText(join(prdDir, "RESEARCH.md"));
     if (researchRes.absent) {
@@ -375,6 +435,33 @@ function evalAdr02(prdDir) {
 
   for (const m of indexSchemaIssues(rows, missing)) issues.push(m);
 
+  // `unit` is optional, but a value OUTSIDE the enum is an issue (never a
+  // silent fallback to legacy: that would hide a typo in the layout switch).
+  // The enum is STRICT lowercase (item 15): `unit: ADR` is a typo, and the
+  // message says why instead of leaving the author guessing.
+  for (const r of rows) {
+    const raw = String(r.unit ?? "").trim();
+    if (raw && !UNIT_ENUM.has(raw)) {
+      const why = unitIsLowercaseTypo(r) ? " — enum estrito em minúsculas" : "";
+      issues.push(`unit fora do enum (adr|legacy): "${r.unit}" (${r.id || "(sem id)"})${why}`);
+    }
+  }
+
+  // PRD v2 declares the per-ADR layout, so every ADR being (or already)
+  // delivered must say `unit: adr`. `todo`/`dropped` are exempt: no delivery
+  // happened and no scoped SPEC/TASKS is owed. A legacy PRD (no v2 marker)
+  // keeps the retrocompatible default — no row has to change.
+  const prdRes = readText(join(prdDir, "PRD.md"));
+  const prdV2 = prdRes.ok && PRD_V2_RE.test(prdRes.text);
+  if (prdV2) {
+    for (const r of rows) {
+      if (r.status !== "in-progress" && r.status !== "merged") continue;
+      if (unitOf(r) !== "adr") {
+        issues.push(`PRD v2: ${r.id || "(sem id)"} com status ${r.status} sem unit: adr`);
+      }
+    }
+  }
+
   const inProgress = rows.filter((r) => r.status === "in-progress");
   if (inProgress.length >= 2) issues.push(`${inProgress.length} linhas in-progress (máximo 1)`);
 
@@ -414,6 +501,19 @@ function evalAdr02(prdDir) {
 }
 
 // --- Public API ------------------------------------------------------------
+// Exported for `scripts/sdd-checks.mjs` (SDD-02 layout-aware, F3a): the ledger
+// grammar lives here, so the cycle resolver consumes rows instead of parsing
+// the table a second time. Pure, read-only, same `node:fs`/`node:path` surface.
+export function readAdrIndex(prdDir) {
+  const res = readText(join(prdDir, "ADR-INDEX.md"));
+  if (!res.ok) return [];
+  const { rows } = parseIndex(res.text);
+  // `id` is carried because `scripts/sdd-checks.mjs` resolves the state's
+  // `prd_adr.active_adr` — which stores an ID (`ADR-002`), not a path — through
+  // this ledger (F3a review, item 13).
+  return rows.map((r) => ({ id: r.id, dir: basename(r.dir), status: r.status, unit: unitOf(r) }));
+}
+
 export function runPrdChecks(root) {
   const prdRoot = join(root, PRD_ROOT);
   const prdRootRes = listDirs(prdRoot);

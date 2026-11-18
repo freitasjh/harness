@@ -1018,15 +1018,22 @@ function parseArgs(argv) {
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const opts = parseArgs(process.argv.slice(2));
+  // `process.exitCode`, never `process.exit(code)` (F3a review, item 16): the
+  // CLI writes its report to stdout, which is asynchronous on a pipe — exiting
+  // hard discarded the pending tail and the LAST line (`orphan …`, the symlink
+  // refusal, the dry-run plan) intermittently disappeared while the exit code
+  // stayed correct. Setting the code lets the loop drain before the process ends.
   if (opts.help || !opts.verb || !opts.target) {
     console.log(USAGE);
-    process.exit(opts.help ? 0 : 2);
+    process.exitCode = opts.help ? 0 : 2;
+  } else {
+    const targetDir = path.resolve(opts.target);
+    const run = { init: runInit, update: runUpdate, doctor: runDoctor }[opts.verb];
+    if (!run) {
+      console.log(USAGE);
+      process.exitCode = 2;
+    } else {
+      process.exitCode = run(targetDir, opts);
+    }
   }
-  const targetDir = path.resolve(opts.target);
-  const run = { init: runInit, update: runUpdate, doctor: runDoctor }[opts.verb];
-  if (!run) {
-    console.log(USAGE);
-    process.exit(2);
-  }
-  process.exit(run(targetDir, opts));
 }
