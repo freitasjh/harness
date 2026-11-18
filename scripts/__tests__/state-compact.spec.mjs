@@ -136,6 +136,26 @@ describe("state-compact — whitelist e pure helpers", () => {
     assert.equal(one.archived.length, 0, "2ª passagem não tem nada novo para arquivar");
   });
 
+  it("FLOW-06: item open/pending SEM created_at é arquivado, nunca fica vivo", () => {
+    const noDate = { id: "F-SEM-DATA", status: "open", texto: "aberta sem data" };
+    const withDate = {
+      id: "F-COM-DATA",
+      status: "open",
+      created_at: "2026-06-01T00:00:00Z",
+      texto: "aberta com data",
+    };
+    const picked = selectFollowUps([noDate, withDate]);
+    assert.deepEqual(picked.keep, [withDate], "só sobrevive quem tem created_at string");
+    assert.ok(picked.archived.includes(noDate), "open sem created_at ⇒ arquivado");
+
+    const onlyNoDate = selectFollowUps([noDate]);
+    assert.deepEqual(onlyNoDate.keep, [], "sem nenhum created_at, nada fica vivo");
+    assert.deepEqual(onlyNoDate.archived, [noDate]);
+
+    const pendingNoDate = { id: "F-PEND", status: "pending" };
+    assert.deepEqual(selectFollowUps([pendingNoDate]).keep, [], "pending sem data também arquiva");
+  });
+
   it("compactState preserva chaves vivas (valor intacto) e sinaliza as arquivadas", () => {
     const before = fixtureState();
     const { state, entries, archivedKeys } = compactState(before, { now: () => "TS" });

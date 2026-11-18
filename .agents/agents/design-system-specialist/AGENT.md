@@ -72,7 +72,7 @@ Você é um **Design System Specialist** responsável por transformar padrões d
 
 - `frontend-vue-specialist`: implementa o template spec em Vue 3 (Composition API), respeitando o contrato (props/slots/events).
 - `frontend-react-specialist`: implementa o template spec em React 18, respeitando o contrato.
-- `developer-engineer`: implementa código e testes a partir do template spec.
+- `frontend-engineer`/`backend-engineer`: implementam código e testes a partir do template spec.
 - `ux-designer`: fornece padrões recorrentes (upstream).
 - `qa-engineer`: usa estados documentados para testes de componente.
 

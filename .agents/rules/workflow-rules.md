@@ -93,12 +93,13 @@ Contrato de saída e exemplos (bons e ruins): `.agents/skills/prompt-optimizer/r
 | Role | Responsabilidade |
 |------|------------------|
 | **Orchestrator** (este agente) | Triagem, governança, delegação via `task`, `workflow-state.json`, code review, brain |
-| **planner** | Planejamento técnico: `EXPLORATION.md`, `CONSTRAINTS.md`, `DESIGN-DECISIONS.md`, `ARCHITECTURE.md` + parecer |
+| **engineer** | Insumo em Markdown (RESEARCH, design-decisions); md-only, não decide ADR |
 | **architect** | Decisões arquiteturais e ADRs (validação) |
 | **product-manager** | Validação de negócio |
 | **ux-designer** | Parecer de UX/interface (vinculante no escopo visual) |
 | **design-system-specialist** | Templates de componentes reutilizáveis do design system |
-| **developer-engineer** | **Implementação de código** (Java/Vue/SQL/tests) |
+| **frontend-engineer** | **Implementação frontend** (Vue/React/CSS/tests) |
+| **backend-engineer** | **Implementação backend** (por eixo: Java/Nest/Node/Rust) |
 | **code-reviewer** | Code review após cada batch |
 | **qa-engineer** | Cobertura de testes |
 | **security-engineer** | Auditoria de segurança |
@@ -108,10 +109,10 @@ Contrato de saída e exemplos (bons e ruins): `.agents/skills/prompt-optimizer/r
 2. **Prompt optimizer** — analisar prompt (SEÇÃO 0)
 3. **Brain search** para contexto (lições passadas, decisões)
 4. **Salvar no Brain** aprendizados/erros/decisões
-5. **Delegar para `developer-engineer`** via `task` tool
-6. **Receber retorno** do developer
+5. **Delegar para `frontend-engineer`/`backend-engineer`** via `task` tool
+6. **Receber retorno** do implementador
 7. **Delegar para `code-reviewer`** (regra non-negotiable, ver seção 6)
-8. **Aplicar fixes** se necessário (re-invocar developer se crítico)
+8. **Aplicar fixes** se necessário (re-invocar o implementador se crítico)
 9. **Atualizar `workflow-state.json`** campo `code_review`
 10. **Só então** declarar phase completa
 
@@ -192,7 +193,7 @@ Antes de declarar QUALQUER fase completa, tudo verdadeiro:
 Build+testes (suite completa 0 falhas; front test+build 0 erros) · H3 quando aplicável (12 passos OK, Network/Console limpos, screenshots em `.spec/prd/{prd}/ADRs/{adr}/harness/`) · H4 avaliado (P1→bugs, P2/P3 registradas) · review (`code-reviewer` após última mudança, zero 🔴, 🟡 corrigidos/justificados) · Brain+state (`brain_store` executado; `workflow-state.json` com `code_review_status: passed` + `harness_status: passed`) · encerramento (portas livres). **Qualquer ❌ = não completa.**
 
 ### H7. Cadência
-Suite por task/bug/feature (`developer-engineer`) · E2E por sub-fase/sprint/release (`qa-engineer`/`developer-engineer`, ~30–60min) · H4 por entrega UI · Brain por achado (2–5min) · saneamento quando débito > 0 · auditoria mensal (`architect`+`qa-engineer`).
+Suite por task/bug/feature (`frontend-engineer`/`backend-engineer`) · E2E por sub-fase/sprint/release (`qa-engineer`/`frontend-engineer`/`backend-engineer`, ~30–60min) · H4 por entrega UI · Brain por achado (2–5min) · saneamento quando débito > 0 · auditoria mensal (`architect`+`qa-engineer`).
 
 ### Anexo A — Comandos
 Resolver sempre de `harness.config.json`: `commands.suiteFull` (referência absoluta), `commands.unit` e, quando o eixo declarar, `commands.analyze` — o instalador publica só `suiteFull`/`unit`/`analyze`, logo chave de integração, de front test/build ou de execução do eixo ausente ⇒ use `commands.suiteFull` (e, para subir o sistema, o comando de execução documentado no `AGENTS.md` do destino; `N/A` quando a stack não existe). Infra: `infra.composeFile` + `infra.ports`. Neste repo: `node --test ".opencode/plugins/__tests__/*.spec.mjs" && node scripts/static-checks.mjs`.

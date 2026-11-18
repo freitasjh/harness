@@ -109,7 +109,7 @@ canônico de `harness.config.json` (`commands.suiteFull`).
 ### `explore` (pré-PRD)
 Investigar requisitos incertos ANTES de criar artefatos: perguntas em aberto,
 sistemas tocados, hipóteses e alternativas. **Saída**: nenhum artefato próprio —
-é insumo em prosa (o documento de exploração é do `planner`, autor único).
+é insumo em prosa (o documento de exploração é do `engineer`, autor único).
 **NÃO gera SPEC.md.**
 
 ---

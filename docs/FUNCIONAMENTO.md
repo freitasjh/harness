@@ -77,7 +77,7 @@ flowchart TD
     RB --> CONF[Uma confirmacao do usuario]
     CONF -->|ajuste| RA
     CONF -->|sim| SDD[Ciclo SDD P0 a P6 com portao humano]
-    SDD --> IMP[Implementacao delegada ao developer-engineer]
+    SDD --> IMP[Implementacao delegada ao frontend/backend-engineer]
     IMP --> CR[Code review pelo code-reviewer]
     CR --> H[Harness H1 a H7: suite completa e evidencia]
     H --> EV[Relatorio auto-declarado em harness/demand.json]
@@ -294,7 +294,7 @@ corrompido ⇒ deny `state-corrupt` (`loadWorkflowState`, `DENY_STATE_CORRUPT`).
 sem turno humano intermediário ⇒ deny `hitl-pause-required` (`gateHitlBatch`, constante
 `DENY_HITL`).
 
-A exceção do loop obrigatório `developer-engineer → code-reviewer` (2 chamadas) é
+A exceção do loop obrigatório `frontend-engineer|backend-engineer → code-reviewer` (2 chamadas) é
 **estrutural**, não um caso especial: 2 < 3 (`gateHitlBatch`).
 
 O reset do contador é feito pela fronteira de turno, que no v2 vem do **event stream**:
@@ -313,7 +313,7 @@ O reset do contador é feito pela fronteira de turno, que no v2 vem do **event s
 
 | Agente | Regra | Lastro |
 |---|---|---|
-| qualquer um, exceto `developer-engineer` | path protegido ⇒ deny `protected-path-write` | `checkWriteAccess` (exceção para `developer-engineer`) |
+| qualquer um (a exceção legada `developer-engineer` está inalcançável após F4 — papel removido) | path protegido ⇒ deny `protected-path-write` | `checkWriteAccess` (ramo legado do ex-`developer-engineer`, não removido por restrição de escopo) |
 | `orchestrator` | fora de `.spec/**` e `workflow-state.json` ⇒ deny `orch-write-outside-allowlist` | `isOrchAllowlisted` (allowlist), `checkWriteAccess` (`DENY_ALLOWLIST`) |
 | `qa-engineer` | fora de `harness/` ⇒ deny `qa-scope-violation` | `isHarnessScoped` (escopo), `checkWriteAccess` (`DENY_QA_SCOPE`) |
 | `code-reviewer`, `ux-designer` | qualquer escrita ⇒ deny `write-denied-for-role` | `checkWriteAccess` (`DENY_ROLE_WRITE`) |
@@ -415,7 +415,7 @@ flowchart TD
 
 Etapas do ciclo por ADR: P1 spec (`SPEC.md`), P2 tasks (`TASKS.md`), P3 implementação,
 P4 review/harness, P5 verify (`VERIFY.md`), P6 archive (`workflow.md` §2); a exploração
-opcional é do `planner` (`dev-planner`), não uma fase da esteira.
+opcional é insumo do `engineer` (md-only; a skill `dev-planner` entrega parecer), não uma fase da esteira.
 
 Feedback obrigatório após cada comando SDD: 10-point summary (`workflow.md` §2.3,
 `.agents/skills/sdd-feedback/SKILL.md`).
@@ -434,7 +434,7 @@ flowchart TD
     B1 --> TASKS[Artefato .spec/bugs/contexto/TASKS.md]
     TASKS --> G1{Portao B1 para B2: o usuario aprova}
     G1 -->|nao| B1
-    G1 -->|sim| B2[B2 Implementacao delegada ao developer-engineer]
+    G1 -->|sim| B2[B2 Implementacao delegada ao frontend/backend-engineer]
     B2 --> B3[B3 Revisao pelo code-reviewer]
     B3 -->|criticos ou atencao| B2
     B3 -->|zero criticos| B4[B4 Finalizacao: suite, state Completed, Brain]
@@ -444,7 +444,7 @@ flowchart TD
 | Fase | O que produz | Regra | Nível |
 |---|---|---|---|
 | **B1** Análise | reprodução com evidência, causa raiz com `arquivo:linha` (no artefato de bug), `.spec/bugs/{contexto}/TASKS.md` | R1 (ver o erro real na tela antes de codificar) + portão B1→B2 | 🟡 processo (`workflow.md` §4, R1) |
-| **B2** Implementação | correção + testes, via `developer-engineer` | compilar/testar a cada task | 🟡 processo (`orchestrator/AGENT.md`, fase B2) |
+| **B2** Implementação | correção + testes, via `frontend-engineer`/`backend-engineer` | compilar/testar a cada task | 🟡 processo (`orchestrator/AGENT.md`, fase B2) |
 | **B3** Revisão | parecer do `code-reviewer`; se 🔴/🟡, volta a B2 (máx 3 ciclos) | Chrome DevTools obrigatório em bug de UI | 🟡 processo (`orchestrator/AGENT.md`, fase B3) |
 | **B4** Finalização | suite completa, `current_phase = Completed`, lições no Brain, débito técnico | portão final humano | 🟡 processo (`orchestrator/AGENT.md`, fase B4) |
 
@@ -505,7 +505,7 @@ e executados **dentro** do `suiteFull` (`runStaticChecks`, `checkPrd`). Nível: 
 | Schema | `.agents/schemas/harness-report.schema.json` |
 | Campos obrigatórios | `version, demand, agent, phase, gitSha, commands[≥1], counts{unit,it,frontend}, evaluation, brainStore[], cleanup, selfReported` (schema, `required`) |
 | Campo condicional | `e2e` — obrigatório quando `escalateOnRisk` dispara (schema, `e2e`) |
-| Quem escreve | o executor (developer-engineer / qa-engineer). O `qa-engineer` é justamente o papel com `edit: allow` porque precisa gravar o REPORT (`gate-contract.md` I5) |
+| Quem escreve | o executor (frontend-engineer / backend-engineer / qa-engineer). O `qa-engineer` é justamente o papel com `edit: allow` porque precisa gravar o REPORT (`gate-contract.md` I5) |
 
 O gate encontra o relatório por `state.current_feature` — o **nome do arquivo** é o da
 feature corrente (`readEvidenceReport`). Relatório ausente ⇒ deny
@@ -656,11 +656,12 @@ Permissões nativas vêm de `opencode.json` (`agent.*`). O gate acrescenta regra
 | Agente | Papel | `edit` | `bash` | O que pode escrever (regra efetiva) |
 |---|---|---|---|---|
 | `orchestrator` | Triagem, governance, SPEC/PLAN/TASKS; não implementa | deny (`agent.orchestrator`) | allow | só `.spec/**` e `workflow-state.json` — fora disso, deny `orch-write-outside-allowlist` (`isOrchAllowlisted`, `checkWriteAccess`) |
-| `developer-engineer` | Implementa código e testes sob delegação | allow (`agent.developer-engineer`) | allow | qualquer path, **inclusive protegido** (`checkWriteAccess`, exceção ao path protegido) — o trailer é exigido fora do runtime, pelo CI |
-| `planner` | Planejamento técnico; escreve 4 artefatos do ciclo (não decide ADR) | allow (`agent.planner`) | allow | os 4 artefatos de planejamento em `.spec/**` (prosa; o gate só barra `protectedPaths` — ADR-003 §4-C2) |
+| `frontend-engineer` | Implementa código e testes frontend sob delegação | allow (`agent.frontend-engineer`) | allow | qualquer path, **inclusive protegido** (`checkWriteAccess`, exceção legada ao path protegido — F4) — o trailer é exigido fora do runtime, pelo CI |
+| `backend-engineer` | Implementa código e testes backend sob delegação | allow (`agent.backend-engineer`) | allow | qualquer path, **inclusive protegido** (`checkWriteAccess`, exceção legada ao path protegido — F4) — o trailer é exigido fora do runtime, pelo CI |
+| `engineer` | Insumo em Markdown (RESEARCH/design-decisions); não decide ADR | deny `*` / allow `.spec/**` (`agent.engineer`) | allow | prosa em `.spec/**` — o gate só barra `protectedPaths` (F4/AGENTS-03) |
 | `product-manager` | Validação de negócio; escreve o PRD | allow (`agent.product-manager`) | allow | `.spec/prd/**` (`gate-contract.md` I5) |
 | `qa-engineer` | Execução do harness; grava o relatório | allow (`agent.qa-engineer`) | allow | **só** `harness/` — fora disso, deny `qa-scope-violation` (`isHarnessScoped`, `checkWriteAccess`) |
-| `architect` | ADRs e integridade estrutural; modo de análise sob demanda | allow (`agent.architect`) | allow | `.spec/**` (`gate-contract.md` I5) |
+| `architect` | ADRs e integridade estrutural; modo de análise sob demanda | deny `*` / allow `.spec/**` (`agent.architect`) | allow | `.spec/**` (`gate-contract.md` I5, F4/AGENTS-04) |
 | `security-engineer` | Auditoria OWASP/ASVS | deny (`agent.security-engineer`) | allow | nada |
 | `code-reviewer` | Parecer de review | deny (`agent.code-reviewer`) | allow | nada — e o gate nega escrita explícita (`checkWriteAccess`, `DENY_ROLE_WRITE`) |
 | `ux-designer` | Parecer de UX | deny (`agent.ux-designer`) | allow | nada — idem (`checkWriteAccess`, `DENY_ROLE_WRITE`) |
@@ -668,7 +669,7 @@ Permissões nativas vêm de `opencode.json` (`agent.*`). O gate acrescenta regra
 
 Notas:
 
-- `permission.bash = "allow"` em **todos** os 10 agentes. O gate cobre `bash` só por parse
+- `permission.bash = "allow"` em **todos** os 11 agentes. O gate cobre `bash` só por parse
   (`gateShellHygiene`/`bashProtectedWrites`/`isPkillF`); o backstop real é CI + pre-commit (§10b).
 - `permission.task = "ask"` (`opencode.json`, `permission.task`) — o opencode pergunta ao
   usuário antes de cada delegação, independentemente do PICCO.

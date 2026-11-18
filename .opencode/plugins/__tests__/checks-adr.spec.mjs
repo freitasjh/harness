@@ -3,8 +3,11 @@
 // Contract (`.opencode/plugins/lib/prd-adr-pipeline/checks.mjs`):
 //   - `ADR-INDEX.md` gains the OPTIONAL column `unit` (`adr` | `legacy`).
 //   - ADR-01: `unit: adr` ⇒ the ADR directory also carries `SPEC.md` and
-//     `TASKS.md`, plus `VERIFY.md` when `status=merged`. `legacy`/absent keeps
-//     the original contract (`ADR.md` only) — retrocompatible, never a demand.
+//     `TASKS.md`, plus `VERIFY.md` when `status=merged`. `TASKS.md` MUST carry
+//     `<!-- scope: adr/<ADR-ID> -->` (F4 — marker measured, not prose only).
+//     `legacy`/absent keeps the original contract (`ADR.md` only) —
+//     retrocompatible, never a demand. A root-level `.spec/prd/<id>/TASKS.md`
+//     or `SPEC.md` is REPROVED: feature-wide SDD is not a delivery unit.
 //   - ADR-02: `unit` outside the enum FAILs; a PRD that declares
 //     `prd_version: 2` requires `unit: adr` on every `in-progress`/`merged` row.
 //
@@ -94,7 +97,7 @@ function tree({ prd = validPrd({ v2: true }), indexText = index(), files = null 
     ".spec/prd/p1/ADR-INDEX.md": indexText,
     [`${ADR_DIR}ADR.md`]: validAdrMd(),
     [`${ADR_DIR}SPEC.md`]: "# SPEC — ADR-001\n\n- RF-01: checks unit.\n",
-    [`${ADR_DIR}TASKS.md`]: "### F3A-01 — checks\n",
+    [`${ADR_DIR}TASKS.md`]: "<!-- scope: adr/ADR-001 -->\n\n### F3A-01 — checks\n",
     [`${ADR_DIR}VERIFY.md`]: "# VERIFY — ADR-001\n\nAPPROVED ✅\n",
     ...(files ?? {}),
   };
@@ -158,6 +161,60 @@ describe("ADR-01 — unit: legacy continua válido (retrocompatível)", () => {
     const r = byId(runPrdChecks(fixture(t)), "ADR-01");
     assert.equal(r.status, "FAIL", "o layout switch é o que muda o veredito");
     assert.match(r.detail, /SPEC\.md/);
+  });
+});
+
+describe("F4 — marcador de escopo medido (ADR-01)", () => {
+  const SCOPE = "<!-- scope: adr/ADR-001 -->";
+
+  it("FAIL: ADR unit: adr com TASKS.md sem marcador de escopo", () => {
+    const t = tree();
+    t[`${ADR_DIR}TASKS.md`] = "### F3A-01 — checks\n";
+    assert.equal(t[`${ADR_DIR}TASKS.md`].includes(SCOPE), false, "controle: marcador ausente");
+    const r = byId(runPrdChecks(fixture(t)), "ADR-01");
+    assert.equal(r.status, "FAIL");
+    assert.match(r.detail, /scope.*ADR-001|ADR-001.*scope/i, r.detail);
+  });
+
+  it("PASS: marcador correto no TASKS.md do ADR", () => {
+    const t = tree();
+    t[`${ADR_DIR}TASKS.md`] = `<!-- scope: adr/ADR-001 -->\n### F3A-01 — checks\n`;
+    const r = byId(runPrdChecks(fixture(t)), "ADR-01");
+    assert.equal(r.status, "PASS", r.detail);
+  });
+
+  it("FAIL: marcador com ID de OUTRO ADR não conta", () => {
+    const t = tree();
+    t[`${ADR_DIR}TASKS.md`] = "<!-- scope: adr/ADR-999 -->\n### F3A-01 — checks\n";
+    const r = byId(runPrdChecks(fixture(t)), "ADR-01");
+    assert.equal(r.status, "FAIL");
+    assert.match(r.detail, /scope/i, r.detail);
+  });
+
+  it("FAIL: TASKS.md na raiz do PRD (SPEC de feature inteira) é reprovado", () => {
+    const t = tree();
+    t[".spec/prd/p1/TASKS.md"] = "### FEAT-01 — feature-wide\n";
+    const r = byId(runPrdChecks(fixture(t)), "ADR-01");
+    assert.equal(r.status, "FAIL");
+    assert.match(r.detail, /TASKS\.md/, r.detail);
+  });
+
+  it("FAIL: SPEC.md na raiz do PRD é reprovado (mesmo sem ADRs/)", () => {
+    const t = { ".spec/prd/p1/PRD.md": validPrd(), ".spec/prd/p1/SPEC.md": "# SPEC da feature\n" };
+    const r = byId(runPrdChecks(fixture(t)), "ADR-01");
+    assert.equal(r.status, "FAIL");
+    assert.match(r.detail, /SPEC\.md/, r.detail);
+  });
+
+  it("PASS: legado com só ADR.md não exige marcador (retrocompatível)", () => {
+    const t = {
+      ".spec/prd/p1/PRD.md": validPrd(),
+      ".spec/prd/p1/RESEARCH.md": RESEARCH,
+      ".spec/prd/p1/ADR-INDEX.md": index({ unitColumn: false }),
+      [`${ADR_DIR}ADR.md`]: validAdrMd(),
+    };
+    const r = byId(runPrdChecks(fixture(t)), "ADR-01");
+    assert.equal(r.status, "PASS", r.detail);
   });
 });
 

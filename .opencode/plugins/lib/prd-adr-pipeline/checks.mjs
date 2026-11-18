@@ -46,6 +46,12 @@
 //                       PRDs keep the original contract (`ADR.md` only).
 //   - ADR.md          = `depende-de` + "interface congelada" (label case and
 //                       spacing are free; only the terms must be present).
+//   - ADR TASKS.md (unit: adr) = header `<!-- scope: adr/<ADR-ID> -->`; the ID
+//                       comes from the ADR-INDEX row (the directory basename,
+//                       which carries the same ID, is also accepted). F4 makes
+//                       the scope marker MEASURED instead of prose-only.
+//   - A root-level `.spec/prd/<id>/{SPEC,TASKS}.md` is REPROVED by ADR-01:
+//     feature-wide SDD is not a delivery unit (workflow.md §1/§3).
 //   - branch regex    = ^adr/[a-z0-9-]+/\d{2}-[a-z0-9-]+$
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
@@ -61,6 +67,10 @@ const UNIT_ENUM = new Set(["adr", "legacy"]);
 // SDD artifacts live with it. `ADR.md` is already required by ADR-01 for every
 // row; `unit: adr` adds these two (and `VERIFY.md` once merged).
 const ADR_UNIT_FILES = ["SPEC.md", "TASKS.md"];
+// F4 — marker de escopo no cabeçalho do TASKS.md de cada ADR (unit: adr).
+const SCOPE_RE = /<!--\s*scope:\s*adr\/([A-Za-z0-9-]+)\s*-->/i;
+// F4 — SDD de feature inteira na raiz do PRD não é unidade de entrega.
+const ROOT_SDD_FILES = ["SPEC.md", "TASKS.md"];
 // PRD v2 marker: frontmatter line (`prd_version: 2`) or quoted line
 // (`> prd_version: 2`). Reads the VALUE, so `prd_version: 2.1` is not v2.
 const PRD_V2_RE = /^[ \t]*>?[ \t]*prd_version[ \t]*:[ \t]*2[ \t]*$/m;
@@ -314,6 +324,13 @@ function evalAdr01(prdDir) {
   const dirs = adrRootRes.ok ? adrRootRes.names : [];
 
   const issues = [];
+  // F4 — a SPEC/TASKS de funcionalidade inteira na raiz do PRD é reprovada
+  // antes de qualquer outro veredito (até no caso vacuous-safe sem índice).
+  for (const f of ROOT_SDD_FILES) {
+    if (existsSync(join(prdDir, f))) {
+      issues.push(`${f} na raiz do PRD — SDD de feature inteira; use o diretório do ADR`);
+    }
+  }
   if (!adrRootRes.ok) issues.push(unreadable("ADRs/", adrRootRes.code));
   if (!indexRes.ok && !indexRes.absent) issues.push(unreadable("ADR-INDEX.md", indexRes.code));
 
@@ -388,6 +405,20 @@ function evalAdr01(prdDir) {
     if (!r || unitOf(r) !== "adr") continue;
     for (const f of ADR_UNIT_FILES) {
       if (!existsSync(join(adrRoot, d, f))) issues.push(`ADRs/${d}/ unit=adr sem ${f}`);
+    }
+    // F4 — o marcador de escopo está no TASKS.md e é comparado ao ID do ADR
+    // da linha do índice (aceito também o basename do diretório, que o contém).
+    const tasksRes = readText(join(adrRoot, d, "TASKS.md"));
+    if (tasksRes.ok) {
+      const match = tasksRes.text.match(SCOPE_RE);
+      const accepted = new Set([r.id, d].filter(Boolean));
+      if (!match || !accepted.has(match[1])) {
+        issues.push(
+          `ADRs/${d}/TASKS.md sem marcador <!-- scope: adr/${r.id || d} --> (F4)`,
+        );
+      }
+    } else if (!tasksRes.absent) {
+      issues.push(unreadable(`ADRs/${d}/TASKS.md`, tasksRes.code));
     }
     if (r.status === "merged" && !existsSync(join(adrRoot, d, "VERIFY.md"))) {
       issues.push(`ADRs/${d}/ unit=adr com status merged sem VERIFY.md`);

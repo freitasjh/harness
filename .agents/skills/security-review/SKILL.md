@@ -142,7 +142,7 @@ After the `code-reviewer` completes the general review, run the security-specifi
 - pass | fail | partial
 ```
 
-**If 🔴 Critical findings:** Return to developer-engineer for fix. Re-review after fix. Max 3 iterations.
+**If 🔴 Critical findings:** Return to frontend-engineer/backend-engineer for fix. Re-review after fix. Max 3 iterations.
 
 ---
 

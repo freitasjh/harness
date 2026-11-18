@@ -1,3 +1,4 @@
+<!-- scope: adr/ADR-00N-substitua-pelo-ID-do-ADR -->
 # Execution Backlog: [Feature Name]
 
 ## 1. Traceability Context

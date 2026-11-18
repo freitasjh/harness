@@ -39,11 +39,11 @@ function fixture({ roster, dirs = {}, roleFile = "AGENT.md" }) {
 }
 
 describe("V21 — roster ↔ disco em paridade (bidirecional)", () => {
-  it("no repo real: 10 registrados = 10 diretórios, todos com papel", () => {
+  it("no repo real: 11 registrados = 11 diretórios, todos com papel", () => {
     const parity = rosterParity(REPO_ROOT);
     assert.equal(parity.ok, true, parity.problems.join("; "));
-    assert.equal(parity.registered.length, 10);
-    assert.equal(parity.dirs.length, 10);
+    assert.equal(parity.registered.length, 11);
+    assert.equal(parity.dirs.length, 11);
     assert.deepEqual(parity.registered, parity.dirs);
     // O caso que obriga a aceitar DOIS nomes de arquivo de papel.
     assert.ok(parity.registered.includes("code-reviewer"));
@@ -66,12 +66,12 @@ describe("V21 — roster ↔ disco em paridade (bidirecional)", () => {
   });
 
   it("diretório registrado sem AGENT.md nem PROMPT.md reprova", () => {
-    const root = fixture({ roster: { orchestrator: {}, planner: {} }, roleFile: "AGENT.md" });
-    // `planner` perde o arquivo de papel sem perder o diretório.
-    rmSync(join(root, ".agents/agents/planner/AGENT.md"));
+    const root = fixture({ roster: { orchestrator: {}, "agente-sem-papel": {} }, roleFile: "AGENT.md" });
+    // `agente-sem-papel` perde o arquivo de papel sem perder o diretório.
+    rmSync(join(root, ".agents/agents/agente-sem-papel/AGENT.md"));
     const parity = rosterParity(root);
     assert.equal(parity.ok, false);
-    assert.ok(parity.problems.some((p) => p.includes("diretório sem AGENT.md/PROMPT.md: planner")));
+    assert.ok(parity.problems.some((p) => p.includes("diretório sem AGENT.md/PROMPT.md: agente-sem-papel")));
   });
 
   it("PROMPT.md sozinho é papel válido (caso code-reviewer)", () => {
@@ -92,8 +92,8 @@ describe("V21 — roster ↔ disco em paridade (bidirecional)", () => {
     const v21 = report.results.find((r) => r.id === "V21");
     assert.ok(v21, "runStaticChecks precisa registrar V21 — linha de console não define o exit");
     assert.equal(v21.status, "PASS", v21.detail);
-    assert.match(v21.detail, /registrados=10/);
-    assert.match(v21.detail, /diretórios=10/);
+    assert.match(v21.detail, /registrados=11/);
+    assert.match(v21.detail, /diretórios=11/);
   });
 
   it("o veredito barra: fixture com diretório órfão ⇒ V21 FAIL", () => {

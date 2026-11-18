@@ -129,7 +129,7 @@ Perguntas por violação recorrente:
 | "Pula o harness, só roda o build" | `workflow-rules.md` §5 H1 | "roda a suite completa; é mais lento e é o portão" |
 | ex.: "Comenta o teste pra passar" / `@Disabled` | `workflow-rules.md` §5 H2 | "corrige a causa do teste falhando" |
 | "Mata o processo com pkill -f" | `workflow-rules.md` §5 H5 | "lsof -ti :PORT → conferir dono com ps → kill pelo PID" |
-| "Corrige esse CSS direto" (no orquestrador) | `orchestrator/AGENT.md` guardrail | "delegar ao developer-engineer" |
+| "Corrige esse CSS direto" (no orquestrador) | `orchestrator/AGENT.md` guardrail | "delegar ao frontend-engineer" |
 | "Pula o code review e avança" | `workflow-rules.md` §6 | "revisão roda antes de declarar fase completa" |
 
 Exceção aberta → registrar em `workflow-state.json.overrides`. Nunca executar a violação em silêncio.

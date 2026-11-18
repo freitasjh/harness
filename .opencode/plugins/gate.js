@@ -634,8 +634,13 @@ export function basenameOf(path) {
 
 const KNOWN_AGENTS = new Set([
   "orchestrator",
-  "developer-engineer",
+  "frontend-engineer",
+  "backend-engineer",
+  "engineer",
+  "product-manager",
   "qa-engineer",
+  "architect",
+  "security-engineer",
   "code-reviewer",
   "ux-designer",
   "design-system-specialist",
@@ -655,9 +660,11 @@ export function checkWriteAccess({ agent, tool, targets = [], protectedPaths = [
     const normalized = normalizePath(target.path);
     if (!normalized || normalized === "dev/null") continue;
     if (isProtectedPath(normalized, protectedPaths)) {
-      // Sole exception: developer-engineer under delegation; the trailer
+      // Sole exception: implementation roles under delegation; the trailer
       // requirement itself is enforced out-of-band by CI (ADR-007).
-      if (agent === "developer-engineer") continue;
+      // F4: developer-engineer was removed from the roster; the two current
+      // implementation roles inherit the exemption.
+      if (agent === "frontend-engineer" || agent === "backend-engineer") continue;
       throw new DenyError(DENY_PROTECTED, {
         tool,
         path: sanitizePathForDetails(normalized),

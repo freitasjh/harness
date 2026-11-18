@@ -11,8 +11,9 @@
 //   C2. `{ts,key,value}` por linha → toda chave arquivada recuperável por key;
 //   C3. dedupe por sha256(JSON.stringify(value)) + key ⇒ 2ª execução = 0 linhas;
 //   C4. histórico é escrito ANTES do estado (nada removido sem registro prévio);
-//   C5. follow_ups mantém open/pending (ou o mais recente) — PAP-12 exige
-//       created_at em cada item sobrevivente.
+//   C5. follow_ups mantém open/pending COM created_at (ou, na falta, o mais
+//       recente que tenha created_at) — PAP-12/FLOW-06 exige created_at string
+//       em cada item sobrevivente; item sem data é arquivado, nunca vivo.
 //
 // Uso: node scripts/state-compact.mjs [--state <path>] [--history <path>] [--dry-run]
 import { createHash } from "node:crypto";
@@ -58,17 +59,16 @@ export function hashValue(value) {
   return createHash("sha256").update(JSON.stringify(value)).digest("hex");
 }
 
-/** follow_ups vivos = open/pending; na falta, o mais recente por created_at. */
+/** FLOW-06: vivo = open/pending COM created_at string; fallback = mais recente com data. */
 export function selectFollowUps(list) {
   const items = Array.isArray(list) ? list : [];
-  const keep = items.filter((f) => f && (f.status === "open" || f.status === "pending"));
+  const dated = items.filter((f) => f && typeof f.created_at === "string");
+  const keep = dated.filter((f) => f.status === "open" || f.status === "pending");
   if (keep.length > 0) {
     return { keep, archived: items.filter((f) => !keep.includes(f)) };
   }
-  if (items.length === 0) return { keep: [], archived: [] };
-  const newest = [...items].sort((a, b) =>
-    String(b?.created_at ?? "").localeCompare(String(a?.created_at ?? "")),
-  )[0];
+  if (dated.length === 0) return { keep: [], archived: items };
+  const newest = [...dated].sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
   return { keep: [newest], archived: items.filter((f) => f !== newest) };
 }
 

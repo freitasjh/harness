@@ -147,13 +147,14 @@ describe("PL-05 — opencode.json is v2-only (dual keys ABSENT, v2 shape PRESENT
   it("v2 shape: every `agent` entry has the mandatory `description` + `permission`", () => {
     const json = opencodeJson();
     const names = Object.keys(json.agent ?? {});
-    // ADR-001 roster + ADR-003 `planner`: assert the literal SET, not a count.
-    // `length === 10` stays green on a silent swap (one agent out, another in) —
-    // the set does not.
+    // F4 roster (AGENTS-02/03), frozen from `opencode.json.agent` — assert the
+    // literal SET, not a count. `length === 11` stays green on a silent swap
+    // (one agent out, another in) — the set does not.
     const ROSTER = [
       "orchestrator",
-      "developer-engineer",
-      "planner",
+      "frontend-engineer",
+      "backend-engineer",
+      "engineer",
       "product-manager",
       "qa-engineer",
       "architect",

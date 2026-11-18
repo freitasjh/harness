@@ -108,7 +108,7 @@ websearch("[padrão] testing strategy best practices")
 
 ### NÃO use para:
 - Bugfix simples (use workflow bugfix existente)
-- Refactor pontual (use `code-reviewer` + `developer-engineer`)
+- Refactor pontual (use `code-reviewer` + `frontend-engineer`/`backend-engineer`)
 - Revisão de código (use `code-reviewer`)
 - Validação de testes (use `qa-engineer`)
 - Auditoria de segurança (use `security-engineer`)

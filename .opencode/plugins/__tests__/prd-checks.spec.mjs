@@ -1235,7 +1235,7 @@ describe("PAP-05 — template ↔ check coherence (ADR-01)", () => {
       ".spec/prd/p1/ADR-INDEX.md": index,
       ".spec/prd/p1/ADRs/ADR-001-exemplo/ADR.md": adr,
       ".spec/prd/p1/ADRs/ADR-001-exemplo/SPEC.md": "# SPEC — ADR-001\n",
-      ".spec/prd/p1/ADRs/ADR-001-exemplo/TASKS.md": "### EX-01 — tarefa\n",
+      ".spec/prd/p1/ADRs/ADR-001-exemplo/TASKS.md": "<!-- scope: adr/ADR-001 -->\n### EX-01 — tarefa\n",
     };
     const root = fixture(files);
     assert.ok(existsSync(join(root, ".spec/prd/p1/ADR-INDEX.md")), "control: target exists");
@@ -1334,7 +1334,7 @@ describe("PAP-05 — template ↔ check coherence (ADR-02)", () => {
     // `unit: adr` ⇒ the example dir carries SPEC/TASKS too (F3a template).
     const root = fixture({
       ".spec/prd/p1/ADRs/ADR-001-exemplo/SPEC.md": "# SPEC — ADR-001\n",
-      ".spec/prd/p1/ADRs/ADR-001-exemplo/TASKS.md": "### EX-01 — tarefa\n",
+      ".spec/prd/p1/ADRs/ADR-001-exemplo/TASKS.md": "<!-- scope: adr/ADR-001 -->\n### EX-01 — tarefa\n",
       ".spec/prd/p1/PRD.md": validPrd(),
       ".spec/prd/p1/RESEARCH.md": research,
       ".spec/prd/p1/ADR-INDEX.md": index,

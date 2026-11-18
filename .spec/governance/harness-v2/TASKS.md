@@ -92,16 +92,19 @@ Status: open (sugestão do review F3b). `selectFollowUps` mantém `open`/`pendin
 ## F4 — Agentes
 
 ### AGENTS-01 — `orchestrator` ≤ 160 linhas
-Status: open. Sem hardcode de porta, stack ou TaskFlow.
+Status: done. 85 linhas; rotas/HITL/brain/gates sem duplicar política; zero `8080`/`5173`/`mvn`/`taskflow`.
 
 ### AGENTS-02 — `frontend-engineer` + `backend-engineer`
-Status: open. Remove `developer-engineer`; cada um carrega skill de eixo + deepsearch.
+Status: done. Cada um com skill de eixo + deepsearch; soma de agentes 976 linhas (≤1100).
 
 ### AGENTS-03 — `engineer` substitui `planner`
-Status: open. md-only, deepsearch, rubric CRÍTICO/ARQUITETURA/MELHORIA; não decide ADR.
+Status: done. md-only, deepsearch, raiz `.spec/prd/{prd-id}/`; não decide ADR.
 
 ### AGENTS-04 — Permissões e roster
-Status: open. `.spec/**` only para PM/architect/engineer/ux; `KNOWN_AGENTS` do `gate.js`; linha I5.
+Status: done. 11 agentes = 11 diretórios; `KNOWN_AGENTS` e I5 atualizados; ux permanece `edit: deny` com motivo citado no runtime.
+
+### AGENTS-05 — Exceção de escrita protegida pós-rename
+Status: done (escrita de governança autorizada). `gate.js` dava a exceção só a `developer-engineer`; sem isso nenhum papel vivo editava rules/agents/plugins. Exceção agora `frontend-engineer|backend-engineer`, com teste de mutação em `protected-write-exception.spec.mjs`.
 
 ## F5 — Deepsearch + prompt-optimizer
 
