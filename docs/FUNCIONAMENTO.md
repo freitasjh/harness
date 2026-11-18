@@ -257,7 +257,13 @@ Duas âncoras independentes.
 3. `checkWriteAccess` roda **antes** de qualquer outra coisa (`gateCompletionAnchorA`) — ver §4.6.
 4. A escrita só é "de conclusão" se toca `workflow-state.json` **e** o conteúdo tem
    `current_phase === "Completed"` (`isCompletionWrite`).
-5. Aí a contraprova roda (`gateCompletionAnchorA`).
+5. **Evidência frontend condicional** (Q3=A): se `targets.frontend` for string não
+   vazia, o REPORT precisa de `frontend_evidence` com `stories`/`screenshots`
+   (arrays não vazios) e `a11y.violations === 0`; senão ⇒ deny
+   `frontend-evidence-missing`, **antes** da contraprova (`requireFrontendEvidence`).
+   Sem frontend declarado o campo é opcional — a condicionalidade é do gate, não
+   do schema.
+6. Aí a contraprova roda (`gateCompletionAnchorA`).
 
 **Contraprova (`runContraprova`).**
 
@@ -596,6 +602,12 @@ Os paths protegidos são os 9 de `harness.config.json` (`protectedPaths`).
 O instalador v1 (wizard W0..W7, perfis por eixo, TUI, `installer-rs`) foi **apagado**
 em v2/F1. O papel dele é de `scripts/harness-sync.mjs` — três verbos determinísticos,
 sem pergunta, sem perfil de stack e sem rede:
+
+> **Q3=A — escopo de frontend/payload.** O core cobre React e Vue com Storybook.
+> Dart/Flutter são **vendor sob demanda, fora do core**: as 22 skills `dart-*`/
+> `flutter-*` saíram do payload e do `.vendor-lock.json`, e `pubspec.yaml` nunca
+> gera `targets.frontend` (enum fechado `react` | `vue` | `null`). Com frontend
+> declarado, o `Completed` só passa com `frontend_evidence` no REPORT — ver §4.4.
 
 | Verbo | Faz | Não faz |
 |---|---|---|

@@ -141,13 +141,13 @@ Status: done. 36/30/30 linhas; detectam framework; plano→confirmação→apply
 Status: done. ux 309→73 e design-system 101→62; zero Pulse/hex/fonte em prompts; template-* com nota de ilustração.
 
 ### DESIGN-06 — `frontend_evidence` no gate
-Status: open. `stories[]`, `screenshots[]`, `a11y` obrigatórios quando `targets.frontend` ≠ null.
+Status: done. `requireFrontendEvidence` antes da contraprova; deny `frontend-evidence-missing`; 5 cenários medidos; campo opcional no schema.
 
 ### DESIGN-07 — Dart/Flutter fora do core
-Status: open. 22 skills saem do payload; vendor sob demanda.
+Status: done. 22 skills + licenças removidas; lock 25→3; payload 1.789.454 B (≤1.887.437).
 
 ### DESIGN-08 — Consistência de estados e validate
-Status: open (3 melhorias do review F6a, F6b): canonizar 9 estados em `validate.mjs`/skills/comandos; trocar `includes` por âncora de export; typo `criad`→`criados` em `ui-bootstrap.md:14`.
+Status: done. 9 estados canônicos com `active`; âncora `export const` (comentário não satisfaz); typo corrigido; 7 testes com mutação.
 
 ## F7 — Gates e estado
 

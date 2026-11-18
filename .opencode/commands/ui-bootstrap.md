@@ -11,7 +11,7 @@ framework é detectado por `package.json` — não pergunte, não escolha.
    node .agents/skills/storybook/scripts/init.mjs --target <dir> --dry-run
    ```
 
-   Cole a saída (`criad`/`preservado` por arquivo). Nada é escrito neste passo.
+   Cole a saída (`criados`/`preservado` por arquivo). Nada é escrito neste passo.
 
 2. Peça confirmação explícita. Sem "sim", pare.
 

@@ -18,6 +18,7 @@
 | 8 | **Memória persistente** — decisões, erros e lições no Brain (busca antes, registra depois) | skill `brain` |
 | 9 | **Sincronizador** — leva o harness a outro repo sem copiar domínio alheio; determinístico (manifesto + sha256 + backup), sem wizard, sem perfis de stack, sem rede; os mesmos três verbos ficam disponíveis como `/harness-init`, `/harness-update` e `/harness-doctor` (`.opencode/commands/`, payload) | `scripts/harness-sync.mjs` (`init`/`update`/`doctor`) + `scripts/seal.mjs` |
 | 10 | **Esteira PRD→ADR→SDD** — intenção de negócio aprovada **antes** do design; 1 ADR = 1 branch = 1 ciclo SDD; checks entram no `suiteFull`, sem deny novo no runtime | `.spec/prd/**` (bucket non-cycle) + `.agents/rules/prd-adr-pipeline.md` + `PRD-01`/`ADR-01`/`ADR-02` |
+| 11 | **Frontend no core = React/Vue** (Q3=A) — `Completed` com `targets.frontend` exige `frontend_evidence` (`stories`/`screenshots`/`a11y`), deny `frontend-evidence-missing`; Dart/Flutter ficam **fora do core**, vendor sob demanda | `gateCompletionAnchorA` + `.agents/schemas/harness-report.schema.json` · 🟢 runtime condicional |
 
 ## Estrutura
 

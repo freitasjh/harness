@@ -64,60 +64,9 @@ export function isAllowedSpdx(spdx) {
 // LICENSE do repositorio no commit pinado (source+commit no lock). Estes
 // textos sao DERIVADOS (nunca retidos no dir da skill) e gravados pelo vendor
 // como arquivo agregado `LICENSE-<source-slug>` na raiz do dest (P-02, RF-13).
-// dart-lang/skills @ 0d9f1c4a / flutter/skills @ 0ef3972f: BSD-3-Clause.
-const BSD3_DART = `Copyright 2012, the Dart project authors.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-3. Neither the name of the copyright holder nor the names of its contributors
-   may be used to endorse or promote products derived from this software without
-   specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.`;
-
-const BSD3_FLUTTER = `Copyright 2026 The Flutter Authors. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-3. Neither the name of the copyright holder nor the names of its contributors
-   may be used to endorse or promote products derived from this software without
-   specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.`;
+// Q3=A — Dart/Flutter saíram do core: nenhum texto de licença BSD-3 dessas
+// fontes é mais embutido ou gravado pelo vendor. Reintroduzi-las exige decisão
+// explícita de escopo (e re-vendorização com source-lock próprio).
 
 // Texto COMPLETO do LICENSE do repo upstream stitch (Apache-2.0), copiado
 // byte-a-byte do arquivo real no commit pinado (11.273 bytes, COM newline
@@ -391,18 +340,6 @@ SOFTWARE.
 `;
 
 export const SOURCE_LICENSES = {
-  "dart-lang/skills": {
-    spdx: "BSD-3-Clause",
-    licenseOrigin: "upstream-file",
-    licenseText: BSD3_DART,
-    sha256: "835b0ffef5681b070c8d9c6c7d67cdd018441a7ae65b1ebd772dbdd2bd40f097",
-  },
-  "flutter/skills": {
-    spdx: "BSD-3-Clause",
-    licenseOrigin: "upstream-file",
-    licenseText: BSD3_FLUTTER,
-    sha256: "5b95696b504e162bcf775060ec416005df9969a95cda6f7d4ddb57327dd74d35",
-  },
   // stitch: LICENSE na raiz do repo upstream (sem NOTICE) no commit pinado.
   "google-labs-code/stitch-skills": {
     spdx: "Apache-2.0",
@@ -466,8 +403,8 @@ export const SOURCE_LICENSES = {
 // (o LICENSE vive no repo upstream, nao no dir da skill). Nunca e escrito
 // dentro de `.agents/skills/<name>/` — logo nao afeta o treeHash (I9).
 // O `licenseFile` DECLARADO na tabela vence (ADR-003: nomes por fonte, ex.
-// `LICENSE-stitch-skills`); sem declaracao, deriva do slug (historico:
-// `dart-lang/skills` -> `LICENSE-dart-lang-skills` — nome congelado, I5).
+// `LICENSE-stitch-skills`); sem declaracao, deriva do slug. Q3=A removeu as
+// fontes dart/flutter — o fallback segue generico para fontes futuras.
 export function aggregatedLicenseName(source, table = SOURCE_LICENSES) {
   const declared = table?.[source]?.licenseFile;
   if (typeof declared === "string" && declared) return declared;
@@ -629,17 +566,9 @@ export function resolveLicense({ skillDir, source, sourceLicenses }) {
   return null;
 }
 
-// FALLBACK de eixo por prefixo conhecido (RF-03/A1): so `dart-`/`flutter-`.
-// O eixo normal vem DECLARADO na origem (`stacks` do source-lock); este
-// fallback existe apenas para compatibilidade com as skills mobile ja
-// vendorizadas (o assert congelado vivia na suite do instalador v1 e saiu com
-// ele em v2/F1 — o comportamento abaixo continua exercitado pelo `--check` do
-// lock).
-export function inferStacks(name) {
-  if (name.startsWith("dart-")) return ["dart"];
-  if (name.startsWith("flutter-")) return ["flutter"];
-  return [];
-}
+// Q3=A — inferência de eixo por NOME de skill foi removida junto com as skills
+// dart-/flutter-. Eixo agora so vem DECLARADO no source-lock (`stacks`), nunca
+// derivado do prefixo (RF-03/A1).
 
 export function buildVendor({ sourceDir, sourceLock, sourceLicenses, sourceCommits, destDir }) {
   const src = path.resolve(sourceDir);
@@ -693,12 +622,10 @@ export function buildVendor({ sourceDir, sourceLock, sourceLicenses, sourceCommi
       computedHash: entry.computedHash,
       treeHash: treeHash(skillDir),
       // RF-03/A1: o eixo da skill vem da ORIGEM declarada no source-lock de
-      // entrada. `inferStacks` fica so como FALLBACK para prefixos conhecidos
-      // (`dart-`/`flutter-`). Sem declaracao e sem prefixo conhecido => [] =
-      // COMUM por desenho (fail-open documentado): a skill entra em TODOS os
-      // destinos, quaisquer que sejam os eixos — o gate so existe quando a
-      // origem declara o eixo.
-      stacks: Array.isArray(entry.stacks) ? [...entry.stacks] : inferStacks(name),
+      // entrada. Q3=A removeu o fallback por prefixo (dart-/flutter-): sem
+      // declaracao => [] = COMUM por desenho (fail-open documentado): a skill
+      // entra em TODOS os destinos — o gate so existe quando a origem declara.
+      stacks: Array.isArray(entry.stacks) ? [...entry.stacks] : [],
       license: license.spdx,
       licenseFile: license.licenseFile,
     };

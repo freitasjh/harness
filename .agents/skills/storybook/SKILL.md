@@ -18,7 +18,7 @@ hardcoded na story — use os tokens/classes gerados.
 
 Todo componente interativo cobre:
 
-`default` · `hover` · `focus` · `disabled` · `loading` · `error` · `empty` · `success`
+`default` · `active` · `hover` · `focus` · `disabled` · `loading` · `error` · `empty` · `success`
 
 - Cada estado = uma story nomeada. Estados assíncronos usam `loaders`/`msw` ou mocks locais.
 - `play function` para interaction tests: clicar, preencher, verificar aria e transição de estado.
@@ -65,7 +65,7 @@ snapshot, console sem `[ERROR]`/`[WARN]`, network sem 4xx/5xx, screenshot 1280×
 
 ## 5. Entregável por componente
 
-- [ ] stories dos 8 estados (default/hover/focus/disabled/loading/error/empty/success)
+- [ ] stories dos 9 estados (default/active/hover/focus/disabled/loading/error/empty/success), cada um com `export const <Estado>` — comentário não conta
 - [ ] interaction test via `play` quando houver transição
 - [ ] a11y sem erro; foco visível; alvo ≥44px no mobile
 - [ ] tokens semânticos do destino (zero hex no componente)

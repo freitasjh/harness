@@ -347,14 +347,19 @@
         "suite": "477 plugins + 140 scripts",
         "review": "APPROVED",
         "rules_lines": 779
+      },
+      "F6b": {
+        "status": "done",
+        "suite": "486 plugins + 148 scripts",
+        "review": "APPROVED",
+        "payload_bytes": 1789454
       }
     },
     "pending": [
-      "F6b",
       "F7",
       "F8"
     ],
     "reviews": 5
   },
-  "last_update": "2026-11-18T23:00:01.207Z"
+  "last_update": "2026-11-18T23:54:32.492Z"
 }

@@ -267,6 +267,16 @@ describe("SYNC-02 — detecção de targets e comandos (sem perguntar nada) — 
     assert.equal(config.commands.suiteFull, "node --test");
   });
 
+  it("Q3=A: pubspec.yaml NÃO gera alvo de frontend (targets só react|vue|null)", () => {
+    const mobile = newTarget({
+      "pubspec.yaml": "name: app\ndependencies:\n  flutter:\n    sdk: flutter\n",
+    });
+    assert.equal(init(mobile, SUITE).code, 0);
+    const config = readJson(join(mobile, "harness.config.json"));
+    assert.deepEqual(config.targets, { frontend: null, backend: null });
+    assert.ok(["react", "vue", null].includes(config.targets.frontend));
+  });
+
   it("pom.xml ⇒ java + mvn test; Cargo.toml ⇒ rust + cargo test; --suite sobrepõe", () => {
     const java = newTarget({ "pom.xml": "<project/>" });
     assert.equal(sync("init", java).code, 0); // detecção, sem --suite

@@ -356,6 +356,7 @@ export function listCoreGates() {
 export const DENY_PICCO_ABSENT = "picco-tag-absent";
 export const DENY_PICCO_NONEMPTY = "picco-tag-nonempty";
 export const DENY_COMPLETED_NO_EVIDENCE = "completed-no-evidence";
+export const DENY_FRONTEND_EVIDENCE = "frontend-evidence-missing";
 export const DENY_CONTRAPROVE_DIVERGENT = "contraprove-divergent";
 export const DENY_CONTRAPROVE_TIMEOUT = "contraprove-timeout";
 export const DENY_PREV_CYCLE = "prev-cycle-not-completed";
@@ -951,6 +952,7 @@ export async function gateCompletionAnchorA(ctx = {}) {
   if (!isCompletionWrite({ tool, targets, args: ctx.args })) return true;
   const report = ctx.report ?? null;
   if (!report) throw new DenyError(DENY_COMPLETED_NO_EVIDENCE, { demand: ctx.demand ?? null });
+  requireFrontendEvidence(report, config?.targets?.frontend);
   await runContraprova({
     demand: ctx.demand ?? report?.demand ?? "workflow-state",
     report,
@@ -1488,3 +1490,37 @@ export async function setup(ctx = {}) {
 // [\"default\"]"). No `Plugin.define` (absent from the runtime) and no `server`
 // key — this repo is v2-only.
 export default { id: "harness-gate", setup };
+
+// Q3=A — evidência frontend é condicional ao ALVO, não ao relatório:
+// `targets.frontend` string não vazia exige `report.frontend_evidence`. O campo
+// permanece OPCIONAL no schema (o destino sem frontend não deve ser obrigado a
+// declará-lo). I10: detalhes trazem só enums de causa e NOMES de campo — nunca
+// paths absolutos ou conteúdo de story/screenshot.
+// Declarado no fim do arquivo (function declaration é hoisted) para não
+// deslocar as citações de linha de gate-contract.md §1.
+export function requireFrontendEvidence(report, frontend) {
+  if (typeof frontend !== "string" || frontend.length === 0) return true;
+  const evidence = report?.frontend_evidence;
+  if (!evidence || typeof evidence !== "object" || Array.isArray(evidence)) {
+    throw new DenyError(DENY_FRONTEND_EVIDENCE, { cause: "missing" });
+  }
+  const fields = [];
+  for (const key of ["stories", "screenshots"]) {
+    const list = evidence[key];
+    if (!Array.isArray(list) || list.length === 0 || list.some((v) => typeof v !== "string" || v.length === 0)) {
+      fields.push(key);
+    }
+  }
+  const a11y = evidence.a11y;
+  if (
+    !a11y ||
+    typeof a11y !== "object" ||
+    Array.isArray(a11y) ||
+    typeof a11y.violations !== "number" ||
+    a11y.violations !== 0
+  ) {
+    fields.push("a11y");
+  }
+  if (fields.length > 0) throw new DenyError(DENY_FRONTEND_EVIDENCE, { cause: "invalid", fields });
+  return true;
+}

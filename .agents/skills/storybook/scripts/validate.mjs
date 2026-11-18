@@ -44,16 +44,19 @@ for (const p of srcFiles) {
   })
 }
 
-// 3. matriz de estados nas stories
-const STATES = ['default', 'hover', 'focus', 'disabled', 'loading', 'error', 'empty', 'success']
+// 3. matriz de estados nas stories (DESIGN-08 — 9 estados, incluindo `active`)
+// Presença provada por ÂNCORA DE EXPORT: um comentário que menciona o estado
+// não é story. `text.includes(s)` aceitava `// active` como cobertura.
+const STATES = ['default', 'active', 'hover', 'focus', 'disabled', 'loading', 'error', 'empty', 'success']
+const exportAnchor = (state) => new RegExp(`^[ \\t]*export\\s+const\\s+\\w*${state}\\w*`, 'im')
 const stories = srcFiles.filter((p) => /\.stories\./.test(p))
 if (!stories.length) {
   flag('WARN', 'nenhuma story encontrada — escreva as stories de estado antes da página')
 } else {
   for (const p of stories) {
-    const text = readFileSync(p, 'utf8').toLowerCase()
-    const missing = STATES.filter((s) => !text.includes(s))
-    if (missing.length) flag('WARN', `estados ausentes em ${rel(p)}: ${missing.join(', ')}`)
+    const text = readFileSync(p, 'utf8')
+    const missing = STATES.filter((s) => !exportAnchor(s).test(text))
+    if (missing.length) flag('FAIL', `estados ausentes em ${rel(p)}: ${missing.join(', ')}`)
   }
 }
 

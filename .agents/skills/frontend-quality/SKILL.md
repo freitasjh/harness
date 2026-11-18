@@ -20,7 +20,7 @@ Aplicar a **toda** mudança de UI antes de declarar pronta. Cada item não atend
 
 ## 2. Estados
 
-- [ ] Componente interativo cobre default, hover, focus, disabled, loading, error, empty, success.
+- [ ] Componente interativo cobre os 9 estados canônicos: default, active, hover, focus, disabled, loading, error, empty, success (cada um com `export const` na story).
 - [ ] Cada estado tem story (skill `storybook`) escrita antes da página consumidora.
 - [ ] Tela de lista: filtro + tabela + loading/empty/error. Form: validação + erro inline.
 

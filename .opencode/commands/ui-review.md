@@ -18,7 +18,7 @@ de build pelo `package.json` — não pergunte.
 
    - console sem `[ERROR]` / `[WARN]`;
    - network sem 4xx/5xx e sem rota duplicada;
-   - stories dos 8 estados renderizando (default, hover, focus, disabled, loading, error, empty, success);
+   - stories dos 9 estados renderizando (default, active, hover, focus, disabled, loading, error, empty, success);
    - screenshots em 1280×800 e 375×800: sem overflow, foco visível, alvo ≥44px.
 
 3. Reporte por `arquivo:linha`: cada problema de token, estado, i18n ou a11y

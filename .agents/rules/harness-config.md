@@ -123,3 +123,9 @@ O gating de artefato por eixo (`SKILLS_BY_AXIS`/`RULES_BY_AXIS`) saiu com o
 instalador: o payload é fixo e o que o destino recebe deixou de depender de um
 eixo declarado. O vendor de skills (`scripts/vendor-skills.mjs` + `.vendor-lock.json`)
 continua sendo o único ponto source-side; o `--check` roda sem rede.
+
+**Q3=A — React/Vue no core; Dart/Flutter fora.** As 22 skills `dart-*`/`flutter-*`
+não fazem mais parte do payload nem do `.vendor-lock.json`: são **vendor sob
+demanda**, fora do core. `detectTargets` só produz `frontend: "react" | "vue" |
+null` — `pubspec.yaml` não gera alvo de frontend. Quando há frontend, o gate de
+`Completed` exige `frontend_evidence` no REPORT (deny `frontend-evidence-missing`).

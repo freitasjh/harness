@@ -14,7 +14,7 @@ Audite `$ARGUMENTS` (sem argumento: diretório atual). **Este comando não edita
 
    - hex/rgb cru em componente (só `tokens/**` e CSS gerado podem ter valores crus);
    - tokens semânticos do destino usados em vez de valores ad-hoc;
-   - matriz de estados nas stories: default, hover, focus, disabled, loading, error, empty, success;
+   - matriz dos 9 estados nas stories: default, active, hover, focus, disabled, loading, error, empty, success (âncora `export const`, não comentário);
    - literal visível fora do arquivo de locale;
    - foco visível (`:focus-visible`), alvo ≥44px, contraste WCAG 2.1 AA;
    - larguras 375px e 1280px quando houver evidência de screenshot;
