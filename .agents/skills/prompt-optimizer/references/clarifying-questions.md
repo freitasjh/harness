@@ -1,6 +1,6 @@
-# Perguntas Clarificadoras por Elemento (v2)
+# Perguntas Clarificadoras por Elemento (v3)
 
-Rota A pergunta **por elemento ausente**, não por tipo de demanda. O bloqueio é o elemento, não o assunto.
+Rota A pergunta **por elemento ausente**, não por tipo de demanda. O bloqueio é o elemento, não o assunto. Premissa inferida que sobrevive ao estoque não entra na pergunta como fato: vai para `workflow-state.json.prompt_assumptions[]` (`texto`, `elemento`, `at`), conforme `SKILL.md` §Ledger de premissas.
 
 Ordenação de impacto: **E1 > E2 > E3 > E4 > E5 > E6**. Se só cabe 1 pergunta, é E1. Se cabem 3, são E1, E2 e o próximo ausente mais alto.
 

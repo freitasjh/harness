@@ -109,13 +109,19 @@ Status: done (escrita de governança autorizada). `gate.js` dava a exceção só
 ## F5 — Deepsearch + prompt-optimizer
 
 ### SEARCH-01 — Skill `deepsearch`
-Status: open. Fonte + data obrigatórios; API de memória proibida para assinatura.
+Status: done. 59 linhas, subordinada à rule always-on; hierarquia de fontes, websearch/webfetch/Context7, citação afirmação—URL—data.
 
 ### SEARCH-02 — `prompt-optimizer` v3
-Status: open. Probe de repo + brain antes do score; ledger de premissas; PICCO com `arquivo:linha`.
+Status: done. 174→90 linhas; Stage 0 (brain literal + probe), ledger em `prompt_assumptions[]`, PICCO com citação, Rota A/B e conflito primeiro.
 
 ### SEARCH-03 — Fixtures de prompt
-Status: open. ≥7/10 Rota B na primeira; 3 vagos continuam bloqueados.
+Status: done. 10 fixtures (7 Rota B / 3 Rota A); teste cobre contrato e declara que o veredito 7/10 não é executável sem runner de LLM.
+
+### SEARCH-04 — Rubrica do code-reviewer
+Status: done. 3 seções + tags `[CRÍTICO]`/`[ARQUITETURA]`/`[MELHORIA]`; permanece parecer (I2/âncora B).
+
+### SEARCH-05 — V6 do teste desacoplada de `type: refactor`
+Status: open (melhoria não-bloqueante do review F5): assertar presença de `type`, não valor transitório.
 
 ## F6 — Frontend/design
 

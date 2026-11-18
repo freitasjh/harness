@@ -336,15 +336,19 @@
         "roster": "11 agentes",
         "orchestrator_lines": 85,
         "incident": "excecao de escrita protegida migrada para frontend/backend"
+      },
+      "F5": {
+        "status": "done",
+        "suite": "477 plugins + 126 scripts",
+        "review": "APPROVED"
       }
     },
     "pending": [
-      "F5",
       "F6",
       "F7",
       "F8"
     ],
     "reviews": 5
   },
-  "last_update": "2026-11-18T21:24:44.462Z"
+  "last_update": "2026-11-18T22:36:59.906Z"
 }

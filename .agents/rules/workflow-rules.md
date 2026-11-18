@@ -20,8 +20,8 @@ esteira PRD → ADR, SDD por ADR, bugfix, code review, papéis e estado — vive
 
 ### Regra Absoluta
 
-1. **Carregar skill `prompt-optimizer`** via `skill` tool
-2. **Carregar skill `brain`** → `brain_search(prompt literal, top_k=3)` para contexto
+1. **Stage 0 — carregar skill e brain literal:** `prompt-optimizer` via `skill` tool, depois `brain_search(query=<prompt do usuário, literal>, top_k=3)`. Paráfrase já é interpretação. Detalhe: `.agents/skills/prompt-optimizer/SKILL.md` §Stage 0.
+2. **Stage 0 — probe do repo (somente leitura):** `AGENTS.md`, `harness.config.json` (`targets.*`, `commands.*`), globs de alto nível e eixo detectado. Fornece contexto **citável** (`arquivo:linha` ou brain path) para o `<context>`; nunca preenche lacuna do usuário.
 3. **Contar os 6 elementos AFIRMADOS pelo usuário:**
 
    | # | Elemento | Ausente = |
@@ -42,19 +42,25 @@ esteira PRD → ADR, SDD por ADR, bugfix, code review, papéis e estado — vive
 
    **Precedência:** a rota de conflito vence. Não é ambiguidade, é contradição — perguntar por elemento faltando não resolve violação de regra. Se o pedido for violador E incompleto: trate o conflito primeiro, retome a Rota A só para o que falta.
 
+6. **Ledger de premissas:** premissa não confirmada que sobreviveu ao estoque (inferência "parcial" da Rota A, ou premissa da 1ª rodada não respondida na 2ª) não entra no PICCO. Registrar em `workflow-state.json.prompt_assumptions[]` com `{texto, elemento, at}`; confirmação do usuário promove o texto para `<context>` citado e remove o item. Detalhe: `.agents/skills/prompt-optimizer/SKILL.md` §Ledger de premissas.
+
 ### Proibido
 
 - ❌ Preencher lacuna com default do modelo
 - ❌ "Vou assumir que você quer X"
 - ❌ Delegar com contexto vago
-- ❌ Pular brain_search
+- ❌ Pular brain_search ou o probe do Stage 0
 - ❌ Tratar dedução da IA como elemento afirmado
+- ❌ Nunca escrever premissa não confirmada como fato
+- ❌ Deixar premissa sobrevivente sem registro no ledger (`prompt_assumptions[]`)
 - ❌ Bloco PICCO com mais de 10 constraints
 
 ### Obrigatório
 
+- ✅ Stage 0 (brain literal + probe do repo) antes de contar E1..E6
 - ✅ Carregar `prompt-optimizer` via skill tool
 - ✅ Contar E1..E6 explicitamente antes de agir
+- ✅ Ledger de premissas no estado (`workflow-state.json.prompt_assumptions[]`)
 - ✅ Rota B: 1 confirmação antes de executar
 - ✅ Salvar patterns de prompts no Brain (quando o padrão se repetir 2x)
 
@@ -81,8 +87,10 @@ Bloqueio (o que não vou assumir): [elemento ausente, ex: E2 Escopo]
 Não vou assumir o que ficou em branco. Escolher por você é palpite caro.
 ```
 
+Skill de referência (contrato operacional completo): `.agents/skills/prompt-optimizer/SKILL.md` (Stage 0, ledger, PICCO).
 Variações de pergunta por elemento e perguntas de desempate: `.agents/skills/prompt-optimizer/references/clarifying-questions.md`.
 Contrato de saída e exemplos (bons e ruins): `.agents/skills/prompt-optimizer/references/picco-template.md`.
+Fixtures com veredito esperado: `.agents/skills/prompt-optimizer/fixtures/` (10 prompts, 7 Rota B / 3 Rota A).
 
 ---
 
