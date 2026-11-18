@@ -81,10 +81,13 @@ Status: done. Coluna `unit` (`adr|legacy`, estrita em minúsculas); `prd_version
 Status: done. Modos ativos `spec-from-adr`/`tasks-from-adr`/`verify`/`archive`; asserts e templates por ADR; `sdd-feedback` alinhado.
 
 ### FLOW-04 — Estado enxuto
-Status: open. F3b (próximo): compactação + `workflow-history.jsonl`.
+Status: done. `workflow-state.json` 127.186 → 16.634 bytes (96 → 21 chaves); `workflow-history.jsonl` 76 linhas append-only; 75/75 chaves recuperáveis; idempotente.
 
 ### FLOW-05 — SDD-02 layout-aware e docs por símbolo
 Status: done. Drift do ADR nomeado pelo estado julga antes do legado; `unit` vem do ledger; 395 citações por linha trocadas por símbolo/seção + guarda `docs-citations.spec.mjs`. Review final: APPROVED.
+
+### FLOW-06 — `follow_ups` vivo exigir `created_at`
+Status: open (sugestão do review F3b). `selectFollowUps` mantém `open`/`pending` sem timestamp; reforçar filtro em F4.
 
 ## F4 — Agentes
 

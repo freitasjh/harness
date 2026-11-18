@@ -210,6 +210,9 @@ vinculante: `workflow-rules.md` §5 H6.
   `follow_ups` criado fora do ciclo não é impedido, só detectado no próximo run).
   Nenhum valor novo de `current_phase` é criado por esses campos (🟡 processo).
 - `spec-developed.md` na raiz lista cronologicamente as features e etapas concluídas.
+- `workflow-history.jsonl` (append-only) guarda o estado histórico; `workflow-state.json` guarda só as chaves que `gate.js`/SDD/PAP-12 leem; a whitelist vive em `scripts/state-compact.mjs` (`LIVE_KEYS`).
+- Recuperação: ler o jsonl e procurar `key`/`ts`; nada é deleted, só movido (`{ts,key,value}` por linha, dedupe por sha256 do valor).
+- Auditoria somente leitura: `node scripts/state-compact.mjs --dry-run` imprime contagem de chaves a arquivar e bytes antes/depois sem escrever.
 
 ## 7. Papéis, skills e regras gerais
 
