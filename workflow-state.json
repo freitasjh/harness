@@ -1,20 +1,20 @@
 {
   "current_feature": "prd-init-project-scaffold",
-  "current_phase": "Testing",
-  "previous_phase": "Completed",
+  "current_phase": "Completed",
+  "previous_phase": "Testing",
   "next_phase": "Completed",
   "type": "feature",
   "artifacts": {
-    "prd": ".spec/prd/prd-init-project-scaffold/PRD.md",
-    "research": ".spec/prd/prd-init-project-scaffold/RESEARCH.md",
-    "adr_index": ".spec/prd/prd-init-project-scaffold/ADR-INDEX.md",
-    "adr": ".spec/prd/prd-init-project-scaffold/ADRs/ADR-001-managed-section-scaffold/ADR.md",
-    "spec": ".spec/prd/prd-init-project-scaffold/ADRs/ADR-001-managed-section-scaffold/SPEC.md",
-    "tasks": ".spec/prd/prd-init-project-scaffold/ADRs/ADR-001-managed-section-scaffold/TASKS.md"
+    "prd": ".spec/archive/20261118-prd-prd-init-project-scaffold/PRD.md",
+    "research": ".spec/archive/20261118-prd-prd-init-project-scaffold/RESEARCH.md",
+    "adr_index": ".spec/archive/20261118-prd-prd-init-project-scaffold/ADR-INDEX.md",
+    "adr": ".spec/archive/20261118-prd-prd-init-project-scaffold/ADRs/ADR-001-managed-section-scaffold/ADR.md",
+    "spec": ".spec/archive/20261118-prd-prd-init-project-scaffold/ADRs/ADR-001-managed-section-scaffold/SPEC.md",
+    "tasks": ".spec/archive/20261118-prd-prd-init-project-scaffold/ADRs/ADR-001-managed-section-scaffold/TASKS.md"
   },
   "gates": {
-    "P0_P1": "approved_auto_pending_architect (ADR-002 CLI visual; protótipo aprovado e congelado; ux-designer já exercida)",
-    "G2_PRD": "approved_user_2026_10_22 (PRD prd-garantias-runtime aprovado sem ressalvas; §16 do PRD.md; 3 decisoes do owner)",
+    "P0_P1": "approved_auto_pending_architect (ADR-002 CLI visual; prot\u00f3tipo aprovado e congelado; ux-designer j\u00e1 exercida)",
+    "G2_PRD": "approved_user_2026_10_22 (PRD prd-garantias-runtime aprovado sem ressalvas; \u00a716 do PRD.md; 3 decisoes do owner)",
     "P1_P2": "approved_user_2026_11_18",
     "P2_P3": "approved_user_2026_11_18",
     "P3_P4": "approved_auto_evidence_2026_11_17 (6 batches; review APPROVED 0/0)",
@@ -25,20 +25,20 @@
     "FU32": "closed_approved_decision_B",
     "_previous_cycle_opencode_v2_only": {
       "P0_P1": "approved_user_2026_10_15 (Feature prd-adr-pipeline; bloco PICCO confirmado)",
-      "G2_PRD": "approved_user_2026_10_16 (PRD do dogfood aprovado sem ressalvas; .spec/prd/prd-adr-pipeline/PRD.md §16)",
+      "G2_PRD": "approved_user_2026_10_16 (PRD do dogfood aprovado sem ressalvas; .spec/prd/prd-adr-pipeline/PRD.md \u00a716)",
       "P1_P2": "pending_user_approval (SPEC v2 do ciclo opencode-v2-only; parecer do code-reviewer nos 3 batches)",
       "P2_P3": "pending_user_approval (PLAN + TASKS do ciclo opencode-v2-only, 9 tasks MIG-*; REVIEW-PM nao existe neste ciclo)",
       "P3_P4": "approved_auto_evidence_batches1-5 (14/14 tasks; review APPROVED 0 criticos)",
       "P4_P5": "pending_user_approval (QA P4: gate PASSA na substancia; 831/831; 0 writes nos 2 presets; transcript byte-identico; 2 P2 novos registrados em .spec/tech-debts/harness-eixos-stack-p2/)",
       "P5_P6": "approved_user_2026_10_18 (VERIFY APPROVED 3/3 dimensoes; traceability 100%; ciclo arquivado; commit ab66c40 com trailer)",
-      "P6_fim": "done_commit_63660a7 (trailer Harness-Gate-Change aceito; bugfix harness-eixos-stack-p2; push PENDENTE — 3 commits a frente de origin/main)",
+      "P6_fim": "done_commit_63660a7 (trailer Harness-Gate-Change aceito; bugfix harness-eixos-stack-p2; push PENDENTE \u2014 3 commits a frente de origin/main)",
       "B1_B2": "approved_user_2026_09_29",
       "FU32": "closed_approved_decision_B"
     },
-    "G2_ADR": "approved_user_2026_11_17 (ADR-002 CLI visual, protótipo aprovado e congelado)",
-    "G1_PRD": "approved_user_2026_11_17 (PRD prd-eixos-separados-cli, 16 seções, §16 com decisões owner; protótipo CLI antes da spec)",
+    "G2_ADR": "approved_user_2026_11_17 (ADR-002 CLI visual, prot\u00f3tipo aprovado e congelado)",
+    "G1_PRD": "approved_user_2026_11_17 (PRD prd-eixos-separados-cli, 16 se\u00e7\u00f5es, \u00a716 com decis\u00f5es owner; prot\u00f3tipo CLI antes da spec)",
     "P4_5": "approved_auto_2026_11_17 (security 14: 11 N/A + 3 PASS)",
-    "G2_RESEARCH": "approved_user_2026_11_17 (A1 eixos + B1 setas+enter + C1 baseline validado; 7 alternativas, 11 fontes; protótipo aprovado antes do ADR)"
+    "G2_RESEARCH": "approved_user_2026_11_17 (A1 eixos + B1 setas+enter + C1 baseline validado; 7 alternativas, 11 fontes; prot\u00f3tipo aprovado antes do ADR)"
   },
   "code_review": {
     "last_invoked_at": "2026-11-17T23:17:37.670Z",
@@ -46,12 +46,12 @@
     "critical_issues": 0,
     "attention_issues": 0,
     "suggestions": 1,
-    "reviewer_notes": "ADR-002 review final APPROVED 0/0. VERIFY 3/3 com evidência re-medida, segurança 14/14, ratificação pendente sem forja, nenhuma paridade com 16336B, N/M congelados, rust+vue byte-idêntico ADR-001. 1 sugestão documental (campo perf) corrigida em 96b0be9."
+    "reviewer_notes": "ADR-002 review final APPROVED 0/0. VERIFY 3/3 com evid\u00eancia re-medida, seguran\u00e7a 14/14, ratifica\u00e7\u00e3o pendente sem forja, nenhuma paridade com 16336B, N/M congelados, rust+vue byte-id\u00eantico ADR-001. 1 sugest\u00e3o documental (campo perf) corrigida em 96b0be9."
   },
   "code_review_status": "passed",
-  "code_review_status_ciclo": "adr-001-managed-section-scaffold",
+  "code_review_status_ciclo": "ADR-001",
   "harness_status": "passed",
-  "harness_status_detail": "VERIFY APPROVED; aceite 14/14; MS-1 parcial declarada",
+  "harness_status_detail": "VERIFY APPROVED; merge PR #25 efcae5b; MS-1 parcial declarada",
   "features": [
     {
       "name": "harness-installer-mobile",
@@ -143,12 +143,19 @@
   ],
   "prd_adr": {
     "prd_id": "prd-init-project-scaffold",
-    "prd_status": "approved",
+    "prd_status": "archived",
     "active_adr": "ADR-001",
     "adr_order": [
       "ADR-001"
     ],
-    "snapshots": []
+    "snapshots": [
+      {
+        "adr": "ADR-001",
+        "follow_ups_count": 1,
+        "escalations_count": 0,
+        "at": "2026-11-18T22:40:00-03:00"
+      }
+    ]
   },
   "follow_ups": [
     {
@@ -171,7 +178,7 @@
     {
       "portao": "role-separation",
       "ciclo": "opencode-v2-only",
-      "regra": "workflow-rules.md §0.1 — orchestrator NAO desenvolve (delega a developer-engineer)",
+      "regra": "workflow-rules.md \u00a70.1 \u2014 orchestrator NAO desenvolve (delega a developer-engineer)",
       "motivo": "Bloqueio ovo-e-galinha: o runtime estava SEM agentes por causa do proprio defeito (setup() dos 2 plugins no-op retornava objeto => TypeError => reload falha => registry de agentes cai). Sem agentes, nao havia como delegar. O fix e mecanico e SEM mudanca de comportamento (os 2 plugins sao no-op declarados; o unico efeito do codigo anterior era o TypeError).",
       "escopo_da_excecao": "somente .opencode/plugins/harness-validator.js e .opencode/plugins/hitl-guardrail.js: remover o retorno truthy de setup() e o branch v1/Plugin.define (decisao v2-only do owner).",
       "data": "2026-10-18",
@@ -180,20 +187,20 @@
     {
       "portao": "D1-two-motors",
       "ciclo": "prd-installer-rust / ADR-001",
-      "regra": "`.mjs vivo` fora do caminho de instalação; proibido segundo motor (D1)",
-      "motivo": "o binário Rust que executa os 31 ops só nasce no ADR-003; fronteira e registry foram implementadas primeiro",
-      "escopo": "única ponte `export … from './install.mjs'` em installer/installer-contract.mjs:15 (23 D-ENGINE + 8 D-TUI)",
-      "expires_when": "nunca por herança; só nova decisão §16 do owner",
+      "regra": "`.mjs vivo` fora do caminho de instala\u00e7\u00e3o; proibido segundo motor (D1)",
+      "motivo": "o bin\u00e1rio Rust que executa os 31 ops s\u00f3 nasce no ADR-003; fronteira e registry foram implementadas primeiro",
+      "escopo": "\u00fanica ponte `export \u2026 from './install.mjs'` em installer/installer-contract.mjs:15 (23 D-ENGINE + 8 D-TUI)",
+      "expires_when": "nunca por heran\u00e7a; s\u00f3 nova decis\u00e3o \u00a716 do owner",
       "aprovado_por": "owner 2026-11-16 (quitacao parcial apos parecer architect)",
       "data": "2026-11-16",
       "status": "delta_aceito_owner_2026_11_17",
-      "escopo_restante": "10 nomes D-ENGINE em installer/installer-contract.mjs:57-58 — exceção ratificada por decisão §16 (não dívida)",
+      "escopo_restante": "10 nomes D-ENGINE em installer/installer-contract.mjs:57-58 \u2014 exce\u00e7\u00e3o ratificada por decis\u00e3o \u00a716 (n\u00e3o d\u00edvida)",
       "aprovacao_data": "2026-11-16T21:26:46.319Z",
       "aprovado_originalmente": "owner aprovou 9+29+23 (8 TUI debito) em 2026-11-16",
       "entregue": "owner aceitou desvio medido em 2026-11-16: 9 D-DATA + 29 D-PURE + 13 D-ENGINE migrados; 10 D-ENGINE + 8 D-TUI em divida",
       "razao_do_desvio": "prova-engine compara com canonicalJson; specs congeladas comparam byte a byte; 8 dos 10 ops divergem so na ordem de chaves JSON.stringify e 2 (collectAnswers, runChecks) precisam de revalidacao com placeholders interpolados",
       "decisao_original": "69 nomes medidos: 9 D-DATA -> registry; 29 D-PURE -> contract-pure.mjs; 23 D-ENGINE -> spawnSync Rust; 8 D-TUI -> debito datado ADR-004",
-      "razao_divida_fechada": "revalidacao do reviewer com placeholders interpolados: os 10 ops em divida tem sideCanon:true — divergencia SOMENTE na ordem de chaves JSON.stringify, sem divergencia de conteudo. Divida real = byte-paridade, nao conteudo.",
+      "razao_divida_fechada": "revalidacao do reviewer com placeholders interpolados: os 10 ops em divida tem sideCanon:true \u2014 divergencia SOMENTE na ordem de chaves JSON.stringify, sem divergencia de conteudo. Divida real = byte-paridade, nao conteudo.",
       "implementacao": "9 dados registry + 29 puros contract-pure.mjs (golden vs c63e333) + 13 engine spawnSync Rust; 18 nomes (8 TUI + 10 engine) em divida declarada",
       "decisao_16": ".spec/prd/prd-installer-rust/DECISAO-16-delta-byte-paridade.md",
       "ratificado_em": "2026-11-17T01:04:44.482Z"
@@ -203,9 +210,9 @@
       "ciclo": "prd-installer-rust / ADR-004",
       "regra": "reexport de 8 D-TUI em installer/installer-contract.mjs",
       "motivo": "dispatcher Rust tem apenas 23 OP_NAMES; os 8 D-TUI pertencem ao ADR-004 por decisao fechada",
-      "escopo": "10 nomes D-ENGINE em installer/installer-contract.mjs:57-58 — divergência somente de ordem de chaves (sideCanon:true, sideBytes:false)",
-      "expires_when": "nunca por herança; só nova decisão §16 do owner",
-      "aprovado_por": "owner (decisão §16 2026-11-17: aceitar o delta)",
+      "escopo": "10 nomes D-ENGINE em installer/installer-contract.mjs:57-58 \u2014 diverg\u00eancia somente de ordem de chaves (sideCanon:true, sideBytes:false)",
+      "expires_when": "nunca por heran\u00e7a; s\u00f3 nova decis\u00e3o \u00a716 do owner",
+      "aprovado_por": "owner (decis\u00e3o \u00a716 2026-11-17: aceitar o delta)",
       "data": "2026-11-16T20:50:40.660Z",
       "status": "delta_aceito_owner_2026_11_17",
       "atualizado": "2026-11-16T23:31:53.888Z",
@@ -215,22 +222,22 @@
     {
       "portao": "frozen-verdict-doctor-spec",
       "ciclo": "prd-installer-rust / ADR-004",
-      "regra": "installer/__tests__/doctor.spec.mjs e veredito congelado (sha f10ef580) — edição exige re-selo do rito ADR-002 §2.4",
-      "motivo": "owner autorizou exceção §16 para sanar flake intermitente em doctor.spec.mjs:61 (sufixo mkdtemp com D0..D6 polui indexOf)",
-      "escopo": "somente a asserção de ordem no teste sequencia D0..D6; nenhuma mudança em runDoctor",
-      "expires_when": "execução da task FU-DOCTOR-FLAKY e re-medição do sha do literal; rubrica nova se sha mudar",
-      "aprovado_por": "owner (decisão §16 2026-11-17)",
+      "regra": "installer/__tests__/doctor.spec.mjs e veredito congelado (sha f10ef580) \u2014 edi\u00e7\u00e3o exige re-selo do rito ADR-002 \u00a72.4",
+      "motivo": "owner autorizou exce\u00e7\u00e3o \u00a716 para sanar flake intermitente em doctor.spec.mjs:61 (sufixo mkdtemp com D0..D6 polui indexOf)",
+      "escopo": "somente a asser\u00e7\u00e3o de ordem no teste sequencia D0..D6; nenhuma mudan\u00e7a em runDoctor",
+      "expires_when": "execu\u00e7\u00e3o da task FU-DOCTOR-FLAKY e re-medi\u00e7\u00e3o do sha do literal; rubrica nova se sha mudar",
+      "aprovado_por": "owner (decis\u00e3o \u00a716 2026-11-17)",
       "data": "2026-11-17T01:11:16.598Z",
       "task": "FU-DOCTOR-FLAKY"
     },
     {
       "portao": "reabertura-D5-ADR004-eixos-cli",
-      "ciclo": "novo PRD — separacao de eixos + nova CLI",
-      "regra": "PRD.md §16-D5 (12 presets casados congelados) + ADR-004 (transcript 16336B byte-idêntico, 0 transição nova) + ADR-001 (contract-v1 única superfície)",
-      "motivo": "owner declarou tempo perdido: instalador segue igual, opções casadas, nenhuma melhora visível; quer backend/frontend independentes e CLI visual tipo Copilot/Kiro",
-      "escopo": "substituir 12 presets casados por 48 combinações de eixos (8 backend x 6 frontend); substituir tela line-based por CLI interativa amigável",
-      "expires_when": "conclusão do novo PRD; reavaliação de compatibilidade",
-      "aprovado_por": "owner (decisão §16 2026-11-17)",
+      "ciclo": "novo PRD \u2014 separacao de eixos + nova CLI",
+      "regra": "PRD.md \u00a716-D5 (12 presets casados congelados) + ADR-004 (transcript 16336B byte-id\u00eantico, 0 transi\u00e7\u00e3o nova) + ADR-001 (contract-v1 \u00fanica superf\u00edcie)",
+      "motivo": "owner declarou tempo perdido: instalador segue igual, op\u00e7\u00f5es casadas, nenhuma melhora vis\u00edvel; quer backend/frontend independentes e CLI visual tipo Copilot/Kiro",
+      "escopo": "substituir 12 presets casados por 48 combina\u00e7\u00f5es de eixos (8 backend x 6 frontend); substituir tela line-based por CLI interativa amig\u00e1vel",
+      "expires_when": "conclus\u00e3o do novo PRD; reavalia\u00e7\u00e3o de compatibilidade",
+      "aprovado_por": "owner (decis\u00e3o \u00a716 2026-11-17)",
       "data": "2026-11-17T01:28:48.585Z"
     }
   ],
@@ -249,8 +256,8 @@
       "desde": "15/10/2026",
       "superseded_por": "opencode-v2-only",
       "declarado_em": "2026-10-19T13:08:44.430Z",
-      "motivo": "A SPEC daquele ciclo prescreve `Plugin.define({id, setup})` como o contrato de plugin. MEDIDO no runtime v2.0.32: `Plugin.define` esta AUSENTE do binario (grep=0) — existe apenas como *identity shim* (`define(def)=>def`) no pacote `@opencode/plugin@2.0.29` instalado em `~/.config/opencode/node_modules`. O contrato real e `export default {id, setup}` com `setup()` retornando `undefined`.",
-      "regra": "NAO editar os artefatos do ciclo superseded (SPEC/PROPOSAL/PLAN/TASKS ficam como estao) — a supersession e declarada aqui e no SPEC/PROPOSAL do ciclo novo (RF-06).",
+      "motivo": "A SPEC daquele ciclo prescreve `Plugin.define({id, setup})` como o contrato de plugin. MEDIDO no runtime v2.0.32: `Plugin.define` esta AUSENTE do binario (grep=0) \u2014 existe apenas como *identity shim* (`define(def)=>def`) no pacote `@opencode/plugin@2.0.29` instalado em `~/.config/opencode/node_modules`. O contrato real e `export default {id, setup}` com `setup()` retornando `undefined`.",
+      "regra": "NAO editar os artefatos do ciclo superseded (SPEC/PROPOSAL/PLAN/TASKS ficam como estao) \u2014 a supersession e declarada aqui e no SPEC/PROPOSAL do ciclo novo (RF-06).",
       "status": "superseded",
       "archivado_em": "2026-10-20"
     },
@@ -346,5 +353,5 @@
     "reviews": 5,
     "status": "completed"
   },
-  "last_update": "2026-11-19T02:16:18.003Z"
+  "last_update": "2026-11-18T23:26:34.640453-03:00"
 }

@@ -2,7 +2,7 @@
 
 - **prd-id**: `prd-init-project-scaffold` — `.spec/prd/prd-init-project-scaffold/PRD.md` (§16 **APROVADO** em 2026-11-18 por joao).
 - **order**: 1 de 1 linha real (`.spec/prd/prd-init-project-scaffold/ADR-INDEX.md`).
-- **status**: `in-progress` — decisão ratificada neste batch; `SPEC.md`/`TASKS.md` pendentes, gerados pelo `sdd-compiler`. `ADR-01` reprova nesse intervalo por desenho (`unit: adr sem SPEC.md`/`sem TASKS.md`); estado declarado no `ADR-INDEX.md` e no campo `Status` abaixo.
+- **status**: `merged` — decisão ratificada neste batch; `SPEC.md`/`TASKS.md` pendentes, gerados pelo `sdd-compiler`. `ADR-01` reprova nesse intervalo por desenho (`unit: adr sem SPEC.md`/`sem TASKS.md`); estado declarado no `ADR-INDEX.md` e no campo `Status` abaixo.
 - **branch**: `adr/prd-init-project-scaffold/01-managed-section-scaffold`.
 - **data**: 2026-11-18.
 - **depende-de**: — (primeira linha do ledger; nenhum ADR anterior deste PRD).
@@ -140,4 +140,4 @@ Regras: `WARN divergência ` é o prefixo exato do aviso de 14a e **não** alter
 
 ## Status
 
-`in-progress` — decisão arquitetural fechada e citável; branch `adr/prd-init-project-scaffold/01-managed-section-scaffold` aberta; `ADR-INDEX.md` com 1 linha real; `SPEC.md`/`TASKS.md` a gerar pelo `sdd-compiler`. Promoção a `merged` depende do merge humano do PR, com `unit: adr` exigindo também `VERIFY.md` (`.opencode/plugins/lib/prd-adr-pipeline/checks.mjs:423-425`). Nenhum commit, tag ou push foi criado por esta entrega.
+`merged` — merge humano do PR #25 concluído em 2026-11-18 (commit `efcae5b` na `main`). Decisão ratificada; `SPEC.md`/`TASKS.md` gerados; `VERIFY.md` aprovado com 3 dimensões OK. Dívida de perfil de tokens permanece viva em `.spec/tech-debts/harness-init-token-profile/TASKS.md`.

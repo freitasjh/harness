@@ -119,3 +119,13 @@ Fluxo: `init --target <dir> [--frontend … --backend …] [--dry-run]` → varr
 - **Decisões §14**: (a) preservar seção `<!-- harness:v2 -->` editada + reportar divergência, nunca reescrever; (b) stack indeterminada sem flags ⇒ exigir flag; (c) `AGENTS.md`/`DESIGN.md` anexados ficam FORA do manifesto.
 - **Nota**: preencher veredito, data e aprovador no ato da decisão; as três perguntas de §14 são entrada obrigatória do RESEARCH.
 > ❓ Validação: existe aprovação registrada antes de qualquer ADR? **Sim** — veredito APROVADO em §16; RESEARCH/ADR liberados.
+
+
+## 17. Arquivamento
+
+- **Data**: 2026-11-18
+- **ADRs**: 1/1 merged (ADR-001 — `efcae5b`, PR #25)
+- **Duração**: mesmo dia da aprovação do PRD à promoção do ADR
+- **Destino**: `.spec/archive/20261118-prd-prd-init-project-scaffold/`
+- **Dívida viva**: `.spec/tech-debts/harness-init-token-profile/TASKS.md` (perfil de tokens, MS-1 parcial declarada)
+- **Delta Specs**: já mesclados no commit do ADR (`docs/ref/sync.md`, `README.md`, `harness-init.md`, `harness-config.md`)

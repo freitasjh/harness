@@ -16,4 +16,4 @@
 
 | order | id | title | status | depends_on | dir | branch | merge | unit |
 |---|---|---|---|---|---|---|---|---|
-| 1 | ADR-001 | Seção gerenciada delimitada em AGENTS.md/DESIGN.md, artefatos próprios em create-or-skip e stack por detecção com override: identidade do init sem sobrescrever arquivo vivo | in-progress | — | ADRs/ADR-001-managed-section-scaffold/ | adr/prd-init-project-scaffold/01-managed-section-scaffold |  | adr |
+| 1 | ADR-001 | Seção gerenciada delimitada em AGENTS.md/DESIGN.md, artefatos próprios em create-or-skip e stack por detecção com override: identidade do init sem sobrescrever arquivo vivo | merged | — | ADRs/ADR-001-managed-section-scaffold/ | adr/prd-init-project-scaffold/01-managed-section-scaffold | efcae5b (PR #25) | adr |
