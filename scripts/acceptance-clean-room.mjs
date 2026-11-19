@@ -54,7 +54,12 @@ const SUITE = "node --test";
 const COMMANDS = { suiteFull: SUITE, unit: SUITE };
 const TEST_CONFIG = { commands: COMMANDS, protectedPaths: [".opencode/plugins/**", ".agents/rules/**", "harness.config.json"] };
 const MIN_GATE_CALLS = 12;
+const EXPECTED_SCENARIOS = 14;
 const LOGGER = { warn() {}, error() {} };
+const OPEN = "<!-- harness:v2:start -->";
+const CLOSE = "<!-- harness:v2:end -->";
+const OWN_FRONTEND = ".agents/rules/project-frontend.md";
+const OWN_BACKEND = ".agents/rules/project-backend.md";
 
 function sha256(text) {
   return createHash("sha256").update(text, "utf8").digest("hex");
@@ -163,6 +168,29 @@ export async function runAcceptance(opts = {}) {
   const scenarios = [];
   let gateCalls = 0;
 
+  // Injetável para anti-vacuidade: um `runSync` no-op tem que virar FAIL nos
+  // cenários A8..A13, e uma `suiteFull` trocada tem que virar FAIL em A14.
+  const runSync = opts.runSync ?? ((args) =>
+    execFileSync(process.execPath, [SYNC_SCRIPT, ...args], {
+      cwd: REPO_ROOT,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+    }));
+  const attemptSync = (args) => {
+    try {
+      return { code: 0, out: runSync(args) };
+    } catch (err) {
+      return { code: err.status ?? 1, out: `${err.stdout ?? ""}${err.stderr ?? ""}${err.message ?? ""}` };
+    }
+  };
+  const sync = (args) => {
+    const result = attemptSync(args);
+    if (result.code !== 0) throw new Error(`sync ${args[0]} saiu ${result.code}: ${result.out}`);
+    return result.out;
+  };
+  const readConfig =
+    opts.readConfig ?? (() => JSON.parse(fs.readFileSync(path.join(REPO_ROOT, "harness.config.json"), "utf8")));
+
   async function expectDeny(fn, reason, label) {
     gateCalls += 1;
     let thrown = null;
@@ -201,13 +229,9 @@ export async function runAcceptance(opts = {}) {
   // A1 — bootstrap: CLI real do sincronizador + camadas + config + doctor.
   await scenario("A1", async () => {
     const target = scope.tmp({}, { root: tempRoot });
-    const run = (args) =>
-      execFileSync(process.execPath, [SYNC_SCRIPT, ...args], {
-        cwd: REPO_ROOT,
-        encoding: "utf8",
-        stdio: ["ignore", "pipe", "pipe"],
-      });
-    const initOut = run(["init", "--target", target, "--suite", SUITE]);
+    // ADR-001/I5: sem stack detectada, a flag é obrigatória — o aceite declara
+    // a origem explicitamente em vez de inventar `project-fullstack.md`.
+    const initOut = sync(["init", "--target", target, "--suite", SUITE, "--frontend", "react"]);
     if (!/^init: \d+ file\(s\) written/m.test(initOut)) throw new Error("init não reportou escrita");
     for (const rel of [
       ".agents/agents", ".agents/rules", ".agents/schemas", ".agents/skills",
@@ -216,7 +240,7 @@ export async function runAcceptance(opts = {}) {
     ]) {
       if (!fs.existsSync(path.join(target, rel))) throw new Error(`camada ausente: ${rel}`);
     }
-    const doctorOut = run(["doctor", "--target", target]);
+    const doctorOut = sync(["doctor", "--target", target]);
     if (!/doctor: OK/.test(doctorOut)) throw new Error("doctor não deu OK");
     const cfg = JSON.parse(fs.readFileSync(path.join(target, "harness.config.json"), "utf8"));
     for (const key of ["moduleMap", "gates", "mcp", "contraproveTimeoutMs"]) {
@@ -407,6 +431,146 @@ export async function runAcceptance(opts = {}) {
     return "schema válido; remover brainStore ⇒ required FAIL; subset declarado";
   });
 
+  // --- ADR-001 / PRD §10 — identidade do init (A8..A14) --------------------
+  const identityLines = (out) =>
+    out
+      .split("\n")
+      .filter((line) =>
+        /^(harness-sync (init|update): (stack |plano |.{3,} (created|appended|preserved|skip|divergent|malformed)$)|WARN divergência |ERROR seção malformada )/.test(line));
+  const initFixture = () => ({
+    "package.json": JSON.stringify({ dependencies: { react: "^18" }, scripts: { test: SUITE } }),
+  });
+
+  // A8 — fixture sem AGENTS.md: três artefatos created, origem detectada.
+  // MS-1 é PARCIAL: I8 defere o perfil de tokens a ADR nova, então nenhum
+  // tokens/*.json é gerado — declarar a pendência, não inventar perfil.
+  await scenario("A8", async () => {
+    const target = scope.tmp(initFixture(), { root: tempRoot });
+    const out = sync(["init", "--target", target, "--suite", SUITE]);
+    for (const rel of ["AGENTS.md", "DESIGN.md", OWN_FRONTEND]) {
+      if (!fs.existsSync(path.join(target, rel))) throw new Error(`artefato ausente: ${rel}`);
+      if (!out.includes(`harness-sync init: ${rel} created`)) throw new Error(`${rel} não reportado como created`);
+    }
+    if (!out.includes("harness-sync init: stack origem=detectada frontend=react backend=null")) {
+      throw new Error("origem da stack não reportada");
+    }
+    const files = JSON.parse(fs.readFileSync(path.join(target, ".harness-manifest.json"), "utf8")).files;
+    if (!(OWN_FRONTEND in files)) throw new Error("PRÓPRIO fora do manifesto");
+    for (const rel of ["AGENTS.md", "DESIGN.md"]) {
+      if (rel in files) throw new Error(`ANEXADO no manifesto: ${rel}`);
+    }
+    // I8: gerar tokens sem decidir perfil (shadcn/claude) seria palpite — o
+    // gerador não escolhe; a ausência do diretório é a prova da pendência.
+    if (fs.existsSync(path.join(target, "tokens"))) {
+      throw new Error("tokens/ gerado sem ADR de perfil (violação de I8)");
+    }
+    return "3 artefatos created; MS-1 parcial: tokens pendente (I8 — ADR de perfil)";
+  });
+
+  // A9 — 2ª execução: 0 writes, manifesto byte-igual, nenhum backup novo.
+  await scenario("A9", async () => {
+    const target = scope.tmp(initFixture(), { root: tempRoot });
+    sync(["init", "--target", target, "--suite", SUITE]);
+    const manifest = path.join(target, ".harness-manifest.json");
+    const before = fs.readFileSync(manifest);
+    const second = attemptSync(["update", "--target", target]);
+    if (second.code !== 0) throw new Error(`2ª execução saiu ${second.code}: ${second.out}`);
+    if (!/update: 0 file\(s\) written/.test(second.out)) throw new Error("2ª execução escreveu");
+    if (!before.equals(fs.readFileSync(manifest))) throw new Error("manifesto mudou na 2ª execução");
+    return "2ª execução = 0 writes; manifesto byte-igual";
+  });
+
+  // A10 — anexados pré-existentes: original byte-idêntico como prefixo + 1 par.
+  await scenario("A10", async () => {
+    const agents = "# AGENTS do time\n\nRegra própria, sem tocar.\n";
+    const design = "# DESIGN do time\n";
+    const target = scope.tmp(
+      { ...initFixture(), "AGENTS.md": agents, "DESIGN.md": design },
+      { root: tempRoot },
+    );
+    const out = sync(["init", "--target", target, "--suite", SUITE]);
+    for (const [rel, original] of [["AGENTS.md", agents], ["DESIGN.md", design]]) {
+      const after = fs.readFileSync(path.join(target, rel), "utf8");
+      if (!after.startsWith(original)) throw new Error(`prefixo alterado: ${rel}`);
+      if (after.split(OPEN).length - 1 !== 1 || after.split(CLOSE).length - 1 !== 1) {
+        throw new Error(`par de marcadores não é 1+1: ${rel}`);
+      }
+      if (!out.includes(`harness-sync init: ${rel} appended`)) throw new Error(`${rel} não reportado como appended`);
+    }
+    return "AGENTS.md/DESIGN.md byte-idênticos no prefixo; 1 par start/end cada";
+  });
+
+  // A11 — project-backend.md do maintainer: preserved, zero byte, doctor 0.
+  await scenario("A11", async () => {
+    const own = "# backend do maintainer\n";
+    const target = scope.tmp(
+      { "pom.xml": "<project/>", [OWN_BACKEND]: own },
+      { root: tempRoot },
+    );
+    const out = sync(["init", "--target", target]);
+    if (fs.readFileSync(path.join(target, OWN_BACKEND), "utf8") !== own) throw new Error("PRÓPRIO sobrescrito");
+    if (!out.includes(`harness-sync init: ${OWN_BACKEND} preserved`)) throw new Error("preserved não reportado");
+    const doctorOut = sync(["doctor", "--target", target]);
+    if (!/doctor: OK/.test(doctorOut)) throw new Error(`doctor reprovou: ${doctorOut}`);
+    return "project-backend.md preserved; byte-idêntico; doctor OK";
+  });
+
+  // A12 — recompute do doctor: PRÓPRIO corrompido/symlinkado FAIL com path.
+  await scenario("A12", async () => {
+    const target = scope.tmp(initFixture(), { root: tempRoot });
+    sync(["init", "--target", target, "--suite", SUITE]);
+    const own = path.join(target, OWN_FRONTEND);
+    const original = fs.readFileSync(own);
+    fs.writeFileSync(own, `${original.toString("utf8")}\nX`);
+    let bad = attemptSync(["doctor", "--target", target]);
+    if (bad.code !== 1 || !bad.out.includes(`sha256 divergente do manifesto: ${OWN_FRONTEND}`)) {
+      throw new Error(`corrupção não detectada: ${bad.out}`);
+    }
+    fs.writeFileSync(own, original);
+    const outside = path.join(tempRoot, "fora-do-target.md");
+    fs.writeFileSync(outside, "INTOCADO\n");
+    fs.rmSync(own);
+    fs.symlinkSync(outside, own);
+    bad = attemptSync(["doctor", "--target", target]);
+    if (bad.code !== 1 || !bad.out.includes(`arquivo do manifesto é symlink: ${OWN_FRONTEND}`)) {
+      throw new Error(`symlink não detectado: ${bad.out}`);
+    }
+    if (fs.readFileSync(outside, "utf8") !== "INTOCADO\n") throw new Error("arquivo externo alterado");
+    return "doctor FAIL em sha divergente e em symlink, com o path";
+  });
+
+  // A13 — --dry-run imprime as mesmas linhas I6 do apply, sem escrever.
+  await scenario("A13", async () => {
+    const dryTarget = scope.tmp({ ...initFixture(), "AGENTS.md": "# time\n" }, { root: tempRoot });
+    const applyTarget = scope.tmp({ ...initFixture(), "AGENTS.md": "# time\n" }, { root: tempRoot });
+    const dry = sync(["init", "--target", dryTarget, "--suite", SUITE, "--dry-run"]);
+    const applied = sync(["init", "--target", applyTarget, "--suite", SUITE]);
+    const a = identityLines(dry);
+    const b = identityLines(applied);
+    if (a.length === 0 || JSON.stringify(a) !== JSON.stringify(b)) {
+      throw new Error(`plano ≠ apply: ${JSON.stringify(a)} / ${JSON.stringify(b)}`);
+    }
+    if (fs.existsSync(path.join(dryTarget, OWN_FRONTEND)) || fs.existsSync(path.join(dryTarget, "AGENTS.md.backup"))) {
+      throw new Error("dry-run escreveu no alvo");
+    }
+    if (fs.readFileSync(path.join(dryTarget, "AGENTS.md"), "utf8") !== "# time\n") {
+      throw new Error("dry-run alterou anexado pré-existente");
+    }
+    return "dry-run = apply nas linhas I6; zero escrita no dry-run";
+  });
+
+  // A14 — a contraprova continua sendo a auto-suite do destino (NFR-03).
+  await scenario("A14", async () => {
+    const cfg = readConfig();
+    const suite = cfg?.commands?.suiteFull;
+    if (typeof suite !== "string" || !suite.includes('scripts/__tests__/*.spec.mjs')) {
+      throw new Error("suiteFull não inclui a suíte de scripts");
+    }
+    if (!suite.includes("node scripts/static-checks.mjs")) throw new Error("suiteFull não inclui static-checks");
+    if (suite.includes("acceptance-clean-room.mjs")) throw new Error("suiteFull foi trocada pelo aceite");
+    return "suiteFull inalterada: contraprova é a auto-suite, não o aceite";
+  });
+
   let removed = [];
   try {
     // cleanup cobre o caminho de erro: o registro é removido mesmo se um
@@ -419,13 +583,13 @@ export async function runAcceptance(opts = {}) {
   // A instrumentação só ataca o caso perigoso: TUDO verde sem gate chamado.
   // Quando um cenário já falhou, ele nomeia o defeito — A0 só acrescentaria
   // ruído (e um gate no-op aborta o cenário antes das chamadas seguintes).
-  const allScenariosPass = scenarios.length === 7 && scenarios.every((s) => s.status === "PASS");
+  const allScenariosPass = scenarios.length === EXPECTED_SCENARIOS && scenarios.every((s) => s.status === "PASS");
   if (allScenariosPass && gateCalls < MIN_GATE_CALLS) {
     const detail = `instrumentação: ${gateCalls} chamada(s) de gate, mínimo ${MIN_GATE_CALLS}`;
     scenarios.push({ name: "A0-instrumentation", status: "FAIL", detail });
     emit(`FAIL A0-instrumentation ${detail}`);
   }
-  const ok = scenarios.length === 7 && scenarios.every((s) => s.status === "PASS");
+  const ok = scenarios.length === EXPECTED_SCENARIOS && scenarios.every((s) => s.status === "PASS");
   const passed = scenarios.filter((s) => s.status === "PASS").length;
   const failed = scenarios.length - passed;
   const exitCode = ok ? 0 : 1;
@@ -453,7 +617,7 @@ export async function runAcceptance(opts = {}) {
     evaluation: {
       telas: "fora de escopo: sem frontend neste repo",
       negocio: "fora de escopo: sem alvo RBAC/tenant",
-      logica: "A1..A7 exercitam os mecanismos por chamada direta aos gates/checks",
+      logica: "A1..A7 exercitam os gates/checks; A8..A14 exercitam a identidade do init via CLI real",
       perf: `sem medição de UI; duração do aceite ${Date.now() - started}ms`,
     },
     brainStore: [],
@@ -467,6 +631,8 @@ export async function runAcceptance(opts = {}) {
     debts: {
       D3: "resolvido pelo orquestrador em .spec/: citações em docs são por símbolo/seção, nunca por linha",
       SEARCH05: "resolvido pelo orquestrador em .spec/: V6 do prompt-optimizer asserta tipo transitório",
+      MS_1:
+        "parcial: tokens/*.json pendente por I8 (perfil shadcn/claude deferido a ADR nova); ver .spec/prd/prd-init-project-scaffold/ADRs/ADR-001-managed-section-scaffold/TECH-DEBT-tokens.md",
     },
   };
   if (opts.reportPath !== null) {
