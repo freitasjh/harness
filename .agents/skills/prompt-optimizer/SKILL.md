@@ -81,7 +81,7 @@ Padrão que se repete 2x → `brain_store(layer="regras", path="projeto/prompt-p
 | V3 | padrão `Tier <n>` nos 2 call sites | 0 |
 | V4 | `prompt-optimizer` em `workflow-rules.md` | ≥ 1 |
 | V5 | Constraints por exemplo em `references/picco-template.md` | ≤ 10 |
-| V6 | `workflow-state.json` | JSON válido, `type: refactor` |
+| V6 | `workflow-state.json` | JSON válido, `type` presente (string não vazia; valor é dado do ciclo, não invariante) |
 
 V1/V2 são comportamentais: sem runner de LLM não são executáveis nesta suíte — ficam **declaradas, não provadas**. V3..V6 são executadas por `.opencode/plugins/__tests__/prompt-optimizer.spec.mjs`.
 

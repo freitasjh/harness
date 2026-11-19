@@ -1,7 +1,7 @@
 # Tech debt — identidade de path sob symlink (F1)
 
 Status: registrado (2026-11-18) · Origem: parecer #5 do code review · Bloqueia F2: **não**
-Atualização F2 (2026-11-18): **D1 e D2 fechados** e medidos no parecer do F2 (D1: 7 variantes de symlink, zero writes na recusa; D2: 8 variantes, nenhum manifesto na fonte). Resta **D3** (range de doc, entra em F8).
+Atualização F8 (2026-11-18): **D1, D2 e D3 fechados**. D1/D2 medidos no parecer do F2 (7 e 8 variantes, zero writes na recusa / nenhum manifesto na fonte). D3 resolvido em F3a: citações por linha trocadas por símbolo/seção em `docs/FUNCIONAMENTO.md`, com guarda `docs-citations.spec.mjs` que barra reintrodução.
 
 ## Contexto
 
@@ -20,10 +20,10 @@ O 5º passe centralizou a escrita em `writeGuarded(root, rel, content)` (`script
 - **Risco:** contamina o checkout do harness; o manifesto passa a descrever o próprio repo.
 - **Fix sugerido:** comparar `realpath` quando o path existe (1 linha) e manter o fallback lexical para alvos inexistentes.
 
-## D3 — range de doc
+## D3 — FECHADO em F8 — range de doc
 
 - `docs/FUNCIONAMENTO.md:112` cita `317-330` para o runner; o real é `316-334`. Cosmético.
 
 ## Critério de reativação
 
-D1 e D2 foram fechados em F2 (`realpath` do ancestral mais fundo + contenção contra `realpath(target)`; `assertNotSource` por `realpath`). D3 entra na revisão de docs de F8.
+D1 e D2 foram fechados em F2 (`realpath` do ancestral mais fundo + contenção contra `realpath(target)`; `assertNotSource` por `realpath`). D3 fechado em F3a/F8 pela troca de citações `arquivo:NNN` por símbolo/seção + guarda automática.

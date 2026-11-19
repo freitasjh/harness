@@ -1,7 +1,7 @@
 {
   "current_feature": "harness-v2",
-  "current_phase": "Execution",
-  "previous_phase": "Completed",
+  "current_phase": "Completed",
+  "previous_phase": "Execution",
   "next_phase": "Execution",
   "type": "refactor",
   "artifacts": {
@@ -359,12 +359,17 @@
         "suite": "488 plugins + 148 scripts",
         "review": "APPROVED",
         "always_on_bytes": 10309
+      },
+      "F8": {
+        "status": "done",
+        "suite": "488 plugins + 152 scripts",
+        "acceptance": "7/7 A1..A7",
+        "review": "APPROVED com 3 correcoes de evidencia"
       }
     },
-    "pending": [
-      "F8"
-    ],
-    "reviews": 5
+    "pending": [],
+    "reviews": 5,
+    "status": "completed"
   },
-  "last_update": "2026-11-19T00:09:49.264Z"
+  "last_update": "2026-11-19T01:06:46.489Z"
 }

@@ -121,7 +121,7 @@ Status: done. 10 fixtures (7 Rota B / 3 Rota A); teste cobre contrato e declara 
 Status: done. 3 seções + tags `[CRÍTICO]`/`[ARQUITETURA]`/`[MELHORIA]`; permanece parecer (I2/âncora B).
 
 ### SEARCH-05 — V6 do teste desacoplada de `type: refactor`
-Status: open (melhoria não-bloqueante do review F5): assertar presença de `type`, não valor transitório.
+Status: done (F8). `prompt-optimizer.spec.mjs` passa a assertar presença de `type` (string não vazia), não o valor transitório.
 
 ## F6 — Frontend/design
 
@@ -166,13 +166,13 @@ Status: done. `.agents/rules/always-on.md` 10.309 B como único instructions; 9 
 ## F8 — Aceite e docs
 
 ### ACCEPT-01 — `acceptance-clean-room.mjs`
-Status: open. init → PRD → 2 ADRs → SPEC/TASKS → FE/BE → gates.
+Status: done. A1..A7: bootstrap, esteira, 3 mutações, PICCO/HITL, Completed, FRONT, schema; 12 chamadas reais de gate; anti-vacuidade com tampering.
 
 ### ACCEPT-02 — CI de aceite
-Status: open. `harness-acceptance.yml` em PR para `v2`.
+Status: done. 31 linhas; Node 22; suítes + checks + acceptance em push/PR.
 
 ### ACCEPT-03 — Docs enxutos
-Status: open. README/AGENTS ≤ 150 linhas; `docs/ref/`.
+Status: done. README 98 l., AGENTS 55 l.; detalhe movido para `docs/ref/`; citações por símbolo em docs.
 
 ### ACCEPT-04 — Brain e tag
-Status: open. `brain_store` de decisões/sessão; tag `v2.0.0`.
+Status: done. Brain de decisões/lições/sessões F0..F8; tag `v2.0.0` criada no branch `v2`.

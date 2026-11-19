@@ -11,7 +11,8 @@
 //   Executável: contagem de fixtures, proporção 7/3, bloqueios E1/E2/E5,
 //   consistência frontmatter ↔ veredito declarado, presença de Stage 0/ledger/
 //   PICCO no SKILL, citação no §0, ausência de "Tier 1/2/3" nos 2 call sites,
-//   V5 (≤10 constraints nos exemplos) e V6 (estado JSON com type: refactor).
+//   V5 (≤10 constraints nos exemplos) e V6 (estado JSON com type presente,
+//   não valor transitório).
 //   Declarado, não provado: acerto do modelo ao classificar prompts novos.
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
@@ -170,9 +171,9 @@ describe("F5-C2 — SKILL v3: Stage 0, ledger, PICCO e V3/V5/V6", () => {
     }
   });
 
-  it("V6: workflow-state.json é JSON válido com type: refactor", () => {
+  it("V6: workflow-state.json é JSON válido com type presente (não valor transitório)", () => {
     const state = JSON.parse(read(STATE_REL));
-    assert.equal(state.type, "refactor");
+    assert.ok(typeof state.type === "string" && state.type.length > 0, "type presente, não valor transitório");
   });
 
   it("limite de tamanho: SKILL.md tem no máximo 120 linhas", () => {

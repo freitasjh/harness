@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "demand": "harness-v2-clean-room",
+  "agent": "backend-engineer",
+  "phase": "Testing",
+  "gitSha": "22c339ce607b8ab28000e6f1f8afbeed1ba33a5a",
+  "at": "2026-11-19T01:06:25.345Z",
+  "commands": [
+    {
+      "cmd": "node scripts/acceptance-clean-room.mjs",
+      "exitCode": 0,
+      "durationMs": 169,
+      "stdoutHash": "30493e868a654b8b0dea1c9c395259c8dbad3ddd9bdf78e5da42ad9c851fb5a4"
+    }
+  ],
+  "counts": {
+    "unit": {
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    "it": {
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0
+    },
+    "frontend": {
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "countsNote": "counts.unit conta os CENÁRIOS de aceite, não a suíte node --test (rodada separada pelo CI)",
+  "evaluation": {
+    "telas": "fora de escopo: sem frontend neste repo",
+    "negocio": "fora de escopo: sem alvo RBAC/tenant",
+    "logica": "A1..A7 exercitam os mecanismos por chamada direta aos gates/checks",
+    "perf": "sem medição de UI; duração do aceite 169ms"
+  },
+  "brainStore": [],
+  "brainStoreNote": "nota de sessão registrada pelo agente fora deste script (Q1=A: sem LLM)",
+  "cleanup": {
+    "ports": [],
+    "processes": [],
+    "tempDirs": 3,
+    "tempDirPaths": [
+      "/tmp/harness-accept-s8kSJ8",
+      "/tmp/harness-accept-mD2kHT",
+      "/tmp/harness-accept-jYCpS0"
+    ]
+  },
+  "selfReported": true,
+  "selfReportedNote": "mecanismos exercitados por chamada direta; sem LLM/UI real; contraprova é o gate, não o script",
+  "scenarios": [
+    {
+      "name": "A1",
+      "status": "PASS",
+      "detail": "init+doctor OK; 8 camadas; 4 chaves novas; instructions=always-on"
+    },
+    {
+      "name": "A2",
+      "status": "PASS",
+      "detail": "PRD-01/ADR-01/ADR-02 PASS (2 ADRs unit:adr, in-progress+merged)"
+    },
+    {
+      "name": "A3",
+      "status": "PASS",
+      "detail": "3 mutações reprovadas (SPEC/TASKS raiz/scope); restauração PASS"
+    },
+    {
+      "name": "A4",
+      "status": "PASS",
+      "detail": "picco-absent/picco-empty + 3º task sem turno nega; turno humano libera"
+    },
+    {
+      "name": "A5",
+      "status": "PASS",
+      "detail": "completed-no-evidence/ok (selo+stub) + âncora B aberta/fechada"
+    },
+    {
+      "name": "A6",
+      "status": "PASS",
+      "detail": "targets.frontend=react exige stories/screenshots/a11y; ausente nega, válido permite"
+    },
+    {
+      "name": "A7",
+      "status": "PASS",
+      "detail": "schema válido; remover brainStore ⇒ required FAIL; subset declarado"
+    }
+  ],
+  "gateCalls": 12,
+  "debts": {
+    "D3": "resolvido pelo orquestrador em .spec/: citações em docs são por símbolo/seção, nunca por linha",
+    "SEARCH05": "resolvido pelo orquestrador em .spec/: V6 do prompt-optimizer asserta tipo transitório"
+  }
+}

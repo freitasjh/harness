@@ -1,0 +1,31 @@
+# Aceite DETERMINÍSTICO dos mecanismos v2 (F8): sem LLM e sem UI real.
+# Prova os gates por chamada direta com fixtures em tmp (A1..A7) e roda as
+# suítes/checks canônicos. O gate de Completed de verdade — selo publicado pelo
+# host + contraprova re-executando commands.suiteFull — continua no host;
+# aqui o contraproveExec é stub e o relatório declara selfReported=true.
+name: harness-acceptance
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  clean-room:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Plugin unit tests
+        run: node --test ".opencode/plugins/__tests__/*.spec.mjs"
+      - name: Scripts unit tests
+        run: node --test "scripts/__tests__/*.spec.mjs"
+      - name: Static checks
+        run: node scripts/static-checks.mjs
+      - name: SDD checks
+        run: node scripts/sdd-checks.mjs
+      - name: Vendor drift check
+        run: node scripts/vendor-skills.mjs --check
+      - name: Clean-room acceptance (A1..A7)
+        run: node scripts/acceptance-clean-room.mjs

@@ -553,7 +553,8 @@ export function matchGlob(path, pattern) {
 
 // Orchestrator allowlist, anchor A (SPEC N12): ONLY .spec/** plus the state
 // file. Everything else (notably rules/schemas/plugins/config) is denied here
-// and writable solely via developer-engineer under delegation (CI backstop).
+// and writable solely via the live implementation roles (frontend-engineer |
+// backend-engineer) under delegation (CI backstop).
 export function isOrchAllowlisted(path) {
   const normalized = normalizePath(path);
   return (
@@ -663,8 +664,8 @@ export function checkWriteAccess({ agent, tool, targets = [], protectedPaths = [
     if (isProtectedPath(normalized, protectedPaths)) {
       // Sole exception: implementation roles under delegation; the trailer
       // requirement itself is enforced out-of-band by CI (ADR-007).
-      // F4: developer-engineer was removed from the roster; the two current
-      // implementation roles inherit the exemption.
+      // F4: the former single implementation role was removed from the roster;
+      // the two current implementation roles inherit the exemption.
       if (agent === "frontend-engineer" || agent === "backend-engineer") continue;
       throw new DenyError(DENY_PROTECTED, {
         tool,
@@ -1060,10 +1061,10 @@ export function readEvidenceReport(ctx = {}) {
 // GATE-04 — HITL pause between batches (I6).
 //
 // Rule: the 3rd consecutive `task` without an intervening human turn denies.
-// The mandatory correction loop (developer-engineer -> code-reviewer (renamed RENAME, Batch 7)
-// as the first two calls) therefore always passes — the exemption is
-// structural (2 < 3), not a special case. Human turns arrive via the
-// event stream (v2 turn-boundary events), which resets the per-session counter.
+// The mandatory correction loop (implementation role -> code-reviewer as the
+// first two calls) therefore always passes — the exemption is structural
+// (2 < 3), not a special case. Human turns arrive via the event stream (v2
+// turn-boundary events), which resets the per-session counter.
 // ---------------------------------------------------------------------------
 
 export function createHitlTracker() {
