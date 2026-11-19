@@ -116,8 +116,23 @@ cria backup — e roda o MESMO guard de backup do apply, então `--backup-dir`
 recusado (dentro do alvo ou sob link) sai 1 antes de o plano ser exibido.
 Manifesto = `.harness-manifest.json` (`{version, files:{path: sha256}}`).
 
-Dado do projeto que **nunca** é escrito nem removido: `harness.config.json`,
-`workflow-state.json`, `.agents/rules/project-*.md` e `.spec/**`.
+Dado do projeto que **nunca** é sobrescrito nem removido: `harness.config.json`,
+`workflow-state.json`, `.agents/rules/project-*.md` e `.spec/**`. ADR-001
+(fase de implementação): um `project-*.md` **ausente** passa a ser criado pela
+allowlist explícita de PRÓPRIOS do plano (`buildIdentityPlan`); um
+`project-*.md` **presente** segue `preserved` e não é reescrito — `PRESERVED_RES`
+global continua proibindo sobrescrita. `AGENTS.md`/`DESIGN.md` são ANEXADOS:
+fora do manifesto (`inManifest: false`) e fora do veredito do `doctor`; a única
+mutação é o `BLOCO` delimitado por `<!-- harness:v2:start -->` /
+`<!-- harness:v2:end -->`, anexado ao final com o prefixo byte-idêntico.
+Divergência do BODY ⇒ `WARN divergência <path>` com exit 0; contagem/ordem
+inválida ⇒ `ERROR seção malformada <path>` com exit 1 e zero escrita.
+
+`--frontend react|vue` e `--backend java|rust|nestjs|node` sobrepõem a detecção
+(`detectTargets`); sem sinal, `init`/`update` recusam com a mensagem literal de
+I5. O relatório (`identityReportLines`) imprime stack, um estado por path
+ordenado POSIX e o resumo `plano created=… appended=… preserved=… skip=…
+divergent=… malformed=…`; `--dry-run` imprime as mesmas linhas do apply.
 
 O gating de artefato por eixo (`SKILLS_BY_AXIS`/`RULES_BY_AXIS`) saiu com o
 instalador: o payload é fixo e o que o destino recebe deixou de depender de um

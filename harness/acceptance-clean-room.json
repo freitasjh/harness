@@ -3,19 +3,19 @@
   "demand": "harness-v2-clean-room",
   "agent": "backend-engineer",
   "phase": "Testing",
-  "gitSha": "22c339ce607b8ab28000e6f1f8afbeed1ba33a5a",
-  "at": "2026-11-19T01:06:25.345Z",
+  "gitSha": "02e0925aebdf43020eabed25b9ae5127c146e050",
+  "at": "2026-11-19T02:11:57.167Z",
   "commands": [
     {
       "cmd": "node scripts/acceptance-clean-room.mjs",
       "exitCode": 0,
-      "durationMs": 169,
-      "stdoutHash": "30493e868a654b8b0dea1c9c395259c8dbad3ddd9bdf78e5da42ad9c851fb5a4"
+      "durationMs": 1405,
+      "stdoutHash": "8ac2049adbccb9cc6c2fffbe950ac58b555e61dd9167df01be30edeb13b69541"
     }
   ],
   "counts": {
     "unit": {
-      "passed": 7,
+      "passed": 14,
       "failed": 0,
       "skipped": 0
     },
@@ -34,19 +34,26 @@
   "evaluation": {
     "telas": "fora de escopo: sem frontend neste repo",
     "negocio": "fora de escopo: sem alvo RBAC/tenant",
-    "logica": "A1..A7 exercitam os mecanismos por chamada direta aos gates/checks",
-    "perf": "sem medição de UI; duração do aceite 169ms"
+    "logica": "A1..A7 exercitam os gates/checks; A8..A14 exercitam a identidade do init via CLI real",
+    "perf": "sem medição de UI; duração do aceite 1405ms"
   },
   "brainStore": [],
   "brainStoreNote": "nota de sessão registrada pelo agente fora deste script (Q1=A: sem LLM)",
   "cleanup": {
     "ports": [],
     "processes": [],
-    "tempDirs": 3,
+    "tempDirs": 10,
     "tempDirPaths": [
-      "/tmp/harness-accept-s8kSJ8",
-      "/tmp/harness-accept-mD2kHT",
-      "/tmp/harness-accept-jYCpS0"
+      "/tmp/harness-accept-KHj2z1",
+      "/tmp/harness-accept-HQ1vnO",
+      "/tmp/harness-accept-bMpqx4",
+      "/tmp/harness-accept-3jU3Ot",
+      "/tmp/harness-accept-A0MUpL",
+      "/tmp/harness-accept-dNBEAA",
+      "/tmp/harness-accept-r10jZs",
+      "/tmp/harness-accept-6eE5Ht",
+      "/tmp/harness-accept-eCAJP5",
+      "/tmp/harness-accept-gy1Hlv"
     ]
   },
   "selfReported": true,
@@ -86,11 +93,47 @@
       "name": "A7",
       "status": "PASS",
       "detail": "schema válido; remover brainStore ⇒ required FAIL; subset declarado"
+    },
+    {
+      "name": "A8",
+      "status": "PASS",
+      "detail": "3 artefatos created; MS-1 parcial: tokens pendente (I8 — ADR de perfil)"
+    },
+    {
+      "name": "A9",
+      "status": "PASS",
+      "detail": "2ª execução = 0 writes; manifesto byte-igual"
+    },
+    {
+      "name": "A10",
+      "status": "PASS",
+      "detail": "AGENTS.md/DESIGN.md byte-idênticos no prefixo; 1 par start/end cada"
+    },
+    {
+      "name": "A11",
+      "status": "PASS",
+      "detail": "project-backend.md preserved; byte-idêntico; doctor OK"
+    },
+    {
+      "name": "A12",
+      "status": "PASS",
+      "detail": "doctor FAIL em sha divergente e em symlink, com o path"
+    },
+    {
+      "name": "A13",
+      "status": "PASS",
+      "detail": "dry-run = apply nas linhas I6; zero escrita no dry-run"
+    },
+    {
+      "name": "A14",
+      "status": "PASS",
+      "detail": "suiteFull inalterada: contraprova é a auto-suite, não o aceite"
     }
   ],
   "gateCalls": 12,
   "debts": {
     "D3": "resolvido pelo orquestrador em .spec/: citações em docs são por símbolo/seção, nunca por linha",
-    "SEARCH05": "resolvido pelo orquestrador em .spec/: V6 do prompt-optimizer asserta tipo transitório"
+    "SEARCH05": "resolvido pelo orquestrador em .spec/: V6 do prompt-optimizer asserta tipo transitório",
+    "MS_1": "parcial: tokens/*.json pendente por I8 (perfil shadcn/claude deferido a ADR nova); ver .spec/prd/prd-init-project-scaffold/ADRs/ADR-001-managed-section-scaffold/TECH-DEBT-tokens.md"
   }
 }

@@ -1,21 +1,22 @@
 {
-  "current_feature": "harness-v2",
-  "current_phase": "Completed",
-  "previous_phase": "Execution",
-  "next_phase": "Execution",
-  "type": "refactor",
+  "current_feature": "prd-init-project-scaffold",
+  "current_phase": "Testing",
+  "previous_phase": "Completed",
+  "next_phase": "Completed",
+  "type": "feature",
   "artifacts": {
-    "proposal": ".spec/governance/harness-v2/PROPOSAL.md",
-    "spec": ".spec/governance/harness-v2/SPEC.md",
-    "plan": ".spec/governance/harness-v2/PLAN.md",
-    "tasks": ".spec/governance/harness-v2/TASKS.md",
-    "baseline": ".spec/governance/harness-v2/baseline-v1.md"
+    "prd": ".spec/prd/prd-init-project-scaffold/PRD.md",
+    "research": ".spec/prd/prd-init-project-scaffold/RESEARCH.md",
+    "adr_index": ".spec/prd/prd-init-project-scaffold/ADR-INDEX.md",
+    "adr": ".spec/prd/prd-init-project-scaffold/ADRs/ADR-001-managed-section-scaffold/ADR.md",
+    "spec": ".spec/prd/prd-init-project-scaffold/ADRs/ADR-001-managed-section-scaffold/SPEC.md",
+    "tasks": ".spec/prd/prd-init-project-scaffold/ADRs/ADR-001-managed-section-scaffold/TASKS.md"
   },
   "gates": {
     "P0_P1": "approved_auto_pending_architect (ADR-002 CLI visual; protótipo aprovado e congelado; ux-designer já exercida)",
     "G2_PRD": "approved_user_2026_10_22 (PRD prd-garantias-runtime aprovado sem ressalvas; §16 do PRD.md; 3 decisoes do owner)",
-    "P1_P2": "approved_user_2026_11_17 (SPEC 12 RF 100%, architect aprovado, protótipo congelado)",
-    "P2_P3": "approved_user_2026_11_17 (PLAN 53, TASKS 6, 12 RF, SDD verdes)",
+    "P1_P2": "approved_user_2026_11_18",
+    "P2_P3": "approved_user_2026_11_18",
     "P3_P4": "approved_auto_evidence_2026_11_17 (6 batches; review APPROVED 0/0)",
     "P4_P5": "approved_auto_evidence_QA_2026_11_17 (540+1091+cargo85; transcript real; segredo/sinal/eco PTY)",
     "P5_P6": "approved_owner_2026_11_17 (transcript 9fd70bb6 ratificado; nao-paridade 16336B; Veredito registrado)",
@@ -48,9 +49,9 @@
     "reviewer_notes": "ADR-002 review final APPROVED 0/0. VERIFY 3/3 com evidência re-medida, segurança 14/14, ratificação pendente sem forja, nenhuma paridade com 16336B, N/M congelados, rust+vue byte-idêntico ADR-001. 1 sugestão documental (campo perf) corrigida em 96b0be9."
   },
   "code_review_status": "passed",
-  "code_review_status_ciclo": "harness-v2/F3a",
+  "code_review_status_ciclo": "adr-001-managed-section-scaffold",
   "harness_status": "passed",
-  "harness_status_detail": "suite selada verde: plugins 379/379, installer 516/516, static 10 PASS, sdd 8 PASS, selo intacto",
+  "harness_status_detail": "VERIFY APPROVED; aceite 14/14; MS-1 parcial declarada",
   "features": [
     {
       "name": "harness-installer-mobile",
@@ -141,39 +142,13 @@
     }
   ],
   "prd_adr": {
-    "prd_id": "prd-eixos-separados-cli",
+    "prd_id": "prd-init-project-scaffold",
     "prd_status": "approved",
-    "active_adr": "ADR-002",
+    "active_adr": "ADR-001",
     "adr_order": [
-      "ADR-001",
-      "ADR-002"
+      "ADR-001"
     ],
-    "snapshots": [
-      {
-        "adr": "ADR-001",
-        "status": "merged",
-        "merge": "7fafde3",
-        "at": "2026-11-17T17:19:03.287Z",
-        "nota": "48 combinacoes por eixo, 6 batches, owner ratificou selo/baseline48/V20"
-      },
-      {
-        "adr": "ADR-002",
-        "status": "merged",
-        "merge": "aed46b0",
-        "at": "2026-11-17T23:20:02.398Z",
-        "nota": "6/6 tasks, CLI visual 4 telas N=4/M, transcript 2412B ratificado, delta owner"
-      }
-    ],
-    "decisoes_anteriores": "prd-installer-rust 5/5 merged (reaberto D5/ADR-004 via §16 D16-EIXOS-CLI)",
-    "summary": {
-      "prd": "prd-eixos-separados-cli",
-      "adrs_total": 2,
-      "adrs_merged": 2,
-      "adrs_pending_merge": 0,
-      "concluido": "2026-11-17T23:20:02.398Z",
-      "transcript": "2412B sha 9fd70bb6 ratificado",
-      "ponte_restante": "10 D-ENGINE (FU-D1-ENGINE10, delta aceito owner)"
-    }
+    "snapshots": []
   },
   "follow_ups": [
     {
@@ -371,5 +346,5 @@
     "reviews": 5,
     "status": "completed"
   },
-  "last_update": "2026-11-19T01:06:46.489Z"
+  "last_update": "2026-11-19T02:16:18.003Z"
 }

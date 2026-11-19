@@ -13,12 +13,16 @@ node --test "scripts/__tests__/*.spec.mjs"
 node scripts/static-checks.mjs
 node scripts/sdd-checks.mjs
 node scripts/vendor-skills.mjs --check
-node scripts/acceptance-clean-room.mjs        # A1..A7, exit 0 só se tudo passar
+node scripts/acceptance-clean-room.mjs        # A1..A14, exit 0 só se tudo passar
 ```
 
 Em outro repo: `node scripts/harness-sync.mjs init --target <dir> --suite "node
---test"`, depois `doctor --target <dir>`. O plano antes de escrever é
-`--dry-run`. Detalhe completo (backup, preservação, merge, selo, symlink) em
+--test" [--frontend react|vue] [--backend java|rust|nestjs|node]`, depois
+`doctor --target <dir>`. O `init` também entrega a identidade: `AGENTS.md`/
+`DESIGN.md` recebem uma seção gerenciada delimitada, e o artefato
+`.agents/rules/project-*.md` é criado quando ausente e preservado quando já
+existe. Stack sem sinal exige flag. O plano antes de escrever é `--dry-run`.
+Detalhe completo (classes, marcadores, estados, backup, selo, symlink) em
 [`docs/ref/sync.md`](docs/ref/sync.md); funcionamento completo em
 [`docs/FUNCIONAMENTO.md`](docs/FUNCIONAMENTO.md).
 
@@ -26,7 +30,7 @@ Em outro repo: `node scripts/harness-sync.mjs init --target <dir> --suite "node
 
 | Comando | O que faz |
 |---|---|
-| `init --target <dir>` | cria payload + config mínimo; recusa alvo com estado do harness |
+| `init --target <dir>` | cria payload, identidade (seção gerenciada + `project-*.md`) e config mínimo; recusa alvo com estado do harness |
 | `update --target <dir>` | backup fora do alvo, grava só o que mudou, órfão só reportado |
 | `doctor --target <dir>` | somente leitura; lista cada `FAIL <o quê>: <path>` |
 | `/harness-init` · `/harness-update` · `/harness-doctor` | mesma tríade pelo agente (plano → confirmação → aplica → valida) |
@@ -35,7 +39,8 @@ Em outro repo: `node scripts/harness-sync.mjs init --target <dir> --suite "node
 | `/ui-review` | build estático do Storybook + revisão no browser; nada é editado |
 
 Os comandos `/harness-*` e `/ui-*` vivem em `.opencode/commands/` e são payload.
-`targets`/`commands` são detectados do projeto; `--suite`/`--unit` sobrepõem.
+`targets`/`commands` são detectados do projeto; `--suite`/`--unit` sobrepõem, e
+`--frontend`/`--backend` sobrepõem a detecção de stack.
 
 ## Esteira PRD → ADR → SDD
 

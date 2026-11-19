@@ -93,8 +93,11 @@ function sync(verb, target, extra = []) {
   return run(SYNC, [verb, "--target", target, ...extra]);
 }
 
+// ADR-001/I5: um alvo sem sinal de stack exige flag. Os testes que não têm
+// stack como assunto declaram `--frontend react`; os testes de detecção chamam
+// `sync("init", …)` direto e mantêm a varredura como único sinal.
 function init(target, extra = []) {
-  return sync("init", target, [...SUITE, ...extra]);
+  return sync("init", target, [...SUITE, "--frontend", "react", ...extra]);
 }
 
 function sha256(content) {
@@ -149,7 +152,7 @@ describe("SYNC-01 — init cria payload + config + manifesto (C3, A5, M6)", () =
     const config = readJson(join(target, "harness.config.json"));
     assert.equal(config.version, 2);
     assert.equal(config.project, basename(target));
-    assert.deepEqual(config.targets, { frontend: null, backend: null });
+    assert.deepEqual(config.targets, { frontend: "react", backend: null });
     assert.equal(config.commands.suiteFull, "node --test");
     assert.equal(config.evidence.path, "harness/");
     assert.ok(config.protectedPaths.includes(".opencode/plugins/**"));
@@ -188,6 +191,12 @@ describe("SYNC-01 — init cria payload + config + manifesto (C3, A5, M6)", () =
     const manifest = readJson(join(target, ".harness-manifest.json"));
     const rels = Object.keys(manifest.files);
     for (const rel of rels) {
+      // ADR-001: o artefato PRÓPRIO de stack é GERADO, não publicado pela fonte —
+      // o sha é verificado contra o próprio arquivo do alvo (SCAF-04).
+      if (rel === ".agents/rules/project-frontend.md") {
+        assert.equal(sha256(readFileSync(join(target, rel))), manifest.files[rel]);
+        continue;
+      }
       // Buffer cru, não string: um payload binário não pode ser re-codificado.
       assert.equal(sha256(readFileSync(join(REPO_ROOT, rel))), manifest.files[rel], `sha divergente: ${rel}`);
     }
@@ -201,13 +210,26 @@ describe("SYNC-01 — init cria payload + config + manifesto (C3, A5, M6)", () =
     assert.deepEqual(leftovers, [], "escrita atômica não deixa temporário");
   });
 
-  it("C3: dir com .agents/ falha e manda usar update (nunca sobrescreve por init)", () => {
-    const target = newTarget({ ".agents/rules/project-x.md": "# do projeto\n" });
+  it("C3: dir com estado do harness em .agents/ falha e manda usar update", () => {
+    // ADR-001/I4: `.agents/rules/project-*.md` sozinho NÃO é estado do harness —
+    // é artefato PRÓPRIO criável/preservável. O marcador é uma camada gerenciada.
+    const target = newTarget({ ".agents/skills/minha-skill/SKILL.md": "# do projeto\n" });
     const res = init(target);
     assert.equal(res.code, 1);
     assert.match(res.out, /estado do harness já presente/);
     assert.match(res.out, /update/);
     assert.equal(existsSync(join(target, ".harness-manifest.json")), false);
+  });
+
+  it("ADR-001/I4: alvo com só project-*.md do maintainer NÃO é recusado pelo init", () => {
+    const target = newTarget({
+      ".agents/rules/project-backend.md": "# do maintainer\n",
+      "package.json": JSON.stringify({ dependencies: { react: "^18" } }),
+    });
+    const res = init(target);
+    assert.equal(res.code, 0, res.out);
+    assert.equal(readFileSync(join(target, ".agents/rules/project-backend.md"), "utf8"), "# do maintainer\n");
+    assert.match(res.out, /preserved|\.agents\/rules\/project-frontend\.md created/);
   });
 
   it("C3: dir com .opencode/plugins/gate.js do projeto falha e o gate fica intacto", () => {
@@ -277,7 +299,8 @@ describe("SYNC-02 — detecção de targets e comandos (sem perguntar nada) — 
     assert.equal(dry.code, 1, dry.out);
     assert.match(dry.out, /passe --suite/);
 
-    const accepted = init(target);
+    // Sem flag: a detecção (vue + nestjs) continua sendo a origem da stack.
+    const accepted = sync("init", target, SUITE);
     assert.equal(accepted.code, 0, accepted.out);
     const config = readJson(join(target, "harness.config.json"));
     assert.deepEqual(config.targets, { frontend: "vue", backend: "nestjs" });
@@ -288,9 +311,11 @@ describe("SYNC-02 — detecção de targets e comandos (sem perguntar nada) — 
     const mobile = newTarget({
       "pubspec.yaml": "name: app\ndependencies:\n  flutter:\n    sdk: flutter\n",
     });
-    assert.equal(init(mobile, SUITE).code, 0);
+    // I5: sem sinal de stack é obrigatório declarar uma flag; `--backend node`
+    // mantém a pergunta original (pubspec não pode virar frontend).
+    assert.equal(sync("init", mobile, [...SUITE, "--backend", "node"]).code, 0);
     const config = readJson(join(mobile, "harness.config.json"));
-    assert.deepEqual(config.targets, { frontend: null, backend: null });
+    assert.deepEqual(config.targets, { frontend: null, backend: "node" });
     assert.ok(["react", "vue", null].includes(config.targets.frontend));
   });
 
@@ -326,7 +351,8 @@ describe("SYNC-03 — update preserva o projeto (G3) — M6", () => {
     const projectRule = join(target, ".agents/rules/project-convencoes.md");
     writeFileSync(projectRule, "# regra do projeto\n");
 
-    const res = sync("update", target);
+    // O config do operador não declara `targets`: a flag é o sinal (I5).
+    const res = sync("update", target, ["--frontend", "react"]);
     assert.equal(res.code, 0, res.out);
     assert.equal(readFileSync(join(target, "harness.config.json"), "utf8"), customConfig);
     assert.deepEqual(readJson(join(target, "workflow-state.json")), { current_phase: "Discovery" });
@@ -419,7 +445,7 @@ describe("SYNC-04 — determinismo e backup (G1/G2) — A4", () => {
 describe("SYNC-05 — dry-run não escreve (nem backup)", () => {
   it("init --dry-run imprime o plano e deixa o dir vazio", () => {
     const target = newTarget();
-    const res = sync("init", target, ["--dry-run", ...SUITE]);
+    const res = sync("init", target, ["--dry-run", ...SUITE, "--frontend", "react"]);
     assert.equal(res.code, 0, res.out);
     assert.match(res.out, /create \.agents\//);
     assert.match(res.out, /dry-run:/);
@@ -1223,7 +1249,7 @@ describe("SYNC-16 — I1: config EXISTENTE com suiteFull nulo avisa e não é to
     const nulled = `${JSON.stringify({ version: 2, project: basename(target), commands: { suiteFull: null } }, null, 2)}\n`;
     writeFileSync(configPath, nulled);
 
-    const res = sync("update", target);
+    const res = sync("update", target, ["--frontend", "react"]);
     assert.equal(res.code, 0, res.out);
     assert.match(res.out, /WARN commands\.suiteFull nulo em harness\.config\.json/);
     assert.match(res.out, /o gate negará Completed até ser preenchido/);
@@ -1241,7 +1267,7 @@ describe("SYNC-16 — I1: config EXISTENTE com suiteFull nulo avisa e não é to
     const broken = "{ nao e json";
     writeFileSync(configPath, broken);
 
-    const res = sync("update", target);
+    const res = sync("update", target, ["--frontend", "react"]);
     assert.equal(res.code, 0, res.out);
     assert.match(res.out, /WARN harness\.config\.json inválido — doctor reprova/);
     assert.doesNotMatch(res.out, /commands\.suiteFull nulo/, "não há suite para ser nula num arquivo ilegível");

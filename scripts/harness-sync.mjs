@@ -165,6 +165,270 @@ export function isPreserved(rel) {
   return PRESERVED_RES.some((re) => re.test(posix));
 }
 
+// --- ADR-001 — identidade do projeto (I1..I8) -------------------------------
+// Toda escrita nova entra no MESMO plano do payload e passa por `writeGuarded`.
+// Nada aqui abre uma segunda via para `fs.writeFileSync`.
+export const MARKERS = Object.freeze({
+  OPEN: "<!-- harness:v2:start -->",
+  CLOSE: "<!-- harness:v2:end -->",
+});
+const { OPEN, CLOSE } = MARKERS;
+
+// I1: conjunto fechado. PRÓPRIO = conteúdo integralmente gerado (sha no
+// manifesto); ANEXADO = conteúdo do consumidor (só o BLOCO, fora do manifesto).
+export const PATH_CLASSES = Object.freeze({
+  owned: Object.freeze([
+    ".agents/rules/project-frontend.md",
+    ".agents/rules/project-backend.md",
+    ".agents/rules/project-fullstack.md",
+    "tokens/*.json",
+  ]),
+  attached: Object.freeze(["AGENTS.md", "DESIGN.md"]),
+});
+const OWNED_FILES = new Set(PATH_CLASSES.owned.slice(0, 3));
+const OWNED_TOKEN_RE = /^tokens\/[^/]+\.json$/;
+
+export function isOwnedPath(rel) {
+  return OWNED_FILES.has(rel) || OWNED_TOKEN_RE.test(rel);
+}
+
+export function isAttachedPath(rel) {
+  return PATH_CLASSES.attached.includes(rel);
+}
+
+// Fail-closed: um path novo sem classe é defeito de implementação, não caso
+// default. I1 proíbe escrever fora das duas classes.
+export function classifyPath(rel) {
+  if (isOwnedPath(rel)) return "owned";
+  if (isAttachedPath(rel)) return "attached";
+  throw new TypeError(`path sem classe (ADR-001 I1): ${rel}`);
+}
+
+// I5: artefato PRÓPRIO por stack resolvida; nulo|nulo não tem artefato.
+export const STACK_ARTIFACTS = Object.freeze({
+  frontend: ".agents/rules/project-frontend.md",
+  backend: ".agents/rules/project-backend.md",
+  fullstack: ".agents/rules/project-fullstack.md",
+});
+
+const FRONTENDS = new Set(["react", "vue"]);
+const BACKENDS = new Set(["java", "rust", "nestjs", "node"]);
+
+export function stackRefusalMessage(verb, detail = null) {
+  const base = `harness-sync ${verb}: stack indeterminada: passe --frontend <react|vue> e/ou --backend <java|rust|nestjs|node>`;
+  return detail ? `${base} (${detail})` : base;
+}
+
+function invalidStackDetail(opts) {
+  const detail = [];
+  if (opts.frontend && !FRONTENDS.has(opts.frontend)) detail.push(`frontend=${opts.frontend}`);
+  if (opts.backend && !BACKENDS.has(opts.backend)) detail.push(`backend=${opts.backend}`);
+  return detail.length ? detail.join(" ") : null;
+}
+
+// Override explícito vence a detecção; o config do alvo é o rerômetro para
+// um `update`/`doctor` num projeto cuja stack foi declarada por flag no init.
+// Nenhum `project-fullstack.md` é inventado quando não há sinal.
+export function resolveStack(targetDir, opts = {}, config = null) {
+  const invalid = invalidStackDetail(opts);
+  if (invalid) return null;
+  if (opts.frontend || opts.backend) {
+    return { frontend: opts.frontend ?? null, backend: opts.backend ?? null, origin: "flag" };
+  }
+  const detected = detectTargets(targetDir);
+  if (detected.frontend || detected.backend) return { ...detected, origin: "detectada" };
+  const configured = config?.targets;
+  if (configured && (configured.frontend || configured.backend)) {
+    return { frontend: configured.frontend ?? null, backend: configured.backend ?? null, origin: "detectada" };
+  }
+  return null;
+}
+
+function artifactForStack(stack) {
+  if (stack.frontend && stack.backend) return STACK_ARTIFACTS.fullstack;
+  if (stack.frontend) return STACK_ARTIFACTS.frontend;
+  return STACK_ARTIFACTS.backend;
+}
+
+// BODY do AGENTS.md: contrato textual, sem valor visual inventado (I8).
+const AGENTS_BODY = [
+  "## Harness v2 — seção gerenciada",
+  "",
+  "Esta seção é gerada pelo harness. Edições são preservadas: divergência é reportada com WARN, nunca reescrita.",
+  "PRÓPRIOS: .agents/rules/project-*.md e tokens/*.json. ANEXADOS: AGENTS.md e DESIGN.md.",
+].join("\n");
+
+// I8: o BODY de DESIGN.md vem SOMENTE do template da skill design-system.
+// Nenhum hex, fonte, raio ou paleta vive neste gerador.
+export function identityBody(rel) {
+  if (rel === "AGENTS.md") return AGENTS_BODY;
+  if (rel === "DESIGN.md") {
+    const template = path.join(SOURCE_ROOT, ".agents", "skills", "design-system", "templates", "DESIGN.md");
+    const raw = readOrNull(template);
+    if (!raw) throw new Error(`template da skill design-system ausente (${rel}): nenhuma escrita`);
+    return raw.toString("utf8").replace(/\n+$/, "");
+  }
+  throw new TypeError(`sem BODY para path anexado: ${rel}`);
+}
+
+export function blockFor(rel) {
+  return `${OPEN}\n${identityBody(rel)}\n${CLOSE}\n`;
+}
+
+// I2: prefixo intocado byte a byte; 1 LF novo apenas quando o original não
+// termina em LF. Buffer entra, Buffer sai — nenhuma re-decodificação.
+export function appendBlock(text, rel) {
+  const block = blockFor(rel);
+  if (Buffer.isBuffer(text)) {
+    const lf = text.length > 0 && text[text.length - 1] !== 0x0a ? Buffer.from("\n") : Buffer.alloc(0);
+    return Buffer.concat([text, lf, Buffer.from(block, "utf8")]);
+  }
+  const prefix = String(text);
+  return `${prefix}${prefix.length > 0 && !prefix.endsWith("\n") ? "\n" : ""}${block}`;
+}
+
+// I2: contagem por LINHA EXATA. Variantes sem espaço/maiúsculas não contam.
+function lineOffsets(lines) {
+  const offsets = [];
+  let at = 0;
+  for (const line of lines) {
+    offsets.push(at);
+    at += line.length + 1; // + LF do split
+  }
+  return offsets;
+}
+
+export function markerState(text, body) {
+  const raw = Buffer.isBuffer(text) ? text.toString("utf8") : String(text);
+  const lines = raw.split("\n");
+  const offsets = lineOffsets(lines);
+  const opens = [];
+  const closes = [];
+  for (let i = 0; i < lines.length; i += 1) {
+    if (lines[i] === OPEN) opens.push(i);
+    else if (lines[i] === CLOSE) closes.push(i);
+  }
+  if (opens.length === 0 && closes.length === 0) return { state: "absent", prefix: raw };
+  if (opens.length !== 1 || closes.length !== 1 || opens[0] >= closes[0]) return { state: "malformed", prefix: null };
+  const inside = lines.slice(opens[0] + 1, closes[0]);
+  if (inside.some((line) => line === OPEN || line === CLOSE)) return { state: "malformed", prefix: null };
+  const actual = inside.join("\n");
+  return {
+    state: actual === body ? "match" : "divergent",
+    prefix: raw.slice(0, offsets[opens[0]]),
+    body: actual,
+  };
+}
+
+function projectRuleBody(stack) {
+  const label = [stack.frontend, stack.backend].filter(Boolean).join(" + ");
+  return [
+    `# Regras do projeto — ${label}`,
+    "",
+    "Artefato PRÓPRIO gerado pelo harness v2. Edições do maintainer são preservadas (state=preserved).",
+    "",
+    `- frontend: ${stack.frontend ?? "null"}`,
+    `- backend: ${stack.backend ?? "null"}`,
+    `- origem: ${stack.origin}`,
+  ].join("\n");
+}
+
+// I3: um estado por path. `preserved`/`divergent`/`malformed` nunca viram
+// update — a ação é sempre skip, por construção.
+export function buildIdentityPlan(targetDir, stack) {
+  if (!stack) return [];
+  const plan = [];
+  const ownRel = artifactForStack(stack);
+  assertSafeWrite(targetDir, ownRel);
+  const wanted = Buffer.from(`${projectRuleBody(stack)}\n`, "utf8");
+  const current = readOrNull(path.join(targetDir, ownRel));
+  let state = "created";
+  let action = "create";
+  if (current) {
+    const same = sha256(current) === sha256(wanted);
+    state = same ? "skip" : "preserved";
+    action = "skip";
+  }
+  plan.push({
+    rel: ownRel,
+    class: "owned",
+    state,
+    action,
+    content: action === "create" ? wanted : null,
+    sha: sha256(current ?? wanted),
+    inManifest: true,
+  });
+
+  for (const rel of PATH_CLASSES.attached) {
+    assertSafeWrite(targetDir, rel);
+    const raw = readOrNull(path.join(targetDir, rel));
+    const body = identityBody(rel); // template ausente ⇒ lança ANTES de qualquer escrita
+    let attachedState = "created";
+    let attachedAction = "create";
+    let content = appendBlock("", rel);
+    if (raw) {
+      const marker = markerState(raw, body);
+      if (marker.state === "absent") {
+        attachedState = "appended";
+        attachedAction = "append";
+        content = appendBlock(raw, rel);
+      } else if (marker.state === "match") {
+        attachedState = "skip";
+        attachedAction = "skip";
+        content = null;
+      } else if (marker.state === "divergent") {
+        attachedState = "divergent";
+        attachedAction = "skip";
+        content = null;
+      } else {
+        attachedState = "malformed";
+        attachedAction = "skip";
+        content = null;
+      }
+    }
+    plan.push({
+      rel,
+      class: "attached",
+      state: attachedState,
+      action: attachedAction,
+      content,
+      sha: null,
+      inManifest: false,
+    });
+  }
+  return plan;
+}
+
+const IDENTITY_STATES = Object.freeze(["created", "appended", "preserved", "skip", "divergent", "malformed"]);
+
+function posixSort(a, b) {
+  return a.rel < b.rel ? -1 : a.rel > b.rel ? 1 : 0;
+}
+
+// I6: linhas literais, paths ordenados POSIX, stack primeiro, resumo por último.
+export function identityReportLines(verb, plan, stack) {
+  const entries = plan.filter((entry) => entry.class).sort(posixSort);
+  const lines = [
+    `harness-sync ${verb}: stack origem=${stack.origin} frontend=${stack.frontend ?? "null"} backend=${stack.backend ?? "null"}`,
+  ];
+  for (const entry of entries) lines.push(`harness-sync ${verb}: ${entry.rel} ${entry.state}`);
+  for (const entry of entries) {
+    if (entry.state === "divergent") {
+      lines.push(`WARN divergência ${entry.rel}: seção gerenciada preservada (não reescrita)`);
+    }
+  }
+  for (const entry of entries) {
+    if (entry.state === "malformed") {
+      lines.push(`ERROR seção malformada ${entry.rel}: esperado 1 par start/end; nenhuma escrita`);
+    }
+  }
+  const counts = Object.fromEntries(IDENTITY_STATES.map((s) => [s, entries.filter((e) => e.state === s).length]));
+  lines.push(
+    `harness-sync ${verb}: plano ${IDENTITY_STATES.map((s) => `${s}=${counts[s]}`).join(" ")}`,
+  );
+  return lines;
+}
+
 export function sha256(content) {
   return createHash("sha256").update(content).digest("hex");
 }
@@ -449,14 +713,14 @@ function sourceProtectedPaths() {
   return Array.isArray(config.protectedPaths) ? config.protectedPaths : [];
 }
 
-export function buildConfig(targetDir, { suite, unit } = {}) {
+export function buildConfig(targetDir, { suite, unit, stack } = {}) {
   const detected = detectCommands(targetDir);
   const suiteFull = suite ?? detected;
   const unitCmd = unit ?? suite ?? detected;
   return {
     version: MANIFEST_VERSION,
     project: path.basename(path.resolve(targetDir)),
-    targets: detectTargets(targetDir),
+    targets: stack ? { frontend: stack.frontend, backend: stack.backend } : detectTargets(targetDir),
     moduleMap: { ...DEFAULT_MODULE_MAP },
     commands: { suiteFull, unit: unitCmd },
     mcp: { required: [...DEFAULT_MCP_REQUIRED] },
@@ -585,6 +849,8 @@ export function buildPlan(targetDir, opts = {}) {
     plan.push({ rel, action, content: wanted, sha: sha256(wanted) });
   }
   plan.push(planConfig(targetDir, opts));
+  // ADR-001: identidade entra no MESMO plano (mesmo guard do `--dry-run`).
+  if (opts.stack) plan.push(...buildIdentityPlan(targetDir, opts.stack));
   return plan;
 }
 
@@ -698,13 +964,42 @@ export function orphans(targetDir, plan) {
 // already implies `.agents/skills`, but both are listed: a half-installed
 // target can have one without the other, and each is named in the refusal so
 // the operator knows which one fired.
+// ADR-001: `.agents/rules/project-*.md` é artefato PRÓPRIO criável quando
+// ausente e preservado quando presente — um alvo que só traz regras do
+// maintainer NÃO é "estado do harness". Os marcadores abaixo são os que
+// realmente indicam uma instalação anterior.
 const HARNESS_STATE_MARKERS = [
-  ".agents",
+  ".agents/agents",
   ".agents/skills",
+  ".agents/schemas",
   ".opencode/plugins",
   ".opencode/commands",
   MANIFEST_NAME,
 ];
+
+function harnessStateMarker(targetDir) {
+  for (const marker of HARNESS_STATE_MARKERS) {
+    if (fs.existsSync(path.join(targetDir, marker))) return marker;
+  }
+  const rules = path.join(targetDir, ".agents", "rules");
+  if (fs.existsSync(rules)) {
+    for (const entry of fs.readdirSync(rules, { withFileTypes: true })) {
+      if (entry.isFile() && !/^project-[^/]*\.md$/.test(entry.name)) return `.agents/rules/${entry.name}`;
+    }
+  }
+  return null;
+}
+
+// I5: a recusa acontece ANTES de qualquer byte (inclusive `mkdir` do alvo) e
+// antes do backup. O config do alvo é o rerômetro para verbs que não criam
+// identidade; a flag inválida é nomeada na mensagem.
+function prepareStack(targetDir, opts, verb, log) {
+  const config = readJson(path.join(targetDir, CONFIG_NAME));
+  const stack = resolveStack(targetDir, opts, config);
+  if (stack) return stack;
+  log(stackRefusalMessage(verb, invalidStackDetail(opts)));
+  return null;
+}
 
 // G9 / N3: the guard is SHARED by `init` and `update`. Only a config that is
 // about to be created needs it — an existing config is project data and is
@@ -719,8 +1014,14 @@ function requireSuiteFull(entry, log, verb) {
   return true;
 }
 
-function logPlan(plan, log) {
-  for (const entry of plan) {
+function logPlan(plan, log, verb, stack, deferSummary = false) {
+  // I6: a linha de stack vem PRIMEIRO, o resumo por ÚLTIMO; o conjunto de
+  // linhas de identidade é idêntico no `--dry-run` e no apply. Em `init`, o
+  // resumo é deferido para depois da linha legada de escrita — sem mudar o
+  // conteúdo de nenhuma linha, só a ordem de emissão no stdout real.
+  const identity = stack ? identityReportLines(verb, plan, stack) : [];
+  if (identity.length) log(identity[0]);
+  for (const entry of plan.filter((e) => !e.class)) {
     if (!entry.config) {
       log(`${entry.action} ${entry.rel}`);
       continue;
@@ -729,6 +1030,16 @@ function logPlan(plan, log) {
     const suite = entry.config.commands.suiteFull ?? "null";
     log(`${entry.action} ${entry.rel} (targets=frontend:${frontend ?? "null"}/backend:${backend ?? "null"}, suiteFull:${suite})`);
   }
+  for (const line of identity.slice(1, deferSummary ? -1 : undefined)) log(line);
+  return deferSummary && identity.length > 1 ? identity.at(-1) : null;
+}
+
+function logSummary(summary, log) {
+  if (summary !== null) log(summary);
+}
+
+function hasMalformed(plan) {
+  return plan.some((entry) => entry.state === "malformed");
 }
 
 export function runInit(targetDir, opts = {}) {
@@ -747,19 +1058,21 @@ export function runInit(targetDir, opts = {}) {
     log(`harness-sync init: ${unusable}: ${targetDir}`);
     return 1;
   }
-  if (!dryRun) fs.mkdirSync(targetDir, { recursive: true });
+  // I5/I2: nenhuma recusa pode deixar byte — nem o `mkdir` do alvo. Stack e
+  // marcadores são avaliados antes de criar diretório, plano ou backup.
+  const stack = prepareStack(targetDir, opts, "init", log);
+  if (!stack) return 1;
 
-  for (const marker of HARNESS_STATE_MARKERS) {
-    if (fs.existsSync(path.join(targetDir, marker))) {
-      const error = `harness-sync init: estado do harness já presente (${marker}) — use \`node scripts/harness-sync.mjs update --target ${targetDir}\``;
-      log(error);
-      return 1;
-    }
+  const marker = harnessStateMarker(targetDir);
+  if (marker) {
+    const error = `harness-sync init: estado do harness já presente (${marker}) — use \`node scripts/harness-sync.mjs update --target ${targetDir}\``;
+    log(error);
+    return 1;
   }
 
   let plan;
   try {
-    plan = buildPlan(targetDir, opts);
+    plan = buildPlan(targetDir, { ...opts, stack });
   } catch (error) {
     log(`harness-sync init: ${error.message}`);
     return 1;
@@ -770,21 +1083,32 @@ export function runInit(targetDir, opts = {}) {
   // Completion. Runs for `--dry-run` too — the command is the config's
   // contract, not the apply's.
   if (!requireSuiteFull(plan.find((entry) => entry.rel === CONFIG_NAME), log, "init")) return 1;
-  logPlan(plan, log);
+  const summary = logPlan(plan, log, "init", stack, true);
+  // I2/I3: `malformed` é fail-closed — a linha ERROR já foi impressa e nenhum
+  // byte é escrito, nem no dry-run (que também recusa).
+  if (hasMalformed(plan)) {
+    logSummary(summary, log);
+    return 1;
+  }
 
   if (dryRun) {
+    logSummary(summary, log);
     log(`dry-run: ${plan.filter((e) => e.action !== "skip").length} write(s) planned, 0 written, no backup`);
     return 0;
   }
+  fs.mkdirSync(targetDir, { recursive: true });
   let applied;
   try {
     applied = applyPlan(targetDir, plan, opts);
   } catch (error) {
+    logSummary(summary, log);
     log(`harness-sync init: ${error.message}`);
     return 1;
   }
   const { written, backupDir } = applied;
   log(`init: ${written} file(s) written${backupDir ? ` (backup: ${backupDir})` : ""}`);
+  // Roteiro I6 no stdout REAL: o resumo fecha a saída, não a linha legada.
+  logSummary(summary, log);
   return 0;
 }
 
@@ -804,9 +1128,11 @@ export function runUpdate(targetDir, opts = {}) {
     log(`harness-sync update: target inexistente (${targetDir}) — use init`);
     return 1;
   }
+  const stack = prepareStack(targetDir, opts, "update", log);
+  if (!stack) return 1;
   let plan;
   try {
-    plan = buildPlan(targetDir, opts);
+    plan = buildPlan(targetDir, { ...opts, stack });
   } catch (error) {
     log(`harness-sync update: ${error.message}`);
     return 1;
@@ -860,8 +1186,9 @@ export function runUpdate(targetDir, opts = {}) {
       }
     }
   }
-  logPlan(plan, log);
+  logPlan(plan, log, "update", stack);
   for (const rel of orphans(targetDir, plan)) log(`orphan ${rel} (não removido)`);
+  if (hasMalformed(plan)) return 1; // I2/I3: ERROR impresso, zero escrita
   if (dryRun) {
     log(`dry-run: ${plan.filter((e) => e.action !== "skip").length} write(s) planned, 0 written, no backup`);
     return 0;
@@ -919,6 +1246,15 @@ export function runDoctor(targetDir, opts = {}) {
   if (!fs.existsSync(targetDir) || !fs.statSync(targetDir).isDirectory()) {
     fail("target", `diretório inexistente: ${targetDir}`);
     for (const line of failures) log(`FAIL ${line}`);
+    return 1;
+  }
+
+  // I5: o doctor é somente leitura; a recusa por stack só vale quando o alvo
+  // TEM config e ele declara `targets` nulo|nulo sem flag. Config ausente/ilegível
+  // é reprovado abaixo pelo próprio doctor, não por uma mensagem de stack.
+  const doctorConfig = readJson(path.join(targetDir, CONFIG_NAME));
+  if (doctorConfig?.targets && !resolveStack(targetDir, opts, doctorConfig)) {
+    log(stackRefusalMessage("doctor", invalidStackDetail(opts)));
     return 1;
   }
 
@@ -1015,7 +1351,7 @@ export function runDoctor(targetDir, opts = {}) {
 }
 
 // --- CLI ------------------------------------------------------------------
-const USAGE = `uso: node scripts/harness-sync.mjs <init|update|doctor> --target <dir> [--dry-run] [--suite <cmd>] [--unit <cmd>] [--backup-dir <dir>]`;
+const USAGE = `uso: node scripts/harness-sync.mjs <init|update|doctor> --target <dir> [--dry-run] [--suite <cmd>] [--unit <cmd>] [--backup-dir <dir>] [--frontend <react|vue>] [--backend <java|rust|nestjs|node>]`;
 
 function parseArgs(argv) {
   const opts = {
@@ -1025,6 +1361,8 @@ function parseArgs(argv) {
     suite: null,
     unit: null,
     backupDir: null,
+    frontend: null,
+    backend: null,
     help: false,
   };
   for (let i = 0; i < argv.length; i += 1) {
@@ -1035,6 +1373,8 @@ function parseArgs(argv) {
     else if (arg === "--suite") opts.suite = argv[++i] ?? null;
     else if (arg === "--unit") opts.unit = argv[++i] ?? null;
     else if (arg === "--backup-dir") opts.backupDir = argv[++i] ?? null;
+    else if (arg === "--frontend") opts.frontend = argv[++i] ?? null;
+    else if (arg === "--backend") opts.backend = argv[++i] ?? null;
     else if (!opts.verb && !arg.startsWith("-")) opts.verb = arg;
   }
   return opts;
