@@ -15,7 +15,12 @@
 //
 //   C1 live-orphan          alvo ausente, citante vivo, sem supressão
 //                           → BASELINE (dívida com dono) ou FAIL
-//   C2 foreign-baseline     C1 cujo assunto é de eixo que `stack.*` declara N/A
+//   C2 foreign-baseline     C1 cujo assunto declara, NA ENTRADA DA BASELINE,
+//                           um eixo ausente (dono + motivo + reativação). A
+//                           classe é do registro, não um predicado sobre o
+//                           config: o check nunca lê `targets.*` para decidir
+//                           se a dívida existe — ele confia na entrada e
+//                           expira quando a citação desaparece.
 //                           → BASELINE (dívida com dono + reativação)
 //   C3 declared-non-defect  citação em NON_DEFECT (reason + proof) → suprimida
 //   C4 vendor-internal      todos os citantes em skill do `.vendor-lock.json`
@@ -45,8 +50,8 @@
 //
 // Purity (SPEC I1): `node:fs`/`node:path` read-only; sem rede, sem MCP, sem
 // child process, sem gravação. Vive em `.opencode/plugins/lib/**`, caminho que
-// o instalador propaga (install.mjs:107) — o destino herda o check, não o
-// vermelho (ADR-005 §5-C7).
+// `scripts/harness-sync.mjs` copia para o destino — o destino herda o check,
+// não o vermelho (ADR-005 §5-C7).
 import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { join, sep } from "node:path";
 
@@ -80,13 +85,17 @@ export const CLASS_LABELS = Object.freeze({
 // suprimidas por mecanismo (lista com razão / lock) e não ocupam entrada.
 export const BASELINE_CLASSES = new Set(["C1", "C2"]);
 
-const EIXO_NA = "eixo backend declarado N/A em harness.config.json.stack.backend";
+const EIXO_NA = "eixo backend sem stack Java declarada (harness.config.json.targets.backend)";
 
 // --- Baseline (dívida declarada, nunca permissão — SPEC I2) ---------------
 // ADR-004 removeu 6 das 7 entradas: SSoT reapontada (RC1), regra local já
 // viaja (RC4) e 4 rules Java fora de suporte (RC2). Resta 1: a única citação
-// viva que o CDL BASELINE mantém pinned em dev-planner/SKILL.md:204 (módulo
-// lib/cdl/** é imutável neste ciclo). Dívida com dono PRD-4 + reativação.
+// viva que mantém `rules/backend-coding-standards.md` referenciada
+// (dev-planner/SKILL.md:204). Dívida com dono PRD-4 + reativação.
+// O pin de módulo que acompanhava esta nota (`lib/cdl/**`) saiu com o V20 em
+// v2/F1 — o módulo foi apagado com o instalador, não é mais restrição. A
+// entrada NÃO cita instalador e permanece: é dívida do eixo backend, medida
+// pelo próprio `runRefsChecks`.
 export const BASELINE = Object.freeze([
   {
     path: "rules/backend-coding-standards.md",
@@ -101,14 +110,17 @@ export const BASELINE = Object.freeze([
 // Lista literal com reason + proof: o detector REPORTARIA esta citação, logo
 // ela precisa de registro explícito. `AGENTS.md` NÃO entra aqui: está fora da
 // gramática acima (é nome de arquivo do repo-destino, sem prefixo de diretório).
-export const NON_DEFECT = Object.freeze([
-  {
-    path: "rules/exemplo.md",
-    reason:
-      "string de exemplo em fixture de instalador (chave de `incomingFiles`), não é citação normativa",
-    proof: ".agents/skills/harness-installer/SKILL.md:68",
-  },
-]);
+//
+// v2 (F1): a lista está VAZIA. A única entrada era `rules/exemplo.md`, provada
+// por uma string de fixture na skill do instalador v1 (linha 68) — skill
+// apagada junto com o instalador. Sem o citante, não há citação a
+// suprimir: manter a entrada seria uma prova morta (o próprio check a
+// reprovaria). O MECANISMO continua vivo e testado com entradas sintéticas:
+// `validateNonDefect` + `validateNonDefectStale` rodam sobre esta lista e o
+// `runRefsChecks` aceita `nonDefect` injetado (fixtures de
+// `refs.spec.mjs:PO-03/PO-04`). O que a remoção deixa de medir: nada do
+// corpus real — não existe mais nenhuma supressão C3 em produção.
+export const NON_DEFECT = Object.freeze([]);
 
 // --- Helpers puros --------------------------------------------------------
 
@@ -376,7 +388,12 @@ function vacuous(detail) {
 
 // --- API ------------------------------------------------------------------
 
-export function runRefsChecks(root = process.cwd()) {
+export function runRefsChecks(root = process.cwd(), opts = {}) {
+  // `nonDefect` injetável: a lista de produção está vazia em v2 (o citante que
+  // a justificava foi apagado com o instalador) e o MECANISMO C3 continua
+  // coberto por fixtures que passam entradas sintéticas — sem isso o caminho
+  // de supressão viraria código morto não testado.
+  const nonDefect = Array.isArray(opts.nonDefect) ? opts.nonDefect : NON_DEFECT;
   if (!existsSync(join(root, ".agents"))) {
     return vacuous("N/A — .agents/ ausente (vacuous-safe)");
   }
@@ -384,7 +401,7 @@ export function runRefsChecks(root = process.cwd()) {
   const lockSkills = readLockSkills(root);
   const citations = collectCitations(root);
   const baselineByPath = new Map(BASELINE.map((e) => [posixPath(e.path), e]));
-  const nonDefectPaths = new Set(NON_DEFECT.map((e) => posixPath(e.path)));
+  const nonDefectPaths = new Set(nonDefect.map((e) => posixPath(e.path)));
 
   // Modo (a): referência viva a path ausente FORA da baseline.
   const missing = [];
@@ -421,10 +438,10 @@ export function runRefsChecks(root = process.cwd()) {
     + (vendorOnly.length ? ` (${vendorOnly.join("; ")})` : "");
 
   const baselineIssues = validateBaseline(BASELINE);
-  const nonDefectIssues = validateNonDefect(NON_DEFECT);
+  const nonDefectIssues = validateNonDefect(nonDefect);
   // Modo (c): a supressão de C3 apodreceu (ADR-005 §8-N11/N17). Reaproveita as
   // citações já coletadas — a régua é a mesma, sem segunda varredura.
-  const nonDefectStale = validateNonDefectStale(NON_DEFECT, root, citations);
+  const nonDefectStale = validateNonDefectStale(nonDefect, root, citations);
   // RC6 / N30: forma de citação que o V19 ainda casa como `consumer`.
   const linkRefHits = collectLinkRefCitations(root, readSkillNames(root));
 
@@ -435,7 +452,7 @@ export function runRefsChecks(root = process.cwd()) {
       detail: missing.length
         ? `${missing.length} path(s) ausente(s) citado(s) por prosa viva fora da BASELINE: `
           + missing.map((m) => `${m.target} ← ${citeList(m.cites)}`).join("; ")
-        : `órfãs vivas não classificadas=0 (baseline=${BASELINE.length}, non-defect=${NON_DEFECT.length}, skill(s) no lock=${lockSkills.size})`,
+        : `órfãs vivas não classificadas=0 (baseline=${BASELINE.length}, non-defect=${nonDefect.length}, skill(s) no lock=${lockSkills.size})`,
     },
     {
       id: "stale-baseline-entry",
@@ -459,14 +476,14 @@ export function runRefsChecks(root = process.cwd()) {
       status: nonDefectIssues.length ? "FAIL" : "PASS",
       detail: nonDefectIssues.length
         ? `NON_DEFECT inválida: ${nonDefectIssues.join("; ")}`
-        : `NON_DEFECT com ${NON_DEFECT.length} entrada(s), com reason/proof`,
+        : `NON_DEFECT com ${nonDefect.length} entrada(s), com reason/proof`,
     },
     {
       id: "stale-nondefect-entry",
       status: nonDefectStale.length ? "FAIL" : "PASS",
       detail: nonDefectStale.length
         ? `NON_DEFECT com ${nonDefectStale.length} entrada(s) obsoleta(s): ${nonDefectStale.join("; ")}`
-        : `NON_DEFECT com ${NON_DEFECT.length} entrada(s), todas com proof vivo (arquivo:linha cita o path)`,
+        : `NON_DEFECT com ${nonDefect.length} entrada(s), todas com proof vivo (arquivo:linha cita o path)`,
     },
     {
       id: "link-ref-citation-form",
@@ -481,6 +498,6 @@ export function runRefsChecks(root = process.cwd()) {
 
 // A ADR-005 §4 item 2 nomeia `runRefChecks`; a SPEC RF-01 nomeia
 // `runRefsChecks`. Um alias, uma implementação — nenhuma divergência de contrato.
-export function runRefChecks(root = process.cwd()) {
-  return runRefsChecks(root);
+export function runRefChecks(root = process.cwd(), opts = {}) {
+  return runRefsChecks(root, opts);
 }

@@ -1,5 +1,7 @@
 // sdd-checks.mjs — executable checks for SDD-02/SDD-03/RENAME + V4/V12/V17 (Batch 7).
-// Mechanical subset only: existence per phase, 1:1 task sections, vocab table,
+// Mechanical subset only: existence per phase (SDD-02 is layout-aware: legacy
+// 4-artifact cycle OR per-ADR `ADR.md`+`SPEC.md`+`TASKS.md`), 1:1 task sections,
+// vocab table (owner: workflow.md),
 // artifact↔gate convention markers, old-name anti-regression. No runtime deny
 // is added here (SDD-03: grep gate.js for proof — check R-NODENY).
 // Runs locally and in CI with the same result: node scripts/sdd-checks.mjs
@@ -8,6 +10,9 @@ import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { REPO_ROOT } from "../.opencode/plugins/lib/config.mjs";
+// The ADR-INDEX ledger grammar is parsed in ONE place (the pipeline module) —
+// SDD-02 reads the rows instead of re-implementing the table format.
+import { readAdrIndex } from "../.opencode/plugins/lib/prd-adr-pipeline/checks.mjs";
 
 // Built dynamically so this check file does not flag itself in RENAME-01.
 const OLD_REVIEWER = ["fullstack", "code-reviewer"].join("-");
@@ -172,6 +177,127 @@ export function missingArtifacts(dir) {
   return SDD_ARTIFACTS.filter((a) => !existsSync(join(dir, a)));
 }
 
+// --- Per-ADR layout (F3a, D-A) ---------------------------------------------
+// An ADR directory is a complete cycle on its own when `unit: adr` declares it
+// the delivery unit: `ADR.md` + `SPEC.md` + `TASKS.md`. `VERIFY.md` is the
+// merged-state proof owned by ADR-01, not by this check. The index grammar is
+// parsed by the pipeline module, so SDD-02 never re-implements the ledger.
+export const ADR_UNIT_ARTIFACTS = ["ADR.md", "SPEC.md", "TASKS.md"];
+
+// The required set follows the LAYOUT the ADR declares (F3a review, item 3):
+//   `adr`    ⇒ ADR.md + SPEC.md + TASKS.md (the scoped cycle to judge)
+//   `legacy` ⇒ ADR.md only, exactly as workflow.md §2.1 states. A legacy ADR is
+//              never "incomplete" for lacking SPEC/TASKS — that would turn every
+//              retrocompatible ADR into drift the moment the state names it.
+export function requiredAdrArtifacts(unit) {
+  return unit === "legacy" ? ["ADR.md"] : ADR_UNIT_ARTIFACTS;
+}
+
+// `unit` has no default on purpose (F3a review #3): a silent `"adr"` would make
+// every caller that forgets the layout demand SPEC/TASKS from a legacy ADR. The
+// layout is declared by the ledger row (`adrUnitForRel`) and reaches this helper
+// explicitly (`resolveAdrUnit`); a missing/invalid value fails loud instead of
+// masquerading as `adr`.
+export function missingAdrUnitArtifacts(dir, unit) {
+  if (unit !== "adr" && unit !== "legacy") {
+    throw new TypeError(`missingAdrUnitArtifacts exige unit "adr" | "legacy" (recebido: ${String(unit)})`);
+  }
+  return requiredAdrArtifacts(unit).filter((a) => !existsSync(join(dir, a)));
+}
+
+// A ledger row is the ONLY place that declares an ADR's LAYOUT (`unit`).
+// Absent row/cell ⇒ `legacy`, the retrocompatible default (workflow.md §2.1): a
+// PRD without the v2 marker owes no SPEC/TASKS, and `ADR-01` already enforces
+// ledger↔disk 1:1, so "no row" here is not the place to demand the scoped cycle.
+function adrUnitForRel(root, rel) {
+  return adrIndexRowForDir(root, rel)?.unit ?? "legacy";
+}
+
+// `prd_adr.active_adr` stores an ID (`ADR-002`), not a path (item 13). Resolve
+// it through the ledger of the PRD the state declares (`prd_adr.prd_id`), never
+// by guessing a directory name. A path-shaped value (legacy states: `.../ADR.md`
+// or a dir) is accepted as-is, so nothing that worked before breaks.
+// Both shapes get their `unit` from the LEDGER (never from the pointer shape):
+// an ID that has no row cannot be resolved at all; a path without a row is a
+// legacy ADR. `null` ⇒ unresolvable pointer: it says nothing, so no drift.
+export function resolveActiveAdrPointer(root, value, prdId = null) {
+  const raw = String(value ?? "").trim();
+  if (raw === "") return null;
+  const prdRoot = join(root, ".spec/prd");
+  if (raw.includes("/") || raw.endsWith(".md")) {
+    const rel = (raw.endsWith(".md") ? dirname(raw) : raw).replace(/^\.\//, "").replace(/\/+$/, "");
+    return { rel, unit: adrUnitForRel(root, rel), via: "state.prd_adr.active_adr (path)" };
+  }
+  const prdIds = typeof prdId === "string" && prdId.length > 0 ? [prdId] : subDirs(prdRoot);
+  for (const id of prdIds) {
+    for (const row of readAdrIndex(join(prdRoot, id))) {
+      if (row.id !== raw || !row.dir) continue;
+      return { rel: `.spec/prd/${id}/ADRs/${row.dir}`, unit: row.unit, via: "state.prd_adr.active_adr (id)" };
+    }
+  }
+  return null;
+}
+
+function adrIndexRowForDir(root, rel) {
+  const m = /^\.spec\/prd\/([^/]+)\/ADRs\/([^/]+)$/.exec(rel);
+  if (!m) return null;
+  return readAdrIndex(join(root, ".spec/prd", m[1])).find((row) => row.dir === m[2]) ?? null;
+}
+
+// Ordered candidates: the state pointer first (drift must not be masked by an
+// unrelated complete ADR), then every `.spec/prd/<id>/ADR-INDEX.md` row that
+// declares `unit: adr`. `unit` has NO default here: silently defaulting it is
+// exactly the MF-1 defect — every caller states where the layout came from.
+export function sddAdrUnitCandidates(root, state = readWorkflowState(root)) {
+  const out = [];
+  const add = (rel, via, unit) => {
+    if (typeof rel !== "string" || rel.length === 0) return;
+    const norm = rel.replace(/^\.\//, "").replace(/\/+$/, "");
+    if (norm.length === 0 || out.some((c) => c.rel === norm)) return;
+    out.push({ rel: norm, via, unit });
+  };
+  const adrArtifact = state?.artifacts?.adr;
+  if (typeof adrArtifact === "string" && adrArtifact.length > 0) {
+    // `workflow-state.json.artifacts.adr` names the cycle's ADR directory
+    // explicitly (workflow.md §6) — it names WHERE, never WHICH LAYOUT: the
+    // `unit` comes from the ledger like every other candidate. Fixing "adr"
+    // here turned every retrocompatible ADR into drift the moment the state
+    // named it (the pointer promised `ADR.md` and the check asked for two more).
+    const raw = adrArtifact.replace(/^\.\//, "").replace(/\/+$/, "");
+    const rel = raw.endsWith(".md") ? dirname(raw) : raw;
+    add(rel, "state.artifacts.adr", adrUnitForRel(root, rel));
+  }
+  const active = resolveActiveAdrPointer(root, state?.prd_adr?.active_adr, state?.prd_adr?.prd_id);
+  if (active) add(active.rel, active.via, active.unit);
+
+  const prdRoot = join(root, ".spec/prd");
+  for (const id of subDirs(prdRoot)) {
+    for (const row of readAdrIndex(join(prdRoot, id))) {
+      if (row.unit !== "adr" || !row.dir) continue;
+      add(`.spec/prd/${id}/ADRs/${row.dir}`, `ADR-INDEX ${id} unit=adr`, "adr");
+    }
+  }
+  return out;
+}
+
+export function resolveAdrUnit(root, state = readWorkflowState(root)) {
+  const candidates = sddAdrUnitCandidates(root, state)
+    .filter((c) => existsSync(join(root, c.rel)))
+    .map((c) => ({ ...c, missing: missingAdrUnitArtifacts(join(root, c.rel), c.unit) }));
+  const pointer = candidates[0];
+  if (pointer && pointer.via.startsWith("state.") && pointer.missing.length > 0) {
+    // The state names this ADR cycle; an incomplete one is drift, not a hint.
+    return { rel: pointer.rel, dir: join(root, pointer.rel), via: pointer.via, complete: false, drift: true, candidates };
+  }
+  // Only a `unit: adr` directory is a scoped cycle: a legacy ADR carries no
+  // SPEC/TASKS, so there is nothing to judge and it must not be selected as one.
+  const complete = candidates.find((c) => c.unit !== "legacy" && c.missing.length === 0);
+  if (complete) {
+    return { rel: complete.rel, dir: join(root, complete.rel), via: complete.via, complete: true, candidates };
+  }
+  return { rel: null, dir: null, via: null, complete: false, candidates };
+}
+
 function subDirs(dir) {
   if (!existsSync(dir)) return [];
   return readdirSync(dir, { withFileTypes: true })
@@ -315,35 +441,66 @@ export function resolveSddCycle(root = REPO_ROOT, { nonCycle = SPEC_NON_CYCLE } 
 // `opts` (2º parâmetro opcional) é repassado a `resolveSddCycle`; chamadores
 // existentes e o `runSddChecks` seguem usando só `root` (default preservado).
 export function evaluateSdd02(root = REPO_ROOT, opts = {}) {
-  const cycle = resolveSddCycle(root, opts);
-  if (!cycle.complete) {
-    if (cycle.drift) {
-      // Fail-closed on drift of the cycle the state itself declares current.
-      const missing = missingArtifacts(cycle.dir);
-      return {
-        ok: false,
-        detail: `live cycle named by state is incomplete — drift: ${cycle.rel} (via ${cycle.via}) missing ${missing.join(",")}; an archived cycle must not mask the current one`,
-      };
-    }
-    // Fail-closed: no cycle with the 4 artifacts anywhere (state or archive).
-    let closest = null;
-    for (const c of cycle.candidates) {
-      const missing = missingArtifacts(join(root, c.rel));
-      if (!closest || missing.length < closest.missing.length) closest = { ...c, missing };
-    }
-    const hint = closest
-      ? `closest ${closest.rel} (via ${closest.via}) missing ${closest.missing.join(",")}`
-      : "no candidate dir resolved (state + .spec scan empty)";
+  // F3a review, item 3 — ORDER: the ADR cycle the STATE names is judged FIRST.
+  // A complete legacy cycle used to short-circuit before the ADR drift was
+  // computed, so an incomplete ADR (`state.artifacts.adr` / `prd_adr.active_adr`)
+  // went green behind a 4-artifact directory that had nothing to do with it.
+  // Scope mirrors FU-39: only the pointer the state itself declares can drift —
+  // an unrelated incomplete ADR is a hint, never a verdict.
+  const adr = resolveAdrUnit(root);
+  if (adr.drift) {
     return {
       ok: false,
-      detail: `no complete SDD cycle (${SDD_ARTIFACTS.join("/")}) — ${cycle.candidates.length} candidates, ${hint}`,
+      detail: `ADR cycle named by state is incomplete — drift: ${adr.rel} (via ${adr.via}) missing ${adr.candidates[0].missing.join(",")}; a complete legacy cycle must not mask it`,
     };
   }
+
+  const cycle = resolveSddCycle(root, opts);
+  if (cycle.complete) return evaluateCycleTasks(cycle, `${SDD_ARTIFACTS.length}/${SDD_ARTIFACTS.length}`, "legacy");
+  if (cycle.drift) {
+    // Fail-closed on drift of the legacy cycle the state itself declares
+    // current — a complete ADR unit elsewhere must not mask it.
+    const missing = missingArtifacts(cycle.dir);
+    return {
+      ok: false,
+      detail: `live cycle named by state is incomplete — drift: ${cycle.rel} (via ${cycle.via}) missing ${missing.join(",")}; an archived cycle must not mask the current one`,
+    };
+  }
+
+  // Layout (b), per ADR (F3a / D-A): `.spec/prd/<id>/ADRs/ADR-00N-{slug}/`
+  // resolved by `unit: adr` (or by the state pointer) — `ADR.md` + `SPEC.md` +
+  // `TASKS.md` are the cycle, and TASKS coherence is judged the same way.
+  if (adr.complete) return evaluateCycleTasks(adr, `${ADR_UNIT_ARTIFACTS.length}/${ADR_UNIT_ARTIFACTS.length}`, "adr");
+
+  // Fail-closed: no cycle with the 4 artifacts (legacy) nor a complete ADR unit
+  // anywhere (state or archive). Both closest hints are reported so the failure
+  // says which layout was attempted and what each one lacked.
+  let closest = null;
+  for (const c of cycle.candidates) {
+    const missing = missingArtifacts(join(root, c.rel));
+    if (!closest || missing.length < closest.missing.length) closest = { ...c, missing };
+  }
+  const hint = closest
+    ? `closest ${closest.rel} (via ${closest.via}) missing ${closest.missing.join(",")}`
+    : "no candidate dir resolved (state + .spec scan empty)";
+  const adrClosest = adr.candidates
+    .slice()
+    .sort((a, b) => a.missing.length - b.missing.length)[0];
+  const adrHint = adrClosest
+    ? `; closest ADR unit ${adrClosest.rel} (via ${adrClosest.via}) missing ${adrClosest.missing.join(",")}`
+    : "; no ADR unit candidate";
+  return {
+    ok: false,
+    detail: `no complete SDD cycle (${SDD_ARTIFACTS.join("/")}) nor complete ADR unit (${ADR_UNIT_ARTIFACTS.join("/")}) — ${cycle.candidates.length} legacy candidates, ${hint}${adrHint}`,
+  };
+}
+
+// Shared TASKS coherence: a backlog without a sprint-summary table declares its
+// tasks via the sections themselves; when the table exists it must match 1:1.
+function evaluateCycleTasks(cycle, artifactsCount, layout) {
   const tasks = readFileSync(join(cycle.dir, "TASKS.md"), "utf8");
   const ids = extractTaskIds(tasks);
   const sections = extractTaskSections(tasks);
-  // A backlog without a sprint-summary table declares its tasks via the
-  // sections themselves; when the table exists it must match 1:1.
   const declared = ids.length > 0 ? ids : sections;
   const orphans = ids.filter((id) => !sections.includes(id));
   const ok = declared.length > 0 && orphans.length === 0;
@@ -352,7 +509,7 @@ export function evaluateSdd02(root = REPO_ROOT, opts = {}) {
     : orphans.length > 0 ? `, orphan ids ${orphans.join(",")}` : "";
   return {
     ok,
-    detail: `cycle=${cycle.rel} (via ${cycle.via}) artifacts ${SDD_ARTIFACTS.length}/${SDD_ARTIFACTS.length}, tasks sections=${sections.length} declared=${declared.length}${reason}`,
+    detail: `cycle=${cycle.rel} (via ${cycle.via}) layout=${layout} artifacts ${artifactsCount}, tasks sections=${sections.length} declared=${declared.length}${reason}`,
   };
 }
 
@@ -375,10 +532,11 @@ export function runSddChecks(root = REPO_ROOT) {
   const orphans = findLiveRefs(root, ["harness-continuous\\.md"], { allowFusionRecord: true });
   record("R-V12", orphans.length === 0 ? "PASS" : "FAIL", `orphan refs=${orphans.length}` + (orphans.length ? ` at ${orphans.join(", ")}` : ""));
 
-  // V17 — single canonical vocab + conversion table.
-  const wr = join(root, ".agents/rules/workflow-rules.md");
+  // V17 — single canonical vocab + conversion table (owner file: workflow.md,
+  // the single source of the flow; the label→phase table lives there).
+  const wr = join(root, ".agents/rules/workflow.md");
   const wrText = existsSync(wr) ? readFileSync(wr, "utf8") : "";
-  record("V17", hasVocabTable(wrText) ? "PASS" : "FAIL", hasVocabTable(wrText) ? "canonical vocab + conversion table present" : "vocab table missing");
+  record("V17", hasVocabTable(wrText) ? "PASS" : "FAIL", hasVocabTable(wrText) ? "canonical vocab + conversion table present (workflow.md)" : "vocab table missing in workflow.md");
 
   // SDD-01 — orchestrator aligned: refs resolve, non-bypass clause, no orphan promise.
   const sddAgent = join(root, ".agents/agents/orchestrator/AGENT.md");
@@ -422,5 +580,9 @@ export function runSddChecks(root = REPO_ROOT) {
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const { ok } = runSddChecks();
-  process.exit(ok ? 0 : 1);
+  // `process.exitCode`, never `process.exit(code)`: with stdout on a pipe the
+  // writes are asynchronous, and `process.exit` discards what is still pending
+  // (the last line of a report intermittently vanished under load). Setting the
+  // code lets the event loop drain first — same exit status, complete output.
+  process.exitCode = ok ? 0 : 1;
 }

@@ -451,7 +451,7 @@ Gere resumo para o `sdd-compiler`:
 - (parecer de estimativa/riscos no retorno do subagente — texto, não arquivo)
 
 ### Próximo Passo:
-Invocar sdd-compiler modo generate-spec
+Invocar sdd-compiler modo `spec-from-adr` (a SPEC nasce no diretório do ADR, não do pacote)
 ```
 
 ### Saída

@@ -79,6 +79,33 @@ describe("harness-report.schema.json — CFG-02 (SPEC §5.2)", () => {
   });
 });
 
+// Q3=A — frontend_evidence é OPCIONAL no schema: a condicionalidade é do gate
+// (targets.frontend != null), não do schema. Aqui só se prova a FORMA do campo.
+describe("harness-report.schema.json — frontend_evidence opcional (Q3=A)", () => {
+  const evidence = () => ({
+    stories: ["src/Button.stories.tsx"],
+    screenshots: ["button-1280.png"],
+    a11y: { violations: 0 },
+  });
+
+  it("campo ausente continua válido (sem frontend no destino)", () => {
+    assert.deepEqual(validateAgainstSchema(validReport(), readSchema()), []);
+    assert.ok(!readSchema().required.includes("frontend_evidence"));
+  });
+
+  it("evidência completa válida", () => {
+    assert.deepEqual(validateAgainstSchema({ ...validReport(), frontend_evidence: evidence() }, readSchema()), []);
+  });
+
+  it("arrays vazios e a11y ausente reprovam (minItems + required)", () => {
+    const schema = readSchema();
+    const violations = (value) => validateAgainstSchema({ ...validReport(), frontend_evidence: value }, schema);
+    assert.ok(violations({ ...evidence(), stories: [] }).length > 0);
+    assert.ok(violations({ ...evidence(), screenshots: [] }).length > 0);
+    assert.ok(violations({ stories: evidence().stories, screenshots: evidence().screenshots }).length > 0);
+  });
+});
+
 // ---------------------------------------------------------------------------
 // C-1 — real evidence validation. Before this, NOTHING validated the real
 // `harness/*.json` files against the schema: a real violation was invisible.

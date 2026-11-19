@@ -17,9 +17,13 @@ import {
   hasVocabTable,
   isMappingLine,
   isNonCycleRel,
+  missingAdrUnitArtifacts,
   missingArtifacts,
   readWorkflowState,
+  requiredAdrArtifacts,
   resolveSddCycle,
+  sddAdrUnitCandidates,
+  ADR_UNIT_ARTIFACTS,
   SDD_ARTIFACTS,
 } from "../../../scripts/sdd-checks.mjs";
 
@@ -619,9 +623,12 @@ describe("SDD-02 guard: .spec/prd/** é non-cycle (PAP-01 / ADR-P01 / INV-4)", (
 // fixture negativa prova que o teste cobre o defeito: removido o marcador do
 // cabeçalho, `hasVocabTable` = false — não passa por acidente.
 const REPO = join(import.meta.dirname, "..", "..", "..");
-const WORKFLOW_RULES = join(REPO, ".agents", "rules", "workflow-rules.md");
+// V17 moved with the flow: the canonical vocabulary table lives in
+// `workflow.md` (single source, F3a). `workflow-rules.md` keeps the prompt gate
+// and H0–H7 only.
+const WORKFLOW_RULES = join(REPO, ".agents", "rules", "workflow.md");
 
-describe("V17 emenda da esteira (PAP-07)", () => {
+describe("V17 emenda da esteira (PAP-07) — tabela em workflow.md", () => {
   it("mapeia PRD/RESEARCH → Discovery e ADR-INDEX/ADR → Planning", () => {
     const text = readFileSync(WORKFLOW_RULES, "utf8");
     assert.equal(hasVocabTable(text), true, "a tabela viva preserva os marcadores");
@@ -681,6 +688,244 @@ describe("PAP-08 wiring da esteira no orquestrador", () => {
       const text = readFileSync(f, "utf8");
       assert.doesNotMatch(text, /current_phase["']?\s*[:=]\s*["']?(PRD|RESEARCH|ADR-INDEX|ADR)["']?/i);
     }
+  });
+});
+
+// --- F3a / D-A: SDD-02 layout-aware (per ADR) --------------------------------
+// D-A: the check accepts TWO layouts. (a) legacy — 4 artifacts in the cycle root
+// (unchanged); (b) per ADR — `ADR.md` + `SPEC.md` + `TASKS.md` inside
+// `.spec/prd/<id>/ADRs/ADR-00N-{slug}/`, declared by `unit: adr` in the ledger
+// or by a state pointer. Fail-closed stays: an incomplete ADR cycle is drift, and
+// a complete ADR elsewhere never masks the cycle the state names.
+describe("SDD-02 layout-aware: ciclo por ADR (F3a)", () => {
+  const ADR_REL = ".spec/prd/p1/ADRs/ADR-001-base";
+  const ADR_INDEX = [
+    "| order | id | title | status | depends_on | dir | branch | merge | unit |",
+    "|---|---|---|---|---|---|---|---|---|",
+    "| 1 | ADR-001 | Base | in-progress | — | ADRs/ADR-001-base/ | adr/p1/01-base | — | adr |",
+  ].join("\n");
+
+  function writeAdrUnit(root, { tasks = TASKS_TABLE, skip = [] } = {}) {
+    const dir = join(root, ADR_REL);
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(root, ".spec/prd/p1/ADR-INDEX.md"), ADR_INDEX);
+    const files = { "ADR.md": "# ADR-001\n", "SPEC.md": "# SPEC\n", "TASKS.md": tasks };
+    for (const [name, body] of Object.entries(files)) {
+      if (skip.includes(name)) continue;
+      writeFileSync(join(dir, name), body);
+    }
+    return dir;
+  }
+
+  it("PASS: ADR-INDEX unit: adr com ADR.md+SPEC.md+TASKS.md (sem ciclo legado)", () => {
+    const root = tmp({});
+    writeAdrUnit(root);
+    const res = evaluateSdd02(root);
+    assert.equal(res.ok, true, res.detail);
+    assert.match(res.detail, new RegExp(`cycle=${ADR_REL.replace(/\./g, "\\.")}`));
+    assert.match(res.detail, /layout=adr/);
+    assert.match(res.detail, /sections=2/);
+  });
+
+  it("FAIL: mesmo ADR sem SPEC.md ⇒ fail-closed nomeando o artefato", () => {
+    const root = tmp({});
+    writeAdrUnit(root, { skip: ["SPEC.md"] });
+    const res = evaluateSdd02(root);
+    assert.equal(res.ok, false, res.detail);
+    assert.match(res.detail, /ADR-001-base/);
+    assert.match(res.detail, /SPEC\.md/);
+  });
+
+  it("FAIL: ADR com TASKS sem seção de task ⇒ fail-closed (coerência de TASKS vale igual)", () => {
+    const root = tmp({});
+    writeAdrUnit(root, { tasks: "# backlog vazio\nsem tasks\n" });
+    const res = evaluateSdd02(root);
+    assert.equal(res.ok, false, res.detail);
+    assert.match(res.detail, /no task sections/);
+  });
+
+  it("state.artifacts.adr COMPLETO resolve o ciclo por ADR", () => {
+    const root = tmp({});
+    writeAdrUnit(root);
+    writeState(root, { artifacts: { adr: `${ADR_REL}/ADR.md` } });
+    const res = evaluateSdd02(root);
+    assert.equal(res.ok, true, res.detail);
+    assert.match(res.detail, /via state\.artifacts\.adr/);
+  });
+
+  it("state.artifacts.adr INCOMPLETO é drift — ADR completo alheio não mascara", () => {
+    const root = tmp({});
+    writeAdrUnit(root, { skip: ["SPEC.md"] });
+    writeState(root, { artifacts: { adr: ADR_REL } });
+    const res = evaluateSdd02(root);
+    assert.equal(res.ok, false, res.detail);
+    assert.match(res.detail, /drift/);
+    assert.match(res.detail, /SPEC\.md/);
+  });
+
+  it("ciclo legado COMPLETO continua vencendo (retrocompatibilidade)", () => {
+    const root = tmp({});
+    writeCycle(root, ".spec/governance/legado");
+    writeAdrUnit(root);
+    const res = evaluateSdd02(root);
+    assert.equal(res.ok, true, res.detail);
+    assert.match(res.detail, /\.spec\/governance\/legado/);
+    assert.match(res.detail, /layout=legacy/);
+  });
+});
+
+// --- F3a review, item 3: o drift do ADR NOMEADO PELO ESTADO vem primeiro ----
+// `evaluateSdd02` resolvia o ciclo legado antes de olhar o ADR que o estado
+// aponta. Um ciclo legado completo (4 artefatos) curto-circuitava o veredito e
+// um ADR incompleto — `state.artifacts.adr` / `prd_adr.active_adr` — passava
+// verde atrás de um diretório que não tinha relação com ele. O escopo é o do
+// FU-39: só o ponteiro que o ESTADO declara pode virar drift; ADR incompleto
+// alheio é dica, nunca veredito.
+describe("SDD-02 — drift do ADR nomeado pelo estado precede o ciclo legado (F3a)", () => {
+  const ADR_REL = ".spec/prd/p1/ADRs/ADR-001-base";
+
+  // `unit: null` ⇒ o índice nasce SEM a coluna (o default `legacy`).
+  function indexRow({ unit = "adr", status = "in-progress" } = {}) {
+    const cols = ["order", "id", "title", "status", "depends_on", "dir", "branch", "merge"];
+    const values = {
+      order: "1",
+      id: "ADR-001",
+      title: "Base",
+      status,
+      depends_on: "—",
+      dir: "ADRs/ADR-001-base/",
+      branch: "adr/p1/01-base",
+      merge: "—",
+    };
+    if (unit !== null) {
+      cols.push("unit");
+      values.unit = unit;
+    }
+    return [
+      `| ${cols.join(" | ")} |`,
+      `|${cols.map(() => "---").join("|")}|`,
+      `| ${cols.map((c) => values[c]).join(" | ")} |`,
+    ].join("\n");
+  }
+
+  function writeAdr(root, { skip = [], unit = "adr" } = {}) {
+    const dir = join(root, ADR_REL);
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(root, ".spec/prd/p1/ADR-INDEX.md"), indexRow({ unit }));
+    const files = { "ADR.md": "# ADR-001\n", "SPEC.md": "# SPEC\n", "TASKS.md": TASKS_TABLE };
+    for (const [name, body] of Object.entries(files)) {
+      if (skip.includes(name)) continue;
+      writeFileSync(join(dir, name), body);
+    }
+    return dir;
+  }
+
+  it("legado COMPLETO + state.artifacts.adr INCOMPLETO ⇒ FAIL (nada mascara o drift)", () => {
+    const root = tmp({});
+    writeCycle(root, ".spec/governance/legado");
+    writeAdr(root, { skip: ["SPEC.md"] });
+    writeState(root, { current_feature: "legado", artifacts: { adr: ADR_REL } });
+    // Controle positivo: o ciclo legado É completo — sem ele o FAIL poderia vir
+    // por ausência de ciclo, e não pela ordem que este teste prova.
+    assert.deepEqual(missingArtifacts(join(root, ".spec/governance/legado")), [], "controle: legado 4/4");
+    assert.ok(existsSync(join(root, ADR_REL, "ADR.md")), "controle: o ADR existe em disco");
+    const res = evaluateSdd02(root);
+    assert.equal(res.ok, false, res.detail);
+    assert.match(res.detail, /drift/, res.detail);
+    assert.match(res.detail, /SPEC\.md/, res.detail);
+    assert.match(res.detail, /state\.artifacts\.adr/, res.detail);
+  });
+
+  it("legado COMPLETO + ADR nomeado COMPLETO ⇒ PASS (legado continua vencendo)", () => {
+    const root = tmp({});
+    writeCycle(root, ".spec/governance/legado");
+    writeAdr(root);
+    writeState(root, { current_feature: "legado", artifacts: { adr: `${ADR_REL}/ADR.md` } });
+    const res = evaluateSdd02(root);
+    assert.equal(res.ok, true, res.detail);
+    assert.match(res.detail, /\.spec\/governance\/legado/, res.detail);
+    assert.match(res.detail, /layout=legacy/, res.detail);
+  });
+
+  it("prd_adr.active_adr guarda ID: resolvido pelo ADR-INDEX e, incompleto, é drift", () => {
+    const root = tmp({});
+    writeCycle(root, ".spec/governance/legado");
+    writeAdr(root, { skip: ["TASKS.md"] });
+    writeState(root, { current_feature: "legado", prd_adr: { prd_id: "p1", active_adr: "ADR-001" } });
+    assert.ok(existsSync(join(root, ".spec/prd/p1/ADR-INDEX.md")), "controle: o ledger existe");
+    const res = evaluateSdd02(root);
+    assert.equal(res.ok, false, res.detail);
+    assert.match(res.detail, /drift/, res.detail);
+    assert.match(res.detail, /active_adr/, res.detail);
+    assert.match(res.detail, /TASKS\.md/, res.detail);
+  });
+
+  it("ADR LEGADO (sem unit: adr) nomeado pelo estado NÃO é drift: o contrato dele é só ADR.md", () => {
+    const root = tmp({});
+    writeCycle(root, ".spec/governance/legado");
+    writeAdr(root, { unit: null, skip: ["SPEC.md", "TASKS.md"] });
+    writeState(root, { current_feature: "legado", prd_adr: { prd_id: "p1", active_adr: "ADR-001" } });
+    assert.ok(existsSync(join(root, ADR_REL, "ADR.md")), "controle: ADR.md presente");
+    assert.equal(existsSync(join(root, ADR_REL, "SPEC.md")), false, "controle: sem SPEC/TASKS (layout legado)");
+    const res = evaluateSdd02(root);
+    assert.equal(res.ok, true, res.detail);
+    assert.match(res.detail, /layout=legacy/, res.detail);
+  });
+
+  it("active_adr com id ausente do ledger não vira drift (ponteiro mudo, como o stale do FU-38)", () => {
+    const root = tmp({});
+    writeCycle(root, ".spec/governance/legado");
+    writeAdr(root, { skip: ["SPEC.md"] });
+    writeState(root, { current_feature: "legado", prd_adr: { prd_id: "p1", active_adr: "ADR-999" } });
+    const res = evaluateSdd02(root);
+    assert.equal(res.ok, true, res.detail);
+    assert.match(res.detail, /layout=legacy/, res.detail);
+  });
+
+  // MF-1: `state.artifacts.adr` era promovido a `unit: "adr"` fixo. O `unit` é
+  // uma declaração do LEDGER (`workflow.md` §2.1: coluna ausente ⇒ `legacy`), não
+  // do ponteiro: fixar `adr` transformava todo ADR retroativo em drift no
+  // instante em que o estado o nomeava — falso-vermelho (fixture D do review).
+  it("artifacts.adr em ADR LEGADO (índice sem coluna unit, só ADR.md) ⇒ PASS", () => {
+    const root = tmp({});
+    writeCycle(root, ".spec/governance/legado");
+    writeAdr(root, { unit: null, skip: ["SPEC.md", "TASKS.md"] });
+    writeState(root, { current_feature: "legado", artifacts: { adr: ADR_REL } });
+    // Controles: o ADR existe e é legado de fato (sem SPEC/TASKS).
+    assert.ok(existsSync(join(root, ADR_REL, "ADR.md")), "controle: ADR.md presente");
+    assert.equal(existsSync(join(root, ADR_REL, "SPEC.md")), false, "controle: layout legado");
+    // A unidade do ponteiro vem do ledger — é a mutação que este teste pina.
+    assert.equal(sddAdrUnitCandidates(root)[0].unit, "legacy", "o layout vem do ledger, não do ponteiro");
+    const res = evaluateSdd02(root);
+    assert.equal(res.ok, true, res.detail);
+    assert.match(res.detail, /layout=legacy/, res.detail);
+  });
+
+  it("artifacts.adr em ADR com unit: adr e sem SPEC.md ⇒ FAIL nomeando SPEC.md", () => {
+    const root = tmp({});
+    writeCycle(root, ".spec/governance/legado");
+    writeAdr(root, { unit: "adr", skip: ["SPEC.md"] });
+    writeState(root, { current_feature: "legado", artifacts: { adr: ADR_REL } });
+    assert.equal(sddAdrUnitCandidates(root)[0].unit, "adr", "controle: o ledger declara o layout v2");
+    const res = evaluateSdd02(root);
+    assert.equal(res.ok, false, res.detail);
+    assert.match(res.detail, /drift/, res.detail);
+    assert.match(res.detail, /SPEC\.md/, res.detail);
+  });
+
+  // Simetria: `active_adr` path-shaped resolve a unidade pela mesma regra. Sem
+  // LINHA no ledger não há declaração de layout ⇒ `legacy` (o default
+  // retroativo), nunca `adr` por ausência de dado.
+  it("active_adr path-shaped sem linha no ledger ⇒ legacy (só ADR.md), simétrico a artifacts.adr", () => {
+    const root = tmp({});
+    writeCycle(root, ".spec/governance/legado");
+    mkdirSync(join(root, ADR_REL), { recursive: true });
+    writeFileSync(join(root, ADR_REL, "ADR.md"), "# ADR-001\n");
+    assert.equal(existsSync(join(root, ".spec/prd/p1/ADR-INDEX.md")), false, "controle: sem ledger");
+    writeState(root, { current_feature: "legado", prd_adr: { prd_id: "p1", active_adr: ADR_REL } });
+    const res = evaluateSdd02(root);
+    assert.equal(res.ok, true, res.detail);
+    assert.match(res.detail, /layout=legacy/, res.detail);
   });
 });
 
@@ -777,6 +1022,29 @@ describe("PAP-09 ausência de ponteiro morto de SSoT", () => {
     // e qualquer resíduo fora do arquivo declarado quebra o teste.
     const unexpected = hits.filter((h) => !h.startsWith(CONTEXT_COMPRESSOR));
     assert.deepEqual(unexpected, [], `resíduo vivo não declarado: ${unexpected.join(", ")}`);
+  });
+});
+
+// --- F3a review #3 (MF-2): `unit` explícito, sem default silencioso ---------
+// `missingAdrUnitArtifacts(dir, unit = "adr")` fazia todo chamador esquecido
+// exigir SPEC/TASKS de um ADR legado — o layout passava a ser decidido por
+// omissão. O contrato agora é: o layout vem do ledger e chega EXPLÍCITO.
+describe("ADR por `unit` — o layout nunca vem de default (F3a review #3)", () => {
+  it("requiredAdrArtifacts: `adr` exige o ciclo scoped; `legacy` exige só ADR.md", () => {
+    assert.deepEqual(requiredAdrArtifacts("adr"), ADR_UNIT_ARTIFACTS);
+    assert.deepEqual(requiredAdrArtifacts("legacy"), ["ADR.md"]);
+  });
+
+  it("missingAdrUnitArtifacts não tem default: unit ausente falha alto, não vira `adr`", () => {
+    const dir = tmp({ "ADR.md": "# a\n" });
+    assert.throws(() => missingAdrUnitArtifacts(dir), /exige unit "adr" \| "legacy"/);
+    assert.throws(() => missingAdrUnitArtifacts(dir, "ADR"), /exige unit "adr" \| "legacy"/);
+  });
+
+  it("unit explícito decide o veredito: `legacy` não cobra SPEC/TASKS; `adr` cobra", () => {
+    const dir = tmp({ "ADR.md": "# a\n" });
+    assert.deepEqual(missingAdrUnitArtifacts(dir, "legacy"), []);
+    assert.deepEqual(missingAdrUnitArtifacts(dir, "adr"), ["SPEC.md", "TASKS.md"]);
   });
 });
 

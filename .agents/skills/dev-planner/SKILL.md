@@ -108,7 +108,7 @@ websearch("[padrão] testing strategy best practices")
 
 ### NÃO use para:
 - Bugfix simples (use workflow bugfix existente)
-- Refactor pontual (use `code-reviewer` + `developer-engineer`)
+- Refactor pontual (use `code-reviewer` + `frontend-engineer`/`backend-engineer`)
 - Revisão de código (use `code-reviewer`)
 - Validação de testes (use `qa-engineer`)
 - Auditoria de segurança (use `security-engineer`)
@@ -205,7 +205,8 @@ Exemplos rápidos:
 | `.agents/rules/frontend-coding-standards.md` | Padrões frontend (ex.: JSF + Vue) |
 | _Regras de testes unitários backend — dívida PRD-4_ | — |
 | _Regras de migração — dívida PRD-4_ | — |
-| `.agents/rules/workflow-rules.md` | Workflow SDD completo |
+| `.agents/rules/workflow.md` | Fonte única do **fluxo** (esteira PRD → ADR → SDD por ADR, layout, bugfix, code review, estado) |
+| `.agents/rules/workflow-rules.md` | Prompt Gate (§0) e **harness** contínuo H0–H7 (§5 + anexos) |
 | Documentação de arquitetura do destino (dono PRD-4) | Arquitetura detalhada do projeto |
 | Documentação de stack do destino (dono PRD-4) | Stack tecnológica e versões |
 | `AGENTS.md` | Visão geral do projeto |

@@ -1,6 +1,12 @@
 # SPEC Validation Gate (Asserts)
 
-Toda especificação (SPEC) deve ser validada contra os seguintes critérios antes de prosseguir para a fase de planejamento.
+Toda especificação (SPEC) deve ser validada contra os seguintes critérios antes de
+prosseguir para a fase de planejamento.
+
+> **Layout v2 (por ADR):** a SPEC validada aqui é a do ADR — `spec-from-adr` gera
+> `ADRs/ADR-00N-{slug}/SPEC.md`. Cada `RF`/`NFR` é rastreável à decisão/interface
+> congelada do `ADR.md` e os critérios de aceite são executáveis (comando/asserção).
+> O mérito dos critérios abaixo não muda; ciclos `unit: legacy` continuam aceitos.
 
 ## 1. Integridade Arquitetural
 - [ ] **ADRs**: Contém registros de decisão (ADRs) explicando o "Porquê" das escolhas críticas.

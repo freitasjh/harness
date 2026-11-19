@@ -18,7 +18,7 @@ after(() => TMP.cleanup());
 describe("static-checks.mjs loader — CFG-01 (RF-01/RF-02, ADR-009)", () => {
   it("valid config loads and resolves the canonical command", () => {
     const config = loadHarnessConfig(DEFAULT_CONFIG_PATH);
-    assert.equal(config.version, 1);
+    assert.equal(config.version, 2, "v2 config schema (installer removed in F1)");
     const cmd = resolveCommand(config, "suiteFull");
     assert.ok(cmd.includes("node --test"));
     assert.equal(cmd, config.commands.suiteFull);
@@ -46,5 +46,22 @@ describe("static-checks.mjs loader — CFG-01 (RF-01/RF-02, ADR-009)", () => {
     assert.equal(configGatesDisableEnforcement(off), false);
     const config = loadHarnessConfig(DEFAULT_CONFIG_PATH);
     assert.equal(configGatesDisableEnforcement(config.gates), false);
+  });
+
+  it("F7: canonical config carries the keys the gates read (init default shape)", () => {
+    const config = loadHarnessConfig(DEFAULT_CONFIG_PATH);
+    assert.deepEqual(config.moduleMap, {
+      plugins: ".opencode/plugins",
+      rules: ".agents/rules",
+      schemas: ".agents/schemas",
+    });
+    assert.deepEqual(config.mcp, { required: ["chrome-devtools"] });
+    assert.equal(config.contraproveTimeoutMs, 900000);
+    assert.deepEqual(config.gates, {
+      picco: "enforce",
+      evidence: "enforce",
+      hitlBatch: "enforce",
+      e2eGreenfield: "warn",
+    });
   });
 });

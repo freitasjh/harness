@@ -4,7 +4,7 @@
   "plugin": [],
   "plugins": [],
   "instructions": [
-    ".agents/rules/*.md"
+    ".agents/rules/always-on.md"
   ],
   "permission": {
     "task": "ask"
@@ -22,21 +22,33 @@
         "bash": "allow"
       }
     },
-    "developer-engineer": {
+    "frontend-engineer": {
       "mode": "subagent",
-      "prompt": "{file:./.agents/agents/developer-engineer/AGENT.md}",
-      "description": "Implementa codigo e testes sob delegacao do orquestrador (com write/edit).",
+      "prompt": "{file:./.agents/agents/frontend-engineer/AGENT.md}",
+      "description": "Implementa codigo e testes frontend (Vue/React): Composition API/hooks, Storybook-first, i18n, a11y e deepsearch.",
       "permission": {
         "edit": "allow",
         "bash": "allow"
       }
     },
-    "planner": {
+    "backend-engineer": {
       "mode": "subagent",
-      "prompt": "{file:./.agents/agents/planner/AGENT.md}",
-      "description": "Planejamento tecnico de features: consome a skill dev-planner e escreve EXPLORATION.md, CONSTRAINTS.md, DESIGN-DECISIONS.md e ARCHITECTURE.md. Nao escreve PRD.md (product-manager), nao decide ADR (architect), nao gera SPEC/PLAN/TASKS (sdd-compiler) e nao copia fases da skill dev-planner.",
+      "prompt": "{file:./.agents/agents/backend-engineer/AGENT.md}",
+      "description": "Implementa codigo e testes backend por eixo: DDD/Clean, transacoes, IT com banco real, TDD e deepsearch.",
       "permission": {
         "edit": "allow",
+        "bash": "allow"
+      }
+    },
+    "engineer": {
+      "mode": "subagent",
+      "prompt": "{file:./.agents/agents/engineer/AGENT.md}",
+      "description": "Analise e insumo de decisao em .spec/prd/: RESEARCH.md e design-decisions; co-assina PRD/ADR, mas nao decide. md-only.",
+      "permission": {
+        "edit": {
+          "*": "deny",
+          ".spec/**": "allow"
+        },
         "bash": "allow"
       }
     },
@@ -45,7 +57,10 @@
       "prompt": "{file:./.agents/agents/product-manager/AGENT.md}",
       "description": "Validacao de negocio: escopo, aceite e riscos de produto.",
       "permission": {
-        "edit": "allow",
+        "edit": {
+          "*": "deny",
+          ".spec/**": "allow"
+        },
         "bash": "allow"
       }
     },
@@ -63,7 +78,10 @@
       "prompt": "{file:./.agents/agents/architect/AGENT.md}",
       "description": "Decisoes arquiteturais, ADRs e integridade estrutural.",
       "permission": {
-        "edit": "allow",
+        "edit": {
+          "*": "deny",
+          ".spec/**": "allow"
+        },
         "bash": "allow"
       }
     },

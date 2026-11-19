@@ -48,13 +48,21 @@ function byId(report, id) {
   return r;
 }
 
-// Uma árvore "limpa": lock vazio + um citante vivo que cita as 7 entradas da
-// BASELINE (nenhum dos arquivos citados existe) + o arquivo de prova do
-// NON_DEFECT, com a linha `proof` citando o path ⇒ status quo declarado.
-const PROOF_FILE = NON_DEFECT[0].proof.split(":")[0];
-const PROOF_LINE = Number(NON_DEFECT[0].proof.split(":")[1]);
+// Uma árvore "limpa": lock vazio + um citante vivo que cita as entradas da
+// BASELINE (nenhum dos arquivos citados existe). O NON_DEFECT de produção está
+// VAZIO desde v2/F1 (a entrada citava o fixture de `harness-installer`, skill
+// apagada com o instalador), então as fixtures que exercitam a supressão C3
+// passam uma entrada SINTÉTICA por `{ nonDefect }` — o mecanismo continua
+// provado, só a lista de produção encolheu.
+const NON_DEFECT_FIXTURE = Object.freeze({
+  path: "rules/exemplo.md",
+  reason: "entrada sintética do fixture (a lista de produção é vazia em v2)",
+  proof: ".agents/rules/_nondefect-proof.md:3",
+});
+const PROOF_FILE = NON_DEFECT_FIXTURE.proof.split(":")[0];
+const PROOF_LINE = Number(NON_DEFECT_FIXTURE.proof.split(":")[1]);
 
-function proofSource(path = NON_DEFECT[0].path) {
+function proofSource(path = NON_DEFECT_FIXTURE.path) {
   const pad = Array.from({ length: PROOF_LINE - 1 }, (_, i) => `linha ${i + 1}`);
   pad.push(`    '${path}': '# regra\\n',`);
   return pad.join("\n") + "\n";
@@ -64,9 +72,15 @@ function treeWithLock(lockSkills, extra = {}) {
   return {
     ".agents/skills/.vendor-lock.json": JSON.stringify({ version: "1", skills: lockSkills }),
     ".agents/rules/_baseline.md": BASELINE.map((e) => `- \`${e.path}\``).join("\n") + "\n",
-    [PROOF_FILE]: proofSource(),
     ...extra,
   };
+}
+
+// A prova do fixture só entra nas árvores que INJETAM a entrada sintética:
+// com a lista de produção vazia, uma prova viva citando `rules/exemplo.md`
+// seria uma órfã não classificada (a supressão não existe mais).
+function withProof(extra = {}) {
+  return { [PROOF_FILE]: proofSource(), ...extra };
 }
 
 function cleanTree(extra = {}) {
@@ -121,24 +135,23 @@ describe("PO-01 — BASELINE é dívida declarada com dono (SPEC I2)", () => {
 });
 
 describe("PO-01 — NON_DEFECT é lista literal com prova (C3)", () => {
-  it("1 entrada (o exemplo do instalador), com reason e proof", () => {
-    assert.equal(NON_DEFECT.length, 1);
-    assert.equal(NON_DEFECT[0].path, "rules/exemplo.md");
-    assert.ok(NON_DEFECT[0].reason.length > 0);
-    assert.match(NON_DEFECT[0].proof, /^\.agents\/skills\/harness-installer\/SKILL\.md:\d+$/);
+  it("lista de produção vazia em v2/F1 — o citante que a justificava foi apagado", () => {
+    assert.equal(NON_DEFECT.length, 0);
     assert.deepEqual(validateNonDefect(NON_DEFECT), []);
   });
 
-  it("a prova aponta para a linha real do fixture de instalador", () => {
-    const [file, line] = NON_DEFECT[0].proof.split(":");
-    const text = readFileSync(join(REPO_ROOT, file), "utf8").split("\n");
-    assert.match(text[Number(line) - 1], /exemplo\.md/, "proof desatualizada: a linha não cita o path");
-  });
-
-  it("entrada sem proof não supera nada e é issue", () => {
+  it("o mecanismo segue vivo: entrada completa passa, entrada sem proof é issue", () => {
+    assert.deepEqual(validateNonDefect([NON_DEFECT_FIXTURE]), []);
     const issues = validateNonDefect([{ path: "rules/exemplo.md", reason: "r" }]);
     assert.equal(issues.length, 1);
     assert.match(issues[0], /proof ausente/);
+  });
+
+  it("a prova sintética aponta para a linha real do fixture (senão o teste é fachada)", () => {
+    const [file, line] = NON_DEFECT_FIXTURE.proof.split(":");
+    const text = proofSource().split("\n");
+    assert.match(text[Number(line) - 1], /exemplo\.md/, "proof desatualizada: a linha não cita o path");
+    assert.match(file, /^\.agents\/rules\/_nondefect-proof\.md$/);
   });
 });
 
@@ -243,9 +256,13 @@ describe("PO-02/PO-03 — os dois modos de falha (RF-03)", () => {
 });
 
 describe("PO-03/review F4 — NON_DEFECT não é permissão permanente (stale-nondefect-entry)", () => {
+  // A lista de produção está vazia em v2, então cada caso injeta a entrada
+  // sintética: o que se prova é o VEREDITO do check, não a lista.
+  const withEntry = { nonDefect: [NON_DEFECT_FIXTURE] };
+
   it("entrada cujo path passou a existir no disco reprova", () => {
-    const root = fixture(cleanTree({ ".agents/rules/exemplo.md": "# a rule apareceu\n" }));
-    const report = runRefsChecks(root);
+    const root = fixture(cleanTree(withProof({ ".agents/rules/exemplo.md": "# a rule apareceu\n" })));
+    const report = runRefsChecks(root, withEntry);
     const r = byId(report, "stale-nondefect-entry");
     assert.equal(r.status, "FAIL");
     assert.match(r.detail, /exemplo\.md .*passou a existir/);
@@ -253,37 +270,38 @@ describe("PO-03/review F4 — NON_DEFECT não é permissão permanente (stale-no
   });
 
   it("proof cuja linha deixou de existir reprova (o arquivo encolheu)", () => {
-    const root = fixture(cleanTree({ [PROOF_FILE]: "linha 1\nlinha 2\n" }));
-    const r = byId(runRefsChecks(root), "stale-nondefect-entry");
+    // 2 linhas: a proof declara a linha 3 ⇒ fora do arquivo
+    const root = fixture(cleanTree(withProof({ [PROOF_FILE]: "linha 1\nlinha 2" })));
+    const r = byId(runRefsChecks(root, withEntry), "stale-nondefect-entry");
     assert.equal(r.status, "FAIL");
     assert.match(r.detail, /proof .*fora do arquivo/);
   });
 
   it("proof que aponta para linha sem o path reprova (prova morta)", () => {
     const semCitacao = Array.from({ length: PROOF_LINE }, (_, i) => `texto ${i + 1}`).join("\n") + "\n";
-    const root = fixture(cleanTree({ [PROOF_FILE]: semCitacao }));
-    const r = byId(runRefsChecks(root), "stale-nondefect-entry");
+    const root = fixture(cleanTree(withProof({ [PROOF_FILE]: semCitacao })));
+    const r = byId(runRefsChecks(root, withEntry), "stale-nondefect-entry");
     assert.equal(r.status, "FAIL");
     assert.match(r.detail, /não cita o path/);
   });
 
   it("proof cujo arquivo não existe no disco reprova", () => {
-    const tree = cleanTree();
-    delete tree[PROOF_FILE]; // ÚNICA diferença para a árvore limpa
-    const r = byId(runRefsChecks(fixture(tree)), "stale-nondefect-entry");
+    const tree = cleanTree(withProof());
+    delete tree[PROOF_FILE]; // ÚNICA diferença para a árvore com prova
+    const r = byId(runRefsChecks(fixture(tree), withEntry), "stale-nondefect-entry");
     assert.equal(r.status, "FAIL");
     assert.match(r.detail, /proof ausente no disco/);
   });
 
   it("a prova é verificada em TODAS as entradas, não só na primeira", () => {
     const entries = [
-      { path: NON_DEFECT[0].path, reason: "r", proof: NON_DEFECT[0].proof },
+      { path: NON_DEFECT_FIXTURE.path, reason: "r", proof: NON_DEFECT_FIXTURE.proof },
       { path: "rules/segunda.md", reason: "r", proof: ".agents/rules/segunda.md:1" },
     ];
-    const issues = validateNonDefectStale(entries, fixture(cleanTree()));
+    const issues = validateNonDefectStale(entries, fixture(cleanTree(withProof())));
     assert.equal(issues.length, 1, `só a 2ª entrada está morta: ${issues.join("; ")}`);
     assert.match(issues[0], /rules\/segunda\.md .*proof ausente no disco/);
-    assert.deepEqual(parseProof(NON_DEFECT[0].proof), { file: PROOF_FILE, line: PROOF_LINE });
+    assert.deepEqual(parseProof(NON_DEFECT_FIXTURE.proof), { file: PROOF_FILE, line: PROOF_LINE });
     assert.equal(parseProof("sem-linha"), null);
   });
 
@@ -341,11 +359,12 @@ describe("PO-04 — supressões separadas por mecanismo (C3/C4)", () => {
   });
 
   it("C3: o nome da lista é suprimido; o mesmo citer com outro nome reprova", () => {
-    const okRoot = fixture(cleanTree({ ".agents/rules/a.md": "cita `rules/exemplo.md`\n" }));
-    assert.equal(runRefsChecks(okRoot).ok, true);
+    const withEntry = { nonDefect: [NON_DEFECT_FIXTURE] };
+    const okRoot = fixture(cleanTree(withProof({ ".agents/rules/a.md": "cita `rules/exemplo.md`\n" })));
+    assert.equal(runRefsChecks(okRoot, withEntry).ok, true);
 
-    const badRoot = fixture(cleanTree({ ".agents/rules/a.md": "cita `rules/exemplo-2.md`\n" }));
-    const r = byId(runRefsChecks(badRoot), "missing-and-unclassified");
+    const badRoot = fixture(cleanTree(withProof({ ".agents/rules/a.md": "cita `rules/exemplo-2.md`\n" })));
+    const r = byId(runRefsChecks(badRoot, withEntry), "missing-and-unclassified");
     assert.equal(r.status, "FAIL");
     assert.match(r.detail, /exemplo-2\.md/);
   });
@@ -396,12 +415,13 @@ describe("PO-04 — pureza e propagabilidade (SPEC I1, ADR §4 item 2)", () => {
 });
 
 describe("PO-05 — adapter V18 em scripts/static-checks.mjs (RF-06)", () => {
-  it("no repo real o runner reporta V18 PASS com baseline=1 (meta RF-05 <=1) e non-defect=1", () => {
+  it("no repo real o runner reporta V18 PASS com baseline=1 (meta RF-05 <=1) e non-defect=0", () => {
     const report = runStaticChecks();
     const v18 = byId(report, "V18");
     assert.equal(v18.status, "PASS", v18.detail);
     assert.match(v18.detail, /baseline=1/);
-    assert.match(v18.detail, /non-defect=1/);
+    // v2/F1: a única supressão C3 citava a skill `harness-installer` (apagada).
+    assert.match(v18.detail, /non-defect=0/);
     // H-B4 (§8-N18): o contador não pode sumir no único ramo que roda.
     assert.match(v18.detail, /stale-baseline-entry=ok\[vendor-only=0\]/);
   });

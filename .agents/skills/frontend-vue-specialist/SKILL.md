@@ -210,3 +210,40 @@ Você deve validar:
 
 ## 💡 FUTURE IMPROVEMENTS:
 - (refactors sugeridos)
+
+---
+
+# 11. CÂNONE DE STACK — FONTE ÚNICA (ADR F6, D-F6-A)
+
+Esta seção é a **única** fonte do padrão de stack Vue no harness. `.agents/rules/frontend-coding-standards.md`
+é apenas ponteiro. Nenhuma outra rule, skill ou AGENT.md deve repetir esta lista.
+
+| Camada | Padrão obrigatório | Proibido |
+|---|---|---|
+| Framework | Vue 3.5 + TypeScript, `<script setup lang="ts">` | Options API |
+| UI | shadcn-vue (Radix Vue + Tailwind) | suítes de UI proprietárias e quaisquer substitutos |
+| HTTP | `http` de `@/lib/axios` (instância configurada) | axios instanciado em componente, `fetch` nativo |
+| Estado | Pinia (setup store preferido) | Vuex |
+| Rota | vue-router `createWebHistory`, lazy-loaded | rotas duplicadas |
+| i18n | vue-i18n `legacy: false`, `pt-BR` default, chaves por módulo | literal visível fora do locale |
+| Form | vee-validate + zod (schema-first) | validação ad-hoc em template |
+| Ícones | `lucide-vue-next` | outros conjuntos de ícones |
+| Teste | Vitest + happy-dom, `src/**/__tests__/*.spec.ts`, ≥70% novo | jsdom, teste sem estado assíncrono |
+| Build | Vite, alias `@` → `src/`, `@images`, `@styles` | `@core`, `@layouts` |
+
+## Axios (contrato de integração)
+
+`src/lib/axios.ts` exporta `http`: `baseURL` de `VITE_API_URL` ou proxy `/api`; interceptor de request
+injetando `Authorization: Bearer <accessToken>`; interceptor de response em 401 tenta refresh
+`/api/v1/auth/refresh` e, na falha, limpa credenciais e redireciona `/login`. Rotas de API usam
+`/api/v1/{resource}` (sem prefixo legado). Serviços ficam em `src/modules/{domain}/service/`.
+
+## Contrato visual e estados
+
+- `DESIGN.md` + tokens do **destino** são a fonte visual. Nenhum hex/fonte/paleta nesta skill:
+  usar somente tokens semânticos. Se faltar token, propor ao `design-system-specialist` e registrar pendência.
+- Toda tela cobre `loading / empty / error / disabled`; lista tem filtro + tabela; formulário tem validação.
+- Storybook-first: escrever a story de cada estado (default, hover, focus, disabled, loading, error,
+  empty, success) **antes** da página que a consome. Ver skill `storybook`.
+- a11y WCAG 2.1 AA: aria-labels, foco visível, contraste, navegação por teclado, alvo ≥44px no mobile.
+- Evitar anti-slop: grid simétrica genérica, gradiente roxo, sombra dura — ver `frontend-quality`.

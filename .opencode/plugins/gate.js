@@ -356,6 +356,7 @@ export function listCoreGates() {
 export const DENY_PICCO_ABSENT = "picco-tag-absent";
 export const DENY_PICCO_NONEMPTY = "picco-tag-nonempty";
 export const DENY_COMPLETED_NO_EVIDENCE = "completed-no-evidence";
+export const DENY_FRONTEND_EVIDENCE = "frontend-evidence-missing";
 export const DENY_CONTRAPROVE_DIVERGENT = "contraprove-divergent";
 export const DENY_CONTRAPROVE_TIMEOUT = "contraprove-timeout";
 export const DENY_PREV_CYCLE = "prev-cycle-not-completed";
@@ -552,7 +553,8 @@ export function matchGlob(path, pattern) {
 
 // Orchestrator allowlist, anchor A (SPEC N12): ONLY .spec/** plus the state
 // file. Everything else (notably rules/schemas/plugins/config) is denied here
-// and writable solely via developer-engineer under delegation (CI backstop).
+// and writable solely via the live implementation roles (frontend-engineer |
+// backend-engineer) under delegation (CI backstop).
 export function isOrchAllowlisted(path) {
   const normalized = normalizePath(path);
   return (
@@ -634,8 +636,13 @@ export function basenameOf(path) {
 
 const KNOWN_AGENTS = new Set([
   "orchestrator",
-  "developer-engineer",
+  "frontend-engineer",
+  "backend-engineer",
+  "engineer",
+  "product-manager",
   "qa-engineer",
+  "architect",
+  "security-engineer",
   "code-reviewer",
   "ux-designer",
   "design-system-specialist",
@@ -655,9 +662,11 @@ export function checkWriteAccess({ agent, tool, targets = [], protectedPaths = [
     const normalized = normalizePath(target.path);
     if (!normalized || normalized === "dev/null") continue;
     if (isProtectedPath(normalized, protectedPaths)) {
-      // Sole exception: developer-engineer under delegation; the trailer
+      // Sole exception: implementation roles under delegation; the trailer
       // requirement itself is enforced out-of-band by CI (ADR-007).
-      if (agent === "developer-engineer") continue;
+      // F4: the former single implementation role was removed from the roster;
+      // the two current implementation roles inherit the exemption.
+      if (agent === "frontend-engineer" || agent === "backend-engineer") continue;
       throw new DenyError(DENY_PROTECTED, {
         tool,
         path: sanitizePathForDetails(normalized),
@@ -944,6 +953,7 @@ export async function gateCompletionAnchorA(ctx = {}) {
   if (!isCompletionWrite({ tool, targets, args: ctx.args })) return true;
   const report = ctx.report ?? null;
   if (!report) throw new DenyError(DENY_COMPLETED_NO_EVIDENCE, { demand: ctx.demand ?? null });
+  requireFrontendEvidence(report, config?.targets?.frontend);
   await runContraprova({
     demand: ctx.demand ?? report?.demand ?? "workflow-state",
     report,
@@ -1051,10 +1061,10 @@ export function readEvidenceReport(ctx = {}) {
 // GATE-04 — HITL pause between batches (I6).
 //
 // Rule: the 3rd consecutive `task` without an intervening human turn denies.
-// The mandatory correction loop (developer-engineer -> code-reviewer (renamed RENAME, Batch 7)
-// as the first two calls) therefore always passes — the exemption is
-// structural (2 < 3), not a special case. Human turns arrive via the
-// event stream (v2 turn-boundary events), which resets the per-session counter.
+// The mandatory correction loop (implementation role -> code-reviewer as the
+// first two calls) therefore always passes — the exemption is structural
+// (2 < 3), not a special case. Human turns arrive via the event stream (v2
+// turn-boundary events), which resets the per-session counter.
 // ---------------------------------------------------------------------------
 
 export function createHitlTracker() {
@@ -1481,3 +1491,37 @@ export async function setup(ctx = {}) {
 // [\"default\"]"). No `Plugin.define` (absent from the runtime) and no `server`
 // key — this repo is v2-only.
 export default { id: "harness-gate", setup };
+
+// Q3=A — evidência frontend é condicional ao ALVO, não ao relatório:
+// `targets.frontend` string não vazia exige `report.frontend_evidence`. O campo
+// permanece OPCIONAL no schema (o destino sem frontend não deve ser obrigado a
+// declará-lo). I10: detalhes trazem só enums de causa e NOMES de campo — nunca
+// paths absolutos ou conteúdo de story/screenshot.
+// Declarado no fim do arquivo (function declaration é hoisted) para não
+// deslocar as citações de linha de gate-contract.md §1.
+export function requireFrontendEvidence(report, frontend) {
+  if (typeof frontend !== "string" || frontend.length === 0) return true;
+  const evidence = report?.frontend_evidence;
+  if (!evidence || typeof evidence !== "object" || Array.isArray(evidence)) {
+    throw new DenyError(DENY_FRONTEND_EVIDENCE, { cause: "missing" });
+  }
+  const fields = [];
+  for (const key of ["stories", "screenshots"]) {
+    const list = evidence[key];
+    if (!Array.isArray(list) || list.length === 0 || list.some((v) => typeof v !== "string" || v.length === 0)) {
+      fields.push(key);
+    }
+  }
+  const a11y = evidence.a11y;
+  if (
+    !a11y ||
+    typeof a11y !== "object" ||
+    Array.isArray(a11y) ||
+    typeof a11y.violations !== "number" ||
+    a11y.violations !== 0
+  ) {
+    fields.push("a11y");
+  }
+  if (fields.length > 0) throw new DenyError(DENY_FRONTEND_EVIDENCE, { cause: "invalid", fields });
+  return true;
+}

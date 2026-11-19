@@ -630,6 +630,112 @@ describe("GATE-03 anchor A: path-check + completion + contraprova (ADR-002/008)"
   });
 });
 
+describe("GATE-03 anchor A: frontend_evidence condicional (Q3=A)", () => {
+  const FE_REASON = "frontend-evidence-missing";
+  const feEvidence = () => ({
+    stories: ["src/Button.stories.tsx"],
+    screenshots: ["button-1280.png", "button-375.png"],
+    a11y: { violations: 0 },
+  });
+  const feReport = (frontend_evidence) => ({
+    demand: "f6b-frontend-evidence",
+    commands: [{ cmd: TEST_COMMANDS.suiteFull, exitCode: 0 }],
+    counts: { unit: { passed: 1, failed: 0, skipped: 0 } },
+    selfReported: true,
+    ...(frontend_evidence === undefined ? {} : { frontend_evidence }),
+  });
+  // Contraprova completa e válida: se o check de frontend for removido, os
+  // fixtures (b)/(c) PASSAM — é isso que torna o teste sensível à mutação.
+  const feCtx = ({ frontend = "react", report = feReport(feEvidence()), hash = "tree-fe" } = {}) => ({
+    tool: "write",
+    args: { filePath: "workflow-state.json", content: JSON.stringify({ current_phase: "Completed" }) },
+    sessionAgent: "orchestrator",
+    config: frontend === null ? TEST_CONFIG : { ...TEST_CONFIG, targets: { frontend, backend: "node" } },
+    report,
+    demand: "f6b-frontend-evidence",
+    publishedSeal: testSeal(),
+    contraproveExec: async () => ({ exitCode: 0, counts: { unit: { passed: 1, failed: 0, skipped: 0 } } }),
+    treeHash: hash,
+  });
+
+  it("(a) targets sem frontend + relatório sem campo => allow", async () => {
+    clearContraproveCache();
+    await allowsBothModes(gateCompletionAnchorA, {
+      ...feCtx({ frontend: null, report: feReport(undefined), hash: "tree-fe-a" }),
+      logger: makeLogger(),
+    });
+  });
+
+  it("(b) targets=react + relatório sem campo => deny frontend-evidence-missing", async () => {
+    clearContraproveCache();
+    await deniesBothModes(
+      gateCompletionAnchorA,
+      { ...feCtx({ report: feReport(undefined), hash: "tree-fe-b" }), logger: makeLogger() },
+      FE_REASON,
+    );
+  });
+
+  it("(c) stories vazio => deny frontend-evidence-missing", async () => {
+    clearContraproveCache();
+    await deniesBothModes(
+      gateCompletionAnchorA,
+      {
+        ...feCtx({
+          report: feReport({ ...feEvidence(), stories: [] }),
+          hash: "tree-fe-c",
+        }),
+        logger: makeLogger(),
+      },
+      FE_REASON,
+    );
+  });
+
+  it("(c2) screenshots vazio / a11y com violations > 0 / a11y ausente => deny", async () => {
+    for (const [i, evidence] of [
+      { ...feEvidence(), screenshots: [] },
+      { ...feEvidence(), a11y: { violations: 2 } },
+      { stories: feEvidence().stories, screenshots: feEvidence().screenshots },
+    ].entries()) {
+      clearContraproveCache();
+      await deniesBothModes(
+        gateCompletionAnchorA,
+        {
+          ...feCtx({ report: feReport(evidence), hash: `tree-fe-c2-${i}` }),
+          logger: makeLogger(),
+        },
+        FE_REASON,
+      );
+    }
+  });
+
+  it("(d) evidência completa => allow", async () => {
+    clearContraproveCache();
+    await allowsBothModes(gateCompletionAnchorA, {
+      ...feCtx({ hash: "tree-fe-d" }),
+      logger: makeLogger(),
+    });
+  });
+
+  it("(e) mutation guard: reason + chamada vivem no caminho de anchor A", () => {
+    const source = readSource("gate.js");
+    assert.match(source, /export const DENY_FRONTEND_EVIDENCE = "frontend-evidence-missing"/);
+    const anchor = source.indexOf("export async function gateCompletionAnchorA");
+    const end = source.indexOf("export function loadWorkflowState", anchor);
+    const helper = source.indexOf("export function requireFrontendEvidence");
+    assert.ok(anchor >= 0 && end > anchor && helper > end, "helper + anchor A encontradas no código-fonte");
+    assert.match(
+      source.slice(helper),
+      /DENY_FRONTEND_EVIDENCE/,
+      "o helper deve lançar a reason nova",
+    );
+    assert.match(
+      source.slice(anchor, end),
+      /requireFrontendEvidence\(report, config\?\.targets\?\.frontend\)/,
+      "remover a chamada derruba os fixtures (b)/(c) — o guarde deve estar em anchor A",
+    );
+  });
+});
+
 describe("GATE-03 anchor B: next task requires the previous cycle closed", () => {
   const closed = {
     current_feature: "harness-v7-hardening",

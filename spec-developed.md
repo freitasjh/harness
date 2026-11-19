@@ -134,3 +134,11 @@ Registro cronológico de funcionalidades e refactors entregues.
 - [x] Fase 4 — Quality Gate (plugins 379/379, installer 559/559, static-checks PASS, code review APPROVED)
 - [x] Fase 5 — Verify (3 dimensões ✅)
 - [x] Fase 6 — Archive (move para `.spec/archive/20261028-harness-design-system-agent/`, lições no Brain)
+
+| 2026-11-18 | `harness-v2` (F1) | Refactor | Remoção do instalador v1 e substituição por sincronizador determinístico: apagadas as árvores `installer`, `installer-rs`, `packaging`, a skill `harness-installer`, `docs/INSTALACAO.md` e o check V15 (sem sujeito). Novos `scripts/harness-sync.mjs` (`init`/`update`/`doctor`, manifesto sha256 + backup + merge de `opencode.json`) e `scripts/seal.mjs`; `harness.config.json` v2 (`stack` → `targets` detectados, `suiteFull` sem a suíte do instalador); V19/V20 (inventário/CDL por eixo) removidos com os módulos; CI e docs reapontados. Perda declarada em `scripts/static-checks.mjs` e `.agents/rules/gate-contract.md`. | `.spec/governance/harness-v2/` | Completed |
+
+## Etapas concluídas — harness-v2 (F1)
+- [x] Fase 1 — Remoção (installer, installer-rs, packaging, skill, doc de instalação, artefatos de prova)
+- [x] Fase 2 — Sincronizador (`harness-sync.mjs` + `seal.mjs`) com testes em `scripts/__tests__/sync.spec.mjs`
+- [x] Fase 3 — Rewiring (static-checks, refs, CI, README, `docs/FUNCIONAMENTO.md`, rules)
+- [x] Fase 4 — Verificação (plugins 418/0 · scripts 21/0 · static-checks exit 0 · vendor `--check` OK · init/doctor/update no probe)

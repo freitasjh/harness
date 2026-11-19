@@ -9,11 +9,17 @@
 > `ADR-02` — o `ADR-INDEX` só existe para registrar ADRs reais, nunca para
 > ficar vazio.
 
-| order | id | title | status | depends_on | dir | branch | merge |
-|---|---|---|---|---|---|---|---|
-> | 1 | ADR-001 | <título> | todo | — | ADRs/ADR-001-exemplo/ | adr/exemplo/01-exemplo | — |
+| order | id | title | status | depends_on | dir | branch | merge | unit |
+|---|---|---|---|---|---|---|---|---|
+> | 1 | ADR-001 | <título> | todo | — | ADRs/ADR-001-exemplo/ | adr/exemplo/01-exemplo | — | adr |
 
 > Contrato das colunas (SPEC §4.2): `order` inteiro ≥1 · `status` ∈
 > todo|in-progress|merged|dropped · `depends_on` declarado (`—` quando não há) ·
 > `dir` = `ADRs/ADR-00N-{slug}/` · `branch` = `adr/{prd-id}/{nn}-{slug}` ·
-> `merge` preenchido quando `status=merged`.
+> `merge` preenchido quando `status=merged` · `unit` ∈ `adr`|`legacy`
+> (opcional; ausente ⇒ `legacy`).
+>
+> **Layout por ADR (v2).** `unit: adr` = o diretório do ADR é a unidade de
+> entrega: `ADR.md` + `SPEC.md` + `TASKS.md` (+ `VERIFY.md` quando `merged`).
+> `unit: legacy` = só `ADR.md` (ADRs anteriores à v2). Um `PRD.md` que declara
+> `prd_version: 2` exige `unit: adr` em toda linha `in-progress`/`merged`.
