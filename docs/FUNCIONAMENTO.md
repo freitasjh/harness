@@ -55,7 +55,7 @@ runtime *aplica*. O README declara o lema que estrutura o repo inteiro
 | Camada | O que é | Onde vive | Quem aplica | Nível típico |
 |---|---|---|---|---|
 | **Runtime** | Negações disparadas por tool call: PICCO ausente, conclusão sem contraprova, ciclo anterior aberto, 3º `task` sem turno humano, escrita em path protegido, `pkill -f` | `.opencode/plugins/gate.js` (1483 linhas) | hook `ctx.tool.hook("execute.before", …)` (`V2_TOOL_HOOK`, registrado em `setup`) | 🟢 / 🟠 |
-| **Processo** | Prompt Gate, ciclo SDD, portões humanos P0..P6, bugfix B1..B4, H1..H7, code review | `.agents/rules/workflow.md` (fluxo), `.agents/rules/workflow-rules.md` (§0 prompt gate, §5 harness), `.agents/agents/*/AGENT.md` | agentes obedecendo prosa + o usuário aprovando portões | 🟡 |
+| **Processo** | Prompt Gate, ciclo SDD, portões humanos P0..P6, bugfix B1..B4, H1..H7, code review | `.agents/rules/always-on.md` — **único** `instructions` em `opencode.json`; regras completas (`.agents/rules/workflow.md`, `.agents/rules/workflow-rules.md`, etc.) ficam em disco, carregadas **sob demanda** pela seção "Regras completas" do contrato; agentes em `.agents/agents/*/AGENT.md` | agentes obedecendo prosa + o usuário aprovando portões | 🟡 |
 
 O **Runtime** nega em exatamente **5 gates core** (`registerCoreGate`, chamado cinco vezes);
 4 têm `gateName` (`gatePiccoTask`, `gateCompletionAnchorA`, `gatePhaseAnchorB`,
@@ -103,6 +103,7 @@ Note o sentido do diagrama: o **relatório é auto-declarado** e a **contraprova
 | `.opencode/plugins/harness-validator.js` | **No-op** desde FIX-01 (mantido como placeholder) | módulo sem hook registrado |
 | `.opencode/plugins/hitl-guardrail.js` | **No-op** desde FIX-01 (a pausa HITL vive em GATE-04) | módulo sem hook registrado |
 | `.opencode/plugins/__tests__/` | 19 specs do runtime (gate, seal, adapter v2, schema do report, dogfood, refs, PRD, ADR por `unit`) | diretório |
+| `.agents/rules/always-on.md` | **Único `instructions` global**: contrato enxuto (identidade, prompt gate, `current_phase` canônico, gates com mecanismo, H0..H7, deepsearch) + ponte para as regras completas; nenhuma norma foi apagada | seções 1..7 |
 | `.agents/rules/workflow.md` | **Fonte única do fluxo**: esteira PRD→ADR, SDD por ADR, layout `.spec/**`, bugfix, code review, estado | §0 (vocabulário), §2 (esteira e traceability), §3 (layout), §4 (bugfix), §5 (code review), §6 (estado) |
 | `.agents/rules/workflow-rules.md` | Prompt Gate (§0), papéis (§0.1), Harness Contínuo H0..H7 (§5) + anexos | §0, §0.1, §5, Anexos A/B |
 | `.agents/rules/gate-contract.md` | Tabela I1..I12: onde mora cada negação + nível de garantia | §1 (I1..I12), §2 (não-promessas), §3 (níveis) |
@@ -797,7 +798,8 @@ número de linha) e o nível de garantia. Nada aqui propõe implementação.
 | `harness.config.json` (`contraproveTimeoutMs`, `evidence`) | timeout da contraprova; caminho e schema da evidência |
 | `opencode.json` (`permission.task`) | `permission.task = "ask"` |
 | `opencode.json` (`agent.*`) | 10 agentes com `permission.edit` / `permission.bash` |
-| `.agents/rules/gate-contract.md` §1 | tabela I1..I12 com mecanismo e nível |
+| `.agents/rules/always-on.md` §1..§7 | contrato always-on: identidade, prompt gate, `current_phase` canônico + tabela, gates com função/reason, H0..H7 (H6 checklist), deepsearch, índice das regras completas (V17) |
+| `.agents/rules/gate-contract.md` §1 | tabela I1..I12 com mecanismo e nível (inclui SEAL) |
 | `.agents/rules/gate-contract.md` §2 | não-promessas explícitas (prosa não é negada, `permission.ask` ausente) |
 | `.agents/rules/gate-contract.md` §3 | níveis de garantia |
 | `.agents/rules/workflow-rules.md` §0 | Prompt Gate (Rota A / Rota B / PICCO) |
@@ -816,7 +818,7 @@ número de linha) e o nível de garantia. Nada aqui propõe implementação.
 | `.agents/agents/orchestrator/AGENT.md` ("Portões Obrigatórios no Ciclo SDD") | portões P0..P6 |
 | `.agents/agents/orchestrator/AGENT.md` ("Esteira PRD → ADR → SDD") | esteira PRD → ADR → SDD |
 | `.agents/agents/orchestrator/AGENT.md` ("Workflow de Bugfix (Fast-Track)") | fases B1..B4 |
-| `.agents/agents/orchestrator/AGENT.md` ("Harness de Testes & Validação") | regra H1..H7: carregada por `opencode.json` (`instructions` global + prompt por agente; alcance por config, não medido no binário); enforcement em `gate.js` |
+| `.agents/agents/orchestrator/AGENT.md` ("Harness de Testes & Validação") | regra H1..H7: carregada por `opencode.json` (`instructions` = `.agents/rules/always-on.md` como contrato único + prompt por agente; alcance por config, não medido no binário); texto integral em `.agents/rules/workflow-rules.md` §5; enforcement em `gate.js` |
 | `.agents/skills/harness-report/SKILL.md` §1..§2 | relatório auto-declarado × contraprova |
 | `.agents/schemas/harness-report.schema.json` (`required`, `counts`, `e2e`, `brainStore`) | campos obrigatórios e condicionais |
 | `scripts/static-checks.mjs` (`SCAN_FILES`, `SCAN_DIRS`) | escopo de V2/V3/V7 |

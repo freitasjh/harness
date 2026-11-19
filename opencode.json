@@ -4,7 +4,7 @@
   "plugin": [],
   "plugins": [],
   "instructions": [
-    ".agents/rules/*.md"
+    ".agents/rules/always-on.md"
   ],
   "permission": {
     "task": "ask"

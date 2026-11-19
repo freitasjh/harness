@@ -20,7 +20,7 @@
 // core, RF-02) and is exercised here unchanged.
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -228,6 +228,20 @@ describe("PL-05 — opencode.json is v2-only (dual keys ABSENT, v2 shape PRESENT
     const note = json.$experiment ?? "";
     assert.match(note, /v2-only/i, "note names the v2-only decision");
     assert.match(note, /auto-?carregad|auto-?load/i, "note records local auto-load");
+  });
+
+  it("F7: instructions is the single always-on file, and it exists on disk", () => {
+    const json = opencodeJson();
+    assert.deepEqual(
+      json.instructions,
+      [".agents/rules/always-on.md"],
+      "one contract file replaces the .agents/rules/*.md glob",
+    );
+    assert.equal(
+      existsSync(join(REPO_ROOT, json.instructions[0])),
+      true,
+      "the single instruction must exist — a glob pointed at prose that may rot",
+    );
   });
 });
 

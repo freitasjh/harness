@@ -152,13 +152,16 @@ Status: done. 9 estados canônicos com `active`; âncora `export const` (coment�
 ## F7 — Gates e estado
 
 ### GATES-01 — `gate-contract` v2
-Status: open. Sem referências ao instalador; selo 🟠 declarado.
+Status: done. FRONT e SEAL 🟠 adicionados; V15/V19/V20 com perda declarada; trust root do selo = scripts/seal.mjs + host + CI.
 
 ### GATES-02 — Defaults de config no `init`
-Status: open. `gates`, `mcp.required`, `contraproveTimeoutMs`, `moduleMap`.
+Status: done. 4 chaves com constantes nomeadas; probe gera config idêntico ao canônico; doctor OK.
 
 ### GATES-03 — Estado compactado
-Status: open. Migração de chaves aditivas para histórico.
+Status: done (F3b). 16,8 KB / 21 chaves + histórico de 76 linhas.
+
+### GATES-04 — always-on único
+Status: done. `.agents/rules/always-on.md` 10.309 B como único instructions; 9 rules completas preservadas e indexadas; V4 890/1705, V17 PASS.
 
 ## F8 — Aceite e docs
 

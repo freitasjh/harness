@@ -108,6 +108,26 @@ export const CONFIG_NAME = "harness.config.json";
 export const BRAIN_DIR_NAME = "brain";
 export const BRAIN_PIN = "8b965093a00d291195313fe457b3aa35bbff71f2";
 
+// F7 — defaults gravados pelo `init`/`update` quando criam o config. São as
+// chaves que os gates e o harness leem: espelham `harness.config.json` deste
+// repo, para que um alvo recém-instalado não nasça com `gates`/`mcp`/
+// `contraproveTimeoutMs`/`moduleMap` ausentes (o loader fail-closed e o gate
+// de Completed passam a depender delas). Uma chave por constante nomeada —
+// nunca literal espalhado pelo corpo de `buildConfig`.
+export const DEFAULT_MODULE_MAP = Object.freeze({
+  plugins: ".opencode/plugins",
+  rules: ".agents/rules",
+  schemas: ".agents/schemas",
+});
+export const DEFAULT_GATES = Object.freeze({
+  picco: "enforce",
+  evidence: "enforce",
+  hitlBatch: "enforce",
+  e2eGreenfield: "warn",
+});
+export const DEFAULT_MCP_REQUIRED = Object.freeze(["chrome-devtools"]);
+export const DEFAULT_CONTRAPROVE_TIMEOUT_MS = 900000;
+
 // Payload owned by the harness. Everything here is overwritten on `update`
 // when its hash differs; nothing outside it is touched.
 // `.opencode/commands` carries the three operator commands (`/harness-init`,
@@ -437,9 +457,13 @@ export function buildConfig(targetDir, { suite, unit } = {}) {
     version: MANIFEST_VERSION,
     project: path.basename(path.resolve(targetDir)),
     targets: detectTargets(targetDir),
+    moduleMap: { ...DEFAULT_MODULE_MAP },
     commands: { suiteFull, unit: unitCmd },
-    evidence: { path: "harness/" },
+    mcp: { required: [...DEFAULT_MCP_REQUIRED] },
     protectedPaths: sourceProtectedPaths(),
+    gates: { ...DEFAULT_GATES },
+    contraproveTimeoutMs: DEFAULT_CONTRAPROVE_TIMEOUT_MS,
+    evidence: { path: "harness/" },
   };
 }
 

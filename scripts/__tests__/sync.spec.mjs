@@ -155,6 +155,23 @@ describe("SYNC-01 — init cria payload + config + manifesto (C3, A5, M6)", () =
     assert.ok(config.protectedPaths.includes(".opencode/plugins/**"));
     assert.ok(config.protectedPaths.includes("harness.config.json"));
 
+    // F7 — o config gerado carrega as chaves que os gates leem. Sem elas, um
+    // alvo freshly-instalado nasce com `gates`/`mcp`/`moduleMap` ausentes e o
+    // comportamento difere do repo de origem (que tem todas).
+    assert.deepEqual(config.moduleMap, {
+      plugins: ".opencode/plugins",
+      rules: ".agents/rules",
+      schemas: ".agents/schemas",
+    });
+    assert.deepEqual(config.gates, {
+      picco: "enforce",
+      evidence: "enforce",
+      hitlBatch: "enforce",
+      e2eGreenfield: "warn",
+    });
+    assert.deepEqual(config.mcp, { required: ["chrome-devtools"] });
+    assert.equal(config.contraproveTimeoutMs, 900000);
+
     const manifest = readJson(join(target, ".harness-manifest.json"));
     assert.equal(manifest.version, 2);
     const paths = Object.keys(manifest.files);
