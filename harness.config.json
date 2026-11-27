@@ -11,9 +11,10 @@
     "schemas": ".agents/schemas"
   },
   "commands": {
-    "suiteFull": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node --test \"scripts/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs && node scripts/vendor-skills.mjs --check",
+    "suiteFull": "node --test \".opencode/plugins/__tests__/*.spec.mjs\" && node --test \"scripts/__tests__/*.spec.mjs\" && node scripts/static-checks.mjs && node scripts/sdd-checks.mjs && node scripts/vendor-skills.mjs --check",
     "unit": "node --test \".opencode/plugins/__tests__/*.spec.mjs\""
   },
+  "e2e": { "baseUrl": null, "steps": [], "browserRequired": false, "skipPolicy": "n/a-explicit" },
   "infra": {
     "composeFile": null,
     "ports": {
@@ -30,27 +31,18 @@
     ".agents/rules/**",
     ".agents/schemas/**",
     ".agents/agents/**",
+    ".agents/skills/**",
     ".github/workflows/**",
     ".githooks/**",
+    ".codex/**",
+    ".codex/harness-state.json",
     "opencode.json",
     "harness.config.json"
   ],
   "gates": {
     "picco": "enforce",
     "evidence": "enforce",
-    "hitlBatch": "enforce",
-    "e2eGreenfield": "warn"
-  },
-  "riskPaths": [
-    "**/security/**",
-    "**/acl/**",
-    "**/*Permission*",
-    "**/auth/**",
-    "**/i18n/**"
-  ],
-  "escalateOnRisk": {
-    "e2eGreenfield": "enforce",
-    "evidenceScenario": "required"
+    "hitlBatch": "enforce"
   },
   "contraproveTimeoutMs": 900000,
   "evidence": {

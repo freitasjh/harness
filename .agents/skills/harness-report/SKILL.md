@@ -34,7 +34,7 @@ divergência ⇒ `DenyError` (SPEC ADR-002; RUNTIME-CONTRACT §6).
 | `brainStore` | ✅ | array de paths salvos no Brain |
 | `cleanup` | ✅ | objeto: portas/processos liberados (encerramento por `lsof -ti :PORT` + `kill` por PID — nunca `pkill -f`, SPEC I7) |
 | `selfReported` | ✅ | `true` quando o exit code não foi observado de forma independente (SPEC ADR-002) |
-| `e2e` | condicional | obrigatório quando `escalateOnRisk` dispara (mudança em `riskPaths` — SPEC §5.1) |
+| `e2e` | opcional | evidência manual de H3; nenhuma chave de config dispara automaticamente |
 
 ## 3. Exemplo VÁLIDO (passa no schema)
 

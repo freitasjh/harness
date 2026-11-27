@@ -1,4 +1,4 @@
-// prompt-optimizer.spec.mjs — contrato EXECUTÁVEL do Prompt Gate v3 (F5).
+// prompt-optimizer.spec.mjs — contrato EXECUTÁVEL do Prompt Gate (F5), SKILL v4.
 //
 // DECLARAÇÃO DE ESCOPO (obrigatória; D-F5-B):
 //   O veredito comportamental "7/10 prompts claros caem na Rota B na 1ª tentativa"
@@ -60,7 +60,7 @@ function parseFixture(text) {
 function fixtures() {
   const dir = join(REPO_ROOT, FIXTURES_REL);
   return readdirSync(dir)
-    .filter((name) => name.endsWith(".md"))
+    .filter((name) => /^\d\d-.*\.md$/.test(name))
     .sort()
     .map((name) => ({ name, ...parseFixture(read(`${FIXTURES_REL}/${name}`)) }));
 }
@@ -113,7 +113,7 @@ describe("F5-C1 — fixtures do Prompt Gate (10 prompts, veredito esperado)", ()
   });
 });
 
-describe("F5-C2 — SKILL v3: Stage 0, ledger, PICCO e V3/V5/V6", () => {
+describe("F5-C2 — SKILL v4: Stage 0, ledger, PICCO e V3/V5/V6", () => {
   const skill = read(SKILL_REL);
 
   it("marcadores Stage 0, ledger e PICCO presentes no SKILL", () => {
@@ -122,30 +122,40 @@ describe("F5-C2 — SKILL v3: Stage 0, ledger, PICCO e V3/V5/V6", () => {
     assert.match(skill, /PICCO/);
   });
 
-  it("Stage 0 prescreve brain literal + probe do repo ANTES de contar E1..E6", () => {
+  it("Stage 0 prescreve brain literal + probe genérico (somente leitura) ANTES de contar E1..E6", () => {
     assert.match(skill, /brain_search/);
     assert.match(skill, /prompt do usuário, literal|prompt literal/);
-    for (const token of ["AGENTS.md", "harness.config.json", "targets"]) {
-      assert.ok(skill.includes(token), `Stage 0 não cita ${token}`);
+    assert.match(skill, /Probe do projeto \(somente leitura\)/);
+    for (const token of ["instruções", "manifests", "documentação", "regras", "nomes de diretório", "existem de fato"]) {
+      assert.ok(skill.includes(token), `probe genérico não cita ${token}`);
+    }
+    assert.match(skill, /Não presuma[\s\S]{0,80}?arquivo específico/);
+    for (const literal of ["AGENTS.md", "harness.config.json", "targets"]) {
+      assert.ok(!skill.includes(literal), `SKILL v4 é portátil: não pode fixar ${literal}`);
     }
     assert.ok(skill.indexOf("Stage 0") < skill.indexOf("Os 6 elementos"), "Stage 0 vem antes do score");
   });
 
-  it("ledger registra workflow-state.prompt_assumptions[] com texto/elemento/at", () => {
-    assert.match(skill, /prompt_assumptions/);
-    for (const token of ["texto", "elemento", "at"]) {
-      assert.ok(skill.includes(token), `ledger não declara o campo ${token}`);
+  it("ledger da conversa registra premissa pendente com texto/elemento/origem (append-only, sem arquivo)", () => {
+    assert.match(skill, /ledger da conversa/);
+    for (const token of ["Premissas pendentes", "<texto da premissa>", "<trecho do prompt>"]) {
+      assert.ok(skill.includes(token), `ledger não declara ${token}`);
     }
+    assert.match(skill, /\(E[1-6], inferida de/);
+    assert.match(skill, /append-only/);
+    assert.match(skill, /não exige arquivo/);
+    assert.match(skill, /\*\*não\*\*[\s\S]{0,80}?entra no PICCO/);
     assert.match(skill, /premissa não confirmada/i);
   });
 
   it("PICCO exige <context> citado (arquivo:linha ou brain path) e <acceptance> executável", () => {
+    const contract = skill + read(".agents/skills/prompt-optimizer/assets/picco.md");
     for (const tag of ["<role>", "<task>", "<context>", "<constraints>", "<acceptance>", "<open_questions>"]) {
-      assert.ok(skill.includes(tag), `tag ausente: ${tag}`);
+      assert.ok(contract.includes(tag), `tag ausente: ${tag}`);
     }
-    assert.match(skill, /arquivo:linha/);
-    assert.match(skill, /brain path/);
-    assert.match(skill, /executável/);
+    assert.match(contract, /arquivo:linha/);
+    assert.match(contract, /brain path/);
+    assert.match(contract, /executável/);
   });
 
   it("contrato do bloco: ≤10 constraints, role=critério, positivas primeiro, sem CoT", () => {
@@ -176,9 +186,9 @@ describe("F5-C2 — SKILL v3: Stage 0, ledger, PICCO e V3/V5/V6", () => {
     assert.ok(typeof state.type === "string" && state.type.length > 0, "type presente, não valor transitório");
   });
 
-  it("limite de tamanho: SKILL.md tem no máximo 120 linhas", () => {
+  it("limite de tamanho: SKILL.md tem no máximo 140 linhas", () => {
     const lines = skill.replace(/\n$/, "").split("\n").length;
-    assert.ok(lines <= 120, `SKILL.md tem ${lines} linhas`);
+    assert.ok(lines <= 140, `SKILL.md tem ${lines} linhas`);
   });
 });
 

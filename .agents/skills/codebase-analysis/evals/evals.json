@@ -1,0 +1,47 @@
+{
+  "skill_name": "codebase-analysis",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Avalie este repositório inteiro: regras, arquitetura e segurança estática. Ponto de partida: .agents/skills/",
+      "expected_output": "Plano full, inventário por camadas, matriz de cobertura, seções de backend/frontend/SQL com código citado, achados classificados e relatório validado, sem teste ativo.",
+      "files": ["fixtures/01-full-repo.md"],
+      "assertions": [
+        "O plano registra alvo, modo full, inclusões e exclusões.",
+        "O relatório contém as seções 4.1 a 4.5 e a matriz de cobertura com cinco camadas.",
+        "A seção de backend cita controllers, serviços e persistência com arquivo:linha.",
+        "A seção de frontend cita rotas ou componentes, estado e cliente HTTP com arquivo:linha.",
+        "A seção de SQL cita migration e entidade ou repositório com arquivo:linha.",
+        "A análise de backend traz matriz de endpoints, grafo de módulos, fluxos críticos, modelo de dados, matriz de testes e ameaças.",
+        "A análise traz pelo menos um flowchart e um sequenceDiagram Mermaid com legenda ancorada em arquivo:linha.",
+        "O plano de evolução tem ordem, arquivo alvo, aceite verificável e risco.",
+        "Os achados de segurança usam código ou configuração como evidência, não só regras locais.",
+        "Nenhuma ferramenta de teste ativo foi executada.",
+        "O relatório passa em scripts/validate-evidence.mjs."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Avalie apenas a funcionalidade deepsearch, mas não perca o contexto do repositório.",
+      "expected_output": "Análise focada que ainda lê AGENTS.md, rule canônica e integrações de plataforma.",
+      "files": ["fixtures/02-feature-only.md"],
+      "assertions": [
+        "O modo é feature.",
+        "O contexto mínimo aparece no relatório.",
+        "A análise não assume que outras skills estão corretas sem evidência."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Analise a superfície de login em src/auth/routes.ts e reporte vulnerabilidades de forma segura.",
+      "expected_output": "Achados classificados, padrões versionados, sem payload/segredo e handoff apenas para requisitos de runtime.",
+      "files": ["fixtures/03-security-candidate.md"],
+      "assertions": [
+        "Todos os achados usam uma das três classes permitidas.",
+        "Nenhum achado é chamado de vulnerabilidade confirmada.",
+        "Handoff para pentest cita Gate 0 quando classificado como requer runtime.",
+        "O relatório não contém segredo nem payload."
+      ]
+    }
+  ]
+}

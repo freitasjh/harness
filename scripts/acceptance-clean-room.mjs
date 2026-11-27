@@ -49,12 +49,12 @@ const REPO_ROOT = path.resolve(HERE, "..");
 const SYNC_SCRIPT = path.join(REPO_ROOT, "scripts", "harness-sync.mjs");
 const SCHEMA_PATH = path.join(REPO_ROOT, ".agents", "schemas", "harness-report.schema.json");
 const SCHEMA = JSON.parse(fs.readFileSync(SCHEMA_PATH, "utf8"));
-const REPORT_PATH = path.join(REPO_ROOT, "harness", "acceptance-clean-room.json");
+const REPORT_PATH = path.join(REPO_ROOT, "harness", ".acceptance-clean-room.json");
 const SUITE = "node --test";
 const COMMANDS = { suiteFull: SUITE, unit: SUITE };
 const TEST_CONFIG = { commands: COMMANDS, protectedPaths: [".opencode/plugins/**", ".agents/rules/**", "harness.config.json"] };
 const MIN_GATE_CALLS = 12;
-const EXPECTED_SCENARIOS = 14;
+const EXPECTED_SCENARIOS = 18;
 const LOGGER = { warn() {}, error() {} };
 const OPEN = "<!-- harness:v2:start -->";
 const CLOSE = "<!-- harness:v2:end -->";
@@ -571,6 +571,73 @@ export async function runAcceptance(opts = {}) {
     return "suiteFull inalterada: contraprova é a auto-suite, não o aceite";
   });
 
+  // A15 — migrate: dry-run e apply produzem o mesmo plano e terminam em doctor.
+  await scenario("A15", async () => {
+    const target = scope.tmp(initFixture(), { root: tempRoot });
+    sync(["init", "--target", target, "--suite", SUITE]);
+    const dry = sync(["migrate", "--target", target, "--dry-run"]);
+    const applied = sync(["migrate", "--target", target]);
+    const doctor = sync(["doctor", "--target", target]);
+    const a = identityLines(dry).filter((line) => line.startsWith("harness-sync update:"));
+    const b = identityLines(applied).filter((line) => line.startsWith("harness-sync update:"));
+    if (a.length === 0 || JSON.stringify(a) !== JSON.stringify(b)) {
+      throw new Error("plano de migrate ≠ apply: " + JSON.stringify(a) + " / " + JSON.stringify(b));
+    }
+    if (/FAIL/.test(doctor)) throw new Error("doctor falhou após migrate: " + doctor);
+    return "migrate dry-run = apply; doctor verde";
+  });
+
+  // A16 — migrate é idempotente na segunda execução.
+  await scenario("A16", async () => {
+    const target = scope.tmp(initFixture(), { root: tempRoot });
+    sync(["init", "--target", target, "--suite", SUITE]);
+    const first = sync(["migrate", "--target", target]);
+    const second = sync(["migrate", "--target", target]);
+    if (!/file\(s\) written/.test(first)) throw new Error("migrate não reportou escrita");
+    if (!/update: 0 file\(s\) written/.test(second)) throw new Error("segunda migrate escreveu");
+    return "2ª migrate = 0 writes";
+  });
+
+  // A17 — paridade Codex/OpenCode das superfícies canônicas.
+  await scenario("A17", async () => {
+    const hooks = fs.readFileSync(path.join(REPO_ROOT, ".codex", "hooks.json"), "utf8");
+    if (/\/home\//.test(hooks)) throw new Error("hooks.json contém path absoluto");
+    const cmds = fs.readdirSync(path.join(REPO_ROOT, ".opencode", "commands"));
+    for (const name of ["harness-init.md", "harness-migrate.md", "harness-doctor.md"]) {
+      if (!cmds.includes(name)) throw new Error("comando ausente: " + name);
+    }
+    for (const rel of [
+      ".agents/skills/harness-workflow/SKILL.md",
+      ".agents/skills/harness-prd/SKILL.md",
+      ".agents/skills/harness-adr/SKILL.md",
+      ".agents/skills/harness-review/SKILL.md",
+      ".agents/skills/harness-bootstrap/SKILL.md",
+      ".agents/skills/codebase-analysis/SKILL.md",
+    ]) {
+      if (!fs.existsSync(path.join(REPO_ROOT, rel))) throw new Error("skill canônica ausente: " + rel);
+    }
+    return "hooks portáteis; 4 comandos harness; 6 skills canônicas presentes";
+  });
+
+  // A18 — apply_patch real: Add/Update/Delete em path protegido negam.
+  await scenario("A18", async () => {
+    for (const kind of ["Add", "Update", "Delete"]) {
+      const command = "*** Begin Patch\n*** " + kind + " File: .agents/rules/x.md\n*** End Patch\n";
+      await expectDeny(
+        () => gateCompletionAnchorA({
+          tool: "apply_patch",
+          args: { command },
+          sessionAgent: "orchestrator",
+          config: TEST_CONFIG,
+          logger: LOGGER,
+        }),
+        "protected-path-write",
+        "A18-" + kind,
+      );
+    }
+    return "apply_patch Add/Update/Delete em path protegido negados";
+  });
+
   let removed = [];
   try {
     // cleanup cobre o caminho de erro: o registro é removido mesmo se um
@@ -645,6 +712,7 @@ export async function runAcceptance(opts = {}) {
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const result = await runAcceptance({ log: (line) => console.log(line) });
+  const argv = process.argv.slice(2); const i = argv.indexOf("--report"); const reportPath = i >= 0 ? argv[i + 1] : undefined;
+  const result = await runAcceptance({ log: (line) => console.log(line), reportPath });
   process.exitCode = result.exitCode;
 }

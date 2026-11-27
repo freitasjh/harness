@@ -206,6 +206,7 @@ describe("EX2-VAL-03 — measured production envelope (input -> args normalizati
       () =>
         handler({
           tool: "task",
+          sessionAgent: "orchestrator",
           sessionID: freshSid("v2-env-picco"),
           agent: "orchestrator",
           messageID: "msg-env-picco",
@@ -364,7 +365,7 @@ async function registeredHandler() {
 async function runV2(envelope) {
   const handler = await registeredHandler();
   try {
-    const verdict = await handler(envelope);
+    const verdict = await handler({ sessionAgent: "orchestrator", ...envelope });
     return { outcome: "allow", via: verdict?.via ?? null };
   } catch (err) {
     if (err instanceof DenyError) {
@@ -403,6 +404,7 @@ describe("EX2-VAL-03 — deny/allow matrix through the v2 entry (per core gate)"
     const closed = tempStatePath(CLOSED);
     const row = await runV2({
       tool: "task",
+      sessionAgent: "orchestrator",
       sessionID: freshSid("v2-kill"),
       args: { prompt: "no tags at all, would deny without the kill-switch" },
       config: ENFORCE,
@@ -417,6 +419,7 @@ describe("EX2-VAL-03 — deny/allow matrix through the v2 entry (per core gate)"
     const closed = tempStatePath(CLOSED);
     const deny = await runV2({
       tool: "task",
+      sessionAgent: "orchestrator",
       sessionID: freshSid("v2-picco-deny"),
       args: { prompt: "do the thing with no picco block at all" },
       config: ENFORCE,
@@ -425,6 +428,7 @@ describe("EX2-VAL-03 — deny/allow matrix through the v2 entry (per core gate)"
     assert.deepEqual(deny, { outcome: "deny", reason: "picco-tag-absent" });
     const allow = await runV2({
       tool: "task",
+      sessionAgent: "orchestrator",
       sessionID: freshSid("v2-picco-allow"),
       args: { prompt: VALID_PICCO },
       config: ENFORCE,
@@ -464,6 +468,7 @@ describe("EX2-VAL-03 — deny/allow matrix through the v2 entry (per core gate)"
     });
     const deny = await runV2({
       tool: "task",
+      sessionAgent: "orchestrator",
       sessionID: freshSid("v2-anchor-b-deny"),
       args: { prompt: VALID_PICCO },
       config: ENFORCE,
@@ -473,6 +478,7 @@ describe("EX2-VAL-03 — deny/allow matrix through the v2 entry (per core gate)"
     const closed = tempStatePath(CLOSED);
     const allow = await runV2({
       tool: "task",
+      sessionAgent: "orchestrator",
       sessionID: freshSid("v2-anchor-b-allow"),
       args: { prompt: VALID_PICCO },
       config: ENFORCE,
@@ -489,6 +495,7 @@ describe("EX2-VAL-03 — deny/allow matrix through the v2 entry (per core gate)"
       outcomes.push(
         await runV2({
           tool: "task",
+          sessionAgent: "orchestrator",
           sessionID: sid,
           args: { prompt: VALID_PICCO },
           config: ENFORCE,

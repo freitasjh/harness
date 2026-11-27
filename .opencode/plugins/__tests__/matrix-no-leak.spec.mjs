@@ -91,7 +91,7 @@ describe("PL-07 V2-VAL-12 — 🟡 deny details carry only reason+metadata (no s
     let caught = null;
     try {
       await runGatesShim(
-        { tool: "task", sessionID: freshSid("two-arg-noleak"), config: ENFORCE, statePath: closed },
+        { tool: "task", sessionID: freshSid("two-arg-noleak"), sessionAgent: "orchestrator", config: ENFORCE, statePath: closed },
         { args: { prompt } },
       );
     } catch (err) {
@@ -109,6 +109,7 @@ describe("PL-07 V2-VAL-12 — 🟡 deny details carry only reason+metadata (no s
     try {
       await runGatesShim({
         tool: "task",
+        sessionAgent: "orchestrator",
         sessionID: freshSid("v2-noleak"),
         args: { prompt },
         config: ENFORCE,
@@ -161,7 +162,7 @@ describe("PL-07 V2-VAL-12 — 🟡 deny details carry only reason+metadata (no s
     const results = {};
     try {
       await runGatesShim(
-        { tool: "write", sessionID: freshSid("two-arg-noleak-write"), config: protectedConfig },
+        { tool: "write", sessionID: freshSid("two-arg-noleak-write"), sessionAgent: "orchestrator", config: protectedConfig },
         { args: { filePath: evilPath, content: `x ${SECRET} ${ABS_PATH}` } },
       );
     } catch (err) {
@@ -171,6 +172,7 @@ describe("PL-07 V2-VAL-12 — 🟡 deny details carry only reason+metadata (no s
       await runGatesShim({
         tool: "write",
         sessionID: freshSid("v2-noleak-write"),
+        sessionAgent: "orchestrator",
         args: { filePath: evilPath, content: `x ${SECRET} ${ABS_PATH}` },
         config: protectedConfig,
         logger: { warn() {}, error() {} },
@@ -196,6 +198,7 @@ describe("PL-07 V2-VAL-12 — 🟡 deny details carry only reason+metadata (no s
     // Allow-path with the secret in args (valid PICCO + secret prose).
     const verdict = await runGatesShim({
       tool: "task",
+      sessionAgent: "orchestrator",
       sessionID: freshSid("v2-noleak-log"),
       args: {
         prompt:

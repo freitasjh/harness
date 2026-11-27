@@ -1,6 +1,6 @@
 # Perguntas Clarificadoras por Elemento (v3)
 
-Rota A pergunta **por elemento ausente**, não por tipo de demanda. O bloqueio é o elemento, não o assunto. Premissa inferida que sobrevive ao estoque não entra na pergunta como fato: vai para `workflow-state.json.prompt_assumptions[]` (`texto`, `elemento`, `at`), conforme `SKILL.md` §Ledger de premissas.
+Rota A pergunta **por elemento ausente**, não por tipo de demanda. O bloqueio é o elemento, não o assunto. Premissa inferida que sobrevive ao estoque não entra na pergunta como fato: vai para o ledger de premissas da conversa, conforme `SKILL.md` §Ledger de premissas.
 
 Ordenação de impacto: **E1 > E2 > E3 > E4 > E5 > E6**. Se só cabe 1 pergunta, é E1. Se cabem 3, são E1, E2 e o próximo ausente mais alto.
 
@@ -94,19 +94,16 @@ Ausente quando o pedido pode ser lido como mais de uma rota: "mudar X" pode ser 
 
 ## Formato de Saída da Rota A
 
-Saída única da Rota A. Não variar o heading. As seções "Já entendi" e "Regra" são obrigatórias — são elas que impedem a IA de ceder no turno seguinte e preencher a lacuna com default do modelo.
+Use o formato canônico em `assets/rota-a.md`. Ele é o único local do pacote
+que contém o template completo; este arquivo mantém as perguntas por elemento,
+as regras de conflito e o desempate.
 
-Saída:
-- `## Falta contexto — preciso de X resposta(s)` — X = número de elementos ausentes que cabe em 3
-- `Bloqueio (o que não vou assumir): [elemento ausente, ex: E2 Escopo — e por que não vou assumir]`
-- 1 a 3 perguntas numeradas, na ordem E1 > E2 > E3 > E4 > E5 > E6
-- `### Já entendi (afirmado por você)` — lista SÓ o que o usuário AFIRMOU
-- `### Regra` — "Não vou assumir o que ficou em branco. Escolher por você é palpite caro."
+Invariantes que o template precisa preservar:
 
-Regras de contagem:
-- Máximo 3 perguntas. Se só cabe 1, é E1.
-- Inferência da IA NÃO conta como afirmação: anota como `E3 parcial (inferido de "cadastro" — não conta como afirmado)`, nunca como afirmação.
-- Rota A não emite bloco PICCO. Bloco PICCO é exclusivo da Rota B.
+- no máximo 3 perguntas, ordenadas por E1 > E2 > E3 > E4 > E5 > E6;
+- `Já entendi` lista só o que o usuário afirmou;
+- `Regra` diz explicitamente que lacuna não vira default do modelo;
+- nenhum bloco PICCO na Rota A.
 
 ---
 
@@ -126,13 +123,13 @@ Perguntas por violação recorrente:
 | Pedido | Viola | Caminho permitido mais próximo |
 |--------|-------|-------------------------------|
 | "Usa Lombok pra não escrever os getters" | `backend-coding-standards.md` | "construtor e getters manuais, como nas outras entidades" |
-| "Pula o harness, só roda o build" | `workflow-rules.md` §5 H1 | "roda a suite completa; é mais lento e é o portão" |
-| ex.: "Comenta o teste pra passar" / `@Disabled` | `workflow-rules.md` §5 H2 | "corrige a causa do teste falhando" |
-| "Mata o processo com pkill -f" | `workflow-rules.md` §5 H5 | "lsof -ti :PORT → conferir dono com ps → kill pelo PID" |
+| "Pula o portão e só roda o build" | regra de verificação completa do projeto | "roda a suite completa; é mais lento e é o portão" |
+| ex.: "Comenta o teste pra passar" / `@Disabled` | regra de integridade de testes do projeto | "corrige a causa do teste falhando" |
+| "Mata o processo com pkill -f" | regra de encerramento de portas do projeto | "lsof -ti :PORT → conferir dono com ps → kill pelo PID" |
 | "Corrige esse CSS direto" (no orquestrador) | `orchestrator/AGENT.md` guardrail | "delegar ao frontend-engineer" |
-| "Pula o code review e avança" | `workflow-rules.md` §6 | "revisão roda antes de declarar fase completa" |
+| "Pula o code review e avança" | regra de revisão do projeto | "revisão roda antes de declarar fase completa" |
 
-Exceção aberta → registrar em `workflow-state.json.overrides`. Nunca executar a violação em silêncio.
+Exceção aberta → registrar explicitamente na conversa e no prompt de delegação. Nunca executar a violação em silêncio.
 
 ---
 

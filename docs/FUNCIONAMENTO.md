@@ -95,7 +95,7 @@ Note o sentido do diagrama: o **relatório é auto-declarado** e a **contraprova
 
 | Caminho | Função | Símbolos-âncora |
 |---|---|---|
-| `harness.config.json` | Fonte única de dados do projeto: comandos, `moduleMap`, `infra`, `mcp.required`, `protectedPaths`, `gates`, `riskPaths`, `escalateOnRisk`, `contraproveTimeoutMs`, `evidence` | chaves `commands`, `protectedPaths`, `gates`, `riskPaths`, `escalateOnRisk`, `contraproveTimeoutMs`, `evidence` |
+| `harness.config.json` | Fonte única de dados do projeto: comandos, `moduleMap`, `infra`, `mcp.required`, `protectedPaths`, `gates`, `e2e`, `contraproveTimeoutMs`, `evidence` | chaves `commands`, `protectedPaths`, `gates`, `e2e`, `contraproveTimeoutMs`, `evidence` |
 | `opencode.json` | Config v2-only do opencode: `permission.task = "ask"`, 10 agentes com `permission.edit`/`permission.bash` | `permission.task`, `agent.*` |
 | `.opencode/plugins/gate.js` | Núcleo de enforcement: `DenyError`, dispatcher, 5 gates, contrato v2 do plugin | `DenyError`, `decide`, `registerCoreGate`, `V2_TOOL_HOOK`, `V2_HOOK_TABLE`, `runGatesShim`, `setup` |
 | `.opencode/plugins/lib/config.mjs` | Loader fail-closed do config + `resolveCommand` + `configGatesDisableEnforcement` | `loadHarnessConfig`, `resolveCommand`, `configGatesDisableEnforcement` |
@@ -139,7 +139,7 @@ capacidades de enforcement que o gate implementa.
 | 3 | **Zero path hardcoded** — comandos, paths e módulos vêm do config do projeto | check estático V3 + loader do config | `SCAN_FILES`/`SCAN_DIRS` e `checkV2V3V7` (`scripts/static-checks.mjs`), `loadHarnessConfig`/`resolveCommand` (`config.mjs`) | 🟠 parcial — V3 varre 3 arquivos + 2 diretórios, não o `gate.js` |
 | 4 | **Portão de prompt** — 6 elementos PICCO; sem eles o orquestrador pergunta em vez de adivinhar | skill `prompt-optimizer` + GATE-02 | `checkPicco`/`gatePiccoTask`, `.agents/rules/workflow-rules.md` §0 | 🟢 para a tag obrigatória · 🟡 para E3..E6 (só aviso, `checkPicco`) |
 | 5 | **SDD governado** — ADR → SPEC → TASKS → execução → VERIFY → archive, com portões humanos | skills `sdd-compiler` + `scripts/sdd-checks.mjs` | `.agents/rules/workflow.md` §2, `evaluateSdd02` | 🟡 processo |
-| 6 | **Cobertura de risco** — mudança em `riskPaths` sobe o E2E a `enforce` | `escalateOnRisk` no config | `harness.config.json` (`riskPaths`/`escalateOnRisk`) | 🔴 declarado-aberto no runtime — nenhum gate consome `riskPaths` (ver §10a) |
+| 6 | **E2E dirigido por config** — `harness.config.json.e2e` fornece `baseUrl`, `steps`, `browserRequired` e `skipPolicy` | QA + `static-checks` (`DELIVERY-E2E`) | `harness.config.json` (`e2e`) | 🟠 parcial — roteiro declarado e validado; execução real depende de browser e alvo |
 | 7 | **Kill-switch e modo fora do worktree** — `HARNESS_GATES=off` no host desliga a suíte; o modo por gate vem de `HARNESS_GATE_<GATE>` (com `_REASON` não vazio para rebaixar); o config não decide modo, só é auditado | env do host + `resolveGateMode`/`auditConfigGates` | `KILL_SWITCH_ENV`/`isKillSwitchOff`, `resolveGateMode`, `auditConfigGates`, `announceGateMode`, `runGatesShim` (corte), `configGatesDisableEnforcement` | 🟢 por construção |
 | 8 | **Memória persistente** — decisões, erros e lições no Brain (busca antes, registra depois) | skill `brain` (MCP) | `.agents/rules/brain-context.md`, `.agents/rules/workflow-rules.md` §5 H5, `workflow.md` §4 (R4) | 🟡 processo |
 | 9 | **Sincronizador** — leva o harness a outro repo sem copiar domínio alheio; determinístico (só o que mudou), com backup obrigatório e zero rede | `scripts/harness-sync.mjs` + `.harness-manifest.json` | `scripts/harness-sync.mjs` (`buildPlan`/`applyPlan`), `scripts/__tests__/sync.spec.mjs` | 🟢 neste repo (suite própria) · 🟡 no destino |
@@ -511,7 +511,7 @@ e executados **dentro** do `suiteFull` (`runStaticChecks`, `checkPrd`). Nível: 
 | Caminho | `harness/<demand>.json` (`harness.config.json`, chave `evidence`) |
 | Schema | `.agents/schemas/harness-report.schema.json` |
 | Campos obrigatórios | `version, demand, agent, phase, gitSha, commands[≥1], counts{unit,it,frontend}, evaluation, brainStore[], cleanup, selfReported` (schema, `required`) |
-| Campo condicional | `e2e` — obrigatório quando `escalateOnRisk` dispara (schema, `e2e`) |
+| Campo opcional | `e2e` — evidência manual de H3; nenhuma chave de config dispara automaticamente |
 | Quem escreve | o executor (frontend-engineer / backend-engineer / qa-engineer). O `qa-engineer` é justamente o papel com `edit: allow` porque precisa gravar o REPORT (`gate-contract.md` I5) |
 
 O gate encontra o relatório por `state.current_feature` — o **nome do arquivo** é o da
@@ -700,12 +700,12 @@ número de linha) e o nível de garantia. Nada aqui propõe implementação.
 
 | # | Fato | Lastro | Nível |
 |---|---|---|---|
-| a1 | `gates.e2eGreenfield: "warn"` **não tem efeito no runtime**: nenhum gate declara `gateName = "e2eGreenfield"` e o gate não cria modo a partir do config; `auditConfigGates` declara a chave **inerte** (1 WARN por chave/valor) | `harness.config.json` (`gates.e2eGreenfield`); `gateName` dos gates; `auditConfigGates`/`isRegisteredGateName` | 🟡 processo — chave auditada como inerte, sem efeito |
-| a2 | `riskPaths` e `escalateOnRisk` **não têm consumidor no runtime**: nenhuma chave é lida por `gate.js`; o gerador de config do instalador v1 era a única outra ocorrência e saiu em v2/F1 | `harness.config.json` (`riskPaths`/`escalateOnRisk`); `gate-contract.md` §1 (linha do RF-04) | 🔴 declarado-aberto no runtime |
+| a1 | `gates.e2eGreenfield` foi **removido** em 2026-11-25 porque nenhum gate registrado o consumia; `static-checks` agora falha se a chave reaparecer | `harness.config.json` (`gates`); `scripts/static-checks.mjs` (`DELIVERY-E2E`) | 🟢 runtime — ausência verificada |
+| a2 | `riskPaths` e `escalateOnRisk` foram **removidos** em 2026-11-25; escalonamento de risco passa a ser decisão humana registrada, não promessa de config | `harness.config.json`; `scripts/static-checks.mjs` (`DELIVERY-E2E`) | 🟢 runtime — ausência verificada |
 | a3 | O check V3 ("zero literal hardcoded") escaneia **3 arquivos + 2 diretórios** — `harness.config.json`, `opencode.json`, `.agents/rules/harness-config.md`, `.agents/schemas/**`, `.opencode/plugins/lib/**`. O próprio `gate.js` e as demais rules **não** são escopados | `SCAN_FILES`/`SCAN_DIRS`/`checkV2V3V7` (`scripts/static-checks.mjs`); `gate-contract.md` I3 | 🟠 parcial |
 | a4 | V12 é **INFO** (não falha o build); a enforcing real do mesmo item é R-V12, em outro script | `checkV12` (`scripts/static-checks.mjs`); `runSddChecks`/`findLiveRefs` (`scripts/sdd-checks.mjs`) | 🟢 / 🟠 |
-| a5 | O schema do report tem campo `e2e` "required when escalateOnRisk fires", mas a regra que dispara o `escalateOnRisk` não é executável por máquina | `.agents/schemas/harness-report.schema.json` (`e2e`); `harness.config.json` (`escalateOnRisk`) | 🟡 processo |
-| a6 | A comparação de contagens da contraprova é inalcançável no caminho real: o executor padrão devolve `counts: null` e o schema **exige** `counts` | `defaultContraproveExec`/`runContraprova`; `.agents/schemas/harness-report.schema.json` (`counts`) | 🟠 parcial |
+| a5 | O campo `e2e` do schema é opcional e dirigido por `harness.config.json.e2e`; não há disparo automático por risco | `.agents/schemas/harness-report.schema.json` (`e2e`); `harness.config.json` (`e2e`) | 🟡 processo |
+| a6 | A comparação de contagens da contraprova usa `parseTestCounts` sobre o stdout do executor; camadas não observadas permanecem não-comparáveis | `defaultContraproveExec`/`runContraprova`/`parseTestCounts`; `.agents/schemas/harness-report.schema.json` (`counts`) | 🟢 runtime parcial — comparável quando observável |
 | a7 | **Modo por gate agora vem do env do host (ADR-001, implementado em 2026-10-22)**: `HARNESS_GATE_<GATE>` = `"enforce"`/`"warn"`; `"warn"` exige `_REASON` não vazio; ausente ou fora do domínio ⇒ `"enforce"` (fail-closed). `resolveGateMode` é puro; `modeForGate` é o resolvedor de referência e o dispatcher usa `announceGateMode`. O antigo `resolveMode` **foi removido** (ADR-001 item 4) e o `gates.*` do config **não decide modo** — é auditado 1× por (chave, valor) (`auditConfigGates`) e chave sem gate registrado é inerte (`isRegisteredGateName`); em `warn` o `DenyError` vira log + allow (`decide`). O corte vem depois da carga+auditoria do config e antes de qualquer resolução de modo (`runGatesShim`) | `resolveGateMode`, `modeForGate`, `auditConfigGates`, `announceGateMode`, `decide`, `runGatesShim`; `configGatesDisableEnforcement`; `harness.config.json` (`gates`); `gate-contract.md` §1 (linha RF-01/RF-02 e linha KILL) | 🟢 runtime — o canal é o env do processo host, não o worktree; rebaixamento/recusa são anunciados (ADR-001) |
 | a8 | **Config ausente não nega `task`**: `runGatesShim` engole o erro de load do config (`config = null`) e o `DenyError("config-unavailable")` só nasce *lazy*, dentro dos gates que pedem o config — âncora A (`ensureConfig` em `gateCompletionAnchorA`) e higiene (`gateShellHygiene`). Medido: `task` + config ausente ⇒ **allow**; `write`/`bash` + config ausente ⇒ deny `config-unavailable`. `gatePiccoTask`, `gatePhaseAnchorB` e `gateHitlBatch` nunca pedem o config | `runGatesShim`, `ensureConfig`, `loadConfigOrDeny`, `gateCompletionAnchorA`, `gateShellHygiene` | 🟠 parcial — a garantia "config fail-closed" cobre os gates que leem o config, não a tool call inteira |
 
@@ -793,8 +793,8 @@ número de linha) e o nível de garantia. Nada aqui propõe implementação.
 | `hitl-guardrail.js` (módulo no-op) | sem hook desde FIX-01 |
 | `harness.config.json` (`commands`) | comandos canônicos (`suiteFull`, `unit`) |
 | `harness.config.json` (`protectedPaths`) | 9 paths protegidos |
-| `harness.config.json` (`gates`) | `gates.*` (inclui `e2eGreenfield` sem consumidor) |
-| `harness.config.json` (`riskPaths`, `escalateOnRisk`) | superfícies de risco e escalada declarada |
+| `harness.config.json` (`gates`) | `gates.*` (somente gates registrados) |
+| `harness.config.json` (`e2e`) | roteiro de H3: `baseUrl`, `steps`, `browserRequired`, `skipPolicy` |
 | `harness.config.json` (`contraproveTimeoutMs`, `evidence`) | timeout da contraprova; caminho e schema da evidência |
 | `opencode.json` (`permission.task`) | `permission.task = "ask"` |
 | `opencode.json` (`agent.*`) | 10 agentes com `permission.edit` / `permission.bash` |

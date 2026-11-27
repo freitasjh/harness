@@ -1,34 +1,12 @@
 # Template PICCO — Contrato de Saída + Exemplos (v3)
 
-Referência de `SKILL.md`. O bloco é efêmero: vai no chat e no prompt de delegação, nunca em arquivo (D1). Premissa não confirmada que sobrou do estoque vai para o ledger em `workflow-state.json.prompt_assumptions[]` — nunca para dentro do bloco.
+Referência de `SKILL.md`. O bloco é efêmero: vai no chat e no prompt de delegação, nunca em arquivo. Premissa não confirmada que sobrou do estoque vai para o ledger da conversa — nunca para dentro do bloco.
 
 ## O Template
 
-```xml
-<role>[critério de comportamento, não persona]</role>
-
-<task>[E1] em [E3].</task>
-
-<context>
-  Projeto: [projeto ativo — citar arquivo:linha ou brain path]
-  Escopo: [o que entra e o que NÃO entra]
-  Tipo de rota: [E6]
-  Fornecido pelo usuário: [lista do que foi afirmado, sem dedução]
-</context>
-
-<constraints>
-  Sempre: [positivos]
-  Nunca: [violações que esta demanda arrisca]
-</constraints>
-
-<acceptance>
-  [E5]
-</acceptance>
-
-<open_questions>
-  <!-- Rota A: elementos ausentes. Rota B: vazio -->
-</open_questions>
-```
+Use o template canônico em `assets/picco.md`. Ele é o único local do pacote
+que contém o bloco completo; este arquivo mantém a tabela de campos, os
+exemplos bons/ruins e o checklist.
 
 | Tag | Preenche com | Elemento |
 |-----|-------------|----------|
@@ -37,6 +15,7 @@ Referência de `SKILL.md`. O bloco é efêmero: vai no chat e no prompt de deleg
 | `context` | Projeto, escopo, rota, o que foi afirmado | E2 + E3 + E6 |
 | `constraints` | ≤10 linhas, positivas primeiro | E4 |
 | `acceptance` | Verificação de pronto | E5 |
+| `delivery` | envelope de execução do agente | agent, phase, skills, inputs, write_scope, outputs, evidence_path, handoff_schema, stop_condition |
 | `open_questions` | Vazio na Rota B | lacunas |
 
 **Escopo entra em `context`**, não em `task`: o `task` é o que muda no mundo, o `context` é onde isso está delimitado.
@@ -50,6 +29,18 @@ Referência de `SKILL.md`. O bloco é efêmero: vai no chat e no prompt de deleg
 **Contagem:** E1 validar email, E2 só POST /internal/registrations, E3 `company` + endpoint nomeado, E4 cliente mobile não pode quebrar, E5 422 para inválido, E6 bugfix. **6/6 → Rota B.**
 
 ```xml
+<delivery>
+  agent: [agente responsável]
+  phase: [P0..P6]
+  skills: [skills em ordem]
+  inputs: [paths/artefatos de entrada]
+  write_scope: [onde pode escrever]
+  outputs: [artefatos de saída]
+  evidence_path: [harness/<demand>.json ou n/a]
+  handoff_schema: [references/handoff-schema.md]
+  stop_condition: [quando parar e pedir HITL]
+</delivery>
+
 <role>Revisa contratos de API procurando mudança de status code e de payload que quebra consumidor</role>
 
 <task>Rejeitar email inválido em POST /internal/registrations com 422</task>
@@ -168,5 +159,6 @@ Não vou assumir o que ficou em branco. Escolher por você é palpite caro.
 - [ ] Zero instrução de raciocínio
 - [ ] `<acceptance>` tem comando/verificação, não adjetivo
 - [ ] `<context>` lista só o que o usuário AFIRMOU
+- [ ] Brain indisponível foi declarado, sem path simulado
 - [ ] Rota B: `<open_questions>` vazio
 - [ ] Bloco não foi escrito em arquivo

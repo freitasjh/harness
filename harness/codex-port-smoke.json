@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "demand": "codex-port-smoke",
+  "agent": "user",
+  "phase": "Verification",
+  "gitSha": "0000000000000000000000000000000000000000",
+  "commands": [
+    {
+      "cmd": "codex --version",
+      "exitCode": 0,
+      "durationMs": 0,
+      "stdoutHash": "0000000000000000"
+    }
+  ],
+  "counts": {
+    "unit": { "passed": 0, "failed": 0, "skipped": 0 },
+    "it": { "passed": 0, "failed": 0, "skipped": 0 },
+    "frontend": { "passed": 0, "failed": 0, "skipped": 0 }
+  },
+  "evaluation": {
+    "telas": "pendente",
+    "negocio": "pendente",
+    "logica": "pendente",
+    "perf": "pendente"
+  },
+  "brainStore": [],
+  "cleanup": { "ports": [] },
+  "selfReported": true,
+  "trustChecklist": [
+    "trust de hooks configurado (/hooks)",
+    "projeto trusted",
+    "smoke executado pelo usuário"
+  ],
+  "notes": "Template — preencher após smoke real (A6). Sem segredos."
+}

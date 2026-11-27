@@ -51,7 +51,7 @@ import {
   cpSync,
   rmSync,
 } from "node:fs";
-import { join, basename, dirname } from "node:path";
+import { join, basename, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { tempScope } from "../test-temp.mjs";
 
@@ -170,9 +170,9 @@ describe("SYNC-01 — init cria payload + config + manifesto (C3, A5, M6)", () =
       picco: "enforce",
       evidence: "enforce",
       hitlBatch: "enforce",
-      e2eGreenfield: "warn",
     });
     assert.deepEqual(config.mcp, { required: ["chrome-devtools"] });
+    assert.deepEqual(config.e2e, { baseUrl: null, steps: [], browserRequired: false, skipPolicy: "n/a-explicit" });
     assert.equal(config.contraproveTimeoutMs, 900000);
 
     const manifest = readJson(join(target, ".harness-manifest.json"));
@@ -195,6 +195,12 @@ describe("SYNC-01 — init cria payload + config + manifesto (C3, A5, M6)", () =
       // o sha é verificado contra o próprio arquivo do alvo (SCAF-04).
       if (rel === ".agents/rules/project-frontend.md") {
         assert.equal(sha256(readFileSync(join(target, rel))), manifest.files[rel]);
+        continue;
+      }
+      // ADR-003/A6: hooks.json é GERADO com a raiz do alvo (não byte-cru).
+      if (rel === ".codex/hooks.json") {
+        const src = readFileSync(join(REPO_ROOT, rel), "utf8").split(REPO_ROOT).join(resolve(target));
+        assert.equal(sha256(Buffer.from(src)), manifest.files[rel], `sha divergente: ${rel}`);
         continue;
       }
       // Buffer cru, não string: um payload binário não pode ser re-codificado.

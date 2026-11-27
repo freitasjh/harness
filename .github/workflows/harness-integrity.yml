@@ -41,7 +41,7 @@ jobs:
       - name: Fail commit touching protected paths without Harness-Gate-Change trailer
         run: |
           set -euo pipefail
-          PROTECTED_RE='^(\.opencode/plugins/.*|\.agents/rules/.*|\.agents/schemas/.*|\.agents/agents/.*|\.github/workflows/.*|\.githooks/.*|opencode\.json|harness\.config\.json)$'
+          PROTECTED_RE='^(\.opencode/plugins/.*|\.agents/rules/.*|\.agents/schemas/.*|\.agents/agents/.*|\.agents/skills/.*|\.github/workflows/.*|\.githooks/.*|opencode\.json|harness\.config\.json)$'
           TRAILER_RE='^Harness-Gate-Change: .+'
 
           # Push usa `..` (two-dot = commits alcancaveis de $sha mas nao de $before).

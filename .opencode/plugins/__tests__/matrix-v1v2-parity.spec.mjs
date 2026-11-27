@@ -102,7 +102,7 @@ async function v2Handler() {
 async function runV2(envelope) {
   const handler = await v2Handler();
   try {
-    const verdict = await handler(envelope);
+    const verdict = await handler({ sessionAgent: "orchestrator", ...envelope });
     return { outcome: "allow", via: verdict?.via ?? null };
   } catch (err) {
     if (err instanceof DenyError) {
@@ -117,6 +117,7 @@ describe("PL-07 V2-VAL-10 — matrix deny/allow through the v2 entry (setup → 
     const closed = tempStatePath(CLOSED);
     const row = await runV2({
       tool: "task",
+      sessionAgent: "orchestrator",
       sessionID: freshSid("v2-picco-deny"),
       args: { prompt: "do the thing with no picco block at all" },
       config: ENFORCE,
@@ -130,6 +131,7 @@ describe("PL-07 V2-VAL-10 — matrix deny/allow through the v2 entry (setup → 
     const closed = tempStatePath(CLOSED);
     const row = await runV2({
       tool: "task",
+      sessionAgent: "orchestrator",
       sessionID: freshSid("v2-picco-allow"),
       args: { prompt: VALID_PICCO },
       config: ENFORCE,
@@ -184,6 +186,7 @@ describe("PL-07 V2-VAL-10 — matrix deny/allow through the v2 entry (setup → 
     const closed = tempStatePath(CLOSED);
     const row = await runV2({
       tool: "task",
+      sessionAgent: "orchestrator",
       sessionID: freshSid("v2-kill"),
       args: { prompt: "no tags at all, would deny without kill-switch" },
       config: ENFORCE,
@@ -223,6 +226,7 @@ describe("PL-07 V2-VAL-10 — matrix deny/allow through the v2 entry (setup → 
     const closed = tempStatePath(CLOSED);
     const baseEnvelope = {
       tool: "task",
+      sessionAgent: "orchestrator",
       args: { prompt: "no picco block; config gates.*=off must not relax this" },
       config: GATES_OFF,
       statePath: closed,
@@ -258,6 +262,7 @@ describe("PL-07 V2-VAL-10 — matrix deny/allow through the v2 entry (setup → 
     const open = tempStatePath(OPEN);
     const row = await runV2({
       tool: "task",
+      sessionAgent: "orchestrator",
       sessionID: freshSid("v2-anchor-b"),
       args: { prompt: VALID_PICCO },
       config: ENFORCE,
@@ -275,6 +280,7 @@ describe("PL-07 V2-VAL-10 — matrix deny/allow through the v2 entry (setup → 
       out.push(
         await runV2({
           tool: "task",
+          sessionAgent: "orchestrator",
           sessionID: sid,
           args: { prompt: VALID_PICCO },
           config: ENFORCE,

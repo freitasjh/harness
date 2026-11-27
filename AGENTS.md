@@ -4,6 +4,27 @@ Fonte canônica: `.agents/rules/always-on.md` (carregada por
 `opencode.json.instructions`). Prosa descreve; `gate.js` + CI negam. Em conflito,
 a regra em disco e o gate vencem esta página.
 
+## Segurança — crítico na raiz (não delegar a chunk)
+
+- `protectedPaths` é a via de proteção: nunca sobrescrever `.codex/config.toml`,
+  `.codex/harness-state.json`, `.opencode/**` (exceto merge aditivo) nem `.agents/**`.
+- State file: gitignored, HMAC+nonce, temp `wx` 0600, rename atômico; divergência ⇒ fail-closed.
+- Fail-closed em input inválido/ausente para `PreToolUse`/`PermissionRequest`;
+  fail-open só em erro inesperado de runtime (`plugin-error`).
+- Teto efetivo do `AGENTS.md` encadeado: 32768 bytes. Medir e falhar se exceder;
+  nunca truncar silenciosamente.
+- Regra dual-run: `.opencode/**`, `opencode.json` e `.agents/**` intactos. Sem segredos
+  em payload, state file ou smoke report.
+
+## Encadeamento de instruções (Codex)
+
+Raiz enxuta = índice + convenções cross-cutting (acima). Chunking por diretório:
+`scripts/AGENTS.md` e `harness/AGENTS.md` carregam só no escopo. `AGENTS.override.md`
+em subdiretório tem precedência. `project_doc_fallback_filenames` é vazio:
+Codex procura filenames por diretório e só quando `AGENTS.md` falta, portanto
+`.agents/rules/*.md` não entra na cadeia. `SessionStart` é complemento
+dinâmico, nunca canal primário de regras.
+
 ## Antes de começar
 
 - `brain_search` com o prompt literal; `brain_store` depois (decisões/lições).

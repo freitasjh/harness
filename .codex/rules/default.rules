@@ -1,0 +1,5 @@
+# Complementar e experimental (ADR-003 I7). Hooks são autoritativos.
+# Sandbox de comandos por prefixo (Starlark); não duplicar política dos hooks.
+
+prefix_rule(pattern=["rm", "-rf"], decision="forbidden")
+prefix_rule(pattern=["git", "push"], decision="prompt")
