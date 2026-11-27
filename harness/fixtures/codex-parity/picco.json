@@ -1,0 +1,8 @@
+{
+  "gate": "picco",
+  "tool": "task",
+  "opencodeReason": "picco-tag-absent",
+  "codexReason": "picco-tag-absent",
+  "divergence": false,
+  "bestEffort": false
+}

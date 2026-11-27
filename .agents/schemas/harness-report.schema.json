@@ -48,7 +48,7 @@
     },
     "e2e": {
       "type": "object",
-      "description": "conditional: required when escalateOnRisk fires or e2eGreenfield evidence is declared"
+      "description": "optional manual evidence for H3; no config key auto-requires it"
     },
     "frontend_evidence": {
       "type": "object",

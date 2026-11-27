@@ -19,6 +19,7 @@ import { fileURLToPath } from "node:url";
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const DIR = join(REPO_ROOT, ".opencode", "commands");
 const COMMANDS = [
+  "harness-migrate.md",
   "harness-init.md", "harness-update.md", "harness-doctor.md",
   "ui-bootstrap.md", "ui-audit.md", "ui-review.md",
 ];
@@ -59,7 +60,7 @@ function assertPlanThenApply(text, verb) {
 }
 
 describe("CMD-01/02/03 — comandos do operador", () => {
-  it("a camada publica exatamente os seis comandos (3 harness + 3 ui)", () => {
+  it("a camada publica exatamente os sete comandos (4 harness + 3 ui)", () => {
     assert.deepEqual(readdirSync(DIR).sort(), [...COMMANDS].sort());
   });
 

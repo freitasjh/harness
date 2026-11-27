@@ -1,59 +1,117 @@
 ---
 name: deepsearch
-description: Detalhe operacional de busca com fonte — quando buscar, hierarquia de fontes, uso de websearch/webfetch/Context7 e template de citação (afirmação — URL — data). O contrato always-on vive em .agents/rules/deepsearch.md.
+description: "Pesquisa profunda com fonte antes de recomendar biblioteca, API ou padrão. Use quando a resposta vai virar código e precisa de contexto versionado; a rule always-on é o contrato."
 ---
 
-Contrato obrigatório em `.agents/rules/deepsearch.md`; este arquivo é detalhe operacional.
+# Deepsearch — detalhe operacional
 
-## Quando buscar
+Contrato obrigatório: `assets/deepsearch-rule.md`. Este arquivo não
+substitui nem copia a rule; ele ensina a executar o protocolo até gerar
+contexto suficiente para codificação correta.
 
-Antes de recomendar biblioteca, API, configuração, versão ou padrão que dependa de assinatura, depreciação ou boa prática corrente. Se a afirmação pode ter mudado desde o cutoff do modelo, ela precisa de fonte. Buscar também quando a resposta anterior veio só de memória.
+Pacote portátil: `SKILL.md`, `assets/`, `references/`, `scripts/` e
+`fixtures/` viajam juntos.
 
-Não buscar para: conceito estável do domínio, decisão já registrada em ADR, ou conteúdo puramente local do repo (nesse caso cite `arquivo:linha`).
+## Sintoma que esta skill corrige
 
-## Hierarquia de fonte
+Uma busca única, seguida de um parágrafo curto, não é pesquisa profunda. Ela
+deixa o agente sem versão, sem assinatura verificada, sem alternativas
+descartadas e sem riscos conhecidos. O resultado de uma deepsearch útil é um
+mapa de decisões com citações, não uma opinião resumida.
 
-1. **Documentação oficial** — site/manual da versão instalada, especificação, referência de API do mantenedor.
-2. **Changelog / RFC / issue / release notes** — o "por quê", a depreciação e a data de validade da afirmação.
-3. **Artigo técnico identificável** — last resort; nunca sustenta sozinho assinatura de API.
-4. **Inferência** — só quando 1–3 não existirem; rotule explicitamente e proponha como verificar.
+## Quando usar
 
-Conflito entre fontes: a oficial da versão em uso vence; registre a divergência em vez de escolher em silêncio.
+Antes de recomendar biblioteca, API, configuração, versão ou padrão que vá
+virar código e que possa ter mudado desde o cutoff do modelo. Também quando a
+resposta anterior veio só de memória ou quando a tarefa será delegada a outro
+agente que precisa decidir sozinho.
 
-## Como buscar (ferramentas confirmadas)
+Não usar para conceito estável do domínio, decisão já registrada em ADR ou
+conteúdo puramente local do projeto — nesses casos, cite `arquivo:linha` e
+siga em frente.
 
-- `websearch(query)` — **descobrir**. Query curta e específica: nome da lib + versão + assunto. Serviços de busca selecionados pelo host; não é fonte por si só, é índice.
-- `webfetch(url, format="markdown", timeout≤120)` — **ler**. Abrir a URL encontrada e conferir a assinatura na íntegra antes de escrever código. Markdown é o default; `text`/`html` quando o markdown perder informação.
-- `context7_resolve-library-id` → `context7_query-docs` (MCP Context7, quando disponível) — documentação versionada. Alternativa CLI: `ctx7 library` / `ctx7 docs`. Se o servidor não estiver configurado, siga com `websearch` + `webfetch`; nunca finja que consultou.
+## Fluxo de pesquisa profunda
 
-Nunca aceitar assinatura de API de memória. A fonte consultada é a única autoridade para nomes de método, parâmetros e defaults.
+1. **Travar o escopo da pergunta.** Escreva uma frase com: assunto, stack,
+   versão conhecida, ambiente e o que será decidido. Se a versão não foi
+   dita, procure a versão instalada no projeto antes de buscar na web.
+2. **Decompor em subquestões.** Use o checklist em
+   `references/research-playbook.md`. Uma pergunta grande como "SSO com
+   Spring Boot" vira OIDC vs SAML, control plane vs IdP, versão do Spring
+   Security, sessão vs JWT, rotação de chaves, provisionamento, multitenancy,
+   observabilidade, testes e migração.
+3. **Buscar por subquestão, não uma vez pelo tema inteiro.** Descubra com
+   `websearch`, abra a fonte com `webfetch`, e use Context7 quando
+   disponível para documentação versionada. Registre o que cada fonte
+   respondeu e o que ficou em aberto.
+4. **Persistir até saturação.** Cada subquestão termina em um de três estados:
+   fonte oficial encontrada; changelog/RFC encontrado com data de validade;
+   ou inferência explícita com alvo de verificação. Se nenhum dos três foi
+   alcançado, a busca não acabou.
+5. **Extrair evidência.** Para cada afirmação, registre
+   `Afirmação — URL — data da consulta (YYYY-MM-DD)` e acrescente a versão
+   aplicável e a implicação prática no código. Uma afirmação por citação.
+6. **Montar o mapa de decisões.** Use o template em
+   `references/output-template.md`: decisão, recomendação, alternativas
+   descartadas, fontes, implicações de código, riscos e perguntas abertas.
+7. **Entregar em camadas.** Resumo executivo primeiro, mapa detalhado
+   depois, fontes numeradas no final. Nunca responda só "depende" — diga do
+   que depende, quem decide e onde verificar.
 
-## Template de citação mínimo
+## Ferramentas e fallback
 
-`Afirmação — URL — data da consulta (YYYY-MM-DD)`
+- `websearch(query)` — **descobrir**. Query curta: nome da tecnologia +
+  versão + subquestão. É índice, não fonte final.
+- `webfetch(url, format="markdown", timeout≤120)` — **ler**. Abrir a URL e
+  conferir a assinatura na íntegra antes de escrever código. Use `text` ou
+  `html` se o markdown perder informação.
+- `context7_resolve-library-id` → `context7_query-docs` — documentação
+  versionada, quando o MCP estiver disponível. Alternativa CLI: `ctx7
+  library` / `ctx7 docs`.
 
-Exemplo real desta sessão:
+Se `websearch`/`webfetch`/Context7 nao estiverem disponiveis, use HTTPS
+read-only via cliente de linha de comando quando autorizado, registre a URL
+aberta e a data da consulta. Se nem isso existir, marque inferencia com alvo
+de verificacao. Nunca finje consulta, URL, data ou resultado.
 
-> `webfetch` aceita `markdown|text|html` e `timeout` até 120 s — https://opencode.ai/docs/tools — 2026-11-18.
+## Exemplo de evidência extraída
 
-Uma afirmação por citação. Se a frase juntar três fatos de três URLs, escreva três citações.
+```text
+Afirmação: <o que a fonte diz, em uma frase verificável>
+URL: <url aberta>
+Data da consulta: <YYYY-MM-DD>
+Versão aplicável: <versão da lib/framework, se a fonte disser>
+Implicação no código: <o que muda na implementação por causa dessa afirmação>
+```
 
-**Sem fonte = inferência explícita.** Escreva: "inferência (sem fonte consultada); verificar em `<alvo>`". Nunca apresente chute como fato, nunca omita o rótulo.
+## Verificação manual
 
-## Exemplos
+Não há runner de teste neste pacote. As verificações são comportamentais e
+usam os fixtures incluídos.
 
-**BOM 1 — assinatura verificada antes de recomendar**
+| # | Verificação | Critério |
+|---|-------------|----------|
+| V1 | `fixtures/01-sso-identity-spring-boot.md` | Produz subquestões, fontes oficiais e mapa de decisões; não termina em parágrafo curto |
+| V2 | `fixtures/02-conceito-estavel.md` | Não busca na web; cita contexto local ou segue sem citação externa |
+| V3 | `fixtures/03-assinatura-api.md` | Não afirma assinatura sem abrir a fonte; sem ferramenta, declara limitação |
+| V4 | Contrato | A rule canônica está em `assets/deepsearch-rule.md`; nenhum ponteiro a copia |
 
-> `webfetch` tem parâmetro `format` (`markdown` default) e `timeout` até 120 s; use `markdown` para docs — https://opencode.ai/docs/tools — 2026-11-18.
+## Arquivos do pacote
 
-**BOM 2 — sem fonte disponível, inferência rotulada**
+`SKILL.md` · `assets/deepsearch-rule.md` (contrato) ·
+`references/research-playbook.md` · `references/output-template.md` ·
+`scripts/` · `fixtures/` · `TESTING.md`.
 
-> Inferência (sem fonte consultada): o proxy Vite precisa de `changeOrigin: true` neste cenário; verificar em https://vite.dev/config/server-options antes de aplicar. Não tratar como fato.
+Todos viajam juntos. Não copie apenas o `SKILL.md` para outro projeto.
 
-**RUIM — memória disfarçada de citação**
+## Integração por plataforma
 
-> "O método `findMany` recebe `include` e isso always funciona." Sem URL, sem data, sem versão, e a assinatura nunca foi aberta. É o que a rule proíbe: não é citação, é palpite com tom de certeza.
+- **Codex:** a skill é descoberta em `.agents/skills/deepsearch/SKILL.md`;
+  `AGENTS.md` aponta para a rule canônica sem duplicá-la.
+- **OpenCode:** `opencode.json` carrega `.agents/rules/deepsearch.md`, que é
+  um ponteiro para o asset.
+- **Kiro (opcional):** se `.kiro/steering/deepsearch.md` e
+  `.kiro/hooks/deepsearch.json` existirem, apontam para o asset; ausencia nao
+  falha o self-check.
 
-## Referência
-
-As 6 regras do protocolo estão em `.agents/rules/deepsearch.md` (rule always-on, 🟡 processo — a cobrança é revisão de código, nenhum gate negocia por isto). Não as copie para cá nem para prompts de agente: rule é contrato curto, skill é detalhe.
+Nenhuma plataforma recebe uma cópia das 6 regras. Todas leem o mesmo asset.

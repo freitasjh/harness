@@ -1,0 +1,8 @@
+{
+  "gate": "hitlBatch",
+  "tool": "task",
+  "opencodeReason": "hitl-pause-required",
+  "codexReason": "hitl-pause-required",
+  "divergence": false,
+  "bestEffort": false
+}

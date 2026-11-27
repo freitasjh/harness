@@ -31,6 +31,7 @@ describe("PL-02 V2-BE-03 — runGatesShim delegates to decide + CORE_GATES", () 
     await assert.rejects(
       runGatesShim({
         tool: "task",
+        sessionAgent: "orchestrator",
         sessionID: "v2-shim-picco-deny",
         args: { prompt: "do something without any tag" },
         config: TEST_CONFIG,
@@ -44,6 +45,7 @@ describe("PL-02 V2-BE-03 — runGatesShim delegates to decide + CORE_GATES", () 
   it("allows task with valid PICCO (parity with decide allow)", async () => {
     const verdict = await runGatesShim({
       tool: "task",
+      sessionAgent: "orchestrator",
       sessionID: "v2-shim-picco-allow",
       args: { prompt: VALID_PICCO },
       config: TEST_CONFIG,
@@ -84,6 +86,7 @@ describe("PL-02 V2-BE-03 — runGatesShim delegates to decide + CORE_GATES", () 
     };
     const verdict = await runGatesShim({
       tool: "task",
+      sessionAgent: "orchestrator",
       sessionID: "v2-shim-failopen",
       args: { prompt: VALID_PICCO },
       config: TEST_CONFIG,
@@ -97,6 +100,7 @@ describe("PL-02 V2-BE-03 — runGatesShim delegates to decide + CORE_GATES", () 
   it("kill-switch HARNESS_GATES=off allows via shim (ADR-009)", async () => {
     const verdict = await runGatesShim({
       tool: "task",
+      sessionAgent: "orchestrator",
       sessionID: "v2-shim-kill",
       args: { prompt: "no tags at all" },
       config: TEST_CONFIG,
@@ -127,7 +131,9 @@ describe("PL-02 V2-BE-03 — session shims share the v1 maps", () => {
     resetHitlTracker(sid);
     const tracker = hitlTrackerFor(sid);
     await gateHitlBatch({ tool: "task", sessionID: sid, args: {}, hitlTracker: tracker });
+    sessionAgent: "orchestrator",
     await gateHitlBatch({ tool: "task", sessionID: sid, args: {}, hitlTracker: tracker });
+    sessionAgent: "orchestrator",
     assert.equal(tracker.pending(), 2);
     humanBoundaryShim({ sessionID: sid }, { message: { role: "human" } });
     const fresh = hitlTrackerFor(sid);

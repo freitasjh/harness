@@ -1,0 +1,7 @@
+{
+  "gate": "identity",
+  "tool": "task",
+  "opencodeReason": "agent-unknown",
+  "codexReason": "agent-unknown",
+  "divergence": false
+}

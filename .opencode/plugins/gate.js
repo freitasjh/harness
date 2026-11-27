@@ -50,33 +50,23 @@
 //   WARN per (gate, motive) / (gate, kind) per process (announceGateMode,
 //   MODO-04); every `gates.*` key that has no effect is audited once per (key,
 //   value) (auditConfigGates, MODO-03). resolveGateMode itself stays pure.
-import { readFileSync } from "node:fs";
+import { readFileSync, appendFileSync, existsSync, mkdirSync, renameSync, statSync, chmodSync } from "node:fs";
+import { randomUUID } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { verifySeal, sha256 } from "./lib/seal.mjs";
 import { loadHarnessConfig, REPO_ROOT } from "./lib/config.mjs";
+import * as core from "./lib/gate-core.mjs";
 
-export const DEFAULT_MODE = "enforce";
-
-export const KILL_SWITCH_ENV = "HARNESS_GATES";
-export const KILL_SWITCH_OFF = "off";
-
-export const DENY_SEAL_MISMATCH = "sealed-command-mismatch";
-
-// ADR-006: the typed deny signal. The dispatcher propagates DenyError and
-// fail-opens on anything else. Gates MUST throw this, never a raw Error.
-export class DenyError extends Error {
-  constructor(reason, details = {}) {
-    super(typeof reason === "string" && reason.length > 0 ? reason : "deny");
-    this.name = "DenyError";
-    this.reason = typeof reason === "string" && reason.length > 0 ? reason : "deny";
-    this.details = details;
-  }
-}
-
-export function isKillSwitchOff(env = process.env) {
-  return env?.[KILL_SWITCH_ENV] === KILL_SWITCH_OFF;
-}
+export const DEFAULT_MODE = core.DEFAULT_MODE;
+export const KILL_SWITCH_ENV = core.KILL_SWITCH_ENV;
+export const KILL_SWITCH_OFF = core.KILL_SWITCH_OFF;
+export const DENY_SEAL_MISMATCH = core.DENY_SEAL_MISMATCH;
+export const DenyError = core.DenyError;
+export const isKillSwitchOff = core.isKillSwitchOff;
+export const resolveGateMode = core.resolveGateMode;
+export const modeForGate = core.modeForGate;
+export const normalizePath = core.normalizePath;
 
 // ADR-001 item 4 (MODO-06): the legacy config→mode resolver is gone. The
 // config never decides a mode (RF-01); the effective mode comes from the
@@ -95,39 +85,7 @@ export function isKillSwitchOff(env = process.env) {
 const GATE_MODE_ENV_PREFIX = "HARNESS_GATE_";
 const GATE_MODE_REASON_SUFFIX = "_REASON";
 
-export function resolveGateMode(gateName, env) {
-  const envVar = `${GATE_MODE_ENV_PREFIX}${String(gateName).toUpperCase()}`;
-  const raw = env?.[envVar];
-  if (raw === undefined) {
-    return { mode: "enforce", source: "default", envVar: null, reason: null };
-  }
-  if (raw === "enforce") return { mode: "enforce", source: "env", envVar, reason: null };
-  if (raw === "warn") {
-    const reason = env?.[`${envVar}${GATE_MODE_REASON_SUFFIX}`];
-    if (typeof reason === "string" && reason.trim().length > 0) {
-      return { mode: "warn", source: "env", envVar, reason };
-    }
-    // Downgrade refused (RF-05/INV-3). This resolver is pure (SPEC 3.1) and
-    // emits nothing; the caller announces the refusal (announceGateMode).
-    return { mode: "enforce", source: "default", envVar, reason: null };
-  }
-  // Out of domain — null, "ENFORCE", "off", 42, ...: fail-closed. A present but
-  // invalid value keeps envVar (it names the key that was refused).
-  return { mode: "enforce", source: "default", envVar, reason: null };
-}
-
-// ---------------------------------------------------------------------------
-// FU-06/ADR-001: per-gate modes. Each core gate carries a gateName; modeForGate
-// resolves it from the host-process env through resolveGateMode (MODO-02). A
-// gate without its own gateName (hygiene) falls back to DEFAULT_MODE — there is
-// no env lookup for it. The config never participates (RF-01).
-// ---------------------------------------------------------------------------
-
-export function modeForGate(gateFn, env) {
-  const gateName = gateFn?.gateName;
-  if (typeof gateName !== "string" || gateName.length === 0) return DEFAULT_MODE;
-  return resolveGateMode(gateName, env).mode;
-}
+// resolveGateMode/modeForGate now provided by shared core (CORE-01).
 
 // ---------------------------------------------------------------------------
 // FU-07: the contraprove cache is only valid when treeHash names real
@@ -238,6 +196,41 @@ function formatGateValue(value) {
   }
 }
 
+const TELEMETRY_PATH = join(REPO_ROOT, ".codex", "harness-telemetry.jsonl");
+const TELEMETRY_MAX_BYTES = 1024 * 1024;
+
+export function persistGateTelemetry(event, file = TELEMETRY_PATH) {
+  try {
+    mkdirSync(dirname(file), { recursive: true });
+    if (existsSync(file) && statSync(file).size >= TELEMETRY_MAX_BYTES) renameSync(file, file + ".1");
+    appendFileSync(file, JSON.stringify(event) + "\n", { mode: 0o600 });
+    try { chmodSync(file, 0o600); } catch { /* best-effort */ }
+  } catch {
+    // Telemetry is best-effort; it never changes a verdict.
+  }
+}
+
+export function defaultGateTelemetry(event) {
+  try {
+    process.stderr.write("GATE_TELEMETRY " + JSON.stringify(event) + "\n");
+  } catch {
+    // Telemetry is best-effort; it never changes a verdict.
+  }
+  persistGateTelemetry(event);
+}
+
+function emitGateTelemetry(telemetry, event) {
+  try {
+    telemetry?.(event);
+  } catch {
+    // Telemetry is best-effort; it never changes a verdict.
+  }
+}
+
+function safeSession(ctx) {
+  return String(ctx?.sessionID ?? ctx?.session_id ?? "unknown").slice(0, 64);
+}
+
 function isRegisteredGateName(name) {
   return CORE_GATES.some((gateFn) => gateFn?.gateName === name);
 }
@@ -315,20 +308,36 @@ export function announceGateMode(gateFn, env, logger) {
 // ADR-006 dispatcher. Pure and hook-agnostic so it is unit-testable without
 // MCP or network. Returns a verdict object; only DenyError in enforce mode
 // escapes as a throw (which is what denies the tool call at runtime).
-export async function decide({ gateFn = null, mode = DEFAULT_MODE, ctx = {}, env = process.env, logger = console } = {}) {
-  if (isKillSwitchOff(env)) return { verdict: "allow", via: "kill-switch" };
+export async function decide({ gateFn = null, mode = DEFAULT_MODE, ctx = {}, env = process.env, logger = console, telemetry = null, correlationId = null } = {}) {
+  const baseEvent = {
+    event: "gate_decision",
+    correlationId: correlationId ?? ctx?.correlationId ?? "unknown",
+    session: safeSession(ctx),
+    gate: gateFn?.gateName ?? "unnamed",
+    tool: String(ctx?.tool ?? "unknown"),
+    agent: sanitizeAgent(ctx?.sessionAgent ?? "unknown"),
+    mode,
+  };
+  if (isKillSwitchOff(env)) {
+    emitGateTelemetry(telemetry, { ...baseEvent, decision: "allow", reason: "kill-switch" });
+    return { verdict: "allow", via: "kill-switch" };
+  }
   try {
     if (gateFn) await gateFn(ctx);
+    emitGateTelemetry(telemetry, { ...baseEvent, decision: "allow", reason: null });
     return { verdict: "allow" };
   } catch (err) {
     if (!(err instanceof DenyError)) {
+      emitGateTelemetry(telemetry, { ...baseEvent, decision: "allow", reason: "plugin-error-fail-open" });
       logError(logger, err);
       return { verdict: "allow", via: "plugin-error-fail-open" };
     }
     if (mode !== "enforce") {
+      emitGateTelemetry(telemetry, { ...baseEvent, decision: "warn", reason: err.reason });
       logWarn(logger, err);
       return { verdict: "allow", via: "warn", reason: err.reason };
     }
+    emitGateTelemetry(telemetry, { ...baseEvent, decision: "deny", reason: err.reason });
     throw err;
   }
 }
@@ -350,24 +359,23 @@ export function listCoreGates() {
 }
 
 // ---------------------------------------------------------------------------
-// Shared deny reasons (one per fixture row, SPEC §7.3).
-// ---------------------------------------------------------------------------
-
-export const DENY_PICCO_ABSENT = "picco-tag-absent";
-export const DENY_PICCO_NONEMPTY = "picco-tag-nonempty";
-export const DENY_COMPLETED_NO_EVIDENCE = "completed-no-evidence";
+// Shared deny reasons now provided by shared core (CORE-01). Re-export below.
+export const DENY_PICCO_ABSENT = core.DENY_PICCO_ABSENT;
+export const DENY_PICCO_NONEMPTY = core.DENY_PICCO_NONEMPTY;
+export const DENY_COMPLETED_NO_EVIDENCE = core.DENY_COMPLETED_NO_EVIDENCE;
 export const DENY_FRONTEND_EVIDENCE = "frontend-evidence-missing";
-export const DENY_CONTRAPROVE_DIVERGENT = "contraprove-divergent";
-export const DENY_CONTRAPROVE_TIMEOUT = "contraprove-timeout";
-export const DENY_PREV_CYCLE = "prev-cycle-not-completed";
-export const DENY_HITL = "hitl-pause-required";
-export const DENY_PKILL = "pkill-f";
-export const DENY_PROTECTED = "protected-path-write";
-export const DENY_ALLOWLIST = "orch-write-outside-allowlist";
-export const DENY_QA_SCOPE = "qa-scope-violation";
-export const DENY_ROLE_WRITE = "write-denied-for-role";
-export const DENY_CONFIG_UNAVAILABLE = "config-unavailable";
-export const DENY_STATE_CORRUPT = "state-corrupt";
+export const DENY_CONTRAPROVE_DIVERGENT = core.DENY_CONTRAPROVE_DIVERGENT;
+export const DENY_CONTRAPROVE_TIMEOUT = core.DENY_CONTRAPROVE_TIMEOUT;
+export const DENY_PREV_CYCLE = core.DENY_PREV_CYCLE;
+export const DENY_HITL = core.DENY_HITL;
+export const DENY_PKILL = core.DENY_PKILL;
+export const DENY_PROTECTED = core.DENY_PROTECTED;
+export const DENY_ALLOWLIST = core.DENY_ALLOWLIST;
+export const DENY_QA_SCOPE = core.DENY_QA_SCOPE;
+export const DENY_ROLE_WRITE = core.DENY_ROLE_WRITE;
+export const DENY_CONFIG_UNAVAILABLE = core.DENY_CONFIG_UNAVAILABLE;
+export const DENY_STATE_CORRUPT = core.DENY_STATE_CORRUPT;
+export const DENY_AGENT_UNKNOWN = core.DENY_AGENT_UNKNOWN;
 
 // ---------------------------------------------------------------------------
 // FU-05: config→gate border. The loader throws a plain Error; decide() would
@@ -454,6 +462,37 @@ export function isHumanMessage(input = {}, output) {
 }
 
 // ---------------------------------------------------------------------------
+// GATE-06 — agent identity: task and sensitive writes require a known role.
+// Shared by the OpenCode v2 shim and the Codex adapter.
+// ---------------------------------------------------------------------------
+
+const ROSTER_AGENTS = new Set([
+  "orchestrator", "frontend-engineer", "backend-engineer", "engineer",
+  "product-manager", "qa-engineer", "architect", "security-engineer",
+  "code-reviewer", "ux-designer", "design-system-specialist",
+]);
+
+export async function gateAgentIdentity(ctx = {}) {
+  if (ctx.tool !== "task" && !WRITE_TOOLS.has(ctx.tool)) return true;
+  const agent = resolveSessionAgent(ctx);
+  if (ROSTER_AGENTS.has(agent)) return true;
+  let sensitive = ctx.tool === "task";
+  if (WRITE_TOOLS.has(ctx.tool)) {
+    sensitive = extractWriteTargets(ctx.tool, ctx.args).some((target) => {
+      const normalized = normalizePath(target.path);
+      return normalized === "workflow-state.json" ||
+        normalized.startsWith("harness/") ||
+        isProtectedPath(normalized, ctx.config?.protectedPaths ?? []);
+    });
+  }
+  if (sensitive) {
+    throw new DenyError(DENY_AGENT_UNKNOWN, { tool: ctx.tool, agent: sanitizeAgent(agent ?? "unknown") });
+  }
+  return true;
+}
+gateAgentIdentity.gateName = "identity";
+
+// ---------------------------------------------------------------------------
 // GATE-02 — PICCO gate on `task` (ADR-004, I1).
 //
 // Exact contract: the <open_questions> tag is MANDATORY. Absent, or present
@@ -525,10 +564,7 @@ export async function gatePiccoTask(ctx = {}) {
 // Path helpers shared by anchors A (GATE-03) and hygiene (GATE-05).
 // ---------------------------------------------------------------------------
 
-export function normalizePath(path) {
-  if (typeof path !== "string") return "";
-  return path.trim().replace(/\\/g, "/").replace(/^(?:\.\/)+/, "").replace(/^\/+/, "").replace(/^["']|["']$/g, "");
-}
+// normalizePath now provided by shared core (CORE-01); re-exported above.
 
 function escapeRegExp(text) {
   return text.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
@@ -583,6 +619,8 @@ export function parsePatchPaths(text) {
     /^\+\+\+\s+b\/(\S+)/gm,
     /^---\s+a\/(\S+)/gm,
     /\*\*\*\s*Update File:\s*(\S+)/gi,
+    /\*\*\*\s*(?:Add|Delete)\s+File:\s*(\S+)/gi,
+    /\*\*\*\s*Move to:\s*(\S+)/gi,
     /"(?:filePath|path)"\s*:\s*"([^"]+)"/g,
   ];
   for (const pattern of patterns) {
@@ -603,7 +641,7 @@ export function extractWriteTargets(tool, args) {
     const text =
       typeof args === "string"
         ? args
-        : (args?.patchText ?? args?.patch ?? args?.diff ?? args?.content ?? "");
+        : (args?.patchText ?? args?.patch ?? args?.diff ?? args?.content ?? args?.command ?? "");
     if (typeof text === "string" && text.length > 0) {
       for (const path of parsePatchPaths(text)) targets.push({ kind: "patch", path });
     }
@@ -634,20 +672,7 @@ export function basenameOf(path) {
   return segments.length > 0 ? segments[segments.length - 1] : "";
 }
 
-const KNOWN_AGENTS = new Set([
-  "orchestrator",
-  "frontend-engineer",
-  "backend-engineer",
-  "engineer",
-  "product-manager",
-  "qa-engineer",
-  "architect",
-  "security-engineer",
-  "code-reviewer",
-  "ux-designer",
-  "design-system-specialist",
-  "unknown",
-]);
+export const KNOWN_AGENTS = core.KNOWN_AGENTS; // synced with shared core (NF-10)
 
 export function sanitizeAgent(agent) {
   return KNOWN_AGENTS.has(agent) ? agent : "unknown";
@@ -733,15 +758,30 @@ export function contraproveCacheKey({ demand, report, treeHash = "unknown" } = {
   return `${demand}::${sha256(JSON.stringify(report))}::${treeHash}`;
 }
 
+export function parseTestCounts(stdout) {
+  const text = String(stdout ?? "");
+  const blocks = [...text.matchAll(/ℹ tests (\d+)[\s\S]*?ℹ pass (\d+)[\s\S]*?ℹ fail (\d+)[\s\S]*?ℹ skipped (\d+)/g)];
+  const layers = ["unit", "it", "frontend"];
+  const counts = {};
+  for (let i = 0; i < blocks.length && i < layers.length; i += 1) {
+    counts[layers[i]] = {
+      passed: Number(blocks[i][2]),
+      failed: Number(blocks[i][3]),
+      skipped: Number(blocks[i][4]),
+    };
+  }
+  return Object.keys(counts).length > 0 ? counts : null;
+}
+
 export function defaultContraproveExec(command, { timeoutMs } = {}) {
   try {
-    execFileSync(command, { shell: "/bin/sh", timeout: timeoutMs, stdio: "pipe" });
-    return { exitCode: 0, counts: null };
+    const stdout = execFileSync(command, { shell: "/bin/sh", timeout: timeoutMs, stdio: "pipe", encoding: "utf8" });
+    return { exitCode: 0, counts: parseTestCounts(stdout) };
   } catch (err) {
     if (err?.code === "ETIMEDOUT" || /ETIMEDOUT|timed out/i.test(String(err?.message ?? ""))) {
       return { timedOut: true };
     }
-    if (typeof err?.status === "number") return { exitCode: err.status, counts: null };
+    if (typeof err?.status === "number") return { exitCode: err.status, counts: parseTestCounts(err.stdout) };
     throw err;
   }
 }
@@ -793,19 +833,17 @@ export async function runContraprova({
   }
   const expectedCounts = report?.counts ?? null;
   const observedCounts = observed?.counts ?? null;
-  // C-1 / D-15 (owner decision, option a): a count the executor CANNOT observe
-  // is NON-COMPARABLE, never "divergent". The default executor observes exit
-  // codes only (defaultContraproveExec => counts: null), while the REPORT schema
-  // REQUIRES counts — denying a schema-valid report for declaring them made this
-  // branch dead code and left H1 counts never contraproved.
-  // Real divergence is preserved: when BOTH sides state counts and they differ,
-  // the claim is refuted => DENY (never weakened).
-  if (
-    expectedCounts &&
-    observedCounts &&
-    JSON.stringify(expectedCounts) !== JSON.stringify(observedCounts)
-  ) {
-    throw new DenyError(DENY_CONTRAPROVE_DIVERGENT, { demand, expectedCounts, observedCounts });
+  // Counts are compared layer by layer for what the executor observed. Layers
+  // absent from the observed output stay non-comparable; real divergence denies.
+  if (expectedCounts && observedCounts) {
+    const comparable = Object.fromEntries(
+      Object.keys(observedCounts)
+        .filter((layer) => layer in expectedCounts)
+        .map((layer) => [layer, expectedCounts[layer]]),
+    );
+    if (JSON.stringify(comparable) !== JSON.stringify(observedCounts)) {
+      throw new DenyError(DENY_CONTRAPROVE_DIVERGENT, { demand, expectedCounts, observedCounts });
+    }
   }
   if (cacheable) contraproveCache.set(key, { ok: true });
   if (expectedCounts && !observedCounts) {
@@ -1183,11 +1221,13 @@ export async function gateShellHygiene(ctx = {}) {
 // FU-06/ADR-001: each gate carries a gateName so modeForGate(gateFn, env) can
 // resolve its mode from HARNESS_GATE_<GATE>. Hygiene carries no gateName on
 // purpose: it falls back to DEFAULT_MODE (declared in modeForGate).
+registerCoreGate(gateAgentIdentity);
 registerCoreGate(gatePiccoTask);
 registerCoreGate(gateCompletionAnchorA);
 registerCoreGate(gatePhaseAnchorB);
 registerCoreGate(gateHitlBatch);
 registerCoreGate(gateShellHygiene);
+gateAgentIdentity.gateName = "identity";
 gatePiccoTask.gateName = "picco";
 gateCompletionAnchorA.gateName = "evidence";
 gatePhaseAnchorB.gateName = "evidence";
@@ -1335,6 +1375,7 @@ export async function runGatesShim(v2Payload = {}, v2Output) {
       toolOutput = isEvent ? { args: payloadObj.input } : (payloadObj.toolOutput ?? payloadObj);
     }
   }
+  const correlationId = toolInput.correlationId ?? payloadObj.correlationId ?? randomUUID();
   const sessionID = toolInput.sessionID ?? payloadObj.sessionID;
   const agent = toolInput.agent ?? payloadObj.agent;
   const logger = toolInput.logger ?? payloadObj.logger ?? console;
@@ -1342,6 +1383,7 @@ export async function runGatesShim(v2Payload = {}, v2Output) {
     tool: toolInput.tool ?? payloadObj.tool,
     sessionID,
     callID: toolInput.callID ?? toolInput.id ?? payloadObj.callID ?? payloadObj.id,
+    correlationId,
     args: toolOutput.args ?? toolInput.args ?? payloadObj.args,
     defaultMode: DEFAULT_MODE,
     logger,
@@ -1407,6 +1449,8 @@ export async function runGatesShim(v2Payload = {}, v2Output) {
       ctx,
       env: base.env,
       logger,
+      telemetry: ctx.telemetry ?? defaultGateTelemetry,
+      correlationId,
     });
     if (result && typeof result === "object") {
       if (result.via && !outcome.via) outcome = result;

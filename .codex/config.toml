@@ -1,0 +1,10 @@
+# ADR-003 I3 / AGENTSMD-03 — instruções de projeto do Codex.
+# Teto mantido em 32768 bytes (PRD §5 / M-04): medir e falhar, nunca truncar.
+project_doc_max_bytes = 32768
+
+# Codex procura FILENAMES por diretório (root→cwd), não caminhos com "/" e
+# somente quando AGENTS.md falta naquele diretório —
+# developers.openai.com/codex/guides/agents-md.md (2026-11-24).
+# Como a raiz tem AGENTS.md, .agents/rules/*.md NÃO entra na cadeia por fallback.
+# Regras detalhadas são entregues via SessionStart / chunks, não por esta chave.
+project_doc_fallback_filenames = []

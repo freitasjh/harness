@@ -1,0 +1,76 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|apply_patch|Agent|.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .codex/hooks/pre_tool_use.mjs --event=PreToolUse"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "Bash|apply_patch|Agent|.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .codex/hooks/pre_tool_use.mjs --event=PermissionRequest"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .codex/hooks/pre_tool_use.mjs --event=UserPromptSubmit"
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .codex/hooks/pre_tool_use.mjs --event=SubagentStart"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .codex/hooks/pre_tool_use.mjs --event=SubagentStop"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .codex/hooks/pre_tool_use.mjs --event=Stop"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .codex/hooks/pre_tool_use.mjs --event=SessionStart"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "gate": "shell-hygiene",
+  "tool": "bash",
+  "opencodeReason": "pkill-f",
+  "codexReason": "pkill-f",
+  "divergence": false,
+  "bestEffort": false
+}

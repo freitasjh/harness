@@ -1,62 +1,19 @@
-# gate-contract — prosa descreve, runtime nega (DOC-01)
+# gate-contract — índice de negações
 
-> Regra normativa de **descrição**, não de enforcement (mesmo estatuto de
-> `.agents/rules/harness-config.md`: SPEC §2, linha "`.agents/rules/*.md` —
-> política descritiva — ❌ não bloqueia").
-> **Regra do DOC-01:** toda afirmação de gate nesta prosa cita o mecanismo
-> que a sustenta (RUNTIME-CONTRACT ou SPEC). Linha de gate sem citação =
-> gate órfão = defeito. Nenhuma linha aqui nega tool por si só.
+Fonte canônica: .agents/skills/harness-workflow/SKILL.md e mecanismo em .opencode/plugins/gate.js.
+Prosa descreve; runtime nega. Nenhuma linha deste índice bloqueia tool.
 
-## 1. Onde mora cada negação
+| ID | Negação | Mecanismo |
+|---|---|---|
+| I13 | task ou escrita sensível sem papel conhecido | gateAgentIdentity / resolveSessionAgent |
+| I1 | task sem PICCO válido | gatePiccoTask / checkPicco |
+| I2 | Completed sem evidência ou contraprova divergente | gateCompletionAnchorA / checkAnchorB / runContraprova |
+| I5 | escrita fora do escopo do papel | checkWriteAccess |
+| I6 | 3º task sem turno humano | gateHitlBatch |
+| I8 | DenyError nega; erro inesperado fail-open | decide |
+| I9 | path protegido sem trailer | CI harness-integrity |
+| I10 | segredo no motivo da negação | sanitização em gate.js |
+| I11 | sessão → agente | recordSessionAgent / deriveAgent |
+| I12 | ordem config → selo → gate | runGatesShim |
 
-| # | Afirmação de gate | Mecanismo (citação obrigatória) | Garantia declarada |
-|---|---|---|---|
-| I1 | `task` sem bloco PICCO válido ⇒ deny; tag `<open_questions>` obrigatória, vazia = válido; E1/E2 ausentes ⇒ deny, E3–E6 ⇒ aviso | `gate.js` no hook v2 `ctx.tool.hook("execute.before", …)` (`V2_TOOL_HOOK`, gate.js:1231; `toolHook(...)`, gate.js:1447) — único primitivo de deny é `throw` (SPEC ADR-001); contrato exato da tag (SPEC ADR-004); input `{tool,sessionID,callID}` + `args` (RUNTIME-CONTRACT §4) | 🟢 garantido (SPEC §7.1) |
-| I2 | `Completed` exige escrita pela via estruturada + contraprova por re-execução; próximo `task` exige `Completed` + `harness_status` + `code_review_status` do ciclo anterior | `gate.js` âncoras A (path-check em `args.filePath`/`args.patchText`, dois shapes de `write` — RUNTIME-CONTRACT H6) + B (state anterior) + re-execução do comando selado (SPEC ADR-008, ADR-002) | 🟠 parcial — escape por escrita fora da allowlist, coberto pelo CI (SPEC §7.1) |
-| I3 | zero path/comando de projeto hardcoded em rules e plugins | check estático V3 — `grep` por literais (SPEC §12 V3); dados vêm de `harness.config.json` (SPEC ADR-003) | 🟢 garantido via CI (SPEC §7.1) |
-| I4 | nenhum portão confiável existe apenas como prosa | auditoria manual periódica H7 — invariante **de processo**, não auto-enforçável (SPEC §7.1 I4) | 🟡 processo — declarado como tal, não como garantia (SPEC §7.1) |
-| I5 | **4 sem `edit`**: `code-reviewer`/`ux-designer`/`security-engineer`/`design-system-specialist` (papéis de parecer; ux segue sem `edit` porque `checkWriteAccess` barra escrita dele em `gate.js:673`). **`edit: allow`**: `frontend-engineer`/`backend-engineer` (implementação por eixo — F4/AGENTS-02) e `qa-engineer` (o papel exige gravar o REPORT `harness/<demand>.json` — N1). **Restrito a `.spec/**`** (`deny *` → `allow .spec/**`, ordem provada por resolução): `orchestrator`, `engineer` (md-only, substitui `planner` — F4/AGENTS-03), `product-manager` e `architect` (a esteira exige criar `.spec/prd/**` — F1/AGENTS-04). No v2 não existe "escreve mas não edita": `write` **é** a ação `edit` | `opencode.json` (`agent.orchestrator.permission.edit = {"*":"deny",".spec/**":"allow"}`, resolvido por `opencode debug config` — a última regra que casa vence; ADR-002 §2.2/§3 itens 1-2) — camada nativa, grosseira (SPEC §2, ADR-001). **Nota (medido, `opencode debug config`)**: a chave `write` **não** é recurso independente — o runtime a mapeia para a ação **`edit`**, logo `write: "deny"` é alias redundante, não uma segunda garantia | 🟢 literal · 🟠 intenção — `bash` contorna (SPEC §7.1). **Para o `qa-engineer`, o escopo de escrita é imposto pelo GATE, não pela permissão**: `isHarnessScoped` (`gate.js:565`) + deny em `gate.js:669` ⇒ fora de `harness/` ⇒ deny (por isso o `edit: allow` dele é seguro) |
-| I6 | batch concluído não inicia o próximo sem pausa HITL; exceção: loop `frontend-engineer|backend-engineer → code-reviewer` (2 calls) | GATE-04 `gateHitlBatch` em `gate.js` (gate.js:1096; registro do gate gate.js:1178, `gateName` gate.js:1183) nega o 3º `task` consecutivo da sessão; a fronteira de turno vem do event stream (`V2_TURN_BOUNDARY_TYPES`, gate.js:1270; `noteTurnBoundary`, gate.js:1288-1297; assinatura em `ctx.event.subscribe`, gate.js:1451-1473) — `hitl-guardrail.js` é no-op desde FIX-01 e `chat.message` não existe no v2; definição precisa de batch vs loop (SPEC §7.2) | 🟠 parcial (SPEC §7.1) |
-| I7 | nunca executar `pkill -f`; `bash` contendo o padrão ⇒ deny | `gate.js` por parse de comando — **evadível** (`bash -c`, `python -c` — SPEC §7.3 fixture de evasão); `permission.bash` casa comando, não alvo (RUNTIME-CONTRACT H4); rede final = CI (SPEC ADR-007) | 🟠 parcial (SPEC §7.1) |
-| I8 | `DenyError` ⇒ deny; qualquer outro erro ⇒ allow + log `error` | contrato tipado do dispatcher: `catch (e) { if (e instanceof DenyError) throw e; … }` (SPEC ADR-006); `throw` propaga sem `catch` no dispatcher (RUNTIME-CONTRACT §2) | 🟢 garantido (SPEC §7.1) |
-| I9 | não-orquestrador não escreve em path protegido, por nenhuma via (incl. `bash`) | CI + pre-commit revertem/falham commit sem trailer `Harness-Gate-Change` (SPEC ADR-007); parse no gate é defesa em profundidade, evadível (SPEC §1 ADR-007) | 🔴 não garantido por runtime · 🟠 coberto por CI **após o passo 0** `git init` + remote + CI (SPEC ADR-007, §16) |
-| I10 | motivo de negação sem segredo no log | scrub antes do log (SPEC RF-12, §7.1 I10) | 🟢 garantido (SPEC §7.1) |
-| I11 | mapa `sessionID → agente` disponível aos gates que precisam | no v2 o agente chega no payload do hook `execute.before` (`recordSessionAgent`, gate.js:1346; mapa + cap de 1000 entradas, gate.js:410-427); `chat.params`/`chat.message` não são hooks do v2 (tabela v1→v2, `V2_HOOK_TABLE`, gate.js:1245-1264) — SPEC §3 e RUNTIME-CONTRACT §4 descrevem o runtime v1; sem entrada no mapa, as regras por papel falham para allow (gate.js:405-408) | 🟢 garantido (SPEC §7.1) |
-| I12 | ordem config → schema → gate(warn) → enforce respeitada | checklist de rollout (SPEC §16, ADR-010) — processo | 🟡 processo (SPEC §7.1) |
-| RF-01/RF-02 | config ausente/inválido ⇒ fail-closed com mensagem; comandos sempre resolvidos do config; **nenhuma** chave do config altera o modo efetivo de um gate | `gate.js` loader (SPEC §8 RF-01/RF-02); o modo vem do env do processo host — `HARNESS_GATE_<GATE>` = `"enforce"`/`"warn"`, com `_REASON` não vazio obrigatório para rebaixar, e ausente/inválido ⇒ `enforce` (fail-closed) — por função pura (`resolveGateMode`, gate.js:98; `modeForGate`, gate.js:126); o config é auditado: 1 WARN por (chave, valor) quando o valor ≠ `"enforce"`, e a chave que não nomeia gate registrado é declarada inerte (`auditConfigGates`, gate.js:252); rebaixamento e recusa anunciados 1× por (gate, motivo)/(gate, tipo) (`announceGateMode`, gate.js:278); em `warn` o `DenyError` vira log + allow (gate.js:329-330) | 🟢 runtime — resolução pura + auditoria, sem caminho do config até o modo (gate.js:98, :252); o rebaixamento é ato do operador do host, não do worktree (SPEC ADR-009) |
-| RF-04 | `Completed` sem `harness/<demand>.json` ⇒ deny; contagens divergentes ⇒ deny | contraprova por re-execução + selo `sha256` do comando (`sealed-command-mismatch` — SPEC ADR-002/U6=b) | 🟢 para evidência ausente (deny em gate.js:944-945, quando `ctx.report` é nulo; report lido por `readEvidenceReport`, gate.js:1035-1047) · 🟠 para contagens, inalcançáveis no caminho real (`counts: null`; a6 em `docs/FUNCIONAMENTO.md`) — o deny `contraprove-divergent` é gate.js:776-798 |
-| SEAL | Sem instalador, o trust root do selo é `scripts/seal.mjs` (publisher) + `commands.suiteFull` do config, com `HARNESS_SEAL_JSON` publicado pelo host; o config é auditado mas não altera modo | `loadPublishedSeal` (`gate.js:927` — lê `ctx.env.HARNESS_SEAL_JSON ?? process.env.HARNESS_SEAL_JSON`; selo ausente ⇒ deny fail-closed, `gate.js:926`) + `verifySealOrDeny` (`gate.js:146`) — `sealed-command-mismatch`, causa `empty-seal`; `scripts/seal.mjs` reusa `sealCommands` de `.opencode/plugins/lib/seal.mjs`, logo publisher e verifier não divergem (SPEC ADR-002 U6=b). Config auditado sem caminho até o modo (SPEC ADR-009) | 🟠 parcial — CI recalcula o selo; runtime compara com o valor publicado pelo host (SPEC §7.1) |
-| KILL | desligar a suíte de gates = env `HARNESS_GATES=off` no processo host; `harness.config.json` **não** desliga a suíte **nem** rebaixa gate algum (ver row RF-01/RF-02) | (a) corte da suíte: `KILL_SWITCH_ENV`/`KILL_SWITCH_OFF` + `isKillSwitchOff` (gate.js:61-62, :77) e early-return antes de resolver modo e antes do loop de gates (gate.js:1366) — sob o corte não há `resolveGateMode` nem `announceGateMode`; (b) rebaixamento de um gate: canal distinto, env por gate `HARNESS_GATE_<GATE>=warn` + `_REASON` não vazio (gate.js:98), anunciado 1× por (gate, motivo) (gate.js:278); o config é gravável por `bash`, logo não pode ser kill-switch da suíte nem canal de downgrade (SPEC §1 ADR-009) | 🟢 por construção (SPEC §15) |
-| TIME | re-execução além de `contraproveTimeoutMs` ⇒ deny `contraprove-timeout` | veredito do gate, não exceção de plugin (SPEC ADR-002) | 🟢 veredito do gate — `DenyError` em gate.js:767 e :774 (exec real / `timedOut`), não exceção de plugin |
-| FRONT | quando `harness.config.json.targets.frontend` é string não vazia, `Completed` sem `report.frontend_evidence` válido (`stories`/`screenshots` arrays não vazios + `a11y.violations === 0`) ⇒ deny `frontend-evidence-missing`, antes da contraprova | `requireFrontendEvidence(report, config?.targets?.frontend)` chamada por `gateCompletionAnchorA` em `.opencode/plugins/gate.js`; condicionalidade lida do config, campo OPCIONAL em `.agents/schemas/harness-report.schema.json` (Q3=A — React/Vue no core, Dart/Flutter fora) | 🟢 runtime condicional — sem frontend o campo não é exigido; detalhes do deny carregam só enum de causa e nomes de campo (I10) |
-
-| V15 (removido na v2) | ~~nenhuma referência de rede na árvore do instalador v1~~ — o diretório foi apagado em v2/F1 | **nenhum**: `checkV15` foi removido de `scripts/static-checks.mjs` e o sujeito não existe mais. Sucessor medido: `NET-01` em `scripts/__tests__/sync.spec.mjs`, que roda em `commands.suiteFull` (`harness.config.json`) e no CI `harness-integrity.yml`. Classes **herdadas** por `NET-01`: import de módulo de rede (`http`/`net`/`dns`/`dgram`/`http2`/`tls`), import de cliente HTTP de pacote (`axios`/`got`/`undici`/`node-fetch`/`cross-fetch`/`isomorphic-fetch`/`superagent`/`ky`/`request`/`ws`), `fetch(`/`WebSocket`/`XMLHttpRequest` e comando de rede (`curl`/`wget`, `git clone|push|pull|fetch`, `npm|pnpm|yarn install|add|i`, `npx`). Classes **perdidas**: as arestas E1..E9 do V15 (comando montado em variável, `fetch` alcançado por alias, specifier construído em runtime, padrão dividido entre linhas) e a varredura de skills vendorizadas | 🟠 parcial — a varredura cobre só os dois scripts do caminho de instalação; perda declarada, não silenciosa |
-| V19/V20 (removidos na v2) | ~~inventário canônico~~ e ~~Critério do Destino Limpo~~ — os módulos `.opencode/plugins/lib/{inventory,cdl}/` foram apagados em v2/F1; só o **vocabulário de eixo** deles vinha do instalador | **parcialmente reposto**: `V21` (`rosterParity`, `scripts/static-checks.mjs:269-314`) mede registro `opencode.json` ↔ `.agents/agents/**` nos dois sentidos e exige `AGENT.md`/`PROMPT.md`. **Não medido hoje**: citação por token, derivação de classe pelo `.vendor-lock.json` e a régua de prosa do V20 (população no momento da remoção: 223 arquivos / 30.373 linhas; baseline com **96 entradas no pico** (`47c906b`) — 80 em `9bf383c`, 38 em `c061514`, **0** em `381b5e0` (tag v1.0) e **0** no commit de remoção, zerada por ADR-002/003/005; `prohibition-cited=27` como contador) | 🟠 parcial — débito registrado em `.spec/tech-debts/harness-v2-cdl/TASKS.md`; nenhuma régua mede prosa alheia enquanto isso |
-
-## 2. Não-promessas explícitas (o runtime NÃO tem — RUNTIME-CONTRACT §3/H5, §6)
-
-1. **Prosa não é negada.** Nenhum hook bloqueia declaração em linguagem
-   natural (RUNTIME-CONTRACT H5). "Declarou pronto em prosa e parou" é
-   fuga de processo, coberta por regra de processo + âncora B no
-   encadeamento (SPEC ADR-008) — nunca afirmar bloqueio de prosa.
-2. **`permission.ask` não existe.** 0 call sites no binário
-   (RUNTIME-CONTRACT §2, H1). Nenhum gate o usa; asserção de contrato
-   `permission-ask-absent` (SPEC §7.3).
-3. **`output.system = string` não propaga** (RUNTIME-CONTRACT H2);
-   nenhum plugin re-injeta regra por esse hook (SPEC §6).
-4. **Não existe evento de bus `tool.execute.after`** (RUNTIME-CONTRACT H3);
-   handlers que filtram esse nome de evento **nunca disparam** (SPEC §7.3
-   `bus-event-dead-handler`). Observação usa o hook confirmado
-   `tool.execute.after` (7 call sites — RUNTIME-CONTRACT §2).
-5. **Contraprova = consistência, não cobertura.** Cobertura de cenário de
-   risco vem de `escalateOnRisk` (SPEC §5.1, §14): mudança em `riskPaths`
-   exige evidência E2E do fluxo afetado. Suite verde + bug P0 = lacuna de
-   cobertura, não falha da contraprova (RUNTIME-CONTRACT §6, caso ACL/ECM).
-
-## 3. Higiene de prosa (vale para rules, skills e AGENT.md)
-
-- Afirmar "bloqueia/nega/impede/garante" só com citação da linha da §1.
-- Nível de garantia sempre explícito: 🟢 runtime · 🟠 parcial/CI-dependente · 🟡 processo · 🔴 declarado-aberto.
-- `code-reviewer` (nome desde o RENAME, Batch 7 — SPEC §23/U11):
-  veredito dele é parecer; o bloqueio é a
-  âncora B lendo `code_review_status` (SPEC ADR-008, §5.3).
+Níveis: runtime, parcial/CI, processo, declarado-aberto. Não prometer mais do que o mecanismo sustenta.

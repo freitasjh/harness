@@ -1,0 +1,8 @@
+{
+  "gate": "evidence",
+  "tool": "write",
+  "opencodeReason": "completed-no-evidence",
+  "codexReason": "completed-no-evidence",
+  "divergence": false,
+  "bestEffort": false
+}

@@ -1,0 +1,8 @@
+{
+  "gate": "evidence",
+  "tool": "task",
+  "opencodeReason": "prev-cycle-not-completed",
+  "codexReason": "prev-cycle-not-completed",
+  "divergence": false,
+  "bestEffort": false
+}

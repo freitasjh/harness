@@ -1,6 +1,6 @@
 ---
 name: security-review
-description: "Security review skill integrated into the SDD workflow. Validates security at each SDD phase gate against OWASP Top 10, ASVS 4.x, MASVS 2.x, and the project's security standard (source of truth). Covers web, API, and mobile."
+description: "Security review skill integrated into the SDD workflow. Validates security at each SDD phase gate against OWASP Top 10, ASVS 5.0.0, MASVS 2.x, and the project's security standard (source of truth). Covers web, API, and mobile."
 ---
 
 # Security Review — SDD Integrated Skill
@@ -12,7 +12,7 @@ Security review as a **phase-integrated gate** in the Spec-Driven Development (S
 ### Must Use
 - **Fase 1 (Analysis):** After SPEC is generated — validate security requirements coverage.
 - **Fase 3 (Review):** After code review — security-focused review of implementation.
-- **Fase 4 (Verify):** Before archive — validate against this skill's zero-tolerance checklist (OWASP Top 10 / ASVS 4.x / MASVS 2.x).
+- **Fase 4 (Verify):** Before archive — validate against this skill's zero-tolerance checklist (OWASP Top 10 / ASVS 5.0.0 / MASVS 2.x).
 - **Bugfix:** When the bug affects auth, authorization, data exposure, or input handling.
 - **Any feature** with authentication, authorization, user data, external integrations, or file uploads.
 
@@ -33,7 +33,7 @@ Security review as a **phase-integrated gate** in the Spec-Driven Development (S
 
 | Document | Purpose |
 |----------|---------|
-| `security-review` (esta skill — SSoT declarada) | **Fonte da verdade** — OWASP Top 10, ASVS 4.x, MASVS 2.x, regras do projeto |
+| `security-review` (esta skill — SSoT declarada) | **Fonte da verdade** — OWASP Top 10, ASVS 5.0.0, MASVS 2.x, regras do projeto |
 | `.agents/rules/frontend-coding-standards.md` | Frontend security (XSS, CSP, CSRF, token storage) |
 | `.agents/agents/security-engineer/AGENT.md` | Deep audit agent (invoke for complex findings) |
 
@@ -148,7 +148,7 @@ After the `code-reviewer` completes the general review, run the security-specifi
 
 ### Fase 4 — Verify: Security Validation Gate
 
-Before archive, validate against this skill's zero-tolerance checklist (OWASP Top 10 / ASVS 4.x / MASVS 2.x):
+Before archive, validate against this skill's zero-tolerance checklist (OWASP Top 10 / ASVS 5.0.0 / MASVS 2.x):
 
 #### 4.1 Zero-Tolerance Checklist
 - [ ] Controle de acesso server-side em todos os endpoints (`@HasPermission`)?
@@ -214,3 +214,11 @@ When completing a security review, conclude with a **Security Handoff Report**:
 - **Integration Points:** [where downstream work should connect to security requirements, or "none"]
 - **Assumptions:** [security assumptions to verify, or "none"]
 - **Warnings:** [security gotchas for downstream agents, or "none"]
+
+## Veredito estruturado
+
+```json
+{ "security_status": "pass|fail|partial", "findings": [], "baseline": "ASVS 5.0.0; Top 10:2025", "handoff": "none|runtime" }
+```
+
+Achados são classificados como `suspeito`, `fraca confirmada em código` ou `requer runtime`. Prova em runtime exige handoff com Gate 0, nunca afirmação de vulnerabilidade confirmada nesta skill.

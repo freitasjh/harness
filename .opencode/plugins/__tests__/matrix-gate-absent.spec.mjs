@@ -57,9 +57,9 @@ describe("PL-07 V2-VAL-11 — 🟠 gate-ausente fails loudly (never silent allow
     );
   });
 
-  it("CORE_GATES holds GATE-01..05 (5 gates) and the single v2 hook covers every gate-bearing tool", async () => {
+  it("CORE_GATES holds GATE-01..06 (6 gates) and the single v2 hook covers every gate-bearing tool", async () => {
     const gates = listCoreGates();
-    assert.equal(gates.length, 5, `5 core gates registered, got ${gates.length}`);
+    assert.equal(gates.length, 6, `6 core gates registered, got ${gates.length}`);
     const calls = [];
     const ctx = {
       tool: {

@@ -3,13 +3,13 @@
   "demand": "harness-v2-clean-room",
   "agent": "backend-engineer",
   "phase": "Testing",
-  "gitSha": "02e0925aebdf43020eabed25b9ae5127c146e050",
-  "at": "2026-11-19T02:11:57.167Z",
+  "gitSha": "efcae5b5841b620ff99e0a379fe644e28aabf2a2",
+  "at": "2026-11-19T02:26:52.584Z",
   "commands": [
     {
       "cmd": "node scripts/acceptance-clean-room.mjs",
       "exitCode": 0,
-      "durationMs": 1405,
+      "durationMs": 922,
       "stdoutHash": "8ac2049adbccb9cc6c2fffbe950ac58b555e61dd9167df01be30edeb13b69541"
     }
   ],
@@ -35,7 +35,7 @@
     "telas": "fora de escopo: sem frontend neste repo",
     "negocio": "fora de escopo: sem alvo RBAC/tenant",
     "logica": "A1..A7 exercitam os gates/checks; A8..A14 exercitam a identidade do init via CLI real",
-    "perf": "sem medição de UI; duração do aceite 1405ms"
+    "perf": "sem medição de UI; duração do aceite 922ms"
   },
   "brainStore": [],
   "brainStoreNote": "nota de sessão registrada pelo agente fora deste script (Q1=A: sem LLM)",
@@ -44,16 +44,16 @@
     "processes": [],
     "tempDirs": 10,
     "tempDirPaths": [
-      "/tmp/harness-accept-KHj2z1",
-      "/tmp/harness-accept-HQ1vnO",
-      "/tmp/harness-accept-bMpqx4",
-      "/tmp/harness-accept-3jU3Ot",
-      "/tmp/harness-accept-A0MUpL",
-      "/tmp/harness-accept-dNBEAA",
-      "/tmp/harness-accept-r10jZs",
-      "/tmp/harness-accept-6eE5Ht",
-      "/tmp/harness-accept-eCAJP5",
-      "/tmp/harness-accept-gy1Hlv"
+      "/tmp/harness-accept-W8QxJQ",
+      "/tmp/harness-accept-zKlMNC",
+      "/tmp/harness-accept-tylopU",
+      "/tmp/harness-accept-TXz6IO",
+      "/tmp/harness-accept-eaCySD",
+      "/tmp/harness-accept-M1Fmhz",
+      "/tmp/harness-accept-b6Q6Fs",
+      "/tmp/harness-accept-yP2o0e",
+      "/tmp/harness-accept-m7QwQC",
+      "/tmp/harness-accept-iqhV0O"
     ]
   },
   "selfReported": true,

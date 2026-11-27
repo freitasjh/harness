@@ -1,0 +1,14 @@
+# ADR-003 M-01 / F-04 — estado e chave de runtime nunca versionados
+.codex/harness-state.json
+.codex/harness-state.json.*
+.codex/.state-key
+.codex/*.lock
+.codex/*.tmp
+.codex/bypass.log
+.codex/bypass.log.*
+.codex/harness-telemetry.jsonl
+.codex/harness-telemetry.jsonl.*
+
+# Backups do harness-sync vivem fora do target
+.harness-backup/
+harness/.acceptance-clean-room.json

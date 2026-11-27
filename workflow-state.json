@@ -1,25 +1,25 @@
 {
-  "current_feature": "prd-init-project-scaffold",
+  "current_feature": "prd-codex-port",
   "current_phase": "Testing",
-  "previous_phase": "Completed",
+  "previous_phase": "Execution",
   "next_phase": "Completed",
   "type": "feature",
   "artifacts": {
-    "prd": ".spec/prd/prd-init-project-scaffold/PRD.md",
-    "research": ".spec/prd/prd-init-project-scaffold/RESEARCH.md",
-    "adr_index": ".spec/prd/prd-init-project-scaffold/ADR-INDEX.md",
-    "adr": ".spec/prd/prd-init-project-scaffold/ADRs/ADR-001-managed-section-scaffold/ADR.md",
-    "spec": ".spec/prd/prd-init-project-scaffold/ADRs/ADR-001-managed-section-scaffold/SPEC.md",
-    "tasks": ".spec/prd/prd-init-project-scaffold/ADRs/ADR-001-managed-section-scaffold/TASKS.md"
+    "prd": ".spec/archive/20261118-prd-prd-init-project-scaffold/PRD.md",
+    "research": ".spec/archive/20261118-prd-prd-init-project-scaffold/RESEARCH.md",
+    "adr_index": ".spec/archive/20261118-prd-prd-init-project-scaffold/ADR-INDEX.md",
+    "adr": ".spec/archive/20261118-prd-prd-init-project-scaffold/ADRs/ADR-001-managed-section-scaffold/ADR.md",
+    "spec": ".spec/archive/20261118-prd-prd-init-project-scaffold/ADRs/ADR-001-managed-section-scaffold/SPEC.md",
+    "tasks": ".spec/archive/20261118-prd-prd-init-project-scaffold/ADRs/ADR-001-managed-section-scaffold/TASKS.md"
   },
   "gates": {
     "P0_P1": "approved_auto_pending_architect (ADR-002 CLI visual; protótipo aprovado e congelado; ux-designer já exercida)",
     "G2_PRD": "approved_user_2026_10_22 (PRD prd-garantias-runtime aprovado sem ressalvas; §16 do PRD.md; 3 decisoes do owner)",
     "P1_P2": "approved_user_2026_11_18",
     "P2_P3": "approved_user_2026_11_18",
-    "P3_P4": "approved_auto_evidence_2026_11_17 (6 batches; review APPROVED 0/0)",
-    "P4_P5": "approved_auto_evidence_QA_2026_11_17 (540+1091+cargo85; transcript real; segredo/sinal/eco PTY)",
-    "P5_P6": "approved_owner_2026_11_17 (transcript 9fd70bb6 ratificado; nao-paridade 16336B; Veredito registrado)",
+    "P3_P4": "approved_auto_evidence_2026_11_24 (488+292 tests, 0 fail; review APPROVED)",
+    "P4_P5": "approved_owner_drift_baseline_2026_11_24 (488+292 green; skills v4/33 aceito)",
+    "P5_P6": "pending_user_smoke_A6 (VERIFY APROVADO ⏸ ressalva externa; archive suspenso até smoke real)",
     "P6_fim": "done_commit_aed46b0 (PR #23 merge humano 2026-11-17; ADR-002 na main)",
     "B1_B2": "approved_user_2026_09_29",
     "FU32": "closed_approved_decision_B",
@@ -49,9 +49,9 @@
     "reviewer_notes": "ADR-002 review final APPROVED 0/0. VERIFY 3/3 com evidência re-medida, segurança 14/14, ratificação pendente sem forja, nenhuma paridade com 16336B, N/M congelados, rust+vue byte-idêntico ADR-001. 1 sugestão documental (campo perf) corrigida em 96b0be9."
   },
   "code_review_status": "passed",
-  "code_review_status_ciclo": "adr-001-managed-section-scaffold",
+  "code_review_status_ciclo": "ADR-003",
   "harness_status": "passed",
-  "harness_status_detail": "VERIFY APPROVED; aceite 14/14; MS-1 parcial declarada",
+  "harness_status_detail": "VERIFY APPROVED; merge PR #25 efcae5b; MS-1 parcial declarada",
   "features": [
     {
       "name": "harness-installer-mobile",
@@ -143,12 +143,19 @@
   ],
   "prd_adr": {
     "prd_id": "prd-init-project-scaffold",
-    "prd_status": "approved",
+    "prd_status": "archived",
     "active_adr": "ADR-001",
     "adr_order": [
       "ADR-001"
     ],
-    "snapshots": []
+    "snapshots": [
+      {
+        "adr": "ADR-001",
+        "follow_ups_count": 1,
+        "escalations_count": 0,
+        "at": "2026-11-18T22:40:00-03:00"
+      }
+    ]
   },
   "follow_ups": [
     {
@@ -232,6 +239,15 @@
       "expires_when": "conclusão do novo PRD; reavaliação de compatibilidade",
       "aprovado_por": "owner (decisão §16 2026-11-17)",
       "data": "2026-11-17T01:28:48.585Z"
+    },
+    {
+      "portao": "skills-baseline-drift",
+      "ciclo": "prd-codex-port",
+      "regra": ".agents/skills/** é path protegido (dual-run INV-8); mudanças externas em brainstorming/deepsearch/prompt-optimizer não são deste ciclo",
+      "motivo": "Owner aceitou drift externo como novo baseline em 2026-11-24 (system-reminders anunciaram skills novas/alteradas). Contratos/testes atualizados: prompt-optimizer v4 (140 linhas, ledger conversa), skills=33, dual-run permite .agents/skills/**.",
+      "escopo": "Apenas .opencode/plugins/__tests__/prompt-optimizer.spec.mjs, scripts/check-codex-{inventory,dualrun}.mjs e specs; nenhuma skill revertida",
+      "data": "2026-11-24",
+      "aprovado_por": "owner"
     }
   ],
   "overrides_history": [
@@ -346,5 +362,5 @@
     "reviews": 5,
     "status": "completed"
   },
-  "last_update": "2026-11-19T02:16:18.003Z"
+  "last_update": "2026-11-25T01:50:33.483Z"
 }

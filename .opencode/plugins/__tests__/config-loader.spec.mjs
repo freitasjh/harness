@@ -61,7 +61,7 @@ describe("static-checks.mjs loader — CFG-01 (RF-01/RF-02, ADR-009)", () => {
       picco: "enforce",
       evidence: "enforce",
       hitlBatch: "enforce",
-      e2eGreenfield: "warn",
     });
+    assert.deepEqual(config.e2e, { baseUrl: null, steps: [], browserRequired: false, skipPolicy: "n/a-explicit" });
   });
 });

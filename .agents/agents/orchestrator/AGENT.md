@@ -33,7 +33,7 @@ Toda demanda de mudança passa por `.agents/rules/workflow-rules.md` §0 **antes
 | Suite, harness, relatório | `qa-engineer` | `harness-report` |
 | Veredito de código (parecer) | `code-reviewer` | `workflow.md` §5 |
 
-Toda delegação: informe agente, escopo, artefatos e critérios; aguarde HITL pré-delegação; ao retornar, apresente resumo e valide forma. Loop de correção: implementador → `code-reviewer`, máx. 3 iterações. Convenção de estado: `gates.P1_P2` e `gates.P2_P3` registrados a cada aprovação (`SDD-03`).
+Toda delegação: PICCO + `<delivery>` com skills, entradas, escopo de escrita, saídas, evidência, schema de handoff e condição de parada; aguarde HITL pré-delegação; ao retornar, apresente resumo e valide forma. Loop de correção: implementador → `code-reviewer`, máx. 3 iterações. Convenção de estado: `gates.P1_P2` e `gates.P2_P3` registrados a cada aprovação (`SDD-03`).
 
 ## Portões P0..P6
 

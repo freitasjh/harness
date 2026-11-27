@@ -66,6 +66,9 @@ import {
 // same report the sealed `commands.suiteFull` already runs — the command itself
 // is NOT touched.
 import { runPrdChecks } from "../.opencode/plugins/lib/prd-adr-pipeline/checks.mjs";
+// ADR-003 F-12/M-05: o scan de segredos é registrado no mesmo relatório do
+// `commands.suiteFull` (não apenas em um teste isolado).
+import { assertNoSecrets } from "./codex-support.mjs";
 // Prosa órfã (ADR-005): the rubric is the module; V18 below only registers it.
 import {
   runRefsChecks,
@@ -313,6 +316,46 @@ function checkRosterParity(root = REPO_ROOT) {
   );
 }
 
+function checkCodexSmoke(root = REPO_ROOT) {
+  const file = join(root, "harness", "codex-port-smoke.json");
+  try {
+    const raw = readFileSync(file, "utf8");
+    assertNoSecrets(JSON.parse(raw));
+    record("CODEX-SMOKE", "PASS", "sem campos/valores de segredo");
+  } catch (err) {
+    record("CODEX-SMOKE", "FAIL", err?.message || String(err));
+  }
+}
+
+function checkDeliveryAndE2e(root = REPO_ROOT) {
+  const problems = [];
+  const read = (rel) => readFileSync(join(root, rel), "utf8");
+  try {
+    const tpl = read(".agents/skills/prompt-optimizer/references/picco-template.md");
+    const keys = ["agent", "phase", "skills", "inputs", "write_scope", "outputs", "evidence_path", "handoff_schema", "stop_condition"];
+    if (!tpl.includes("<delivery>")) problems.push("PICCO sem <delivery>");
+    for (const key of keys) if (!tpl.includes(key)) problems.push("delivery sem " + key);
+    const handoff = read(".agents/skills/harness-workflow/references/handoff-schema.md");
+    if (!handoff.includes("status")) problems.push("handoff sem status");
+    const orch = read(".agents/agents/orchestrator/AGENT.md");
+    if (!orch.includes("<delivery>")) problems.push("orchestrator sem <delivery>");
+    const cfg = JSON.parse(read("harness.config.json"));
+    if (cfg?.gates && "e2eGreenfield" in cfg.gates) problems.push("gates.e2eGreenfield inerte presente");
+    if ("riskPaths" in cfg) problems.push("riskPaths inerte presente");
+    if ("escalateOnRisk" in cfg) problems.push("escalateOnRisk inerte presente");
+    const e2e = cfg?.e2e;
+    if (!e2e || typeof e2e !== "object") problems.push("config sem bloco e2e");
+    else {
+      if (!Array.isArray(e2e.steps)) problems.push("e2e.steps não é array");
+      if (typeof e2e.browserRequired !== "boolean") problems.push("e2e.browserRequired ausente");
+      if (typeof e2e.skipPolicy !== "string") problems.push("e2e.skipPolicy ausente");
+    }
+  } catch (err) {
+    problems.push(err?.message || String(err));
+  }
+  record("DELIVERY-E2E", problems.length === 0 ? "PASS" : "FAIL", problems.length === 0 ? "delivery e bloco e2e presentes" : problems.join("; "));
+}
+
 // PAP-04 (🟡3): `root` is injectable so the ADAPTER's verdict — the `ok` flag that
 // defines the process exit code, not just the console line — is testable against
 // a malformed fixture without touching the repo's real `.spec/**`. Production
@@ -328,6 +371,8 @@ export function runStaticChecks(root = REPO_ROOT) {
   checkRefs(root);
   checkPrd(root);
   checkRosterParity(root);
+  checkCodexSmoke(root);
+  checkDeliveryAndE2e(root);
   reportLegacyBaseline();
   const failed = results.filter((r) => r.status === "FAIL");
   return { ok: failed.length === 0, results };

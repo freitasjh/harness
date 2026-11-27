@@ -333,6 +333,7 @@ describe("GATE-02 PICCO (ADR-004, I1)", () => {
   it("picco-tag-nonempty: tag with content => deny", async () => {
     const ctx = {
       tool: "task",
+      sessionAgent: "orchestrator",
       args: { prompt: "<task>y</task>\n<open_questions>falta E2?</open_questions>" },
       logger: makeLogger(),
     };
@@ -343,6 +344,7 @@ describe("GATE-02 PICCO (ADR-004, I1)", () => {
   it("picco-tag-empty: empty tag => allow", async () => {
     const ctx = {
       tool: "task",
+      sessionAgent: "orchestrator",
       args: { prompt: "<role>x</role>\n<task>y</task>\n<open_questions></open_questions>" },
       logger: makeLogger(),
     };
@@ -361,6 +363,7 @@ describe("GATE-02 PICCO (ADR-004, I1)", () => {
     const logger = makeLogger();
     await allowsBothModes(gatePiccoTask, {
       tool: "task",
+      sessionAgent: "orchestrator",
       args: { prompt: "<role>x</role>\n<task>y</task>\n<open_questions></open_questions>" },
       logger,
     });
@@ -373,6 +376,7 @@ describe("GATE-02 PICCO (ADR-004, I1)", () => {
     assert.deepEqual(res.warnings, []);
     await allowsBothModes(gatePiccoTask, {
       tool: "task",
+      sessionAgent: "orchestrator",
       args: { prompt: REAL_DELEGATION },
       logger: makeLogger(),
     });
@@ -381,6 +385,7 @@ describe("GATE-02 PICCO (ADR-004, I1)", () => {
   it("query commands skip the gate (show status)", async () => {
     await allowsBothModes(gatePiccoTask, {
       tool: "task",
+      sessionAgent: "orchestrator",
       args: { prompt: "show status" },
       logger: makeLogger(),
     });
@@ -437,7 +442,6 @@ describe("GATE-03 anchor A: path-check + completion + contraprova (ADR-002/008)"
     await allowsBothModes(gateCompletionAnchorA, {
       tool: "write",
       args: { filePath: "workflow-state.json", content: JSON.stringify({ current_phase: "Execution" }) },
-      sessionAgent: "orchestrator",
       config: TEST_CONFIG,
       logger: makeLogger(),
     });
@@ -447,7 +451,6 @@ describe("GATE-03 anchor A: path-check + completion + contraprova (ADR-002/008)"
     await allowsBothModes(gateCompletionAnchorA, {
       tool: "write",
       args: { path: ".spec/governance/harness-v7/SPEC.md", content: "# spec" },
-      sessionAgent: "orchestrator",
       config: TEST_CONFIG,
       logger: makeLogger(),
     });
@@ -489,7 +492,6 @@ describe("GATE-03 anchor A: path-check + completion + contraprova (ADR-002/008)"
       {
         tool: "apply_patch",
         args: { patchText },
-        sessionAgent: "orchestrator",
         config: TEST_CONFIG,
         logger: makeLogger(),
       },
@@ -503,7 +505,6 @@ describe("GATE-03 anchor A: path-check + completion + contraprova (ADR-002/008)"
       {
         tool: "write",
         args: { filePath: "workflow-state.json", content: stateCompleted() },
-        sessionAgent: "orchestrator",
         config: TEST_CONFIG,
         report: null,
         logger: makeLogger(),
@@ -521,7 +522,6 @@ describe("GATE-03 anchor A: path-check + completion + contraprova (ADR-002/008)"
       {
         tool: "write",
         args: { filePath: "workflow-state.json", content: stateCompleted() },
-        sessionAgent: "orchestrator",
         config: TEST_CONFIG,
         report,
         demand: report.demand,
@@ -544,7 +544,6 @@ describe("GATE-03 anchor A: path-check + completion + contraprova (ADR-002/008)"
     const base = {
       tool: "write",
       args: { filePath: "workflow-state.json", content: stateCompleted() },
-      sessionAgent: "orchestrator",
       config: TEST_CONFIG,
       report: okReport(),
       demand: "harness-v7-hardening",
@@ -569,7 +568,6 @@ describe("GATE-03 anchor A: path-check + completion + contraprova (ADR-002/008)"
       {
         tool: "write",
         args: { filePath: "workflow-state.json", content: stateCompleted() },
-        sessionAgent: "orchestrator",
         config: { ...TEST_CONFIG, commands: { ...TEST_COMMANDS, suiteFull: "true" } },
         report: okReport(),
         demand: "harness-v7-hardening",
@@ -591,7 +589,6 @@ describe("GATE-03 anchor A: path-check + completion + contraprova (ADR-002/008)"
       {
         tool: "write",
         args: { filePath: "workflow-state.json", content: stateCompleted() },
-        sessionAgent: "orchestrator",
         config: TEST_CONFIG,
         report: { demand: "harness-v7-hardening", commands: [{ cmd: TEST_COMMANDS.suiteFull, exitCode: 0 }], selfReported: true },
         demand: "harness-v7-hardening",
@@ -623,7 +620,6 @@ describe("GATE-03 anchor A: path-check + completion + contraprova (ADR-002/008)"
     await allowsBothModes(gateCompletionAnchorA, {
       tool: "bash",
       args: { command: "ls" },
-      sessionAgent: "orchestrator",
       config: TEST_CONFIG,
       logger: makeLogger(),
     });
@@ -649,7 +645,6 @@ describe("GATE-03 anchor A: frontend_evidence condicional (Q3=A)", () => {
   const feCtx = ({ frontend = "react", report = feReport(feEvidence()), hash = "tree-fe" } = {}) => ({
     tool: "write",
     args: { filePath: "workflow-state.json", content: JSON.stringify({ current_phase: "Completed" }) },
-    sessionAgent: "orchestrator",
     config: frontend === null ? TEST_CONFIG : { ...TEST_CONFIG, targets: { frontend, backend: "node" } },
     report,
     demand: "f6b-frontend-evidence",
@@ -751,6 +746,7 @@ describe("GATE-03 anchor B: next task requires the previous cycle closed", () =>
       gatePhaseAnchorB,
       {
         tool: "task",
+        sessionAgent: "orchestrator",
         args: { prompt: `${REAL_DELEGATION}\nfeature: other-feature` },
         workflowState: { ...open, current_feature: "old-feature" },
         logger: makeLogger(),
@@ -766,6 +762,7 @@ describe("GATE-03 anchor B: next task requires the previous cycle closed", () =>
       gatePhaseAnchorB,
       {
         tool: "task",
+        sessionAgent: "orchestrator",
         args: { prompt: REAL_DELEGATION },
         workflowState: { ...open, current_feature: "unrelated-old-cycle" },
         logger: makeLogger(),
@@ -777,6 +774,7 @@ describe("GATE-03 anchor B: next task requires the previous cycle closed", () =>
   it("closed previous cycle => next task allows", async () => {
     await allowsBothModes(gatePhaseAnchorB, {
       tool: "task",
+      sessionAgent: "orchestrator",
       args: { prompt: REAL_DELEGATION },
       workflowState: closed,
       logger: makeLogger(),
@@ -786,6 +784,7 @@ describe("GATE-03 anchor B: next task requires the previous cycle closed", () =>
   it("same-cycle task on an open state => allow", async () => {
     await allowsBothModes(gatePhaseAnchorB, {
       tool: "task",
+      sessionAgent: "orchestrator",
       args: { prompt: `${REAL_DELEGATION}\nfeature: harness-v7-hardening` },
       workflowState: { ...open, current_feature: "harness-v7-hardening" },
       logger: makeLogger(),
@@ -795,6 +794,7 @@ describe("GATE-03 anchor B: next task requires the previous cycle closed", () =>
   it("no readable state (bootstrap) => allow", async () => {
     await allowsBothModes(gatePhaseAnchorB, {
       tool: "task",
+      sessionAgent: "orchestrator",
       args: { prompt: REAL_DELEGATION },
       workflowState: null,
       statePath: "/nonexistent/workflow-state.json",
@@ -829,6 +829,7 @@ describe("GATE-04 HITL pause + correction-loop exemption (I6)", () => {
     assert.deepEqual(tracker.sequence(), ["developer-engineer", "code-reviewer"]);
     await allowsBothModesFresh(() => ({
       tool: "task",
+      sessionAgent: "orchestrator",
       args: { subagent_type: "developer-engineer" },
       hitlTracker: createHitlTracker(),
     }));
@@ -857,6 +858,7 @@ describe("GATE-04 HITL pause + correction-loop exemption (I6)", () => {
     assert.equal(tracker.pending(), 1);
     await allowsBothModesFresh(() => ({
       tool: "task",
+      sessionAgent: "orchestrator",
       args: { subagent_type: "developer-engineer" },
       hitlTracker: createHitlTracker(),
     }));
@@ -1021,6 +1023,7 @@ describe("FU-08 state file: only absent => allow, corrupt => deny", () => {
     assert.equal(loadWorkflowState("/nonexistent/fu08-workflow-state.json"), null);
     await allowsBothModes(gatePhaseAnchorB, {
       tool: "task",
+      sessionAgent: "orchestrator",
       args: { prompt: REAL_DELEGATION },
       statePath: "/nonexistent/fu08-workflow-state.json",
       logger: makeLogger(),
@@ -1051,7 +1054,6 @@ describe("C-1 (D-15) counts: unobservable => allow (declared note); observable d
   const completionCtx = (report, contraproveExec, treeHash) => ({
     tool: "write",
     args: { filePath: "workflow-state.json", content: JSON.stringify({ current_phase: "Completed" }) },
-    sessionAgent: "orchestrator",
     config: TEST_CONFIG,
     report,
     demand: report.demand,
@@ -1345,6 +1347,7 @@ describe("FU-06/ADR-001 per-gate modes: modeForGate resolves from the host env",
       return runGatesShim(
         {
           tool: "task",
+          sessionAgent: "orchestrator",
           sessionID,
           config: TEST_CONFIG,
           workflowState: orderState,
@@ -1538,6 +1541,7 @@ describe("FU-06/ADR-001 per-gate modes: modeForGate resolves from the host env",
       return runGatesShim(
         {
           tool: "task",
+          sessionAgent: "orchestrator",
           sessionID,
           config: TEST_CONFIG,
           workflowState: closedState,
@@ -1625,7 +1629,7 @@ describe("FU-11 lazy state: corrupt workflow-state routes via decide (warn-allow
     // Valid PICCO so the run reaches anchor B; corrupt state must allow-via-warn, not throw raw.
     // Two-arg envelope shape (contract H6), routed through the same runGatesShim.
     const outcome = await runGatesShim(
-      { tool: "task", sessionID: `fu11-warn-${Date.now()}`, statePath, config: warnConfig, env: warnEnv },
+      { tool: "task", sessionID: `fu11-warn-${Date.now()}`, sessionAgent: "orchestrator", statePath, config: warnConfig, env: warnEnv },
       { args: { prompt: REAL_DELEGATION } },
     );
     assert.equal(outcome.verdict, "allow");
@@ -1640,6 +1644,7 @@ describe("FU-11 lazy state: corrupt workflow-state routes via decide (warn-allow
         runGatesShim(
           {
             tool: "task",
+            sessionAgent: "orchestrator",
             sessionID: `fu11-config-warn-${Date.now()}`,
             statePath,
             config: { ...TEST_CONFIG, gates: { picco: "warn", evidence: "warn", hitlBatch: "warn" } },
@@ -1657,7 +1662,7 @@ describe("FU-11 lazy state: corrupt workflow-state routes via decide (warn-allow
     await assert.rejects(
       () =>
         runGatesShim(
-          { tool: "task", sessionID: `fu11-enforce-${Date.now()}`, statePath, config: enforceConfig },
+          { tool: "task", sessionID: `fu11-enforce-${Date.now()}`, sessionAgent: "orchestrator", statePath, config: enforceConfig },
           { args: { prompt: REAL_DELEGATION } },
         ),
       (err) => err instanceof DenyError && err.reason === "state-corrupt",
