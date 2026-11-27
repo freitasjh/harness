@@ -14,6 +14,8 @@ perfil de stack, nenhuma rede (`node:fs`/`node:path`/
 | `update --target <dir>` | backup e grava só `{p : sha256(destino) ≠ sha256(fonte)}` | nunca sobrescreve `harness.config.json`, `workflow-state.json`, `.agents/rules/project-*.md` nem `.spec/**`; não apaga nada: órfão sai como `orphan <path> (não removido)` e sobrevive às regravações do manifesto; manifesto ausente/divergente é recriado |
 | `doctor --target <dir>` | somente leitura: re-hasha cada arquivo do manifesto e valida camadas/config | exit 1 lista cada `FAIL <o quê>: <path>`; brain em commit diferente do pin é WARN, nunca FAIL |
 
+A camada Claude Code também é publicada: `.claude/agents/`, `.claude/hooks/`, `.claude/skills/` e `.claude/settings.json` entram no payload; `CLAUDE.md` é ANEXADO via bloco gerenciado com `@AGENTS.md`, preservando conteúdo pré-existente. O `settings.json` é mesclado como `opencode.json`: chaves do projeto sobrevivem e arrays de permissões/hooks são unidos. O sync não gera `.mcp.json` a partir de `mcp.required`, pois o config só declara nomes; use `claude mcp add --scope project` ou defina servidores explicitamente antes de publicar.
+
 ## Geração de identidade do projeto (ADR-001)
 
 `init` entrega, além do payload, a identidade mínima. A resolução de stack usa

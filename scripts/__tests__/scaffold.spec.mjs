@@ -112,14 +112,14 @@ describe("SCAF-01 — classes de path PRÓPRIO/ANEXADO (RF-01, I1)", () => {
     }
   });
 
-  it("PATH_CLASSES é a lista fechada: 3 project-*.md + tokens/*.json + 2 anexados", () => {
+  it("PATH_CLASSES é a lista fechada: 3 project-*.md + tokens/*.json + 3 anexados", () => {
     assert.deepEqual([...PATH_CLASSES.owned].sort(), [
       ".agents/rules/project-backend.md",
       ".agents/rules/project-frontend.md",
       ".agents/rules/project-fullstack.md",
       "tokens/*.json",
     ]);
-    assert.deepEqual([...PATH_CLASSES.attached], ["AGENTS.md", "DESIGN.md"]);
+    assert.deepEqual([...PATH_CLASSES.attached], ["AGENTS.md", "DESIGN.md", "CLAUDE.md"]);
   });
 });
 
@@ -357,7 +357,7 @@ describe("SCAF-06 — relatório determinístico e dry-run = apply (RF-06, I6)",
     const plan = buildIdentityPlan(target, { frontend: "react", backend: null, origin: "detectada" });
     const lines = identityReportLines("init", plan, { frontend: "react", backend: null, origin: "detectada" });
     assert.equal(lines[0], "harness-sync init: stack origem=detectada frontend=react backend=null");
-    assert.equal(lines.at(-1), "harness-sync init: plano created=2 appended=0 preserved=0 skip=0 divergent=1 malformed=0");
+    assert.equal(lines.at(-1), "harness-sync init: plano created=3 appended=0 preserved=0 skip=0 divergent=1 malformed=0");
     const pathLines = lines.filter((l) => l.startsWith("harness-sync init: ") && l.includes(" ") && !/stack |plano /.test(l));
     const rels = pathLines.map((l) => l.split(" ").at(-2));
     assert.deepEqual(rels, [...rels].sort(), "paths ordenados POSIX");

@@ -441,13 +441,13 @@ export async function runAcceptance(opts = {}) {
     "package.json": JSON.stringify({ dependencies: { react: "^18" }, scripts: { test: SUITE } }),
   });
 
-  // A8 — fixture sem AGENTS.md: três artefatos created, origem detectada.
+  // A8 — fixture sem AGENTS.md: quatro artefatos created, origem detectada.
   // MS-1 é PARCIAL: I8 defere o perfil de tokens a ADR nova, então nenhum
   // tokens/*.json é gerado — declarar a pendência, não inventar perfil.
   await scenario("A8", async () => {
     const target = scope.tmp(initFixture(), { root: tempRoot });
     const out = sync(["init", "--target", target, "--suite", SUITE]);
-    for (const rel of ["AGENTS.md", "DESIGN.md", OWN_FRONTEND]) {
+    for (const rel of ["AGENTS.md", "DESIGN.md", "CLAUDE.md", OWN_FRONTEND]) {
       if (!fs.existsSync(path.join(target, rel))) throw new Error(`artefato ausente: ${rel}`);
       if (!out.includes(`harness-sync init: ${rel} created`)) throw new Error(`${rel} não reportado como created`);
     }
@@ -456,7 +456,7 @@ export async function runAcceptance(opts = {}) {
     }
     const files = JSON.parse(fs.readFileSync(path.join(target, ".harness-manifest.json"), "utf8")).files;
     if (!(OWN_FRONTEND in files)) throw new Error("PRÓPRIO fora do manifesto");
-    for (const rel of ["AGENTS.md", "DESIGN.md"]) {
+    for (const rel of ["AGENTS.md", "DESIGN.md", "CLAUDE.md"]) {
       if (rel in files) throw new Error(`ANEXADO no manifesto: ${rel}`);
     }
     // I8: gerar tokens sem decidir perfil (shadcn/claude) seria palpite — o
@@ -464,7 +464,7 @@ export async function runAcceptance(opts = {}) {
     if (fs.existsSync(path.join(target, "tokens"))) {
       throw new Error("tokens/ gerado sem ADR de perfil (violação de I8)");
     }
-    return "3 artefatos created; MS-1 parcial: tokens pendente (I8 — ADR de perfil)";
+    return "4 artefatos created; MS-1 parcial: tokens pendente (I8 — ADR de perfil)";
   });
 
   // A9 — 2ª execução: 0 writes, manifesto byte-igual, nenhum backup novo.

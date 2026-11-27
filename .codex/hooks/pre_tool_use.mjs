@@ -10,6 +10,7 @@ const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..
 
 export const ALLOWED_TOOLS = new Set([
   "Bash", "bash", "shell", "apply_patch", "patch", "write", "edit", "task",
+  "Agent", "spawn_agent", "send_input", "wait_agent", "close_agent",
 ]);
 
 export function isAllowedToolName(name) {
@@ -250,12 +251,19 @@ export async function runAdapter(event, opts = {}) {
 
   // build payload for runGatesShim
   const toolNameLower = String(event.tool_name).toLowerCase();
+  const orchestrationTools = new Set(["send_input", "wait_agent", "close_agent"]);
+  const delegationTools = new Set(["task", "agent", "spawn_agent"]);
+  const needsOrchestrator = delegationTools.has(toolNameLower) || orchestrationTools.has(toolNameLower);
+  const resolvedAgent = agent === "unknown" && needsOrchestrator ? "orchestrator" : agent;
   const payload = {
     tool: toolNameLower === "bash" ? "bash" :
           toolNameLower === "shell" ? "shell" :
+          delegationTools.has(toolNameLower) ? "task" :
+          orchestrationTools.has(toolNameLower) ? "orchestration" :
           toolNameLower,
     sessionID: event.session_id || event.sessionId,
-    agent,
+    agent: resolvedAgent,
+    sessionAgent: resolvedAgent,
     input: event.tool_input && typeof event.tool_input === "object" ? event.tool_input : {},
     args: event.tool_input && typeof event.tool_input === "object" ? event.tool_input : {},
     cwd: event.cwd,
@@ -298,7 +306,11 @@ export async function handleUserPromptSubmit(event) {
 
 export async function handleSessionStart(event) {
   const limit = 2500;
-  const ctx = "Harness session context (placeholder).";
+  const ctx = [
+    "Harness Codex: conduza a sessao como orchestrator.",
+    "Classifique a demanda, aplique prompt-optimizer e delegue via spawn_agent aos papéis em .codex/agents.",
+    "Nao implemente diretamente quando a demanda couber em um papel especialista; valide o handoff antes de avancar."
+  ].join("\n");
   const out = {
     hookSpecificOutput: {
       hookEventName: "SessionStart",

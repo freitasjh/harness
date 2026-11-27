@@ -146,12 +146,16 @@ export const PAYLOAD_DIRS = Object.freeze([
   ".codex/agents",
   ".codex/hooks",
   ".codex/rules",
+  ".claude/agents",
+  ".claude/hooks",
+  ".claude/skills",
 ]);
 export const PAYLOAD_FILES = Object.freeze([
   "scripts/harness-sync.mjs",
   "scripts/seal.mjs",
   "opencode.json",
   ".codex/hooks.json",
+  ".claude/settings.json",
 ]);
 
 // Directories never walked (tests are harness-internal; VCS and bytecode
@@ -211,7 +215,7 @@ export const PATH_CLASSES = Object.freeze({
     ".agents/rules/project-fullstack.md",
     "tokens/*.json",
   ]),
-  attached: Object.freeze(["AGENTS.md", "DESIGN.md"]),
+  attached: Object.freeze(["AGENTS.md", "DESIGN.md", "CLAUDE.md"]),
 });
 const OWNED_FILES = new Set(PATH_CLASSES.owned.slice(0, 3));
 const OWNED_TOKEN_RE = /^tokens\/[^/]+\.json$/;
@@ -286,10 +290,18 @@ const AGENTS_BODY = [
   "PRÓPRIOS: .agents/rules/project-*.md e tokens/*.json. ANEXADOS: AGENTS.md e DESIGN.md.",
 ].join("\n");
 
+const CLAUDE_BODY = [
+  "## Harness v2 — Claude Code",
+  "",
+  "Instruções canônicas: @AGENTS.md.",
+  "Skills, agents e hooks em `.claude/` são gerenciados pelo harness.",
+].join("\n");
+
 // I8: o BODY de DESIGN.md vem SOMENTE do template da skill design-system.
 // Nenhum hex, fonte, raio ou paleta vive neste gerador.
 export function identityBody(rel) {
   if (rel === "AGENTS.md") return AGENTS_BODY;
+  if (rel === "CLAUDE.md") return CLAUDE_BODY;
   if (rel === "DESIGN.md") {
     const template = path.join(SOURCE_ROOT, ".agents", "skills", "design-system", "templates", "DESIGN.md");
     const raw = readOrNull(template);
@@ -691,6 +703,47 @@ export function mergeManaged(source, target) {
   return out;
 }
 
+function canonicalizeClaudeHook(value) {
+  if (Array.isArray(value)) return value.map(canonicalizeClaudeHook);
+  if (!value || typeof value !== "object") return value;
+  const out = {};
+  for (const [key, item] of Object.entries(value)) out[key] = canonicalizeClaudeHook(item);
+  if (typeof out.command === "string") {
+    const legacy = out.command.match(/^\s*node\s+"([^"]+)"\s*$/);
+    if (legacy && (!Array.isArray(out.args) || out.args.length === 0)) {
+      out.command = "node";
+      out.args = [legacy[1]];
+    }
+  }
+  return out;
+}
+
+function mergeClaudeValue(source, target) {
+  if (Array.isArray(source) || Array.isArray(target)) {
+    const seen = new Set();
+    return [...(Array.isArray(source) ? source : []), ...(Array.isArray(target) ? target : [])]
+      .filter((value) => {
+        const key = value && typeof value === "object" && Array.isArray(value.hooks)
+          ? JSON.stringify(canonicalizeClaudeHook(value.hooks))
+          : JSON.stringify(canonicalizeClaudeHook(value));
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+  }
+  if (isPlainObject(source) && isPlainObject(target)) {
+    const out = { ...target };
+    for (const [key, value] of Object.entries(source)) out[key] = key in out ? mergeClaudeValue(value, out[key]) : value;
+    return out;
+  }
+  return source;
+}
+
+export function mergeClaudeSettings(source, target) {
+  if (!isPlainObject(source)) return source;
+  return mergeClaudeValue(source, isPlainObject(target) ? target : {});
+}
+
 function serialize(value) {
   return `${JSON.stringify(value, null, 2)}\n`;
 }
@@ -889,6 +942,19 @@ export function buildPlan(targetDir, opts = {}) {
           targetJson = null; // malformed project file: the managed block replaces it
         }
         content = serialize(mergeManaged(sourceJson, targetJson ?? {}));
+      } else {
+        content = serialize(sourceJson);
+      }
+      wanted = Buffer.from(content, "utf8");
+    }
+    if (rel === ".claude/settings.json") {
+      let content = sourceRaw.toString("utf8");
+      const targetRaw = readOrNull(path.join(targetDir, rel));
+      const sourceJson = JSON.parse(content);
+      if (targetRaw) {
+        let targetJson = null;
+        try { targetJson = JSON.parse(targetRaw.toString("utf8")); } catch { targetJson = null; }
+        content = serialize(mergeClaudeSettings(sourceJson, targetJson ?? {}));
       } else {
         content = serialize(sourceJson);
       }
@@ -1329,6 +1395,9 @@ export function runDoctor(targetDir, opts = {}) {
   for (const file of PAYLOAD_FILES) {
     if (!fs.existsSync(path.join(SOURCE_ROOT, file))) continue;
     if (!fs.existsSync(path.join(targetDir, file))) fail("arquivo ausente", file);
+  }
+  if (fs.existsSync(path.join(targetDir, ".claude", "settings.json"))) {
+    readJson(path.join(targetDir, ".claude", "settings.json")) || fail("JSON inválido", ".claude/settings.json");
   }
 
   const manifest = readManifest(targetDir);
